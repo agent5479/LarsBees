@@ -43,7 +43,7 @@ def create_app(config_name='default'):
         """Landing page"""
         if current_user.is_authenticated:
             return redirect(url_for('dashboard'))
-        return redirect(url_for('login'))
+        return render_template('landing.html')
     
     @app.route('/login', methods=['GET', 'POST'])
     def login():

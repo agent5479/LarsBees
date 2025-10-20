@@ -79,6 +79,8 @@ python app.py
 http://localhost:5000
 ```
 
+You'll see the beautiful landing page. Click "Login" or "Sign Up" to get started!
+
 ## 🔧 Configuration
 
 ### Environment Variables
