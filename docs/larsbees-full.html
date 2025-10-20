@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LarsBees - Professional Apiary Management</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <link rel="stylesheet" href="larsbees-pro.css">
+    
+    <style>
+        .flag-urgent { border-left-color: #dc3545 !important; border-left-width: 6px !important; }
+        .flag-warning { border-left-color: #ffc107 !important; border-left-width: 6px !important; }
+        .flag-info { border-left-color: #17a2b8 !important; border-left-width: 6px !important; }
+        .scheduled-task { background-color: #fff3cd; border-left: 4px solid #ffc107; }
+        .admin-only { opacity: 1; }
+        .employee-hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Sync Status Indicator -->
+    <div id="syncIndicator" class="sync-indicator hidden">
+        <i class="bi bi-cloud-check"></i> <span id="syncText">Synced</span>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-card">
+            <div class="card shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-hexagon-fill text-warning" style="font-size: 4rem;"></i>
+                        <h2 class="mt-3">LarsBees</h2>
+                        <p class="text-muted">Professional Apiary Management</p>
+                        <small class="badge bg-success">Secure Multi-User System</small>
+                    </div>
+                    
+                    <!-- Login Form -->
+                    <div id="loginFormContainer">
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" id="loginUsername" class="form-control" placeholder="Your username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" id="loginPassword" class="form-control" placeholder="Your password" required>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning btn-lg">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div id="firstTimeSetup" class="alert alert-info mt-3 hidden">
+                            <strong>First Time Setup (Lars Only):</strong>
+                            <p class="mb-0">As the master user, you'll set the admin password. You can then add employees from the dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Navigation -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-warning sticky-top">
+            <div class="container-fluid">
+                <a class="navbar-brand text-dark" href="#" onclick="showDashboard()">
+                    <i class="bi bi-hexagon-fill"></i> LarsBees
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" onclick="showDashboard()">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" onclick="showClusters()">
+                                <i class="bi bi-geo-alt"></i> Clusters
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" onclick="showActions()">
+                                <i class="bi bi-list-check"></i> Actions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" onclick="showScheduledTasks()">
+                                <i class="bi bi-calendar-check"></i> Scheduled
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" onclick="showFlagged()">
+                                <i class="bi bi-flag-fill text-danger"></i> Flagged
+                            </a>
+                        </li>
+                        <li class="nav-item admin-only" id="navEmployees">
+                            <a class="nav-link text-dark" href="#" onclick="showEmployees()">
+                                <i class="bi bi-people"></i> Team
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <span class="nav-link text-dark">
+                                <i class="bi bi-person-circle"></i> <span id="currentUserDisplay">User</span>
+                                <span id="adminBadge" class="badge bg-danger hidden">ADMIN</span>
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="#" onclick="logout()">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Dashboard View -->
+        <div id="dashboardView" class="container mt-4">
+            <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+            
+            <!-- Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning">
+                        <div class="card-body stat-card">
+                            <h6>Total Clusters</h6>
+                            <h2 id="statClusters">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body stat-card">
+                            <h6>Total Hives</h6>
+                            <h2 id="statHives">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body stat-card">
+                            <h6>Total Actions</h6>
+                            <h2 id="statActions">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-danger text-white">
+                        <div class="card-body stat-card">
+                            <h6>Flagged Issues</h6>
+                            <h2 id="statFlagged">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flagged Items Alert -->
+            <div id="flaggedAlert" class="alert alert-danger hidden">
+                <h5><i class="bi bi-exclamation-triangle-fill"></i> Urgent Flagged Items!</h5>
+                <div id="flaggedItemsList"></div>
+                <button class="btn btn-danger mt-2" onclick="showFlagged()">View All Flagged Items</button>
+            </div>
+
+            <!-- Map -->
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-map"></i> Hive Cluster Locations</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map"></div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-warning" onclick="showAddClusterForm()">
+                        <i class="bi bi-plus-circle"></i> Add New Cluster
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Actions & Scheduled Tasks -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="recentActions"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Scheduled Tasks</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="scheduledTasksPreview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clusters View -->
+        <div id="clustersView" class="container mt-4 hidden">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-geo-alt"></i> Hive Clusters</h1>
+                <button class="btn btn-warning btn-lg" onclick="showAddClusterForm()">
+                    <i class="bi bi-plus-circle"></i> Add Cluster
+                </button>
+            </div>
+
+            <div id="clustersList" class="row"></div>
+        </div>
+
+        <!-- Add/Edit Cluster Form -->
+        <div id="clusterFormView" class="container mt-4 hidden">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header bg-warning">
+                            <h4 class="mb-0" id="clusterFormTitle">Add Hive Cluster</h4>
+                        </div>
+                        <div class="card-body">
+                            <form id="clusterForm">
+                                <input type="hidden" id="clusterId">
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Cluster Name</label>
+                                    <input type="text" id="clusterName" class="form-control form-control-lg" placeholder="e.g., North Field Apiary" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Description</label>
+                                    <textarea id="clusterDescription" class="form-control" rows="2" placeholder="Brief description"></textarea>
+                                </div>
+                                
+                                <div class="card mb-3 bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title"><i class="bi bi-geo-alt"></i> Location</h6>
+                                        
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Latitude</label>
+                                                <input type="number" step="any" id="clusterLat" class="form-control" placeholder="40.7128" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Longitude</label>
+                                                <input type="number" step="any" id="clusterLng" class="form-control" placeholder="-74.0060" required>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2 d-md-flex">
+                                            <button type="button" id="useLocationBtn" class="btn btn-success flex-fill">
+                                                <i class="bi bi-crosshair"></i> Use My GPS Location
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info flex-fill" onclick="showMapPicker()">
+                                                <i class="bi bi-map"></i> Pick on Map
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Map picker -->
+                                        <div id="mapPickerContainer" class="hidden mt-3">
+                                            <div id="mapPicker" style="height: 350px; border-radius: 5px;"></div>
+                                            <small class="text-muted">Click map or drag marker to set location</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Number of Hives</label>
+                                        <input type="number" id="clusterHiveCount" class="form-control" value="1" min="1" required>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Harvest Timeline</label>
+                                        <input type="text" id="clusterHarvest" class="form-control" placeholder="Spring 2025">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Sugar Requirements</label>
+                                        <input type="text" id="clusterSugar" class="form-control" placeholder="10kg/month">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea id="clusterNotes" class="form-control" rows="3" placeholder="Special notes..."></textarea>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary" onclick="showClusters()">
+                                        <i class="bi bi-x"></i> Cancel
+                                    </button>
+                                    <button type="submit" class="btn btn-warning btn-lg">
+                                        <i class="bi bi-check-circle"></i> Save Cluster
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <!-- Anomaly Management (for edit mode) -->
+                            <div id="anomalySection" class="mt-4 pt-4 border-top hidden">
+                                <h5 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Anomaly Management</h5>
+                                <p class="text-muted">Break cluster into individual hives for tracking infections or problems.</p>
+                                <button class="btn btn-danger" onclick="breakIntoIndividualHives()">
+                                    <i class="bi bi-diagram-3"></i> Break Into Individual Hives
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions View -->
+        <div id="actionsView" class="container mt-4 hidden">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="bi bi-list-check"></i> Action History</h1>
+                <button class="btn btn-warning btn-lg" onclick="showLogActionForm()">
+                    <i class="bi bi-plus-circle"></i> Log Action
+                </button>
+            </div>
+            
+            <!-- Filters -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Cluster</label>
+                            <select id="filterCluster" class="form-select" onchange="renderActions()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Category</label>
+                            <select id="filterCategory" class="form-select" onchange="renderActions()"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Employee</label>
+                            <select id="filterEmployee" class="form-select" onchange="renderActions()"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="actionsList"></div>
+        </div>
+
+        <!-- Log Action Form -->
+        <div id="logActionView" class="container mt-4 hidden">
+            <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Log Hive Action</h2>
+            
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header bg-warning">
+                            <h5 class="mb-0">Action Log</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="actionForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Select Cluster</label>
+                                    <select id="actionCluster" class="form-select form-select-lg" required onchange="loadClusterHives()"></select>
+                                </div>
+                                
+                                <div id="individualHiveSelect" class="mb-3 hidden">
+                                    <label class="form-label">Specific Hive (Optional)</label>
+                                    <select id="actionHive" class="form-select">
+                                        <option value="">All hives in cluster</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Action Date</label>
+                                    <input type="date" id="actionDate" class="form-control form-control-lg" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label mb-0">Select Tasks</label>
+                                        <div class="btn-group btn-group-sm">
+                                            <input type="radio" class="btn-check" name="taskFilter" id="filterCommon" checked onclick="filterTaskCheckboxes('common')">
+                                            <label class="btn btn-outline-success" for="filterCommon">
+                                                <i class="bi bi-star-fill"></i> Common
+                                            </label>
+                                            <input type="radio" class="btn-check" name="taskFilter" id="filterAll" onclick="filterTaskCheckboxes('all')">
+                                            <label class="btn btn-outline-warning" for="filterAll">All</label>
+                                        </div>
+                                    </div>
+                                    <div id="taskCheckboxes" class="task-checkboxes-container"></div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea id="actionNotes" class="form-control" rows="3" placeholder="Observations, measurements, details..."></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Flag This Entry</label>
+                                    <select id="actionFlag" class="form-select">
+                                        <option value="">No Flag (Normal)</option>
+                                        <option value="urgent">🚨 Urgent - Immediate Attention Required</option>
+                                        <option value="warning">⚠️ Warning - Monitor Closely</option>
+                                        <option value="info">ℹ️ Info - For Review</option>
+                                    </select>
+                                    <small class="text-muted">Flag problems, infections, or important events for team visibility</small>
+                                </div>
+
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">Cancel</button>
+                                    <button type="submit" class="btn btn-warning btn-lg">
+                                        <i class="bi bi-check-circle-fill"></i> Log Actions
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sidebar -->
+                <div class="col-lg-4">
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="bi bi-calendar-plus"></i> Schedule for Next Visit</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="small">Add tasks to do on next visit to this cluster:</p>
+                            <button class="btn btn-primary w-100" onclick="showScheduleTaskModal()">
+                                <i class="bi bi-plus"></i> Add Scheduled Task
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Tasks View -->
+        <div id="scheduledView" class="container mt-4 hidden">
+            <h1 class="mb-4"><i class="bi bi-calendar-check"></i> Scheduled Tasks</h1>
+            <div id="scheduledTasksList"></div>
+        </div>
+
+        <!-- Flagged Items View -->
+        <div id="flaggedView" class="container mt-4 hidden">
+            <h1 class="mb-4"><i class="bi bi-flag-fill text-danger"></i> Flagged Items</h1>
+            <div id="flaggedItemsList2"></div>
+        </div>
+
+        <!-- Employee Management (Admin Only) -->
+        <div id="employeesView" class="container mt-4 hidden">
+            <h1 class="mb-4"><i class="bi bi-people"></i> Team Management</h1>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Add New Employee</h5>
+                </div>
+                <div class="card-body">
+                    <form id="addEmployeeForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Employee Name</label>
+                                <input type="text" id="newEmployeeName" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Employee Password</label>
+                                <input type="password" id="newEmployeePassword" class="form-control" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-person-plus"></i> Add Employee
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Current Team Members</h5>
+                </div>
+                <div class="card-body">
+                    <div id="employeesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Task Modal -->
+    <div class="modal fade" id="scheduleTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Schedule Task for Next Visit</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleTaskForm">
+                        <div class="mb-3">
+                            <label class="form-label">Cluster</label>
+                            <select id="scheduleCluster" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Task</label>
+                            <select id="scheduleTask" class="form-select" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Due Date (Optional)</label>
+                            <input type="date" id="scheduleDueDate" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Priority</label>
+                            <select id="schedulePriority" class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="high">High Priority</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea id="scheduleNotes" class="form-control" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Schedule Task</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
+    <!-- Google Maps API (Uses built-in API, no key needed for basic use) -->
+    <script>
+        // Load Google Maps dynamically
+        function loadGoogleMaps() {
+            const script = document.createElement('script');
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=&callback=mapsLoaded';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+        
+        function mapsLoaded() {
+            console.log('Google Maps loaded');
+            if (typeof initMap === 'function') initMap();
+        }
+        
+        loadGoogleMaps();
+    </script>
+    
+    <!-- Firebase Configuration -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyALV0NmXT2VIZBrAR6D7rSnphNljhFIeb0",
+            authDomain: "larsbees-378aa.firebaseapp.com",
+            databaseURL: "https://larsbees-378aa-default-rtdb.firebaseio.com",
+            projectId: "larsbees-378aa",
+            storageBucket: "larsbees-378aa.firebasestorage.app",
+            messagingSenderId: "101401288589",
+            appId: "1:101401288589:web:a4208c078ec609364fe7c4",
+            measurementId: "G-KYV5R1YJBB"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
+    
+    <!-- Application JavaScript -->
+    <script src="larsbees-full.js"></script>
+</body>
+</html>
+
