@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - LarsBees{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="display-5"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p class="lead text-muted">Welcome back, {{ current_user.username }}!</p>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Clusters</h6>
+                        <h2 class="card-title mb-0">{{ stats.total_clusters }}</h2>
+                    </div>
+                    <i class="bi bi-geo-alt-fill" style="font-size: 3rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Hives</h6>
+                        <h2 class="card-title mb-0">{{ stats.total_hives }}</h2>
+                    </div>
+                    <i class="bi bi-hexagon-fill" style="font-size: 3rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Recent Actions</h6>
+                        <h2 class="card-title mb-0">{{ stats.recent_actions_count }}</h2>
+                    </div>
+                    <i class="bi bi-list-check" style="font-size: 3rem; opacity: 0.3;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Section -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-map"></i> Hive Cluster Locations</h5>
+            </div>
+            <div class="card-body p-0">
+                <div id="map" style="height: 400px; width: 100%;"></div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('add_cluster') }}" class="btn btn-warning">
+                    <i class="bi bi-plus-circle"></i> Add New Cluster
+                </a>
+                <a href="{{ url_for('clusters') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-list"></i> View All Clusters
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Actions -->
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_actions %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Cluster</th>
+                                <th>Task</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for action in recent_actions %}
+                            <tr>
+                                <td>{{ action.action_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}">
+                                        {{ action.cluster.name }}
+                                    </a>
+                                </td>
+                                <td><span class="badge bg-secondary">{{ action.task_name }}</span></td>
+                                <td>{{ action.description[:50] }}{% if action.description and action.description|length > 50 %}...{% endif %}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <a href="{{ url_for('actions') }}" class="btn btn-outline-info">View All Actions</a>
+                </div>
+                {% else %}
+                <p class="text-muted text-center my-4">No actions recorded yet. Start logging your hive management activities!</p>
+                <div class="text-center">
+                    <a href="{{ url_for('log_action') }}" class="btn btn-info">Log Your First Action</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap" async defer></script>
+<script>
+function initMap() {
+    // Default center
+    const center = { lat: 40.7128, lng: -74.0060 };
+    
+    const map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 10,
+        center: center,
+        mapTypeId: 'terrain'
+    });
+    
+    // Fetch clusters and add markers
+    fetch('{{ url_for("api_clusters") }}')
+        .then(response => response.json())
+        .then(clusters => {
+            if (clusters.length > 0) {
+                // Center map on first cluster
+                map.setCenter({ lat: clusters[0].latitude, lng: clusters[0].longitude });
+                
+                // Add markers for each cluster
+                clusters.forEach(cluster => {
+                    const marker = new google.maps.Marker({
+                        position: { lat: cluster.latitude, lng: cluster.longitude },
+                        map: map,
+                        title: cluster.name,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            scale: 10,
+                            fillColor: '#FFC107',
+                            fillOpacity: 0.8,
+                            strokeColor: '#FF9800',
+                            strokeWeight: 2
+                        }
+                    });
+                    
+                    // Info window
+                    const infoWindow = new google.maps.InfoWindow({
+                        content: `
+                            <div style="padding: 10px;">
+                                <h6><strong>${cluster.name}</strong></h6>
+                                <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
+                                <p class="mb-1"><strong>Hives:</strong> ${cluster.hive_count}</p>
+                                ${cluster.harvest_timeline ? `<p class="mb-1"><strong>Harvest:</strong> ${cluster.harvest_timeline}</p>` : ''}
+                                <a href="/cluster/${cluster.id}" class="btn btn-sm btn-warning mt-2">View Details</a>
+                            </div>
+                        `
+                    });
+                    
+                    marker.addListener('click', () => {
+                        infoWindow.open(map, marker);
+                    });
+                });
+                
+                // Fit bounds to show all markers
+                if (clusters.length > 1) {
+                    const bounds = new google.maps.LatLngBounds();
+                    clusters.forEach(cluster => {
+                        bounds.extend(new google.maps.LatLng(cluster.latitude, cluster.longitude));
+                    });
+                    map.fitBounds(bounds);
+                }
+            }
+        })
+        .catch(error => console.error('Error loading clusters:', error));
+}
+</script>
+{% endblock %}
+
