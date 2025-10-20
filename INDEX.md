@@ -16,6 +16,11 @@ Welcome to LarsBees - Your complete apiary management solution!
    - Deployment guides
    - API documentation
 
+3. **[LANDING_PAGE_GUIDE.md](LANDING_PAGE_GUIDE.md)** - 🎨 Landing page details
+   - Design overview
+   - Customization guide
+   - SEO tips
+
 ### For Developers
 3. **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - 🏗️ Technical overview
    - Architecture details

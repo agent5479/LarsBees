@@ -82,6 +82,14 @@ LarsBees is a comprehensive web-based apiary (beekeeping) management system desi
 
 ## Database Schema
 
+### User Interface
+1. **Landing Page** - Public-facing homepage with features showcase
+2. **Login/Register** - Authentication pages
+3. **Dashboard** - Main overview with maps and statistics
+4. **Cluster Management** - Add, edit, view hive locations
+5. **Action Logging** - Quick and detailed task recording
+6. **History** - Archived action tracking
+
 ### Tables
 1. **users** - User accounts
 2. **hive_clusters** - Hive location groups
