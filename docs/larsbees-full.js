@@ -172,27 +172,42 @@ function initializeMasterAccount() {
 // Authentication - Master User System
 function handleLogin(e) {
     e.preventDefault();
+    console.log('Login form submitted');
+    
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
+    
+    console.log('Username:', username);
     
     if (!username || !password) {
         alert('Please enter both username and password');
         return;
     }
     
+    // Check if Firebase is ready
+    if (typeof database === 'undefined') {
+        alert('System is still loading. Please wait a moment and try again.');
+        return;
+    }
+    
     // Check if master user exists
     database.ref('master/initialized').once('value', (snapshot) => {
+        console.log('Master initialized:', snapshot.exists());
+        
         if (!snapshot.exists()) {
-            // First time setup - Lars creating master account
+            // First time setup - create master account
             if (username.toLowerCase() === 'lars' || username.toLowerCase() === 'admin') {
                 setupMasterUser(username, password);
             } else {
-                alert('First time setup: Please use username "Lars" or "admin" to create the master account.');
+                alert('First time setup: Please use username "Lars" to create the master account.');
             }
         } else {
             // Existing system - check credentials
             validateLogin(username, password);
         }
+    }).catch(error => {
+        console.error('Firebase error:', error);
+        alert('Database connection error. Please check your internet connection and try again.');
     });
 }
 
@@ -249,12 +264,16 @@ function setupMasterUser(username, password) {
 }
 
 function validateLogin(username, password) {
+    console.log('Validating login for:', username);
     const passwordHash = simpleHash(password);
     
     // Check if admin
     database.ref('master/admin').once('value', (snapshot) => {
         const admin = snapshot.val();
+        console.log('Admin check:', admin);
+        
         if (admin && admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash) {
+            console.log('Admin login successful');
             currentUser = admin;
             isAdmin = true;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -265,13 +284,17 @@ function validateLogin(username, password) {
         }
         
         // Check if employee
+        console.log('Checking employees...');
         database.ref('employees').once('value', (empSnapshot) => {
             const employeesList = empSnapshot.val() || {};
+            console.log('Employees:', employeesList);
+            
             const employee = Object.values(employeesList).find(emp => 
                 emp.username.toLowerCase() === username.toLowerCase() && emp.passwordHash === passwordHash
             );
             
             if (employee) {
+                console.log('Employee login successful');
                 currentUser = employee;
                 isAdmin = false;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -279,9 +302,16 @@ function validateLogin(username, password) {
                 showMainApp();
                 loadDataFromFirebase();
             } else {
+                console.log('Login failed - no match');
                 alert('❌ Invalid username or password!');
             }
+        }).catch(error => {
+            console.error('Employee check error:', error);
+            alert('Error checking credentials. Please try again.');
         });
+    }).catch(error => {
+        console.error('Admin check error:', error);
+        alert('Error checking credentials. Please try again.');
     });
 }
 
