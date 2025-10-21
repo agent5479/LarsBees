@@ -506,8 +506,8 @@ function showMapPicker() {
     
     if (!container.classList.contains('hidden')) {
         setTimeout(() => {
-            const lat = parseFloat(document.getElementById('clusterLat').value) || 40.7128;
-            const lng = parseFloat(document.getElementById('clusterLng').value) || -74.0060;
+            const lat = parseFloat(document.getElementById('clusterLat').value) || -41.27; // Tasman, NZ
+            const lng = parseFloat(document.getElementById('clusterLng').value) || 173.28;
             
             // Clear existing map if any
             if (mapPicker) {
@@ -702,7 +702,7 @@ function initMap() {
     
     const center = clusters.length > 0 
         ? [clusters[0].latitude, clusters[0].longitude]
-        : [40.7128, -74.0060];
+        : [-41.27, 173.28]; // Tasman region, New Zealand
     
     // Create map if it doesn't exist
     if (!map) {
