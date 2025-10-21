@@ -143,6 +143,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
     document.getElementById('actionDate').valueAsDate = new Date();
     
+    // Enhanced sticky navbar on scroll
+    window.addEventListener('scroll', function() {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+    });
+    
     // Note: GPS button listener added when form is shown
 });
 
