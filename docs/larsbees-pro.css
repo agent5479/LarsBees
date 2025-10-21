@@ -197,21 +197,88 @@ body {
     display: none !important;
 }
 
-/* Mobile Optimizations */
+/* Mobile Optimizations - Comprehensive */
 @media (max-width: 768px) {
+    /* Typography */
+    body {
+        font-size: 14px;
+    }
+    
+    h1 {
+        font-size: 1.75rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h5 {
+        font-size: 1.1rem;
+    }
+    
+    /* Stats Cards */
     .stat-card h2 {
         font-size: 2rem;
     }
     
-    .btn-lg {
+    /* Buttons - Large touch targets */
+    .btn {
+        min-height: 44px; /* Apple's recommended touch target */
         font-size: 1rem;
+        padding: 0.65rem 1rem;
+    }
+    
+    .btn-lg {
+        font-size: 1.1rem;
         padding: 0.75rem 1.5rem;
+        min-height: 50px;
     }
     
-    #map {
+    .btn-sm {
+        min-height: 38px;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Forms - Mobile friendly */
+    .form-control, .form-select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+        min-height: 44px;
+        padding: 0.65rem 0.75rem;
+    }
+    
+    input[type="number"],
+    input[type="text"],
+    input[type="password"],
+    input[type="date"],
+    textarea {
+        font-size: 16px !important; /* Prevents iOS zoom */
+    }
+    
+    /* Maps */
+    #map, #mapPicker {
         height: 300px;
+        border-radius: 5px;
     }
     
+    /* Tables - Horizontal scroll */
+    .table-responsive {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        font-size: 0.9rem;
+    }
+    
+    /* Cards */
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    /* Task Checkboxes */
     .task-checkboxes-container {
         max-height: 400px;
     }
@@ -220,7 +287,7 @@ body {
         margin-bottom: 1rem;
     }
     
-    /* Mobile navbar improvements */
+    /* Navigation - Mobile optimized */
     .navbar {
         padding: 0.5rem 1rem;
     }
@@ -235,11 +302,118 @@ body {
         margin-top: 0.5rem;
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        max-height: 80vh;
+        overflow-y: auto;
     }
     
     .nav-link {
         padding: 0.75rem 0.5rem !important;
         font-size: 1.1rem;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Navbar button for export */
+    .navbar .btn-sm {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+    
+    /* Sync Indicator - Mobile positioning */
+    .sync-indicator {
+        top: auto;
+        bottom: 20px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 0.65rem;
+    }
+    
+    /* Login Screen */
+    .login-card {
+        margin: 1rem;
+    }
+    
+    .login-container {
+        padding: 1rem;
+    }
+    
+    /* Action Items */
+    .action-item {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Grid adjustments */
+    .row {
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+    }
+    
+    .row > * {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Container padding */
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    /* Modal improvements */
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    /* Reduce margins for compact view */
+    .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .mt-4 {
+        margin-top: 1rem !important;
+    }
+}
+
+/* Extra small devices (phones in portrait, less than 576px) */
+@media (max-width: 576px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.65rem 1.25rem;
+    }
+    
+    .stat-card h2 {
+        font-size: 1.75rem;
+    }
+    
+    /* Stack buttons vertically on very small screens */
+    .d-grid.gap-2.d-md-flex {
+        display: flex !important;
+        flex-direction: column;
+    }
+    
+    .d-grid.gap-2.d-md-flex > * {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Landscape phones */
+@media (max-width: 768px) and (orientation: landscape) {
+    .login-container {
+        min-height: auto;
+        padding: 2rem 0;
+    }
+    
+    #map, #mapPicker {
+        height: 250px;
     }
 }
 
