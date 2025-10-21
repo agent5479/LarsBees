@@ -104,8 +104,9 @@ const COMPREHENSIVE_TASKS = [
     { id: 907, name: 'Varroa Mite Count', category: 'Records', common: false }
 ];
 
-// Master password (Lars's password hash - change this!)
-const MASTER_USER_HASH = 'lars_master';
+// Master account credentials
+const MASTER_USERNAME = 'Lars';
+const MASTER_PASSWORD = 'LarsHoney2025!';
 
 // Global variables
 let currentUser = null;
@@ -145,13 +146,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Note: GPS button listener added when form is shown
 });
 
-// Check if this is first time setup
+// Check if this is first time setup and initialize master account
 function checkFirstTimeSetup() {
     database.ref('master/initialized').once('value', (snapshot) => {
         if (!snapshot.exists()) {
-            document.getElementById('firstTimeSetup').classList.remove('hidden');
+            // Auto-initialize master account
+            initializeMasterAccount();
         }
     });
+}
+
+function initializeMasterAccount() {
+    const masterUser = {
+        username: MASTER_USERNAME,
+        passwordHash: simpleHash(MASTER_PASSWORD),
+        role: 'admin',
+        createdAt: new Date().toISOString()
+    };
+    
+    database.ref('master/initialized').set(true);
+    database.ref('master/admin').set(masterUser);
+    console.log('Master account initialized');
 }
 
 // Authentication - Master User System
@@ -181,25 +196,35 @@ function handleLogin(e) {
     });
 }
 
-function setupMasterUser(username, password) {
-    const masterUser = {
-        username: username,
-        passwordHash: simpleHash(password),
-        role: 'admin',
-        createdAt: new Date().toISOString()
-    };
+// Password visibility toggles
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('loginPassword');
+    const icon = document.getElementById('passwordToggleIcon');
     
-    database.ref('master/initialized').set(true);
-    database.ref('master/admin').set(masterUser);
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+
+function toggleEmployeePasswordVisibility() {
+    const passwordInput = document.getElementById('newEmployeePassword');
+    const icon = document.getElementById('employeePasswordToggleIcon');
     
-    currentUser = masterUser;
-    isAdmin = true;
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    localStorage.setItem('isAdmin', 'true');
-    
-    alert(`✅ Master account created for ${username}!\n\nYou can now add employees from the Team menu.`);
-    showMainApp();
-    loadDataFromFirebase();
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
 }
 
 function validateLogin(username, password) {

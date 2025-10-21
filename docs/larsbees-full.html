@@ -48,7 +48,12 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Password</label>
-                                <input type="password" id="loginPassword" class="form-control" placeholder="Your password" required>
+                                <div class="input-group">
+                                    <input type="password" id="loginPassword" class="form-control" placeholder="Your password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
+                                        <i class="bi bi-eye" id="passwordToggleIcon"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-warning btn-lg">
@@ -57,9 +62,14 @@
                             </div>
                         </form>
                         
-                        <div id="firstTimeSetup" class="alert alert-info mt-3 hidden">
-                            <strong>First Time Setup (Lars Only):</strong>
-                            <p class="mb-0">As the master user, you'll set the admin password. You can then add employees from the dashboard.</p>
+                        <div class="alert alert-success mt-3">
+                            <strong>Master Account:</strong>
+                            <p class="mb-1">Username: <code>Lars</code></p>
+                            <p class="mb-0">Password: <code>LarsHoney2025!</code></p>
+                        </div>
+                        
+                        <div class="alert alert-info mt-2">
+                            <small><strong>Employees:</strong> Ask Lars for your credentials.</small>
                         </div>
                     </div>
                 </div>
@@ -470,11 +480,16 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Employee Name</label>
-                                <input type="text" id="newEmployeeName" class="form-control" required>
+                                <input type="text" id="newEmployeeName" class="form-control" placeholder="Full name" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Employee Password</label>
-                                <input type="password" id="newEmployeePassword" class="form-control" required>
+                                <div class="input-group">
+                                    <input type="password" id="newEmployeePassword" class="form-control" placeholder="Create password" required>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="toggleEmployeePasswordVisibility()">
+                                        <i class="bi bi-eye" id="employeePasswordToggleIcon"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-success">
