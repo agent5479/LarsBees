@@ -117,6 +117,7 @@ let individualHives = [];
 let scheduledTasks = [];
 let employees = [];
 let tasks = COMPREHENSIVE_TASKS;
+let deletedTasks = {}; // Archive of deleted tasks for historical record display
 let map = null;
 let markers = [];
 let mapPicker = null;
@@ -479,6 +480,11 @@ function loadDataFromFirebase() {
             }
         }
     });
+    
+    // Load deleted tasks archive for historical reference
+    database.ref('deletedTasks').on('value', (snapshot) => {
+        deletedTasks = snapshot.val() || {};
+    });
 }
 
 function loadEmployees() {
@@ -664,9 +670,10 @@ function updateDashboard() {
         ? recentActions.map(a => {
             const cluster = clusters.find(c => c.id === a.clusterId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
+            const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
             return `
                 <div class="action-item ${a.flag ? 'flag-' + a.flag : ''}">
-                    <div><strong>${flagIcon} ${a.taskName}</strong> - ${cluster?.name || 'Unknown'}</div>
+                    <div><strong>${flagIcon} ${displayTaskName}</strong> - ${cluster?.name || 'Unknown'}</div>
                     <small class="text-muted">${a.date} • ${a.loggedBy || 'User'}</small>
                     ${a.notes ? `<p class="mb-0 mt-1"><small>${a.notes}</small></p>` : ''}
                 </div>
@@ -685,12 +692,13 @@ function updateScheduledTasksPreview() {
         ? pending.slice(0, 5).map(t => {
             const cluster = clusters.find(c => c.id === t.clusterId);
             const task = tasks.find(tk => tk.id === t.taskId);
+            const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
             const priorityBadge = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
             return `
                 <div class="scheduled-task p-2 mb-2 rounded">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <strong>${task?.name || 'Task'}</strong>
+                            <strong>${displayTaskName}</strong>
                             <span class="badge bg-${priorityBadge}">${t.priority || 'normal'}</span>
                             <br><small>${cluster?.name || 'Unknown'}</small>
                         </div>
@@ -1048,13 +1056,16 @@ function renderActions() {
                 </button>
             ` : '';
             
+            const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
+            const isDeletedTask = displayTaskName.startsWith('[Deleted:');
+            
             return `
                 <div class="action-item ${a.flag ? 'flag-' + a.flag : ''}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="mb-1">
                                 ${flagIcon} <span class="badge bg-secondary">${a.taskCategory || 'Task'}</span>
-                                <strong>${a.taskName}</strong>
+                                <strong class="${isDeletedTask ? 'text-muted' : ''}">${displayTaskName}</strong>
                             </div>
                             <div class="text-muted small">
                                 <i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}
@@ -1129,13 +1140,14 @@ function renderScheduledTasks() {
         ? pending.map(t => {
             const cluster = clusters.find(c => c.id === t.clusterId);
             const task = tasks.find(tk => tk.id === t.taskId);
+            const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
             const priorityClass = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
             return `
                 <div class="card mb-3 scheduled-task">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h5>${task?.name || 'Task'}</h5>
+                                <h5>${displayTaskName}</h5>
                                 <p class="mb-1"><i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}</p>
                                 <p class="mb-1"><small><i class="bi bi-calendar"></i> Due: ${t.dueDate || 'Not set'}</small></p>
                                 <span class="badge bg-${priorityClass}">${t.priority || 'normal'}</span>
@@ -1241,6 +1253,27 @@ function removeEmployee(id) {
 // ============================================
 // TASK MANAGEMENT (ADMIN ONLY)
 // ============================================
+
+// Helper function to safely get task name (handles deleted tasks)
+function getTaskDisplayName(taskName, taskId) {
+    // If task exists in current tasks, use it
+    const currentTask = tasks.find(t => t.name === taskName || t.id === taskId);
+    if (currentTask) {
+        return currentTask.name;
+    }
+    
+    // Check if it's a deleted task
+    if (taskId && deletedTasks[taskId]) {
+        return `[Deleted: ${deletedTasks[taskId].name}]`;
+    }
+    
+    // Fallback to the stored name with deleted indicator
+    if (taskName) {
+        return `[Deleted: ${taskName}]`;
+    }
+    
+    return '[Unknown Task]';
+}
 
 function showManageTasks() {
     if (!isAdmin) {
@@ -1371,16 +1404,48 @@ function deleteTask(taskId) {
     const task = tasks.find(t => t.id === taskId);
     if (!task) return;
     
-    const confirmDelete = confirm(
-        `⚠️ DELETE TASK\n\n` +
+    // Check how many actions use this task
+    const affectedActions = actions.filter(a => a.task === task.name || a.taskId === taskId);
+    const affectedScheduled = scheduledTasks.filter(t => t.taskId === taskId);
+    const totalAffected = affectedActions.length + affectedScheduled.length;
+    
+    let warningMessage = `⚠️ DELETE TASK\n\n` +
         `Task: ${task.name}\n` +
-        `Category: ${task.category}\n\n` +
-        `This cannot be undone. Are you sure?`
-    );
+        `Category: ${task.category}\n\n`;
+    
+    if (totalAffected > 0) {
+        warningMessage += `🚨 WARNING: This task is used in ${totalAffected} record(s):\n`;
+        if (affectedActions.length > 0) {
+            warningMessage += `   • ${affectedActions.length} completed action(s)\n`;
+        }
+        if (affectedScheduled.length > 0) {
+            warningMessage += `   • ${affectedScheduled.length} scheduled task(s)\n`;
+        }
+        warningMessage += `\n`;
+        warningMessage += `These records will show as "[Deleted: ${task.name}]" but will NOT be deleted.\n`;
+        warningMessage += `Historical data will be preserved.\n\n`;
+    }
+    
+    warningMessage += `Are you sure you want to delete this task?`;
+    
+    const confirmDelete = confirm(warningMessage);
     
     if (confirmDelete) {
+        // Archive the task name before deleting for reference
+        database.ref(`deletedTasks/${taskId}`).set({
+            id: taskId,
+            name: task.name,
+            category: task.category,
+            deletedAt: new Date().toISOString(),
+            deletedBy: currentUser.username
+        });
+        
         database.ref(`tasks/${taskId}`).remove().then(() => {
-            alert('✅ Task deleted successfully!');
+            if (totalAffected > 0) {
+                alert(`✅ Task deleted.\n\n${totalAffected} historical record(s) will now show as "[Deleted: ${task.name}]"`);
+            } else {
+                alert('✅ Task deleted successfully!');
+            }
             // Tasks will be reloaded automatically from Firebase listener
         }).catch(error => {
             console.error('Error deleting task:', error);
