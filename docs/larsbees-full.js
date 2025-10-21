@@ -127,6 +127,9 @@ let isOnline = navigator.onLine;
 let syncQueue = []; // Queue of pending changes to sync
 let syncInProgress = false;
 
+// Seasonal requirements
+let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category, frequency}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     const savedUser = localStorage.getItem('currentUser');
@@ -148,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addEmployeeForm')?.addEventListener('submit', handleAddEmployee);
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
     document.getElementById('addTaskForm')?.addEventListener('submit', handleAddTask);
+    document.getElementById('addRequirementForm')?.addEventListener('submit', handleAddRequirement);
     document.getElementById('actionDate').valueAsDate = new Date();
     
     // Enhanced sticky navbar on scroll
@@ -500,6 +504,16 @@ function loadDataFromFirebase() {
     database.ref('deletedTasks').on('value', (snapshot) => {
         deletedTasks = snapshot.val() || {};
     });
+    
+    // Load seasonal requirements
+    database.ref('seasonalRequirements').on('value', (snapshot) => {
+        seasonalRequirements = snapshot.val() ? Object.values(snapshot.val()) : [];
+        // Refresh if on seasonal requirements page
+        if (!document.getElementById('seasonalRequirementsView')?.classList.contains('hidden')) {
+            renderSeasonalRequirements();
+            renderComplianceStatus();
+        }
+    });
 }
 
 function loadEmployees() {
@@ -583,7 +597,7 @@ function showMapPicker() {
 
 // Navigation
 function hideAllViews() {
-    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'flaggedView', 'employeesView', 'manageTasksView'].forEach(id => {
+    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'flaggedView', 'employeesView', 'manageTasksView', 'seasonalRequirementsView'].forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
 }
@@ -1467,6 +1481,290 @@ function deleteTask(taskId) {
             alert('❌ Error deleting task. Please try again.');
         });
     }
+}
+
+// ============================================
+// SEASONAL REQUIREMENTS (ADMIN ONLY)
+// ============================================
+
+function showSeasonalRequirements() {
+    if (!isAdmin) {
+        alert('Only administrators can manage seasonal requirements.');
+        return;
+    }
+    hideAllViews();
+    document.getElementById('seasonalRequirementsView').classList.remove('hidden');
+    populateClusterCheckboxes();
+    renderSeasonalRequirements();
+    renderComplianceStatus();
+}
+
+// Show/hide cluster selection based on radio
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('specificClusters')?.addEventListener('change', function() {
+        document.getElementById('clusterSelectionContainer').classList.remove('hidden');
+        populateClusterCheckboxes();
+    });
+    
+    document.getElementById('allClusters')?.addEventListener('change', function() {
+        document.getElementById('clusterSelectionContainer').classList.add('hidden');
+    });
+});
+
+function populateClusterCheckboxes() {
+    const container = document.getElementById('clusterCheckboxes');
+    if (!container) return;
+    
+    if (clusters.length === 0) {
+        container.innerHTML = '<p class="text-muted">No clusters available. Add clusters first.</p>';
+        return;
+    }
+    
+    const html = clusters.map(cluster => `
+        <div class="form-check">
+            <input class="form-check-input cluster-checkbox" type="checkbox" value="${cluster.id}" id="cluster_${cluster.id}">
+            <label class="form-check-label" for="cluster_${cluster.id}">
+                ${cluster.name} <small class="text-muted">(${cluster.hiveCount} hives)</small>
+            </label>
+        </div>
+    `).join('');
+    
+    container.innerHTML = html;
+}
+
+function handleAddRequirement(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('requirementName').value.trim();
+    const dueDate = document.getElementById('requirementDueDate').value;
+    const alertDays = parseInt(document.getElementById('requirementAlertDays').value);
+    const frequency = document.getElementById('requirementFrequency').value;
+    const priority = document.getElementById('requirementPriority').value;
+    const category = document.getElementById('requirementCategory').value;
+    const notes = document.getElementById('requirementNotes').value.trim();
+    
+    const applyToAll = document.getElementById('allClusters').checked;
+    let selectedClusters = [];
+    
+    if (!applyToAll) {
+        const checkboxes = document.querySelectorAll('.cluster-checkbox:checked');
+        selectedClusters = Array.from(checkboxes).map(cb => parseInt(cb.value));
+        
+        if (selectedClusters.length === 0) {
+            alert('Please select at least one cluster.');
+            return;
+        }
+    }
+    
+    const requirement = {
+        id: Date.now(),
+        name: name,
+        dueDate: dueDate,
+        alertDays: alertDays,
+        frequency: frequency,
+        priority: priority,
+        category: category,
+        notes: notes,
+        applyToAll: applyToAll,
+        clusterIds: applyToAll ? [] : selectedClusters,
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser.username
+    };
+    
+    firebaseWrite('set', `seasonalRequirements/${requirement.id}`, requirement).then(() => {
+        alert(`✅ Requirement "${name}" added successfully!`);
+        document.getElementById('addRequirementForm').reset();
+        document.getElementById('clusterSelectionContainer').classList.add('hidden');
+    });
+}
+
+function renderSeasonalRequirements() {
+    const container = document.getElementById('requirementsList');
+    if (!container) return;
+    
+    if (seasonalRequirements.length === 0) {
+        container.innerHTML = '<p class="text-muted">No seasonal requirements set. Add your first requirement above.</p>';
+        return;
+    }
+    
+    const html = seasonalRequirements.map(req => {
+        const daysUntil = getDaysUntilDate(req.dueDate);
+        const statusBadge = getStatusBadge(daysUntil, req.alertDays);
+        const priorityBadge = req.priority === 'urgent' ? 'danger' : req.priority === 'high' ? 'warning' : 'secondary';
+        const clusterInfo = req.applyToAll ? 'All Clusters' : `${req.clusterIds.length} selected cluster(s)`;
+        
+        return `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-2">
+                                ${req.name}
+                                <span class="badge bg-${priorityBadge}">${req.priority}</span>
+                                ${statusBadge}
+                            </h5>
+                            <p class="mb-1"><i class="bi bi-calendar"></i> <strong>Due:</strong> ${new Date(req.dueDate).toLocaleDateString()} ${daysUntil >= 0 ? `(${daysUntil} days)` : `(${Math.abs(daysUntil)} days overdue)`}</p>
+                            <p class="mb-1"><i class="bi bi-arrow-repeat"></i> <strong>Frequency:</strong> ${req.frequency}</p>
+                            <p class="mb-1"><i class="bi bi-geo-alt"></i> <strong>Applies to:</strong> ${clusterInfo}</p>
+                            <p class="mb-1"><i class="bi bi-folder2"></i> <strong>Category:</strong> ${req.category}</p>
+                            ${req.notes ? `<p class="mb-0 mt-2"><small><strong>Notes:</strong> ${req.notes}</small></p>` : ''}
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteRequirement(${req.id})">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = html;
+}
+
+function getDaysUntilDate(dateString) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(dateString);
+    dueDate.setHours(0, 0, 0, 0);
+    const diffTime = dueDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+}
+
+function getStatusBadge(daysUntil, alertDays) {
+    if (daysUntil < 0) {
+        return '<span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> OVERDUE</span>';
+    } else if (daysUntil <= alertDays) {
+        return `<span class="badge bg-warning text-dark"><i class="bi bi-bell"></i> DUE SOON</span>`;
+    } else {
+        return '<span class="badge bg-success"><i class="bi bi-check-circle"></i> OK</span>';
+    }
+}
+
+function renderComplianceStatus() {
+    const container = document.getElementById('complianceStatus');
+    if (!container) return;
+    
+    if (seasonalRequirements.length === 0 || clusters.length === 0) {
+        container.innerHTML = '<p class="text-muted">No compliance data available.</p>';
+        return;
+    }
+    
+    let html = '';
+    
+    seasonalRequirements.forEach(req => {
+        const applicableClusters = req.applyToAll ? clusters : clusters.filter(c => req.clusterIds.includes(c.id));
+        const daysUntil = getDaysUntilDate(req.dueDate);
+        const isOverdue = daysUntil < 0;
+        const isDueSoon = daysUntil <= req.alertDays && daysUntil >= 0;
+        
+        if (!isOverdue && !isDueSoon) return; // Only show items needing attention
+        
+        const statusClass = isOverdue ? 'danger' : 'warning';
+        const statusIcon = isOverdue ? 'exclamation-triangle' : 'bell';
+        const statusText = isOverdue ? `${Math.abs(daysUntil)} days OVERDUE` : `Due in ${daysUntil} days`;
+        
+        html += `
+            <div class="card mb-3 border-${statusClass}">
+                <div class="card-header bg-${statusClass} text-white">
+                    <h6 class="mb-0"><i class="bi bi-${statusIcon}"></i> ${req.name} - ${statusText}</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Due:</strong> ${new Date(req.dueDate).toLocaleDateString()}</p>
+                    <p class="mb-2"><strong>Clusters needing attention:</strong></p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Cluster</th>
+                                    <th>Last Completed</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${applicableClusters.map(cluster => {
+                                    const lastAction = getLastActionForRequirement(cluster.id, req.name, req.dueDate);
+                                    const isComplete = lastAction !== null;
+                                    
+                                    return `
+                                        <tr class="${!isComplete ? 'table-' + statusClass : ''}">
+                                            <td><strong>${cluster.name}</strong></td>
+                                            <td>${lastAction ? new Date(lastAction.date).toLocaleDateString() : 'Never'}</td>
+                                            <td>
+                                                ${isComplete 
+                                                    ? '<span class="badge bg-success">✓ Complete</span>' 
+                                                    : `<span class="badge bg-${statusClass}">✗ Needed</span>`
+                                                }
+                                            </td>
+                                            <td>
+                                                ${!isComplete 
+                                                    ? `<button class="btn btn-sm btn-success" onclick="markRequirementComplete(${req.id}, ${cluster.id}, '${req.name}')"><i class="bi bi-check"></i> Mark Done</button>`
+                                                    : ''
+                                                }
+                                            </td>
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html || '<div class="alert alert-success"><i class="bi bi-check-circle"></i> All requirements are up to date!</div>';
+}
+
+function getLastActionForRequirement(clusterId, requirementName, dueDate) {
+    // Find the most recent action matching this requirement after the last due date
+    const relevantActions = actions.filter(a => {
+        return a.clusterId === clusterId && 
+               (a.taskName.toLowerCase().includes(requirementName.toLowerCase()) ||
+                requirementName.toLowerCase().includes(a.taskName.toLowerCase()));
+    });
+    
+    if (relevantActions.length === 0) return null;
+    
+    // Sort by date descending
+    relevantActions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Return most recent
+    return relevantActions[0];
+}
+
+function markRequirementComplete(requirementId, clusterId, requirementName) {
+    const cluster = clusters.find(c => c.id === clusterId);
+    if (!cluster) return;
+    
+    const action = {
+        id: Date.now(),
+        clusterId: clusterId,
+        taskName: requirementName + ' (Requirement Completed)',
+        taskCategory: 'Seasonal Requirement',
+        date: new Date().toISOString().split('T')[0],
+        loggedBy: currentUser.username,
+        notes: 'Marked as complete from Seasonal Requirements',
+        createdAt: new Date().toISOString()
+    };
+    
+    firebaseWrite('set', `actions/${action.id}`, action).then(() => {
+        alert(`✅ Marked "${requirementName}" as complete for ${cluster.name}`);
+        renderComplianceStatus();
+    });
+}
+
+function deleteRequirement(id) {
+    if (!confirm('Delete this seasonal requirement? This will not delete any recorded actions.')) {
+        return;
+    }
+    
+    firebaseWrite('remove', `seasonalRequirements/${id}`).then(() => {
+        alert('✅ Requirement deleted successfully!');
+    });
 }
 
 // ============================================
