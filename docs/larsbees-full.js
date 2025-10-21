@@ -1220,3 +1220,203 @@ function removeEmployee(id) {
     }
 }
 
+// ============================================
+// CSV EXPORT FUNCTIONS (ADMIN ONLY)
+// ============================================
+
+function exportAllDataToCSV() {
+    if (!isAdmin) {
+        alert('Only administrators can export data.');
+        return;
+    }
+    
+    // Show export options
+    const choice = confirm(
+        '📊 FULL DATA EXPORT\n\n' +
+        'This will export all your data to CSV files:\n\n' +
+        '✓ Hive Clusters\n' +
+        '✓ All Actions/Logs\n' +
+        '✓ Individual Hives\n' +
+        '✓ Scheduled Tasks\n' +
+        '✓ Employees\n\n' +
+        'Click OK to continue, or Cancel to abort.'
+    );
+    
+    if (!choice) return;
+    
+    // Export all datasets
+    exportClustersCSV();
+    setTimeout(() => exportActionsCSV(), 500);
+    setTimeout(() => exportIndividualHivesCSV(), 1000);
+    setTimeout(() => exportScheduledTasksCSV(), 1500);
+    setTimeout(() => exportEmployeesCSV(), 2000);
+    
+    setTimeout(() => {
+        alert('✅ All data exported successfully!\n\nCheck your Downloads folder for the CSV files.\n\nFiles exported:\n- clusters.csv\n- actions.csv\n- individual_hives.csv\n- scheduled_tasks.csv\n- employees.csv');
+    }, 2500);
+}
+
+// Export Clusters
+function exportClustersCSV() {
+    const csvData = [
+        ['ID', 'Name', 'Description', 'Latitude', 'Longitude', 'Hive Count', 'Harvest Timeline', 'Sugar Requirements', 'Status', 'Notes', 'Created', 'Last Modified']
+    ];
+    
+    clusters.forEach(cluster => {
+        csvData.push([
+            cluster.id,
+            cluster.name,
+            cluster.description || '',
+            cluster.latitude,
+            cluster.longitude,
+            cluster.hiveCount,
+            cluster.harvestTimeline || '',
+            cluster.sugarRequirements || '',
+            cluster.status || 'Active',
+            cluster.notes || '',
+            cluster.createdAt || '',
+            cluster.lastModified || ''
+        ]);
+    });
+    
+    downloadCSV(csvData, 'clusters.csv');
+}
+
+// Export Actions
+function exportActionsCSV() {
+    const csvData = [
+        ['ID', 'Date', 'Cluster Name', 'Cluster ID', 'Task', 'Category', 'Employee', 'Notes', 'Flag Level', 'Flag Reason', 'Created']
+    ];
+    
+    actions.forEach(action => {
+        const cluster = clusters.find(c => c.id === action.clusterId);
+        csvData.push([
+            action.id,
+            action.date,
+            cluster ? cluster.name : 'Unknown',
+            action.clusterId,
+            action.task,
+            action.category || '',
+            action.employee || currentUser.username,
+            action.notes || '',
+            action.flagLevel || '',
+            action.flagReason || '',
+            action.createdAt || ''
+        ]);
+    });
+    
+    downloadCSV(csvData, 'actions.csv');
+}
+
+// Export Individual Hives
+function exportIndividualHivesCSV() {
+    const csvData = [
+        ['ID', 'Cluster Name', 'Cluster ID', 'Hive Number', 'Status', 'Notes', 'Last Inspection', 'Created']
+    ];
+    
+    individualHives.forEach(hive => {
+        const cluster = clusters.find(c => c.id === hive.clusterId);
+        csvData.push([
+            hive.id,
+            cluster ? cluster.name : 'Unknown',
+            hive.clusterId,
+            hive.hiveNumber,
+            hive.status || 'Active',
+            hive.notes || '',
+            hive.lastInspection || '',
+            hive.createdAt || ''
+        ]);
+    });
+    
+    downloadCSV(csvData, 'individual_hives.csv');
+}
+
+// Export Scheduled Tasks
+function exportScheduledTasksCSV() {
+    const csvData = [
+        ['ID', 'Cluster Name', 'Cluster ID', 'Task', 'Category', 'Scheduled Date', 'Due Date', 'Priority', 'Status', 'Notes', 'Created By', 'Created']
+    ];
+    
+    scheduledTasks.forEach(task => {
+        const cluster = clusters.find(c => c.id === task.clusterId);
+        csvData.push([
+            task.id,
+            cluster ? cluster.name : 'Unknown',
+            task.clusterId,
+            task.task,
+            task.category || '',
+            task.scheduledDate || '',
+            task.dueDate || '',
+            task.priority || 'Medium',
+            task.status || 'Pending',
+            task.notes || '',
+            task.createdBy || '',
+            task.createdAt || ''
+        ]);
+    });
+    
+    downloadCSV(csvData, 'scheduled_tasks.csv');
+}
+
+// Export Employees
+function exportEmployeesCSV() {
+    const csvData = [
+        ['ID', 'Username', 'Role', 'Created', 'Status']
+    ];
+    
+    // Add admin
+    csvData.push([
+        'admin',
+        MASTER_USERNAME,
+        'Admin',
+        'System',
+        'Active'
+    ]);
+    
+    // Add employees
+    employees.forEach(emp => {
+        csvData.push([
+            emp.id,
+            emp.username,
+            emp.role || 'Employee',
+            emp.createdAt || '',
+            'Active'
+        ]);
+    });
+    
+    downloadCSV(csvData, 'employees.csv');
+}
+
+// Helper function to convert array to CSV and download
+function downloadCSV(data, filename) {
+    // Convert array to CSV string
+    const csvContent = data.map(row => {
+        return row.map(cell => {
+            // Escape quotes and wrap in quotes if contains comma, quote, or newline
+            const cellStr = String(cell || '');
+            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                return `"${cellStr.replace(/"/g, '""')}"`;
+            }
+            return cellStr;
+        }).join(',');
+    }).join('\n');
+    
+    // Add BOM for Excel compatibility with UTF-8
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download link
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    console.log(`✅ Exported: ${filename}`);
+}
+
