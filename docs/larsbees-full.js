@@ -1774,6 +1774,19 @@ function deleteRequirement(id) {
 // CALENDAR EXPORT (ICS FORMAT)
 // ============================================
 
+// Copy calendar feed link for scheduled tasks
+function copyCalendarFeedLink() {
+    const feedURL = 'https://agent5479.github.io/LarsBees/scheduled-tasks-feed.html';
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(feedURL).then(() => {
+        alert(`📋 Calendar Feed Link Copied!\n\n${feedURL}\n\n✅ Share this link with your team!\n\nStaff can:\n• Bookmark it to download latest tasks anytime\n• Open it to get an updated .ics file\n• Import to Google Calendar, Outlook, etc.\n\nThe link always shows current scheduled tasks from the database.`);
+    }).catch(err => {
+        // Fallback for older browsers
+        prompt('Copy this URL and share with your team:', feedURL);
+    });
+}
+
 function exportRequirementToCalendar(requirementId) {
     const req = seasonalRequirements.find(r => r.id === requirementId);
     if (!req) return;
