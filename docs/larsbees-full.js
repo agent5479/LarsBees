@@ -164,9 +164,22 @@ function initializeMasterAccount() {
         createdAt: new Date().toISOString()
     };
     
-    database.ref('master/initialized').set(true);
-    database.ref('master/admin').set(masterUser);
-    console.log('Master account initialized');
+    database.ref('master/initialized').set(true).then(() => {
+        return database.ref('master/admin').set(masterUser);
+    }).then(() => {
+        console.log('✅ Master account initialized successfully');
+        console.log('Username:', MASTER_USERNAME);
+        console.log('Password hash:', simpleHash(MASTER_PASSWORD));
+    }).catch(error => {
+        console.error('❌ Failed to initialize master account:', error);
+    });
+}
+
+// Emergency reset function - call from browser console if needed
+window.resetMasterAccount = function() {
+    console.log('🔄 Resetting master account...');
+    initializeMasterAccount();
+    alert('Master account reset! Try logging in again with:\nUsername: Lars\nPassword: LarsHoney2025!');
 }
 
 // Authentication - Master User System
@@ -264,16 +277,24 @@ function setupMasterUser(username, password) {
 }
 
 function validateLogin(username, password) {
-    console.log('Validating login for:', username);
+    console.log('🔐 Validating login for:', username);
     const passwordHash = simpleHash(password);
+    console.log('🔑 Password hash:', passwordHash);
     
     // Check if admin
     database.ref('master/admin').once('value', (snapshot) => {
         const admin = snapshot.val();
-        console.log('Admin check:', admin);
+        console.log('👤 Admin data from Firebase:', admin);
+        
+        if (admin) {
+            console.log('   - Username match:', admin.username.toLowerCase() === username.toLowerCase());
+            console.log('   - Password hash match:', admin.passwordHash === passwordHash);
+            console.log('   - Expected hash:', admin.passwordHash);
+            console.log('   - Provided hash:', passwordHash);
+        }
         
         if (admin && admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash) {
-            console.log('Admin login successful');
+            console.log('✅ Admin login successful');
             currentUser = admin;
             isAdmin = true;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
