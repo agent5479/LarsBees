@@ -543,24 +543,15 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
-    <!-- Google Maps API (Uses built-in API, no key needed for basic use) -->
+    <!-- Google Maps API - No key needed for development -->
     <script>
-        // Load Google Maps dynamically
-        function loadGoogleMaps() {
-            const script = document.createElement('script');
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=&callback=mapsLoaded';
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
+        // Global callback for maps
+        window.mapsLoaded = function() {
+            console.log('Google Maps loaded successfully');
+            // Maps will initialize when needed
         }
-        
-        function mapsLoaded() {
-            console.log('Google Maps loaded');
-            if (typeof initMap === 'function') initMap();
-        }
-        
-        loadGoogleMaps();
     </script>
+    <script src="https://maps.googleapis.com/maps/api/js?callback=mapsLoaded" async defer></script>
     
     <!-- Firebase Configuration -->
     <script>

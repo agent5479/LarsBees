@@ -142,11 +142,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
     document.getElementById('actionDate').valueAsDate = new Date();
     
-    // Setup GPS button
-    setTimeout(() => {
-        const btn = document.getElementById('useLocationBtn');
-        if (btn) btn.addEventListener('click', getCurrentLocation);
-    }, 500);
+    // Note: GPS button listener added when form is shown
 });
 
 // Check if this is first time setup
@@ -403,6 +399,12 @@ function getCurrentLocation() {
 // Map Picker
 function showMapPicker() {
     const container = document.getElementById('mapPickerContainer');
+    
+    if (typeof google === 'undefined' || !google.maps) {
+        alert('Google Maps is still loading. Please wait a moment and try again.');
+        return;
+    }
+    
     container.classList.toggle('hidden');
     
     if (!container.classList.contains('hidden')) {
@@ -411,7 +413,7 @@ function showMapPicker() {
             const lng = parseFloat(document.getElementById('clusterLng').value) || -74.0060;
             
             mapPicker = new google.maps.Map(document.getElementById('mapPicker'), {
-                zoom: 12,
+                zoom: 13,
                 center: { lat, lng },
                 mapTypeId: 'hybrid'
             });
@@ -423,17 +425,19 @@ function showMapPicker() {
                 animation: google.maps.Animation.DROP
             });
             
+            // Click map to move marker
             mapPicker.addListener('click', (e) => {
                 pickerMarker.setPosition(e.latLng);
                 document.getElementById('clusterLat').value = e.latLng.lat().toFixed(6);
                 document.getElementById('clusterLng').value = e.latLng.lng().toFixed(6);
             });
             
+            // Drag marker
             pickerMarker.addListener('dragend', (e) => {
                 document.getElementById('clusterLat').value = e.latLng.lat().toFixed(6);
                 document.getElementById('clusterLng').value = e.latLng.lng().toFixed(6);
             });
-        }, 100);
+        }, 200);
     }
 }
 
@@ -471,6 +475,14 @@ function showAddClusterForm() {
     document.getElementById('clusterId').value = '';
     document.getElementById('anomalySection')?.classList.add('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
+    
+    // Setup GPS button
+    setTimeout(() => {
+        const btn = document.getElementById('useLocationBtn');
+        if (btn) {
+            btn.onclick = getCurrentLocation;
+        }
+    }, 100);
 }
 
 function showLogActionForm() {
@@ -577,57 +589,91 @@ function updateScheduledTasksPreview() {
 
 // Google Maps with proper initialization
 function initMap() {
-    if (!document.getElementById('map') || typeof google === 'undefined') return;
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+    
+    // Check if Google Maps is loaded
+    if (typeof google === 'undefined' || !google.maps) {
+        console.log('Google Maps not yet loaded, will retry...');
+        setTimeout(initMap, 500);
+        return;
+    }
     
     const center = clusters.length > 0 
         ? { lat: clusters[0].latitude, lng: clusters[0].longitude }
         : { lat: 40.7128, lng: -74.0060 };
     
+    // Create map if it doesn't exist
     if (!map) {
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 10,
-            center,
-            mapTypeId: 'terrain'
-        });
+        try {
+            map = new google.maps.Map(mapElement, {
+                zoom: 10,
+                center: center,
+                mapTypeId: 'terrain',
+                streetViewControl: false,
+                fullscreenControl: true
+            });
+        } catch (error) {
+            console.error('Error creating map:', error);
+            return;
+        }
     }
     
+    // Clear existing markers
     markers.forEach(m => m.setMap(null));
     markers = [];
     
+    // Add marker for each cluster
     clusters.forEach(cluster => {
-        const marker = new google.maps.Marker({
-            position: { lat: cluster.latitude, lng: cluster.longitude },
-            map,
-            title: cluster.name,
-            icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 12,
-                fillColor: '#FFC107',
-                fillOpacity: 0.9,
-                strokeColor: '#FF9800',
-                strokeWeight: 3
-            }
-        });
-        
-        const info = new google.maps.InfoWindow({
-            content: `
-                <div style="padding:10px; min-width:200px;">
-                    <h6><strong>${cluster.name}</strong></h6>
-                    <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
-                    <p class="mb-0"><strong>Hives:</strong> ${cluster.hiveCount}</p>
-                    ${cluster.harvestTimeline ? `<p class="mb-0"><strong>Harvest:</strong> ${cluster.harvestTimeline}</p>` : ''}
-                </div>
-            `
-        });
-        
-        marker.addListener('click', () => info.open(map, marker));
-        markers.push(marker);
+        try {
+            const marker = new google.maps.Marker({
+                position: { lat: cluster.latitude, lng: cluster.longitude },
+                map: map,
+                title: cluster.name,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 12,
+                    fillColor: '#FFC107',
+                    fillOpacity: 0.9,
+                    strokeColor: '#FF9800',
+                    strokeWeight: 3
+                },
+                animation: google.maps.Animation.DROP
+            });
+            
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="padding:10px; min-width:200px;">
+                        <h6><strong>${cluster.name}</strong></h6>
+                        <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
+                        <p class="mb-0"><strong>Hives:</strong> ${cluster.hiveCount}</p>
+                        ${cluster.harvestTimeline ? `<p class="mb-0"><strong>Harvest:</strong> ${cluster.harvestTimeline}</p>` : ''}
+                        ${cluster.sugarRequirements ? `<p class="mb-0"><strong>Sugar:</strong> ${cluster.sugarRequirements}</p>` : ''}
+                    </div>
+                `
+            });
+            
+            marker.addListener('click', () => {
+                infoWindow.open(map, marker);
+            });
+            
+            markers.push(marker);
+        } catch (error) {
+            console.error('Error adding marker for cluster:', cluster.name, error);
+        }
     });
     
+    // Fit bounds to show all markers
     if (clusters.length > 1) {
-        const bounds = new google.maps.LatLngBounds();
-        clusters.forEach(c => bounds.extend(new google.maps.LatLng(c.latitude, c.longitude)));
-        map.fitBounds(bounds);
+        try {
+            const bounds = new google.maps.LatLngBounds();
+            clusters.forEach(c => {
+                bounds.extend(new google.maps.LatLng(c.latitude, c.longitude));
+            });
+            map.fitBounds(bounds);
+        } catch (error) {
+            console.error('Error fitting bounds:', error);
+        }
     }
 }
 
@@ -715,6 +761,14 @@ function editCluster(id) {
     document.getElementById('clusterNotes').value = cluster.notes || '';
     document.getElementById('anomalySection')?.classList.remove('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
+    
+    // Setup GPS button
+    setTimeout(() => {
+        const btn = document.getElementById('useLocationBtn');
+        if (btn) {
+            btn.onclick = getCurrentLocation;
+        }
+    }, 100);
 }
 
 function deleteCluster(id) {
