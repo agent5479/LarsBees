@@ -23,10 +23,9 @@
 </head>
 <body>
     <!-- Sync Status Indicator -->
-    <div id="syncIndicator" class="sync-indicator hidden">
+    <div id="syncIndicator" class="sync-indicator hidden" onclick="manualSync()" style="cursor: pointer;" title="Click to sync now">
         <i class="bi bi-cloud-check"></i> <span id="syncText">Synced</span>
     </div>
-
     <!-- Login Screen -->
     <div id="loginScreen" class="login-container">
         <div class="login-card">

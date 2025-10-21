@@ -122,6 +122,11 @@ let map = null;
 let markers = [];
 let mapPicker = null;
 
+// Offline support
+let isOnline = navigator.onLine;
+let syncQueue = []; // Queue of pending changes to sync
+let syncInProgress = false;
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     const savedUser = localStorage.getItem('currentUser');
@@ -156,6 +161,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    
+    // Offline/Online detection
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    // Load pending sync queue from localStorage
+    loadSyncQueue();
+    
+    // Update sync status on load
+    updateSyncStatus();
     
     // Note: GPS button listener added when form is shown
 });
@@ -1652,5 +1667,222 @@ function downloadCSV(data, filename) {
     document.body.removeChild(link);
     
     console.log(`✅ Exported: ${filename}`);
+}
+
+// ============================================
+// OFFLINE SUPPORT & SYNC QUEUE
+// ============================================
+
+// Load sync queue from localStorage
+function loadSyncQueue() {
+    const saved = localStorage.getItem('syncQueue');
+    if (saved) {
+        try {
+            syncQueue = JSON.parse(saved);
+            console.log(`📦 Loaded ${syncQueue.length} pending change(s) from local storage`);
+        } catch (e) {
+            console.error('Error loading sync queue:', e);
+            syncQueue = [];
+        }
+    }
+}
+
+// Save sync queue to localStorage
+function saveSyncQueue() {
+    localStorage.setItem('syncQueue', JSON.stringify(syncQueue));
+}
+
+// Add change to sync queue
+function queueChange(operation, path, data) {
+    const change = {
+        id: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+        operation: operation, // 'set', 'update', 'remove'
+        path: path,
+        data: data,
+        timestamp: new Date().toISOString(),
+        user: currentUser?.username || 'Unknown'
+    };
+    
+    syncQueue.push(change);
+    saveSyncQueue();
+    updateSyncStatus();
+    
+    console.log(`📝 Queued ${operation} to ${path} (${syncQueue.length} pending)`);
+    
+    // Try to sync immediately if online
+    if (isOnline) {
+        processSyncQueue();
+    }
+}
+
+// Process the sync queue
+async function processSyncQueue() {
+    if (syncInProgress || syncQueue.length === 0 || !isOnline) {
+        return;
+    }
+    
+    syncInProgress = true;
+    updateSyncStatus('syncing');
+    
+    console.log(`🔄 Processing ${syncQueue.length} queued change(s)...`);
+    
+    const errors = [];
+    
+    // Process queue items one by one
+    while (syncQueue.length > 0 && isOnline) {
+        const change = syncQueue[0];
+        
+        try {
+            await syncChangeToFirebase(change);
+            // Success - remove from queue
+            syncQueue.shift();
+            saveSyncQueue();
+            console.log(`✅ Synced: ${change.operation} ${change.path}`);
+        } catch (error) {
+            console.error(`❌ Failed to sync: ${change.operation} ${change.path}`, error);
+            errors.push({ change, error });
+            // Don't remove from queue - will retry later
+            break; // Stop processing on first error
+        }
+    }
+    
+    syncInProgress = false;
+    
+    if (syncQueue.length === 0) {
+        console.log('✅ All changes synced successfully!');
+        updateSyncStatus('synced');
+        setTimeout(() => updateSyncStatus(), 3000); // Clear status after 3s
+    } else {
+        updateSyncStatus('pending');
+    }
+}
+
+// Sync a single change to Firebase
+function syncChangeToFirebase(change) {
+    return new Promise((resolve, reject) => {
+        const ref = database.ref(change.path);
+        
+        switch (change.operation) {
+            case 'set':
+                ref.set(change.data)
+                    .then(resolve)
+                    .catch(reject);
+                break;
+            case 'update':
+                ref.update(change.data)
+                    .then(resolve)
+                    .catch(reject);
+                break;
+            case 'remove':
+                ref.remove()
+                    .then(resolve)
+                    .catch(reject);
+                break;
+            default:
+                reject(new Error('Unknown operation: ' + change.operation));
+        }
+    });
+}
+
+// Handle online event
+function handleOnline() {
+    console.log('🌐 Connection restored!');
+    isOnline = true;
+    updateSyncStatus();
+    
+    // Process any pending changes
+    if (syncQueue.length > 0) {
+        setTimeout(() => {
+            processSyncQueue();
+        }, 1000); // Wait 1 second to ensure stable connection
+    }
+}
+
+// Handle offline event
+function handleOffline() {
+    console.log('📡 Connection lost - working offline');
+    isOnline = false;
+    updateSyncStatus('offline');
+}
+
+// Update sync status indicator
+function updateSyncStatus(status) {
+    const indicator = document.getElementById('syncIndicator');
+    const text = document.getElementById('syncText');
+    
+    if (!indicator || !text) return;
+    
+    // Auto-detect status if not provided
+    if (!status) {
+        if (!isOnline) {
+            status = 'offline';
+        } else if (syncQueue.length > 0) {
+            status = 'pending';
+        } else {
+            status = 'hidden';
+        }
+    }
+    
+    switch (status) {
+        case 'syncing':
+            indicator.className = 'sync-indicator syncing';
+            text.innerHTML = `<i class="bi bi-arrow-repeat spin"></i> Syncing ${syncQueue.length} change(s)...`;
+            indicator.classList.remove('hidden');
+            break;
+        case 'synced':
+            indicator.className = 'sync-indicator';
+            text.innerHTML = '<i class="bi bi-check-circle"></i> All changes synced!';
+            indicator.classList.remove('hidden');
+            break;
+        case 'pending':
+            indicator.className = 'sync-indicator syncing';
+            text.innerHTML = `<i class="bi bi-exclamation-circle"></i> ${syncQueue.length} change(s) pending`;
+            indicator.classList.remove('hidden');
+            break;
+        case 'offline':
+            indicator.className = 'sync-indicator error';
+            text.innerHTML = `<i class="bi bi-wifi-off"></i> Offline - ${syncQueue.length} change(s) queued`;
+            indicator.classList.remove('hidden');
+            break;
+        case 'hidden':
+        default:
+            indicator.classList.add('hidden');
+            break;
+    }
+}
+
+// Manual sync trigger
+function manualSync() {
+    if (!isOnline) {
+        alert('⚠️ No internet connection.\n\nYour changes are saved locally and will sync automatically when connection is restored.');
+        return;
+    }
+    
+    if (syncQueue.length === 0) {
+        alert('✅ All changes are already synced!');
+        return;
+    }
+    
+    processSyncQueue();
+}
+
+// Wrapper for Firebase write operations with offline support
+function firebaseWrite(operation, path, data) {
+    if (isOnline && syncQueue.length === 0) {
+        // Online and no pending changes - write directly
+        const ref = database.ref(path);
+        switch (operation) {
+            case 'set':
+                return ref.set(data);
+            case 'update':
+                return ref.update(data);
+            case 'remove':
+                return ref.remove();
+        }
+    } else {
+        // Offline or has pending changes - queue it
+        queueChange(operation, path, data);
+        return Promise.resolve(); // Return resolved promise
+    }
 }
 
