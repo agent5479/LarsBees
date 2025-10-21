@@ -552,15 +552,18 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     
-    <!-- Google Maps API - No key needed for development -->
+    <!-- Leaflet.js for OpenStreetMap - No API key needed! -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Global callback for maps
         window.mapsLoaded = function() {
-            console.log('Google Maps loaded successfully');
+            console.log('OpenStreetMap loaded successfully');
             // Maps will initialize when needed
         }
+        // Trigger immediately since Leaflet loads synchronously
+        window.mapsLoaded();
     </script>
-    <script src="https://maps.googleapis.com/maps/api/js?callback=mapsLoaded" async defer></script>
     
     <!-- Firebase Configuration -->
     <script>

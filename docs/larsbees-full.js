@@ -472,12 +472,12 @@ function getCurrentLocation() {
     );
 }
 
-// Map Picker
+// Map Picker with OpenStreetMap
 function showMapPicker() {
     const container = document.getElementById('mapPickerContainer');
     
-    if (typeof google === 'undefined' || !google.maps) {
-        alert('Google Maps is still loading. Please wait a moment and try again.');
+    if (typeof L === 'undefined') {
+        alert('OpenStreetMap is still loading. Please wait a moment and try again.');
         return;
     }
     
@@ -488,30 +488,34 @@ function showMapPicker() {
             const lat = parseFloat(document.getElementById('clusterLat').value) || 40.7128;
             const lng = parseFloat(document.getElementById('clusterLng').value) || -74.0060;
             
-            mapPicker = new google.maps.Map(document.getElementById('mapPicker'), {
-                zoom: 13,
-                center: { lat, lng },
-                mapTypeId: 'hybrid'
-            });
+            // Clear existing map if any
+            if (mapPicker) {
+                mapPicker.remove();
+            }
             
-            let pickerMarker = new google.maps.Marker({
-                position: { lat, lng },
-                map: mapPicker,
-                draggable: true,
-                animation: google.maps.Animation.DROP
-            });
+            mapPicker = L.map('mapPicker').setView([lat, lng], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(mapPicker);
+            
+            let pickerMarker = L.marker([lat, lng], { draggable: true })
+                .addTo(mapPicker);
             
             // Click map to move marker
-            mapPicker.addListener('click', (e) => {
-                pickerMarker.setPosition(e.latLng);
-                document.getElementById('clusterLat').value = e.latLng.lat().toFixed(6);
-                document.getElementById('clusterLng').value = e.latLng.lng().toFixed(6);
+            mapPicker.on('click', (e) => {
+                pickerMarker.setLatLng(e.latlng);
+                document.getElementById('clusterLat').value = e.latlng.lat.toFixed(6);
+                document.getElementById('clusterLng').value = e.latlng.lng.toFixed(6);
             });
             
             // Drag marker
-            pickerMarker.addListener('dragend', (e) => {
-                document.getElementById('clusterLat').value = e.latLng.lat().toFixed(6);
-                document.getElementById('clusterLng').value = e.latLng.lng().toFixed(6);
+            pickerMarker.on('dragend', (e) => {
+                const latlng = e.target.getLatLng();
+                document.getElementById('clusterLat').value = latlng.lat.toFixed(6);
+                document.getElementById('clusterLng').value = latlng.lng.toFixed(6);
             });
         }, 200);
     }
@@ -612,7 +616,7 @@ function updateDashboard() {
         document.getElementById('flaggedAlert').classList.add('hidden');
     }
     
-    if (typeof google !== 'undefined' && google.maps) {
+    if (typeof L !== 'undefined') {
         initMap();
     }
     
@@ -663,32 +667,34 @@ function updateScheduledTasksPreview() {
     document.getElementById('scheduledTasksPreview').innerHTML = html;
 }
 
-// Google Maps with proper initialization
+// OpenStreetMap with Leaflet.js - No API key needed!
 function initMap() {
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
     
-    // Check if Google Maps is loaded
-    if (typeof google === 'undefined' || !google.maps) {
-        console.log('Google Maps not yet loaded, will retry...');
+    // Check if Leaflet is loaded
+    if (typeof L === 'undefined') {
+        console.log('Leaflet not yet loaded, will retry...');
         setTimeout(initMap, 500);
         return;
     }
     
     const center = clusters.length > 0 
-        ? { lat: clusters[0].latitude, lng: clusters[0].longitude }
-        : { lat: 40.7128, lng: -74.0060 };
+        ? [clusters[0].latitude, clusters[0].longitude]
+        : [40.7128, -74.0060];
     
     // Create map if it doesn't exist
     if (!map) {
         try {
-            map = new google.maps.Map(mapElement, {
-                zoom: 10,
-                center: center,
-                mapTypeId: 'terrain',
-                streetViewControl: false,
-                fullscreenControl: true
-            });
+            map = L.map('map').setView(center, 10);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            console.log('OpenStreetMap initialized successfully');
         } catch (error) {
             console.error('Error creating map:', error);
             return;
@@ -696,29 +702,20 @@ function initMap() {
     }
     
     // Clear existing markers
-    markers.forEach(m => m.setMap(null));
+    if (map._layers) {
+        Object.values(map._layers).forEach(layer => {
+            if (layer instanceof L.Marker) {
+                map.removeLayer(layer);
+            }
+        });
+    }
     markers = [];
     
     // Add marker for each cluster
     clusters.forEach(cluster => {
         try {
-            const marker = new google.maps.Marker({
-                position: { lat: cluster.latitude, lng: cluster.longitude },
-                map: map,
-                title: cluster.name,
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 12,
-                    fillColor: '#FFC107',
-                    fillOpacity: 0.9,
-                    strokeColor: '#FF9800',
-                    strokeWeight: 3
-                },
-                animation: google.maps.Animation.DROP
-            });
-            
-            const infoWindow = new google.maps.InfoWindow({
-                content: `
+            const marker = L.marker([cluster.latitude, cluster.longitude])
+                .bindPopup(`
                     <div style="padding:10px; min-width:200px;">
                         <h6><strong>${cluster.name}</strong></h6>
                         <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
@@ -726,12 +723,8 @@ function initMap() {
                         ${cluster.harvestTimeline ? `<p class="mb-0"><strong>Harvest:</strong> ${cluster.harvestTimeline}</p>` : ''}
                         ${cluster.sugarRequirements ? `<p class="mb-0"><strong>Sugar:</strong> ${cluster.sugarRequirements}</p>` : ''}
                     </div>
-                `
-            });
-            
-            marker.addListener('click', () => {
-                infoWindow.open(map, marker);
-            });
+                `)
+                .addTo(map);
             
             markers.push(marker);
         } catch (error) {
@@ -740,13 +733,10 @@ function initMap() {
     });
     
     // Fit bounds to show all markers
-    if (clusters.length > 1) {
+    if (clusters.length > 1 && markers.length > 0) {
         try {
-            const bounds = new google.maps.LatLngBounds();
-            clusters.forEach(c => {
-                bounds.extend(new google.maps.LatLng(c.latitude, c.longitude));
-            });
-            map.fitBounds(bounds);
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
         } catch (error) {
             console.error('Error fitting bounds:', error);
         }
