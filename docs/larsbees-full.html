@@ -114,6 +114,11 @@
                                 <i class="bi bi-people"></i> Team
                             </a>
                         </li>
+                        <li class="nav-item admin-only">
+                            <a class="nav-link text-dark" href="#" onclick="showManageTasks()">
+                                <i class="bi bi-card-checklist"></i> Manage Tasks
+                            </a>
+                        </li>
                     </ul>
                     <ul class="navbar-nav">
                         <li class="nav-item admin-only">
@@ -504,6 +509,65 @@
                 </div>
                 <div class="card-body">
                     <div id="employeesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Management (Admin Only) -->
+        <div id="manageTasksView" class="container mt-4 hidden">
+            <h1 class="mb-4"><i class="bi bi-card-checklist"></i> Task Management</h1>
+            <p class="text-muted">Customize your task list. Add new tasks, rename existing ones, or remove tasks you don't need.</p>
+            
+            <!-- Add New Task -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Task</h5>
+                </div>
+                <div class="card-body">
+                    <form id="addTaskForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Category</label>
+                                <select id="newTaskCategory" class="form-select" required>
+                                    <option value="">Select or type new...</option>
+                                    <option value="Inspection">Inspection</option>
+                                    <option value="Feeding">Feeding</option>
+                                    <option value="Treatment">Treatment</option>
+                                    <option value="Harvest">Harvest</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Seasonal">Seasonal</option>
+                                    <option value="Queen Management">Queen Management</option>
+                                    <option value="Problems">Problems</option>
+                                    <option value="Records">Records</option>
+                                </select>
+                                <input type="text" id="newTaskCategoryCustom" class="form-control mt-2" placeholder="Or enter new category name">
+                            </div>
+                            <div class="col-md-5 mb-3">
+                                <label class="form-label">Task Name</label>
+                                <input type="text" id="newTaskName" class="form-control" placeholder="e.g., Rodent Management Check" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Commonly Used?</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="newTaskCommon">
+                                    <label class="form-check-label" for="newTaskCommon">Show in quick list</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Add Task
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Current Tasks by Category -->
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="bi bi-list-task"></i> Current Tasks</h5>
+                </div>
+                <div class="card-body">
+                    <div id="tasksList"></div>
                 </div>
             </div>
         </div>

@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('actionForm').addEventListener('submit', handleLogAction);
     document.getElementById('addEmployeeForm')?.addEventListener('submit', handleAddEmployee);
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
+    document.getElementById('addTaskForm')?.addEventListener('submit', handleAddTask);
     document.getElementById('actionDate').valueAsDate = new Date();
     
     // Enhanced sticky navbar on scroll
@@ -463,14 +464,19 @@ function loadDataFromFirebase() {
         loadEmployees();
     }
     
-    // Initialize tasks
-    database.ref('tasks').once('value', (snapshot) => {
+    // Initialize and listen for tasks
+    database.ref('tasks').on('value', (snapshot) => {
         if (!snapshot.exists()) {
+            // First time: populate with default tasks
             COMPREHENSIVE_TASKS.forEach(task => {
                 database.ref(`tasks/${task.id}`).set(task);
             });
         } else {
             tasks = Object.values(snapshot.val());
+            // Refresh task management view if it's open
+            if (!document.getElementById('manageTasksView')?.classList.contains('hidden')) {
+                renderTasksList();
+            }
         }
     });
 }
@@ -556,7 +562,7 @@ function showMapPicker() {
 
 // Navigation
 function hideAllViews() {
-    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'flaggedView', 'employeesView'].forEach(id => {
+    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'flaggedView', 'employeesView', 'manageTasksView'].forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
 }
@@ -1229,6 +1235,157 @@ function renderEmployees() {
 function removeEmployee(id) {
     if (confirm('Remove this employee? They will no longer be able to login.')) {
         database.ref(`employees/${id}`).remove();
+    }
+}
+
+// ============================================
+// TASK MANAGEMENT (ADMIN ONLY)
+// ============================================
+
+function showManageTasks() {
+    if (!isAdmin) {
+        alert('Only administrators can manage tasks.');
+        return;
+    }
+    hideAllViews();
+    document.getElementById('manageTasksView').classList.remove('hidden');
+    renderTasksList();
+}
+
+function renderTasksList() {
+    // Group tasks by category
+    const tasksByCategory = {};
+    tasks.forEach(task => {
+        if (!tasksByCategory[task.category]) {
+            tasksByCategory[task.category] = [];
+        }
+        tasksByCategory[task.category].push(task);
+    });
+    
+    // Sort categories alphabetically
+    const sortedCategories = Object.keys(tasksByCategory).sort();
+    
+    const html = sortedCategories.map(category => `
+        <div class="category-section mb-4">
+            <div class="d-flex justify-content-between align-items-center category-header">
+                <h5 class="mb-0"><i class="bi bi-folder2-open"></i> ${category}</h5>
+                <span class="badge bg-dark">${tasksByCategory[category].length} tasks</span>
+            </div>
+            <div class="table-responsive mt-2">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 60%">Task Name</th>
+                            <th style="width: 20%">Common</th>
+                            <th style="width: 20%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tasksByCategory[category].map(task => `
+                            <tr>
+                                <td>${task.name}</td>
+                                <td>
+                                    ${task.common 
+                                        ? '<span class="badge bg-success">Quick List</span>' 
+                                        : '<span class="badge bg-secondary">Full List</span>'}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `).join('');
+    
+    document.getElementById('tasksList').innerHTML = html || '<p class="text-muted">No tasks found. Add your first task above!</p>';
+}
+
+// Add new task
+function handleAddTask(e) {
+    e.preventDefault();
+    
+    const categorySelect = document.getElementById('newTaskCategory').value;
+    const categoryCustom = document.getElementById('newTaskCategoryCustom').value.trim();
+    const category = categoryCustom || categorySelect;
+    const name = document.getElementById('newTaskName').value.trim();
+    const common = document.getElementById('newTaskCommon').checked;
+    
+    if (!category) {
+        alert('Please select or enter a category.');
+        return;
+    }
+    
+    if (!name) {
+        alert('Please enter a task name.');
+        return;
+    }
+    
+    // Generate new ID (max existing ID + 1)
+    const maxId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) : 0;
+    const newId = maxId + 1;
+    
+    const newTask = {
+        id: newId,
+        name: name,
+        category: category,
+        common: common
+    };
+    
+    // Save to Firebase
+    database.ref(`tasks/${newId}`).set(newTask).then(() => {
+        alert(`✅ Task "${name}" added successfully!`);
+        document.getElementById('addTaskForm').reset();
+        // Tasks will be reloaded automatically from Firebase listener
+    }).catch(error => {
+        console.error('Error adding task:', error);
+        alert('❌ Error adding task. Please try again.');
+    });
+}
+
+function editTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const newName = prompt(`Edit task name:\n\nCurrent: ${task.name}\n\nEnter new name:`, task.name);
+    if (newName && newName.trim() && newName.trim() !== task.name) {
+        task.name = newName.trim();
+        database.ref(`tasks/${taskId}`).update({ name: task.name }).then(() => {
+            alert('✅ Task updated successfully!');
+            // Tasks will be reloaded automatically from Firebase listener
+        }).catch(error => {
+            console.error('Error updating task:', error);
+            alert('❌ Error updating task. Please try again.');
+        });
+    }
+}
+
+function deleteTask(taskId) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const confirmDelete = confirm(
+        `⚠️ DELETE TASK\n\n` +
+        `Task: ${task.name}\n` +
+        `Category: ${task.category}\n\n` +
+        `This cannot be undone. Are you sure?`
+    );
+    
+    if (confirmDelete) {
+        database.ref(`tasks/${taskId}`).remove().then(() => {
+            alert('✅ Task deleted successfully!');
+            // Tasks will be reloaded automatically from Firebase listener
+        }).catch(error => {
+            console.error('Error deleting task:', error);
+            alert('❌ Error deleting task. Please try again.');
+        });
     }
 }
 
