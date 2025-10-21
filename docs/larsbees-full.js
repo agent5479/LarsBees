@@ -227,6 +227,27 @@ function toggleEmployeePasswordVisibility() {
     }
 }
 
+function setupMasterUser(username, password) {
+    const masterUser = {
+        username: username,
+        passwordHash: simpleHash(password),
+        role: 'admin',
+        createdAt: new Date().toISOString()
+    };
+    
+    database.ref('master/initialized').set(true);
+    database.ref('master/admin').set(masterUser);
+    
+    currentUser = masterUser;
+    isAdmin = true;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    localStorage.setItem('isAdmin', 'true');
+    
+    alert(`✅ Master account created for ${username}!\n\nYou can now add employees from the Team menu.`);
+    showMainApp();
+    loadDataFromFirebase();
+}
+
 function validateLogin(username, password) {
     const passwordHash = simpleHash(password);
     
