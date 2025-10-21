@@ -1610,6 +1610,9 @@ function renderSeasonalRequirements() {
                             ${req.notes ? `<p class="mb-0 mt-2"><small><strong>Notes:</strong> ${req.notes}</small></p>` : ''}
                         </div>
                         <div>
+                            <button class="btn btn-sm btn-outline-primary me-2" onclick="exportRequirementToCalendar(${req.id})" title="Add to Calendar">
+                                <i class="bi bi-calendar-plus"></i> Calendar
+                            </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="deleteRequirement(${req.id})">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
@@ -1765,6 +1768,180 @@ function deleteRequirement(id) {
     firebaseWrite('remove', `seasonalRequirements/${id}`).then(() => {
         alert('✅ Requirement deleted successfully!');
     });
+}
+
+// ============================================
+// CALENDAR EXPORT (ICS FORMAT)
+// ============================================
+
+function exportRequirementToCalendar(requirementId) {
+    const req = seasonalRequirements.find(r => r.id === requirementId);
+    if (!req) return;
+    
+    const icsContent = generateICS([req]);
+    downloadICS(icsContent, `${sanitizeFilename(req.name)}.ics`);
+    
+    alert(`📅 Calendar file downloaded!\n\nOpen the .ics file to add "${req.name}" to your calendar app.`);
+}
+
+function exportAllRequirementsToCalendar() {
+    if (seasonalRequirements.length === 0) {
+        alert('No requirements to export.');
+        return;
+    }
+    
+    const icsContent = generateICS(seasonalRequirements);
+    downloadICS(icsContent, 'larsbees-seasonal-requirements.ics');
+    
+    alert(`📅 Calendar file downloaded!\n\nOpen the .ics file to add all ${seasonalRequirements.length} requirement(s) to your calendar app.\n\nWorks with:\n• Google Calendar\n• Outlook\n• Apple Calendar\n• Any calendar app`);
+}
+
+function generateICS(requirements) {
+    let icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//LarsBees//Seasonal Requirements//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:LarsBees Seasonal Requirements',
+        'X-WR-TIMEZONE:Pacific/Auckland',
+        'X-WR-CALDESC:Seasonal requirements and deadlines for apiary management'
+    ];
+    
+    requirements.forEach(req => {
+        const event = generateICSEvent(req);
+        icsContent = icsContent.concat(event);
+    });
+    
+    icsContent.push('END:VCALENDAR');
+    
+    return icsContent.join('\r\n');
+}
+
+function generateICSEvent(req) {
+    // Parse due date
+    const dueDate = new Date(req.dueDate);
+    const dueDateString = formatICSDate(dueDate);
+    
+    // Create unique ID
+    const uid = `req-${req.id}@larsbees.app`;
+    
+    // Get cluster information
+    let clusterInfo = '';
+    if (req.applyToAll) {
+        clusterInfo = 'All Clusters';
+    } else {
+        const clusterNames = req.clusterIds.map(id => {
+            const cluster = clusters.find(c => c.id === id);
+            return cluster ? cluster.name : 'Unknown';
+        }).join(', ');
+        clusterInfo = clusterNames;
+    }
+    
+    // Build description
+    let description = `Requirement: ${req.name}\\n`;
+    description += `Category: ${req.category}\\n`;
+    description += `Priority: ${req.priority}\\n`;
+    description += `Frequency: ${req.frequency}\\n`;
+    description += `Applies to: ${clusterInfo}\\n`;
+    if (req.notes) {
+        description += `\\nNotes: ${req.notes}`;
+    }
+    description += `\\n\\nCreated in LarsBees Apiary Management`;
+    
+    // Create event
+    const event = [
+        'BEGIN:VEVENT',
+        `UID:${uid}`,
+        `DTSTAMP:${formatICSTimestamp(new Date())}`,
+        `DTSTART;VALUE=DATE:${dueDateString}`,
+        `SUMMARY:${escapeICS(req.name + ' - ' + req.priority.toUpperCase())}`,
+        `DESCRIPTION:${escapeICS(description)}`,
+        `LOCATION:${escapeICS(clusterInfo)}`,
+        `CATEGORIES:${req.category},Beekeeping,${req.priority}`,
+        `STATUS:CONFIRMED`,
+        `TRANSP:TRANSPARENT`,
+        `PRIORITY:${req.priority === 'urgent' ? '1' : req.priority === 'high' ? '3' : '5'}`
+    ];
+    
+    // Add alarm/reminder based on alert days
+    if (req.alertDays && req.alertDays > 0) {
+        event.push('BEGIN:VALARM');
+        event.push('ACTION:DISPLAY');
+        event.push(`DESCRIPTION:Reminder: ${req.name} due in ${req.alertDays} days`);
+        event.push(`TRIGGER:-P${req.alertDays}D`); // Days before
+        event.push('END:VALARM');
+    }
+    
+    // Add recurrence rule if not one-time
+    if (req.frequency !== 'once') {
+        let rrule = 'RRULE:';
+        switch (req.frequency) {
+            case 'annual':
+                rrule += 'FREQ=YEARLY';
+                break;
+            case 'biannual':
+                rrule += 'FREQ=YEARLY;INTERVAL=6;BYMONTH=' + (dueDate.getMonth() + 1);
+                break;
+            case 'quarterly':
+                rrule += 'FREQ=YEARLY;INTERVAL=3;BYMONTH=' + (dueDate.getMonth() + 1);
+                break;
+            case 'monthly':
+                rrule += 'FREQ=MONTHLY';
+                break;
+        }
+        event.push(rrule);
+    }
+    
+    event.push('END:VEVENT');
+    
+    return event;
+}
+
+function formatICSDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+}
+
+function formatICSTimestamp(date) {
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const hour = String(date.getUTCHours()).padStart(2, '0');
+    const minute = String(date.getUTCMinutes()).padStart(2, '0');
+    const second = String(date.getUTCSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hour}${minute}${second}Z`;
+}
+
+function escapeICS(text) {
+    if (!text) return '';
+    return text
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\n/g, '\\n');
+}
+
+function sanitizeFilename(name) {
+    return name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+}
+
+function downloadICS(content, filename) {
+    const blob = new Blob([content], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
 }
 
 // ============================================
