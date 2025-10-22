@@ -11,37 +11,26 @@
 </div>
 
 <!-- Export Statistics -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body text-center">
-                <h3 class="card-title">{{ stats.clusters }}</h3>
-                <p class="card-text">Clusters</p>
-            </div>
-        </div>
+<div class="export-widget">
+    <div class="WIDGET-HEADER">
+        <i class="bi bi-bar-chart"></i> Export Statistics
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body text-center">
-                <h3 class="card-title">{{ stats.actions }}</h3>
-                <p class="card-text">Actions</p>
-            </div>
+    <div class="export-stats-grid">
+        <div class="export-stat-item">
+            <h3 class="text-primary">{{ stats.clusters }}</h3>
+            <p class="mb-0">Clusters</p>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-dark">
-            <div class="card-body text-center">
-                <h3 class="card-title">{{ stats.disease_reports }}</h3>
-                <p class="card-text">Disease Reports</p>
-            </div>
+        <div class="export-stat-item">
+            <h3 class="text-success">{{ stats.actions }}</h3>
+            <p class="mb-0">Actions</p>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body text-center">
-                <h3 class="card-title">{{ stats.individual_hives }}</h3>
-                <p class="card-text">Individual Hives</p>
-            </div>
+        <div class="export-stat-item">
+            <h3 class="text-warning">{{ stats.disease_reports }}</h3>
+            <p class="mb-0">Disease Reports</p>
+        </div>
+        <div class="export-stat-item">
+            <h3 class="text-info">{{ stats.individual_hives }}</h3>
+            <p class="mb-0">Individual Hives</p>
         </div>
     </div>
 </div>
