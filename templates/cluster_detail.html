@@ -40,6 +40,16 @@
                             <li class="mb-2"><strong>Number of Hives:</strong> {{ cluster.hive_count }}</li>
                             <li class="mb-2"><strong>Latitude:</strong> {{ cluster.latitude }}</li>
                             <li class="mb-2"><strong>Longitude:</strong> {{ cluster.longitude }}</li>
+                            <li class="mb-2"><strong>Site Type:</strong> 
+                                <span class="badge bg-{{ 'success' if cluster.site_type == 'summer' else 'info' }}">
+                                    {{ cluster.site_type.title() }}
+                                </span>
+                            </li>
+                            <li class="mb-2"><strong>Access:</strong> 
+                                <span class="badge bg-{{ 'primary' if cluster.access_type == 'all_weather' else 'warning' }}">
+                                    {{ cluster.access_type.replace('_', ' ').title() }}
+                                </span>
+                            </li>
                         </ul>
                     </div>
                     <div class="col-md-6">
@@ -51,9 +61,36 @@
                             <li class="mb-2"><strong>Sugar Requirements:</strong> {{ cluster.sugar_requirements }}</li>
                             {% endif %}
                             <li class="mb-2"><strong>Created:</strong> {{ cluster.created_at.strftime('%Y-%m-%d') }}</li>
+                            {% if cluster.contact_before_visit %}
+                            <li class="mb-2"><strong>Contact Required:</strong> 
+                                <span class="badge bg-warning">Yes</span>
+                            </li>
+                            {% endif %}
+                            {% if cluster.is_quarantine %}
+                            <li class="mb-2"><strong>Status:</strong> 
+                                <span class="badge bg-danger">QUARANTINE</span>
+                            </li>
+                            {% endif %}
                         </ul>
                     </div>
                 </div>
+                
+                <!-- Landowner Information -->
+                {% if cluster.landowner_name %}
+                <div class="alert alert-info mt-3">
+                    <h6><i class="bi bi-person"></i> Landowner Information:</h6>
+                    <p class="mb-1"><strong>Name:</strong> {{ cluster.landowner_name }}</p>
+                    {% if cluster.landowner_phone %}
+                    <p class="mb-1"><strong>Phone:</strong> {{ cluster.landowner_phone }}</p>
+                    {% endif %}
+                    {% if cluster.landowner_email %}
+                    <p class="mb-1"><strong>Email:</strong> {{ cluster.landowner_email }}</p>
+                    {% endif %}
+                    {% if cluster.landowner_address %}
+                    <p class="mb-0"><strong>Address:</strong> {{ cluster.landowner_address }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
                 
                 {% if cluster.notes %}
                 <div class="alert alert-info mt-3">
@@ -76,10 +113,53 @@
     </div>
     
     <div class="col-lg-4">
-        <!-- Individual Hives -->
+        <!-- Hive Setup Overview -->
         <div class="card mb-3">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-hexagon"></i> Individual Hives</h5>
+                <h5 class="mb-0"><i class="bi bi-hexagon"></i> Hive Setup Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="hive-setup-grid">
+                    <div class="hive-setup-item">
+                        <h6>Single Brood</h6>
+                        <div class="h3 text-primary">{{ cluster.single_brood_boxes or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Double Brood</h6>
+                        <div class="h3 text-primary">{{ cluster.double_brood_boxes or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Nucs</h6>
+                        <div class="h3 text-info">{{ cluster.nucs or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Dead Hives</h6>
+                        <div class="h3 text-danger">{{ cluster.dead_hives or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Top Splits</h6>
+                        <div class="h3 text-secondary">{{ cluster.top_splits or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Strong</h6>
+                        <div class="h3 text-success">{{ cluster.strong_hives or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Medium</h6>
+                        <div class="h3 text-warning">{{ cluster.medium_hives or 0 }}</div>
+                    </div>
+                    <div class="hive-setup-item">
+                        <h6>Weak</h6>
+                        <div class="h3 text-danger">{{ cluster.weak_hives or 0 }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Individual Hives -->
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-list"></i> Individual Hives</h5>
             </div>
             <div class="card-body">
                 {% if individual_hives %}
@@ -102,20 +182,54 @@
                 <p class="text-muted">No individual hives tracked yet.</p>
                 {% endif %}
                 
-                <a href="{{ url_for('add_individual_hive', cluster_id=cluster.id) }}" class="btn btn-success btn-sm mt-3 w-100">
+                <a href="{{ url_for('add_individual_hive', cluster_id=cluster.id) }}" class="btn btn-info btn-sm mt-3 w-100">
                     <i class="bi bi-plus-circle"></i> Add Individual Hive
                 </a>
             </div>
         </div>
         
+        <!-- Disease Reports -->
+        {% if disease_reports %}
+        <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Recent Disease Reports</h5>
+            </div>
+            <div class="card-body">
+                {% for report in disease_reports %}
+                <div class="alert alert-warning">
+                    <h6>{{ report.report_date.strftime('%Y-%m-%d') }}</h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <small>AFB: {{ report.afb_count }} | Varroa: {{ report.varroa_count }}</small><br>
+                            <small>Chalk: {{ report.chalkbrood_count }} | Sac: {{ report.sacbrood_count }}</small>
+                        </div>
+                        <div class="col-6">
+                            <small>DWV: {{ report.dwv_count }}</small>
+                        </div>
+                    </div>
+                    {% if report.notes %}
+                    <small class="text-muted">{{ report.notes[:50] }}{% if report.notes|length > 50 %}...{% endif %}</small>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
         <!-- Quick Actions -->
         <div class="card">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Log</h5>
+                <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Actions</h5>
             </div>
             <div class="card-body">
                 <a href="{{ url_for('log_action') }}?cluster={{ cluster.id }}" class="btn btn-primary w-100 mb-2">
                     <i class="bi bi-plus-circle"></i> Log Action
+                </a>
+                <a href="{{ url_for('field_report') }}?cluster={{ cluster.id }}" class="btn btn-success w-100 mb-2">
+                    <i class="bi bi-check-square"></i> Field Report
+                </a>
+                <a href="{{ url_for('disease_report') }}?cluster={{ cluster.id }}" class="btn btn-warning w-100">
+                    <i class="bi bi-exclamation-triangle"></i> Disease Report
                 </a>
             </div>
         </div>

@@ -51,6 +51,30 @@ class HiveCluster(db.Model):
     sugar_requirements = db.Column(db.String(100))
     notes = db.Column(db.Text)
     
+    # New landowner information
+    landowner_name = db.Column(db.String(100))
+    landowner_phone = db.Column(db.String(20))
+    landowner_email = db.Column(db.String(120))
+    landowner_address = db.Column(db.Text)
+    
+    # Site classification
+    site_type = db.Column(db.String(20), default='summer')  # summer, winter
+    access_type = db.Column(db.String(20), default='all_weather')  # all_weather, dry_only
+    contact_before_visit = db.Column(db.Boolean, default=False)
+    is_quarantine = db.Column(db.Boolean, default=False)
+    
+    # Hive setup details
+    single_brood_boxes = db.Column(db.Integer, default=0)
+    double_brood_boxes = db.Column(db.Integer, default=0)
+    nucs = db.Column(db.Integer, default=0)
+    dead_hives = db.Column(db.Integer, default=0)
+    top_splits = db.Column(db.Integer, default=0)
+    
+    # Hive strength ratings
+    strong_hives = db.Column(db.Integer, default=0)
+    medium_hives = db.Column(db.Integer, default=0)
+    weak_hives = db.Column(db.Integer, default=0)
+    
     # Relationships
     individual_hives = db.relationship('IndividualHive', backref='cluster', lazy='dynamic', cascade='all, delete-orphan')
     actions = db.relationship('HiveAction', backref='cluster', lazy='dynamic', cascade='all, delete-orphan')
@@ -119,6 +143,34 @@ class HiveAction(db.Model):
     
     def __repr__(self):
         return f'<HiveAction {self.task_name} - {self.action_date}>'
+
+
+class DiseaseReport(db.Model):
+    """Disease reporting for clusters"""
+    __tablename__ = 'disease_reports'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Disease counts
+    afb_count = db.Column(db.Integer, default=0)  # American Foulbrood
+    varroa_count = db.Column(db.Integer, default=0)  # Varroa mites
+    chalkbrood_count = db.Column(db.Integer, default=0)  # Chalkbrood
+    sacbrood_count = db.Column(db.Integer, default=0)  # Sacbrood
+    dwv_count = db.Column(db.Integer, default=0)  # Deformed Wing Virus
+    
+    # Report details
+    report_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    notes = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    cluster = db.relationship('HiveCluster', backref='disease_reports')
+    user = db.relationship('User', backref='disease_reports')
+    
+    def __repr__(self):
+        return f'<DiseaseReport {self.cluster.name} - {self.report_date}>'
 
 
 def init_default_tasks(db_instance):
