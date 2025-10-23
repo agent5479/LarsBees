@@ -314,7 +314,8 @@ def create_app(config_name='default'):
                 # Hive strength ratings
                 strong_hives=form.strong_hives.data,
                 medium_hives=form.medium_hives.data,
-                weak_hives=form.weak_hives.data
+                weak_hives=form.weak_hives.data,
+                cluster_strength=form.cluster_strength.data
             )
             db.session.add(cluster)
             db.session.commit()
@@ -359,6 +360,7 @@ def create_app(config_name='default'):
             cluster.strong_hives = form.strong_hives.data
             cluster.medium_hives = form.medium_hives.data
             cluster.weak_hives = form.weak_hives.data
+            cluster.cluster_strength = form.cluster_strength.data
             cluster.updated_at = datetime.utcnow()
             db.session.commit()
             flash(f'Hive cluster "{cluster.name}" updated successfully!', 'success')
@@ -406,6 +408,7 @@ def create_app(config_name='default'):
                 cluster_id=cluster_id,
                 hive_number=form.hive_number.data,
                 status=form.status.data,
+                hive_strength=form.hive_strength.data,
                 notes=form.notes.data
             )
             db.session.add(hive)
@@ -426,6 +429,7 @@ def create_app(config_name='default'):
         if form.validate_on_submit():
             hive.hive_number = form.hive_number.data
             hive.status = form.status.data
+            hive.hive_strength = form.hive_strength.data
             hive.notes = form.notes.data
             hive.updated_at = datetime.utcnow()
             db.session.commit()

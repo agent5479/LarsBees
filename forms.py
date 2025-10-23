@@ -86,6 +86,15 @@ class IndividualHiveForm(FlaskForm):
         ('queenless', 'Queenless'),
         ('dead', 'Dead')
     ], default='healthy')
+    
+    # Hive strength categorization
+    hive_strength = SelectField('Hive Strength', choices=[
+        ('strong', 'Strong'),
+        ('medium', 'Medium'),
+        ('weak', 'Weak'),
+        ('nuc', 'NUC')
+    ], default='medium')
+    
     notes = TextAreaField('Notes', validators=[Optional()])
 
 class HiveActionForm(FlaskForm):
