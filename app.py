@@ -6,8 +6,8 @@ from flask import Flask, render_template, redirect, url_for, flash, request, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from config import config
-from models import db, User, HiveCluster, IndividualHive, TaskType, HiveAction, DiseaseReport, init_default_tasks
-from forms import LoginForm, RegistrationForm, HiveClusterForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm
+from models import db, User, HiveCluster, IndividualHive, TaskType, HiveAction, DiseaseReport, ScheduledTask, TaskTemplate, TaskAssignment, init_default_tasks, init_default_task_templates
+from forms import LoginForm, RegistrationForm, HiveClusterForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm, ScheduledTaskForm, TaskTemplateForm, QuickScheduleForm, TaskAssignmentForm
 
 def calculate_time_series_data(clusters, start_date, end_date, group_by):
     """Calculate time series data for analytics dashboard"""
@@ -185,6 +185,9 @@ def create_app(config_name='default'):
     with app.app_context():
         db.create_all()
         init_default_tasks(db)
+        
+        # Initialize default task templates
+        init_default_task_templates(db)
         
         # Debug: Create a test user if none exists
         if app.config['DEBUG'] and User.query.count() == 0:
@@ -1087,6 +1090,247 @@ def create_app(config_name='default'):
             'categorical': calculate_categorical_breakdowns(clusters, start_dt, end_dt),
             'key_metrics': calculate_key_metrics(clusters, start_dt, end_dt)
         })
+    
+    @app.route('/scheduler')
+    @login_required
+    def scheduler():
+        """Main scheduler page"""
+        # Get upcoming tasks
+        upcoming_tasks = ScheduledTask.query.filter_by(user_id=current_user.id)\
+            .filter(ScheduledTask.status.in_(['pending', 'in_progress']))\
+            .order_by(ScheduledTask.scheduled_date).limit(10).all()
+        
+        # Get overdue tasks
+        overdue_tasks = ScheduledTask.query.filter_by(user_id=current_user.id)\
+            .filter(ScheduledTask.status == 'pending')\
+            .filter(ScheduledTask.due_date < datetime.utcnow()).all()
+        
+        # Get task templates
+        task_templates = TaskTemplate.query.filter_by(is_active=True)\
+            .order_by(TaskTemplate.category, TaskTemplate.name).all()
+        
+        # Get clusters for assignment
+        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        
+        return render_template('scheduler.html', 
+                             upcoming_tasks=upcoming_tasks,
+                             overdue_tasks=overdue_tasks,
+                             task_templates=task_templates,
+                             clusters=clusters)
+    
+    @app.route('/scheduler/templates')
+    @login_required
+    def task_templates():
+        """Task templates management"""
+        templates = TaskTemplate.query.filter_by(is_active=True)\
+            .order_by(TaskTemplate.category, TaskTemplate.name).all()
+        
+        return render_template('task_templates.html', templates=templates)
+    
+    @app.route('/scheduler/templates/new', methods=['GET', 'POST'])
+    @login_required
+    def new_task_template():
+        """Create new task template"""
+        form = TaskTemplateForm()
+        
+        if form.validate_on_submit():
+            template = TaskTemplate(
+                name=form.name.data,
+                description=form.description.data,
+                category=form.category.data,
+                estimated_duration=form.estimated_duration.data,
+                priority=form.priority.data,
+                is_seasonal=form.is_seasonal.data,
+                season_months=form.season_months.data,
+                weather_dependent=form.weather_dependent.data,
+                min_temperature=form.min_temperature.data,
+                max_temperature=form.max_temperature.data,
+                avoid_rain=form.avoid_rain.data,
+                best_time_of_day=form.best_time_of_day.data,
+                user_id=current_user.id,
+                is_system_template=False
+            )
+            
+            # Process checklist items
+            if form.checklist_items.data:
+                items = [item.strip() for item in form.checklist_items.data.split('\n') if item.strip()]
+                template.set_checklist_items(items)
+            
+            # Process equipment needed
+            if form.equipment_needed.data:
+                equipment = [item.strip() for item in form.equipment_needed.data.split('\n') if item.strip()]
+                template.set_equipment_needed(equipment)
+            
+            # Process supplies needed
+            if form.supplies_needed.data:
+                supplies = [item.strip() for item in form.supplies_needed.data.split('\n') if item.strip()]
+                template.set_supplies_needed(supplies)
+            
+            db.session.add(template)
+            db.session.commit()
+            
+            flash('Task template created successfully!', 'success')
+            return redirect(url_for('task_templates'))
+        
+        return render_template('task_template_form.html', form=form, title='New Task Template')
+    
+    @app.route('/scheduler/quick-schedule', methods=['GET', 'POST'])
+    @login_required
+    def quick_schedule():
+        """Quick task scheduling interface"""
+        form = QuickScheduleForm()
+        
+        # Populate form choices
+        form.task_template_id.choices = [(t.id, f"{t.category} - {t.name}") 
+                                        for t in TaskTemplate.query.filter_by(is_active=True)
+                                        .order_by(TaskTemplate.category, TaskTemplate.name).all()]
+        
+        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        form.selected_clusters.choices = [(c.id, c.name) for c in clusters]
+        
+        individual_hives = IndividualHive.query.join(HiveCluster)\
+            .filter(HiveCluster.user_id == current_user.id, IndividualHive.is_active == True).all()
+        form.selected_hives.choices = [(h.id, f"{h.cluster.name} - {h.hive_number}") for h in individual_hives]
+        
+        if form.validate_on_submit():
+            template = TaskTemplate.query.get(form.task_template_id.data)
+            
+            # Create scheduled task
+            scheduled_task = ScheduledTask(
+                user_id=current_user.id,
+                task_template_id=form.task_template_id.data,
+                title=template.name,
+                description=template.description,
+                scheduled_date=form.scheduled_date.data if form.scheduled_date.data else datetime.utcnow().date(),
+                due_date=form.recurrence_end_date.data if form.schedule_type.data == 'recurring' else None,
+                estimated_duration=template.estimated_duration,
+                priority=form.priority.data,
+                is_recurring=form.schedule_type.data == 'recurring',
+                recurrence_pattern=form.recurrence_pattern.data if form.is_recurring else None,
+                recurrence_interval=form.recurrence_interval.data if form.is_recurring else 1,
+                recurrence_end_date=form.recurrence_end_date.data if form.is_recurring else None
+            )
+            
+            db.session.add(scheduled_task)
+            db.session.flush()  # Get the ID
+            
+            # Create assignments
+            if form.assign_to_all_clusters.data:
+                for cluster in clusters:
+                    assignment = TaskAssignment(
+                        scheduled_task_id=scheduled_task.id,
+                        target_type='cluster',
+                        target_id=cluster.id,
+                        estimated_duration=template.estimated_duration
+                    )
+                    db.session.add(assignment)
+            else:
+                # Assign to selected clusters
+                for cluster_id in form.selected_clusters.data:
+                    assignment = TaskAssignment(
+                        scheduled_task_id=scheduled_task.id,
+                        target_type='cluster',
+                        target_id=cluster_id,
+                        estimated_duration=template.estimated_duration
+                    )
+                    db.session.add(assignment)
+                
+                # Assign to selected individual hives
+                for hive_id in form.selected_hives.data:
+                    assignment = TaskAssignment(
+                        scheduled_task_id=scheduled_task.id,
+                        target_type='individual_hive',
+                        target_id=hive_id,
+                        estimated_duration=template.estimated_duration
+                    )
+                    db.session.add(assignment)
+            
+            db.session.commit()
+            flash(f'Task "{template.name}" scheduled successfully!', 'success')
+            return redirect(url_for('scheduler'))
+        
+        return render_template('quick_schedule.html', form=form)
+    
+    @app.route('/scheduler/task/<int:task_id>')
+    @login_required
+    def scheduled_task_detail(task_id):
+        """View scheduled task details"""
+        task = ScheduledTask.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+        
+        return render_template('scheduled_task_detail.html', task=task)
+    
+    @app.route('/scheduler/task/<int:task_id>/complete', methods=['POST'])
+    @login_required
+    def complete_scheduled_task(task_id):
+        """Mark scheduled task as completed"""
+        task = ScheduledTask.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+        
+        task.status = 'completed'
+        task.completed_at = datetime.utcnow()
+        
+        # Mark all assignments as completed
+        for assignment in task.assignments:
+            assignment.status = 'completed'
+            assignment.completed_at = datetime.utcnow()
+        
+        db.session.commit()
+        
+        flash(f'Task "{task.title}" marked as completed!', 'success')
+        return redirect(url_for('scheduler'))
+    
+    @app.route('/scheduler/task/<int:task_id>/cancel', methods=['POST'])
+    @login_required
+    def cancel_scheduled_task(task_id):
+        """Cancel scheduled task"""
+        task = ScheduledTask.query.filter_by(id=task_id, user_id=current_user.id).first_or_404()
+        
+        task.status = 'cancelled'
+        
+        db.session.commit()
+        
+        flash(f'Task "{task.title}" cancelled!', 'info')
+        return redirect(url_for('scheduler'))
+    
+    @app.route('/api/scheduler/tasks')
+    @login_required
+    def api_scheduled_tasks():
+        """API endpoint for scheduled tasks"""
+        start_date = request.args.get('start', datetime.utcnow().strftime('%Y-%m-%d'))
+        end_date = request.args.get('end', (datetime.utcnow() + timedelta(days=30)).strftime('%Y-%m-%d'))
+        
+        tasks = ScheduledTask.query.filter_by(user_id=current_user.id)\
+            .filter(ScheduledTask.scheduled_date >= start_date)\
+            .filter(ScheduledTask.scheduled_date <= end_date)\
+            .all()
+        
+        events = []
+        for task in tasks:
+            events.append({
+                'id': task.id,
+                'title': task.title,
+                'start': task.scheduled_date.isoformat(),
+                'end': (task.scheduled_date + timedelta(minutes=task.estimated_duration)).isoformat(),
+                'backgroundColor': get_priority_color(task.priority),
+                'borderColor': get_priority_color(task.priority),
+                'extendedProps': {
+                    'description': task.description,
+                    'priority': task.priority,
+                    'status': task.status,
+                    'template': task.task_template.name if task.task_template else None
+                }
+            })
+        
+        return jsonify(events)
+    
+    def get_priority_color(priority):
+        """Get color for task priority"""
+        colors = {
+            'low': '#28a745',
+            'medium': '#ffc107',
+            'high': '#fd7e14',
+            'urgent': '#dc3545'
+        }
+        return colors.get(priority, '#6c757d')
     
     # Debug routes (only available in debug mode)
     if app.config['DEBUG']:

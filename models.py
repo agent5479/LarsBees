@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import json
 
 db = SQLAlchemy()
 
@@ -171,6 +172,309 @@ class DiseaseReport(db.Model):
     
     def __repr__(self):
         return f'<DiseaseReport {self.cluster.name} - {self.report_date}>'
+
+
+class ScheduledTask(db.Model):
+    """Scheduled tasks for hive management"""
+    __tablename__ = 'scheduled_tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    task_template_id = db.Column(db.Integer, db.ForeignKey('task_templates.id'), nullable=False)
+    
+    # Task details
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Scheduling
+    scheduled_date = db.Column(db.DateTime, nullable=False)
+    due_date = db.Column(db.DateTime, nullable=True)
+    estimated_duration = db.Column(db.Integer, default=60)  # minutes
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending, in_progress, completed, cancelled, overdue
+    priority = db.Column(db.String(10), default='medium')  # low, medium, high, urgent
+    
+    # Assignment
+    assigned_to_cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=True)
+    assigned_to_hive_id = db.Column(db.Integer, db.ForeignKey('individual_hives.id'), nullable=True)
+    
+    # Recurrence
+    is_recurring = db.Column(db.Boolean, default=False)
+    recurrence_pattern = db.Column(db.String(20))  # daily, weekly, monthly, yearly
+    recurrence_interval = db.Column(db.Integer, default=1)
+    recurrence_end_date = db.Column(db.DateTime, nullable=True)
+    
+    # Calendar integration
+    google_calendar_event_id = db.Column(db.String(255), nullable=True)
+    calendar_synced = db.Column(db.Boolean, default=False)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    user = db.relationship('User', backref='scheduled_tasks')
+    task_template = db.relationship('TaskTemplate', backref='scheduled_tasks')
+    assigned_cluster = db.relationship('HiveCluster', backref='scheduled_tasks')
+    assigned_hive = db.relationship('IndividualHive', backref='scheduled_tasks')
+    
+    def __repr__(self):
+        return f'<ScheduledTask {self.title} - {self.scheduled_date}>'
+    
+    def is_overdue(self):
+        """Check if task is overdue"""
+        if self.status in ['completed', 'cancelled']:
+            return False
+        return self.due_date and datetime.utcnow() > self.due_date
+    
+    def get_next_recurrence(self):
+        """Calculate next occurrence for recurring tasks"""
+        if not self.is_recurring:
+            return None
+        
+        current = self.scheduled_date
+        now = datetime.utcnow()
+        
+        while current <= now:
+            if self.recurrence_pattern == 'daily':
+                current += timedelta(days=self.recurrence_interval)
+            elif self.recurrence_pattern == 'weekly':
+                current += timedelta(weeks=self.recurrence_interval)
+            elif self.recurrence_pattern == 'monthly':
+                # Simple monthly calculation
+                month = current.month + self.recurrence_interval
+                year = current.year
+                while month > 12:
+                    month -= 12
+                    year += 1
+                current = current.replace(year=year, month=month)
+            elif self.recurrence_pattern == 'yearly':
+                current = current.replace(year=current.year + self.recurrence_interval)
+        
+        return current
+
+
+class TaskTemplate(db.Model):
+    """Predefined task templates for scheduling"""
+    __tablename__ = 'task_templates'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    category = db.Column(db.String(50), nullable=False)  # Disease Management, Inspection, Feeding, etc.
+    
+    # Template details
+    estimated_duration = db.Column(db.Integer, default=60)  # minutes
+    priority = db.Column(db.String(10), default='medium')
+    is_seasonal = db.Column(db.Boolean, default=False)
+    season_months = db.Column(db.String(50))  # JSON array of months [3,4,5] for spring
+    
+    # Checklist items
+    checklist_items = db.Column(db.Text)  # JSON array of checklist items
+    
+    # Equipment and supplies needed
+    equipment_needed = db.Column(db.Text)  # JSON array of equipment
+    supplies_needed = db.Column(db.Text)   # JSON array of supplies
+    
+    # Weather requirements
+    weather_dependent = db.Column(db.Boolean, default=False)
+    min_temperature = db.Column(db.Integer, nullable=True)
+    max_temperature = db.Column(db.Integer, nullable=True)
+    avoid_rain = db.Column(db.Boolean, default=False)
+    
+    # Timing constraints
+    best_time_of_day = db.Column(db.String(20))  # morning, afternoon, evening, any
+    avoid_times = db.Column(db.String(100))  # JSON array of times to avoid
+    
+    # Relationships and dependencies
+    depends_on_tasks = db.Column(db.Text)  # JSON array of task template IDs
+    follow_up_tasks = db.Column(db.Text)   # JSON array of task template IDs
+    
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    is_system_template = db.Column(db.Boolean, default=False)  # System vs user-created
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    creator = db.relationship('User', backref='task_templates')
+    
+    def __repr__(self):
+        return f'<TaskTemplate {self.name}>'
+    
+    def get_checklist_items(self):
+        """Get checklist items as list"""
+        if self.checklist_items:
+            return json.loads(self.checklist_items)
+        return []
+    
+    def set_checklist_items(self, items):
+        """Set checklist items from list"""
+        self.checklist_items = json.dumps(items)
+    
+    def get_equipment_needed(self):
+        """Get equipment needed as list"""
+        if self.equipment_needed:
+            return json.loads(self.equipment_needed)
+        return []
+    
+    def set_equipment_needed(self, equipment):
+        """Set equipment needed from list"""
+        self.equipment_needed = json.dumps(equipment)
+    
+    def get_supplies_needed(self):
+        """Get supplies needed as list"""
+        if self.supplies_needed:
+            return json.loads(self.supplies_needed)
+        return []
+    
+    def set_supplies_needed(self, supplies):
+        """Set supplies needed from list"""
+        self.supplies_needed = json.dumps(supplies)
+
+
+class TaskAssignment(db.Model):
+    """Assignments of scheduled tasks to specific clusters or hives"""
+    __tablename__ = 'task_assignments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    scheduled_task_id = db.Column(db.Integer, db.ForeignKey('scheduled_tasks.id'), nullable=False)
+    
+    # Assignment target
+    target_type = db.Column(db.String(20), nullable=False)  # cluster, individual_hive
+    target_id = db.Column(db.Integer, nullable=False)  # ID of cluster or individual hive
+    
+    # Assignment details
+    notes = db.Column(db.Text)
+    estimated_duration = db.Column(db.Integer, default=60)  # Override template duration
+    
+    # Status
+    status = db.Column(db.String(20), default='pending')  # pending, in_progress, completed, skipped
+    
+    # Timestamps
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+    
+    # Relationships
+    scheduled_task = db.relationship('ScheduledTask', backref='assignments')
+    
+    def __repr__(self):
+        return f'<TaskAssignment {self.scheduled_task.title} - {self.target_type}:{self.target_id}>'
+
+
+def init_default_task_templates(db_instance):
+    """Initialize default task templates"""
+    default_templates = [
+        {
+            'name': 'Disease Management',
+            'category': 'Disease Management',
+            'description': 'Comprehensive disease monitoring and treatment',
+            'estimated_duration': 90,
+            'priority': 'high',
+            'is_seasonal': True,
+            'season_months': '[3,4,5,9,10,11]',
+            'weather_dependent': True,
+            'min_temperature': 10,
+            'avoid_rain': True,
+            'best_time_of_day': 'morning',
+            'checklist_items': '["Check for AFB symptoms", "Test for Varroa mites", "Inspect for Chalkbrood", "Check for Nosema", "Apply treatments if needed", "Record findings"]',
+            'equipment_needed': '["Hive tool", "Smoker", "Alcohol wash kit", "Microscope", "Treatment supplies"]',
+            'supplies_needed': '["Varroa treatment", "Oxytetracycline", "Formic acid"]'
+        },
+        {
+            'name': 'General Inspection',
+            'category': 'Inspection',
+            'description': 'Regular comprehensive hive inspection',
+            'estimated_duration': 45,
+            'priority': 'medium',
+            'is_seasonal': True,
+            'season_months': '[3,4,5,6,7,8,9]',
+            'weather_dependent': True,
+            'min_temperature': 15,
+            'avoid_rain': True,
+            'best_time_of_day': 'morning',
+            'checklist_items': '["Check queen presence", "Inspect brood pattern", "Check food stores", "Look for pests", "Assess hive strength", "Check for swarm cells"]',
+            'equipment_needed': '["Hive tool", "Smoker", "Bee brush", "Frame grip"]',
+            'supplies_needed': '[]'
+        },
+        {
+            'name': 'Feeding Round',
+            'category': 'Feeding',
+            'description': 'Distribute supplemental feed to colonies',
+            'estimated_duration': 30,
+            'priority': 'medium',
+            'is_seasonal': True,
+            'season_months': '[2,3,9,10,11]',
+            'weather_dependent': False,
+            'best_time_of_day': 'evening',
+            'checklist_items': '["Check existing feed levels", "Prepare sugar syrup", "Add pollen patties", "Check feeding stations", "Record amounts given"]',
+            'equipment_needed': '["Feeding containers", "Measuring cups", "Syrup bucket"]',
+            'supplies_needed': '["Sugar", "Pollen substitute", "Honey"]'
+        },
+        {
+            'name': 'Harvest Honey',
+            'category': 'Harvest',
+            'description': 'Harvest honey from supers',
+            'estimated_duration': 120,
+            'priority': 'medium',
+            'is_seasonal': True,
+            'season_months': '[7,8,9]',
+            'weather_dependent': True,
+            'min_temperature': 20,
+            'avoid_rain': True,
+            'best_time_of_day': 'morning',
+            'checklist_items': '["Check honey moisture content", "Remove supers", "Uncap frames", "Extract honey", "Filter honey", "Store properly"]',
+            'equipment_needed': '["Honey extractor", "Uncapping knife", "Honey filter", "Storage containers"]',
+            'supplies_needed': '["Honey containers", "Labels"]'
+        },
+        {
+            'name': 'Spring Build Up',
+            'category': 'Seasonal',
+            'description': 'Early season colony stimulation',
+            'estimated_duration': 60,
+            'priority': 'high',
+            'is_seasonal': True,
+            'season_months': '[3,4,5]',
+            'weather_dependent': True,
+            'min_temperature': 12,
+            'avoid_rain': True,
+            'best_time_of_day': 'morning',
+            'checklist_items': '["Check overwintering success", "Equalize colonies", "Add space", "Stimulate with feed", "Check for queen issues"]',
+            'equipment_needed': '["Hive tool", "Smoker", "Extra boxes"]',
+            'supplies_needed': '["Sugar syrup", "Pollen patties"]'
+        },
+        {
+            'name': 'Treatment Round',
+            'category': 'Treatment',
+            'description': 'Apply pest control treatments',
+            'estimated_duration': 75,
+            'priority': 'high',
+            'is_seasonal': True,
+            'season_months': '[9,10,11,3,4]',
+            'weather_dependent': True,
+            'min_temperature': 10,
+            'avoid_rain': True,
+            'best_time_of_day': 'morning',
+            'checklist_items': '["Test varroa levels", "Apply formic acid", "Check treatment effectiveness", "Record treatment dates", "Monitor for resistance"]',
+            'equipment_needed': '["Treatment supplies", "Measuring tools", "Protective gear"]',
+            'supplies_needed': '["Formic acid", "Oxalic acid", "Thymol"]'
+        }
+    ]
+    
+    for template_data in default_templates:
+        existing = TaskTemplate.query.filter_by(name=template_data['name']).first()
+        if not existing:
+            template = TaskTemplate(**template_data)
+            template.is_system_template = True
+            db_instance.session.add(template)
+    
+    db_instance.session.commit()
 
 
 def init_default_tasks(db_instance):

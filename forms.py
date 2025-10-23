@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SelectField, BooleanField, DateTimeField
+from wtforms import StringField, PasswordField, TextAreaField, FloatField, IntegerField, SelectField, BooleanField, DateTimeField, DateField, TimeField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional, NumberRange
 from models import User
 
@@ -127,4 +127,140 @@ class FieldReportForm(FlaskForm):
     
     # Notes
     notes = TextAreaField('Notes', validators=[Optional()])
+
+
+class ScheduledTaskForm(FlaskForm):
+    """Form for creating/editing scheduled tasks"""
+    task_template_id = SelectField('Task Template', coerce=int, validators=[DataRequired()])
+    title = StringField('Task Title', validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField('Description', validators=[Optional()])
+    
+    # Scheduling
+    scheduled_date = DateField('Scheduled Date', validators=[DataRequired()])
+    scheduled_time = TimeField('Scheduled Time', validators=[Optional()])
+    due_date = DateField('Due Date', validators=[Optional()])
+    estimated_duration = IntegerField('Estimated Duration (minutes)', validators=[Optional(), NumberRange(min=1, max=1440)], default=60)
+    
+    # Status and priority
+    priority = SelectField('Priority', choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent')
+    ], default='medium')
+    
+    # Assignment
+    assigned_to_cluster_id = SelectField('Assign to Cluster (Optional)', coerce=int, validators=[Optional()])
+    assigned_to_hive_id = SelectField('Assign to Individual Hive (Optional)', coerce=int, validators=[Optional()])
+    
+    # Recurrence
+    is_recurring = BooleanField('Make this a recurring task')
+    recurrence_pattern = SelectField('Recurrence Pattern', choices=[
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly')
+    ], validators=[Optional()])
+    recurrence_interval = IntegerField('Recurrence Interval', validators=[Optional(), NumberRange(min=1, max=12)], default=1)
+    recurrence_end_date = DateField('Recurrence End Date', validators=[Optional()])
+
+
+class TaskTemplateForm(FlaskForm):
+    """Form for creating/editing task templates"""
+    name = StringField('Template Name', validators=[DataRequired(), Length(max=100)])
+    description = TextAreaField('Description', validators=[Optional()])
+    category = SelectField('Category', choices=[
+        ('Disease Management', 'Disease Management'),
+        ('Inspection', 'Inspection'),
+        ('Feeding', 'Feeding'),
+        ('Harvest', 'Harvest'),
+        ('Treatment', 'Treatment'),
+        ('Seasonal', 'Seasonal'),
+        ('Maintenance', 'Maintenance'),
+        ('Transport', 'Transport'),
+        ('Queen Management', 'Queen Management'),
+        ('Other', 'Other')
+    ], validators=[DataRequired()])
+    
+    # Template details
+    estimated_duration = IntegerField('Estimated Duration (minutes)', validators=[Optional(), NumberRange(min=1, max=1440)], default=60)
+    priority = SelectField('Default Priority', choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent')
+    ], default='medium')
+    
+    # Seasonal settings
+    is_seasonal = BooleanField('This is a seasonal task')
+    season_months = StringField('Season Months (comma-separated, 1-12)', validators=[Optional()])
+    
+    # Weather requirements
+    weather_dependent = BooleanField('Task is weather dependent')
+    min_temperature = IntegerField('Minimum Temperature (°C)', validators=[Optional(), NumberRange(min=-50, max=50)])
+    max_temperature = IntegerField('Maximum Temperature (°C)', validators=[Optional(), NumberRange(min=-50, max=50)])
+    avoid_rain = BooleanField('Avoid rainy weather')
+    
+    # Timing constraints
+    best_time_of_day = SelectField('Best Time of Day', choices=[
+        ('any', 'Any Time'),
+        ('morning', 'Morning'),
+        ('afternoon', 'Afternoon'),
+        ('evening', 'Evening')
+    ], default='any')
+    
+    # Checklist items
+    checklist_items = TextAreaField('Checklist Items (one per line)', validators=[Optional()])
+    equipment_needed = TextAreaField('Equipment Needed (one per line)', validators=[Optional()])
+    supplies_needed = TextAreaField('Supplies Needed (one per line)', validators=[Optional()])
+
+
+class QuickScheduleForm(FlaskForm):
+    """Form for quick task scheduling"""
+    task_template_id = SelectField('Task Type', coerce=int, validators=[DataRequired()])
+    
+    # Assignment options
+    assign_to_all_clusters = BooleanField('Assign to all clusters')
+    selected_clusters = SelectField('Select Clusters', choices=[], validators=[Optional()], multiple=True)
+    selected_hives = SelectField('Select Individual Hives', choices=[], validators=[Optional()], multiple=True)
+    
+    # Scheduling options
+    schedule_type = SelectField('Schedule Type', choices=[
+        ('single', 'Single Task'),
+        ('recurring', 'Recurring Task')
+    ], default='single')
+    
+    # Single task scheduling
+    scheduled_date = DateField('Scheduled Date', validators=[Optional()])
+    scheduled_time = TimeField('Scheduled Time', validators=[Optional()])
+    
+    # Recurring task scheduling
+    recurrence_pattern = SelectField('Recurrence Pattern', choices=[
+        ('daily', 'Daily'),
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('yearly', 'Yearly')
+    ], validators=[Optional()])
+    recurrence_interval = IntegerField('Every X periods', validators=[Optional(), NumberRange(min=1, max=12)], default=1)
+    recurrence_end_date = DateField('End Date', validators=[Optional()])
+    
+    # Task settings
+    priority = SelectField('Priority', choices=[
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('urgent', 'Urgent')
+    ], default='medium')
+
+
+class TaskAssignmentForm(FlaskForm):
+    """Form for managing task assignments"""
+    scheduled_task_id = SelectField('Scheduled Task', coerce=int, validators=[DataRequired()])
+    target_type = SelectField('Target Type', choices=[
+        ('cluster', 'Cluster'),
+        ('individual_hive', 'Individual Hive')
+    ], validators=[DataRequired()])
+    target_id = SelectField('Target', coerce=int, validators=[DataRequired()])
+    notes = TextAreaField('Assignment Notes', validators=[Optional()])
+    estimated_duration = IntegerField('Estimated Duration Override (minutes)', validators=[Optional(), NumberRange(min=1, max=1440)])
 
