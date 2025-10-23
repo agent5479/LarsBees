@@ -10,10 +10,11 @@ function updateDashboard() {
     const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length;
     
-    document.getElementById('statClusters').textContent = clusters.length;
-    document.getElementById('statHives').textContent = totalHives;
-    document.getElementById('statActions').textContent = actions.length;
-    document.getElementById('statFlagged').textContent = flaggedCount;
+    // Animate number changes
+    animateNumber(document.getElementById('statClusters'), clusters.length);
+    animateNumber(document.getElementById('statHives'), totalHives);
+    animateNumber(document.getElementById('statActions'), actions.length);
+    animateNumber(document.getElementById('statFlagged'), flaggedCount);
     
     // Show flagged alert if any
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');
@@ -86,20 +87,24 @@ function updateCalendarWidget() {
     const calendarContainer = document.getElementById('calendarWidget');
     if (!calendarContainer) return;
     
-    // Get upcoming scheduled tasks for the next 7 days
+    // Get all future scheduled tasks
     const today = new Date();
-    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    today.setHours(0, 0, 0, 0); // Start of today
     
-    const upcomingTasks = scheduledTasks.filter(task => {
+    const futureTasks = scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
-        return !task.completed && taskDate >= today && taskDate <= nextWeek;
+        taskDate.setHours(0, 0, 0, 0);
+        return !task.completed && taskDate >= today;
     }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
     
-    if (upcomingTasks.length === 0) {
+    if (futureTasks.length === 0) {
         calendarContainer.innerHTML = `
             <div class="calendar-widget">
-                <h6><i class="bi bi-calendar-week"></i> Upcoming Tasks (Next 7 Days)</h6>
-                <p class="text-muted">No tasks scheduled for the next 7 days.</p>
+                <h6><i class="bi bi-calendar-week"></i> Upcoming Tasks</h6>
+                <p class="text-muted">No tasks scheduled for the future.</p>
+                <button class="btn btn-sm btn-primary mt-2" onclick="showScheduleTaskModal()">
+                    <i class="bi bi-plus"></i> Schedule Task
+                </button>
             </div>
         `;
         return;
@@ -107,7 +112,7 @@ function updateCalendarWidget() {
     
     // Group tasks by date
     const tasksByDate = {};
-    upcomingTasks.forEach(task => {
+    futureTasks.forEach(task => {
         const date = new Date(task.dueDate).toDateString();
         if (!tasksByDate[date]) {
             tasksByDate[date] = [];
@@ -115,18 +120,28 @@ function updateCalendarWidget() {
         tasksByDate[date].push(task);
     });
     
-    const calendarHtml = Object.keys(tasksByDate).map(date => {
+    // Get next 14 days or all future tasks, whichever is smaller
+    const datesToShow = Object.keys(tasksByDate).slice(0, 14);
+    
+    const calendarHtml = datesToShow.map(date => {
         const tasks = tasksByDate[date];
         const dateObj = new Date(date);
         const isToday = dateObj.toDateString() === today.toDateString();
         const isTomorrow = dateObj.toDateString() === new Date(today.getTime() + 24 * 60 * 60 * 1000).toDateString();
+        const isThisWeek = dateObj <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
         
         return `
-            <div class="calendar-date ${isToday ? 'today' : ''} ${isTomorrow ? 'tomorrow' : ''}">
+            <div class="calendar-date ${isToday ? 'today' : ''} ${isTomorrow ? 'tomorrow' : ''} ${isThisWeek ? 'this-week' : ''}">
                 <div class="calendar-date-header">
-                    <strong>${dateObj.toLocaleDateString()}</strong>
-                    ${isToday ? '<span class="badge bg-primary">Today</span>' : ''}
-                    ${isTomorrow ? '<span class="badge bg-info">Tomorrow</span>' : ''}
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong>${dateObj.toLocaleDateString()}</strong>
+                        <div class="date-badges">
+                            ${isToday ? '<span class="badge bg-primary">Today</span>' : ''}
+                            ${isTomorrow ? '<span class="badge bg-info">Tomorrow</span>' : ''}
+                            ${!isToday && !isTomorrow && isThisWeek ? '<span class="badge bg-secondary">This Week</span>' : ''}
+                        </div>
+                    </div>
+                    <small class="text-muted">${tasks.length} task${tasks.length !== 1 ? 's' : ''}</small>
                 </div>
                 <div class="calendar-tasks">
                     ${tasks.map(task => {
@@ -134,19 +149,28 @@ function updateCalendarWidget() {
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
                         const priorityClass = task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'secondary';
+                        const isOverdue = new Date(task.dueDate) < today;
                         
                         return `
-                            <div class="calendar-task">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <strong>${displayTaskName}</strong>
-                                        <span class="badge bg-${priorityClass}">${task.priority || 'normal'}</span>
-                                        <br><small><i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}</small>
-                                        ${task.scheduledTime ? `<br><small><i class="bi bi-clock"></i> ${task.scheduledTime}</small>` : ''}
+                            <div class="calendar-task ${isOverdue ? 'overdue' : ''}" onclick="viewScheduledTask('${task.id}')">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <div class="task-header">
+                                            <strong class="task-name">${displayTaskName}</strong>
+                                            <span class="badge bg-${priorityClass}">${task.priority || 'normal'}</span>
+                                            ${isOverdue ? '<span class="badge bg-danger">Overdue</span>' : ''}
+                                        </div>
+                                        <div class="task-details">
+                                            <small><i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}</small>
+                                            ${task.scheduledTime ? `<br><small><i class="bi bi-clock"></i> ${task.scheduledTime}</small>` : ''}
+                                            ${task.type === 'next-visit' ? '<br><small><i class="bi bi-calendar-plus"></i> Next Visit</small>' : ''}
+                                        </div>
                                     </div>
-                                    <button class="btn btn-sm btn-success" onclick="completeScheduledTask('${task.id}')">
-                                        <i class="bi bi-check"></i>
-                                    </button>
+                                    <div class="task-actions">
+                                        <button class="btn btn-sm btn-success" onclick="event.stopPropagation(); completeScheduledTask('${task.id}')" title="Complete Task">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -156,50 +180,151 @@ function updateCalendarWidget() {
         `;
     }).join('');
     
+    // Add summary information
+    const totalTasks = futureTasks.length;
+    const overdueTasks = futureTasks.filter(task => new Date(task.dueDate) < today).length;
+    const thisWeekTasks = futureTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        return taskDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    }).length;
+    
     calendarContainer.innerHTML = `
         <div class="calendar-widget">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6><i class="bi bi-calendar-week"></i> Upcoming Tasks (Next 7 Days)</h6>
+                <h6><i class="bi bi-calendar-week"></i> Upcoming Tasks</h6>
                 <button class="btn btn-sm btn-outline-primary" onclick="showScheduledTasks()">
                     <i class="bi bi-calendar3"></i> View All
                 </button>
             </div>
+            
+            <div class="calendar-summary mb-3">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="summary-item">
+                            <strong class="text-primary">${totalTasks}</strong>
+                            <br><small>Total</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="summary-item">
+                            <strong class="text-info">${thisWeekTasks}</strong>
+                            <br><small>This Week</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="summary-item">
+                            <strong class="text-danger">${overdueTasks}</strong>
+                            <br><small>Overdue</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <div class="calendar-content">
                 ${calendarHtml}
             </div>
+            
+            ${futureTasks.length > 14 ? `
+                <div class="text-center mt-3">
+                    <small class="text-muted">Showing next 14 days. <a href="#" onclick="showScheduledTasks()">View all ${futureTasks.length} tasks</a></small>
+                </div>
+            ` : ''}
         </div>
     `;
 }
 
-// Make dashboard cards clickable
+function viewScheduledTask(taskId) {
+    // Find the task and show its details
+    const task = scheduledTasks.find(t => t.id === taskId);
+    if (task) {
+        // You can implement a modal or redirect to the scheduled tasks view
+        showScheduledTasks();
+    }
+}
+
+// Enhanced dashboard cards interactivity
 function makeDashboardCardsClickable() {
-    // Total Clusters card
-    const clustersCard = document.getElementById('statClusters').closest('.card');
-    if (clustersCard) {
-        clustersCard.style.cursor = 'pointer';
-        clustersCard.addEventListener('click', () => showClusters());
-    }
+    // Enhanced click handlers with visual feedback
+    const cards = document.querySelectorAll('.dashboard-stat-card');
     
-    // Total Hives card
-    const hivesCard = document.getElementById('statHives').closest('.card');
-    if (hivesCard) {
-        hivesCard.style.cursor = 'pointer';
-        hivesCard.addEventListener('click', () => showClusters());
-    }
+    cards.forEach(card => {
+        // Add click animation
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Add click animation
+            this.style.transform = 'translateY(-8px) scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            // Navigate to appropriate section
+            const target = this.dataset.target;
+            switch(target) {
+                case 'clusters':
+                    setTimeout(() => showClusters(), 200);
+                    break;
+                case 'actions':
+                    setTimeout(() => showActions(), 200);
+                    break;
+                case 'flagged':
+                    setTimeout(() => showFlagged(), 200);
+                    break;
+                default:
+                    setTimeout(() => showClusters(), 200);
+            }
+        });
+        
+        // Add keyboard accessibility
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+        
+        // Make cards focusable
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `Navigate to ${card.dataset.target} section`);
+        
+        // Add tooltip functionality
+        card.addEventListener('mouseenter', function() {
+            const target = this.dataset.target;
+            let tooltipText = '';
+            switch(target) {
+                case 'clusters':
+                    tooltipText = `View and manage all ${clusters.length} hive clusters`;
+                    break;
+                case 'actions':
+                    tooltipText = `View and manage all ${actions.length} logged actions`;
+                    break;
+                case 'flagged':
+                    tooltipText = `View ${flaggedCount} flagged issues requiring attention`;
+                    break;
+                default:
+                    tooltipText = 'Click to navigate to this section';
+            }
+            this.setAttribute('title', tooltipText);
+        });
+    });
+}
+
+// Add number animation effect
+function animateNumber(element, targetValue, duration = 1000) {
+    const startValue = parseInt(element.textContent) || 0;
+    const increment = (targetValue - startValue) / (duration / 16);
+    let currentValue = startValue;
     
-    // Total Actions card
-    const actionsCard = document.getElementById('statActions').closest('.card');
-    if (actionsCard) {
-        actionsCard.style.cursor = 'pointer';
-        actionsCard.addEventListener('click', () => showActions());
-    }
-    
-    // Flagged Issues card
-    const flaggedCard = document.getElementById('statFlagged').closest('.card');
-    if (flaggedCard) {
-        flaggedCard.style.cursor = 'pointer';
-        flaggedCard.addEventListener('click', () => showFlagged());
-    }
+    const timer = setInterval(() => {
+        currentValue += increment;
+        if ((increment > 0 && currentValue >= targetValue) || 
+            (increment < 0 && currentValue <= targetValue)) {
+            currentValue = targetValue;
+            clearInterval(timer);
+        }
+        element.textContent = Math.floor(currentValue);
+    }, 16);
 }
 
 // Make recent actions clickable
