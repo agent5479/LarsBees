@@ -66,6 +66,14 @@ class HiveClusterForm(FlaskForm):
     strong_hives = IntegerField('Strong Hives', validators=[Optional(), NumberRange(min=0)], default=0)
     medium_hives = IntegerField('Medium Hives', validators=[Optional(), NumberRange(min=0)], default=0)
     weak_hives = IntegerField('Weak Hives', validators=[Optional(), NumberRange(min=0)], default=0)
+    
+    # Overall cluster strength categorization
+    cluster_strength = SelectField('Cluster Strength', choices=[
+        ('strong', 'Strong'),
+        ('medium', 'Medium'),
+        ('weak', 'Weak'),
+        ('nuc', 'NUC')
+    ], default='medium')
 
 class IndividualHiveForm(FlaskForm):
     """Form for adding/editing individual hives"""
@@ -263,4 +271,98 @@ class TaskAssignmentForm(FlaskForm):
     target_id = SelectField('Target', coerce=int, validators=[DataRequired()])
     notes = TextAreaField('Assignment Notes', validators=[Optional()])
     estimated_duration = IntegerField('Estimated Duration Override (minutes)', validators=[Optional(), NumberRange(min=1, max=1440)])
+
+
+class UserManagementForm(FlaskForm):
+    """Form for admin user management"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    first_name = StringField('First Name', validators=[Optional(), Length(max=100)])
+    last_name = StringField('Last Name', validators=[Optional(), Length(max=100)])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    address = TextAreaField('Address', validators=[Optional()])
+    
+    # Role and status management
+    role = SelectField('Role', choices=[
+        ('admin', 'Administrator'),
+        ('owner', 'Owner'),
+        ('director', 'Director'),
+        ('staff', 'Staff Member'),
+        ('contractor', 'Contractor'),
+        ('trial', 'Trial User')
+    ], validators=[DataRequired()])
+    
+    status = SelectField('Status', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+        ('trial', 'Trial')
+    ], validators=[DataRequired()])
+    
+    # Admin permissions
+    is_admin = BooleanField('Is Administrator')
+    can_manage_users = BooleanField('Can Manage Users')
+    is_active = BooleanField('Account Active')
+    
+    # Notes
+    notes = TextAreaField('Admin Notes', validators=[Optional()])
+
+
+class UserEditForm(FlaskForm):
+    """Form for users to edit their own profile"""
+    first_name = StringField('First Name', validators=[Optional(), Length(max=100)])
+    last_name = StringField('Last Name', validators=[Optional(), Length(max=100)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    address = TextAreaField('Address', validators=[Optional()])
+    notes = TextAreaField('Notes', validators=[Optional()])
+
+
+class UserCreateForm(FlaskForm):
+    """Form for creating new users"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    
+    first_name = StringField('First Name', validators=[Optional(), Length(max=100)])
+    last_name = StringField('Last Name', validators=[Optional(), Length(max=100)])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    address = TextAreaField('Address', validators=[Optional()])
+    
+    # Role and status management
+    role = SelectField('Role', choices=[
+        ('admin', 'Administrator'),
+        ('owner', 'Owner'),
+        ('director', 'Director'),
+        ('staff', 'Staff Member'),
+        ('contractor', 'Contractor'),
+        ('trial', 'Trial User')
+    ], validators=[DataRequired()], default='staff')
+    
+    status = SelectField('Status', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+        ('trial', 'Trial')
+    ], validators=[DataRequired()], default='active')
+    
+    # Admin permissions
+    is_admin = BooleanField('Is Administrator')
+    can_manage_users = BooleanField('Can Manage Users')
+    
+    # Notes
+    notes = TextAreaField('Admin Notes', validators=[Optional()])
+    
+    def validate_username(self, username):
+        from models import User
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Username already taken. Please choose a different one.')
+    
+    def validate_email(self, email):
+        from models import User
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email already registered. Please use a different one.')
 

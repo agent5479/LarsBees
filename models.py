@@ -17,6 +17,20 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     
+    # User role and status management
+    role = db.Column(db.String(50), default='staff')  # admin, owner, director, staff, contractor, trial
+    status = db.Column(db.String(50), default='active')  # active, inactive, suspended, trial
+    first_name = db.Column(db.String(100))
+    last_name = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    notes = db.Column(db.Text)
+    
+    # Admin fields
+    is_admin = db.Column(db.Boolean, default=False)
+    can_manage_users = db.Column(db.Boolean, default=False)
+    created_by_admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    
     # Relationships
     hive_clusters = db.relationship('HiveCluster', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
     
@@ -30,6 +44,42 @@ class User(UserMixin, db.Model):
     
     def __repr__(self):
         return f'<User {self.username}>'
+    
+    def get_full_name(self):
+        """Get user's full name"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        return self.username
+    
+    def is_owner_or_admin(self):
+        """Check if user is owner or admin"""
+        return self.role in ['admin', 'owner'] or self.is_admin
+    
+    def can_edit_users(self):
+        """Check if user can edit other users"""
+        return self.is_admin or self.can_manage_users or self.role in ['admin', 'owner', 'director']
+    
+    def get_role_display_name(self):
+        """Get display name for role"""
+        role_names = {
+            'admin': 'Administrator',
+            'owner': 'Owner',
+            'director': 'Director',
+            'staff': 'Staff Member',
+            'contractor': 'Contractor',
+            'trial': 'Trial User'
+        }
+        return role_names.get(self.role, self.role.title())
+    
+    def get_status_display_name(self):
+        """Get display name for status"""
+        status_names = {
+            'active': 'Active',
+            'inactive': 'Inactive',
+            'suspended': 'Suspended',
+            'trial': 'Trial'
+        }
+        return status_names.get(self.status, self.status.title())
 
 
 class HiveCluster(db.Model):
@@ -76,12 +126,35 @@ class HiveCluster(db.Model):
     medium_hives = db.Column(db.Integer, default=0)
     weak_hives = db.Column(db.Integer, default=0)
     
+    # Overall cluster strength categorization
+    cluster_strength = db.Column(db.String(20), default='medium')  # strong, medium, weak, nuc
+    
     # Relationships
     individual_hives = db.relationship('IndividualHive', backref='cluster', lazy='dynamic', cascade='all, delete-orphan')
     actions = db.relationship('HiveAction', backref='cluster', lazy='dynamic', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<HiveCluster {self.name}>'
+    
+    def get_strength_display_name(self):
+        """Get display name for cluster strength"""
+        strength_names = {
+            'strong': 'Strong',
+            'medium': 'Medium',
+            'weak': 'Weak',
+            'nuc': 'NUC'
+        }
+        return strength_names.get(self.cluster_strength, 'Medium')
+    
+    def get_strength_color(self):
+        """Get color for cluster strength"""
+        colors = {
+            'strong': 'success',
+            'medium': 'warning',
+            'weak': 'danger',
+            'nuc': 'info'
+        }
+        return colors.get(self.cluster_strength, 'secondary')
 
 
 class IndividualHive(db.Model):
@@ -92,6 +165,10 @@ class IndividualHive(db.Model):
     cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=False)
     hive_number = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(50), default='healthy')  # healthy, infected, quarantine, etc.
+    
+    # Hive strength categorization
+    hive_strength = db.Column(db.String(20), default='medium')  # strong, medium, weak, nuc
+    
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -102,6 +179,26 @@ class IndividualHive(db.Model):
     
     def __repr__(self):
         return f'<IndividualHive {self.hive_number}>'
+    
+    def get_strength_display_name(self):
+        """Get display name for hive strength"""
+        strength_names = {
+            'strong': 'Strong',
+            'medium': 'Medium',
+            'weak': 'Weak',
+            'nuc': 'NUC'
+        }
+        return strength_names.get(self.hive_strength, 'Medium')
+    
+    def get_strength_color(self):
+        """Get color for hive strength"""
+        colors = {
+            'strong': 'success',
+            'medium': 'warning',
+            'weak': 'danger',
+            'nuc': 'info'
+        }
+        return colors.get(self.hive_strength, 'secondary')
 
 
 class TaskType(db.Model):

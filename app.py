@@ -7,7 +7,7 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash
 from config import config
 from models import db, User, HiveCluster, IndividualHive, TaskType, HiveAction, DiseaseReport, ScheduledTask, TaskTemplate, TaskAssignment, init_default_tasks, init_default_task_templates
-from forms import LoginForm, RegistrationForm, HiveClusterForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm, ScheduledTaskForm, TaskTemplateForm, QuickScheduleForm, TaskAssignmentForm
+from forms import LoginForm, RegistrationForm, HiveClusterForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm, ScheduledTaskForm, TaskTemplateForm, QuickScheduleForm, TaskAssignmentForm, UserManagementForm, UserEditForm, UserCreateForm
 
 def calculate_time_series_data(clusters, start_date, end_date, group_by):
     """Calculate time series data for analytics dashboard"""
@@ -1331,6 +1331,133 @@ def create_app(config_name='default'):
             'urgent': '#dc3545'
         }
         return colors.get(priority, '#6c757d')
+    
+    @app.route('/admin/users')
+    @login_required
+    def admin_users():
+        """Admin user management page"""
+        if not current_user.can_edit_users():
+            flash('Access denied. You do not have permission to manage users.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        users = User.query.order_by(User.created_at.desc()).all()
+        return render_template('admin_users.html', users=users)
+    
+    @app.route('/admin/users/new', methods=['GET', 'POST'])
+    @login_required
+    def admin_create_user():
+        """Create new user"""
+        if not current_user.can_edit_users():
+            flash('Access denied. You do not have permission to manage users.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        form = UserCreateForm()
+        
+        if form.validate_on_submit():
+            user = User(
+                username=form.username.data,
+                email=form.email.data,
+                first_name=form.first_name.data,
+                last_name=form.last_name.data,
+                phone=form.phone.data,
+                address=form.address.data,
+                role=form.role.data,
+                status=form.status.data,
+                is_admin=form.is_admin.data,
+                can_manage_users=form.can_manage_users.data,
+                notes=form.notes.data,
+                created_by_admin_id=current_user.id
+            )
+            user.set_password(form.password.data)
+            
+            db.session.add(user)
+            db.session.commit()
+            
+            flash(f'User {user.username} created successfully!', 'success')
+            return redirect(url_for('admin_users'))
+        
+        return render_template('admin_user_form.html', form=form, title='Create New User')
+    
+    @app.route('/admin/users/<int:user_id>/edit', methods=['GET', 'POST'])
+    @login_required
+    def admin_edit_user(user_id):
+        """Edit user"""
+        if not current_user.can_edit_users():
+            flash('Access denied. You do not have permission to manage users.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        user = User.query.get_or_404(user_id)
+        form = UserManagementForm(obj=user)
+        
+        if form.validate_on_submit():
+            user.username = form.username.data
+            user.email = form.email.data
+            user.first_name = form.first_name.data
+            user.last_name = form.last_name.data
+            user.phone = form.phone.data
+            user.address = form.address.data
+            user.role = form.role.data
+            user.status = form.status.data
+            user.is_admin = form.is_admin.data
+            user.can_manage_users = form.can_manage_users.data
+            user.is_active = form.is_active.data
+            user.notes = form.notes.data
+            
+            db.session.commit()
+            
+            flash(f'User {user.username} updated successfully!', 'success')
+            return redirect(url_for('admin_users'))
+        
+        return render_template('admin_user_form.html', form=form, title=f'Edit User: {user.username}', user=user)
+    
+    @app.route('/admin/users/<int:user_id>/delete', methods=['POST'])
+    @login_required
+    def admin_delete_user(user_id):
+        """Delete user"""
+        if not current_user.can_edit_users():
+            flash('Access denied. You do not have permission to manage users.', 'error')
+            return redirect(url_for('dashboard'))
+        
+        user = User.query.get_or_404(user_id)
+        
+        # Prevent deleting yourself
+        if user.id == current_user.id:
+            flash('You cannot delete your own account.', 'error')
+            return redirect(url_for('admin_users'))
+        
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+        
+        flash(f'User {username} deleted successfully!', 'success')
+        return redirect(url_for('admin_users'))
+    
+    @app.route('/profile')
+    @login_required
+    def user_profile():
+        """User profile page"""
+        return render_template('user_profile.html', user=current_user)
+    
+    @app.route('/profile/edit', methods=['GET', 'POST'])
+    @login_required
+    def edit_profile():
+        """Edit user's own profile"""
+        form = UserEditForm(obj=current_user)
+        
+        if form.validate_on_submit():
+            current_user.first_name = form.first_name.data
+            current_user.last_name = form.last_name.data
+            current_user.email = form.email.data
+            current_user.phone = form.phone.data
+            current_user.address = form.address.data
+            current_user.notes = form.notes.data
+            
+            db.session.commit()
+            
+            flash('Your profile has been updated successfully!', 'success')
+            return redirect(url_for('user_profile'))
+        
+        return render_template('edit_profile.html', form=form)
     
     # Debug routes (only available in debug mode)
     if app.config['DEBUG']:

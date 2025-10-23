@@ -2,6 +2,23 @@
 
 {% block title %}Dashboard - LarsBees{% endblock %}
 
+{% block extra_css %}
+<style>
+.hover-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.hover-card:hover .card-body {
+    cursor: pointer;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col">
@@ -12,44 +29,65 @@
 
 <!-- Statistics Cards -->
 <div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card bg-warning text-dark">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2">Total Clusters</h6>
-                        <h2 class="card-title mb-0">{{ stats.total_clusters }}</h2>
+    <div class="col-md-3">
+        <a href="{{ url_for('clusters') }}" class="text-decoration-none">
+            <div class="card bg-warning text-dark hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Clusters</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_clusters }}</h2>
+                        </div>
+                        <i class="bi bi-geo-alt-fill" style="font-size: 3rem; opacity: 0.3;"></i>
                     </div>
-                    <i class="bi bi-geo-alt-fill" style="font-size: 3rem; opacity: 0.3;"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2">Total Hives</h6>
-                        <h2 class="card-title mb-0">{{ stats.total_hives }}</h2>
+    <div class="col-md-3">
+        <a href="{{ url_for('clusters') }}" class="text-decoration-none">
+            <div class="card bg-success text-white hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Hives</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_hives }}</h2>
+                        </div>
+                        <i class="bi bi-hexagon-fill" style="font-size: 3rem; opacity: 0.3;"></i>
                     </div>
-                    <i class="bi bi-hexagon-fill" style="font-size: 3rem; opacity: 0.3;"></i>
                 </div>
             </div>
-        </div>
+        </a>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="card-subtitle mb-2">Recent Actions</h6>
-                        <h2 class="card-title mb-0">{{ stats.recent_actions_count }}</h2>
+    <div class="col-md-3">
+        <a href="{{ url_for('actions') }}" class="text-decoration-none">
+            <div class="card bg-info text-white hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Total Actions</h6>
+                            <h2 class="card-title mb-0">{{ stats.recent_actions_count }}</h2>
+                        </div>
+                        <i class="bi bi-list-check" style="font-size: 3rem; opacity: 0.3;"></i>
                     </div>
-                    <i class="bi bi-list-check" style="font-size: 3rem; opacity: 0.3;"></i>
                 </div>
             </div>
-        </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{{ url_for('disease_report') }}" class="text-decoration-none">
+            <div class="card bg-danger text-white hover-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-subtitle mb-2">Flagged Issues</h6>
+                            <h2 class="card-title mb-0">{{ stats.flagged_issues or 0 }}</h2>
+                        </div>
+                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </a>
     </div>
 </div>
 
@@ -141,11 +179,11 @@
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap" async defer></script>
 <script>
 function initMap() {
-    // Default center
-    const center = { lat: 40.7128, lng: -74.0060 };
+    // Default center - Collingwood, New Zealand
+    const center = { lat: -40.6764, lng: 172.6856 };
     
     const map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 10,
+        zoom: 12,
         center: center,
         mapTypeId: 'terrain'
     });
