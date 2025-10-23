@@ -16,6 +16,9 @@ function updateDashboard() {
     animateNumber(document.getElementById('statActions'), actions.length);
     animateNumber(document.getElementById('statFlagged'), flaggedCount);
     
+    // Update quick stats
+    updateQuickStats();
+    
     // Show flagged alert if any
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');
     if (urgentFlagged.length > 0) {
@@ -240,6 +243,40 @@ function viewScheduledTask(taskId) {
         // You can implement a modal or redirect to the scheduled tasks view
         showScheduledTasks();
     }
+}
+
+function updateQuickStats() {
+    const today = new Date();
+    const thisWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Calculate this week's tasks
+    const thisWeekTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        return !task.completed && taskDate >= today && taskDate <= thisWeek;
+    }).length;
+    
+    // Calculate completed tasks
+    const completedTasks = scheduledTasks.filter(task => task.completed).length;
+    
+    // Calculate pending tasks
+    const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
+    
+    // Calculate overdue tasks
+    const overdueTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        return !task.completed && taskDate < today;
+    }).length;
+    
+    // Update quick stats
+    const statThisWeek = document.getElementById('statThisWeek');
+    const statCompleted = document.getElementById('statCompleted');
+    const statPending = document.getElementById('statPending');
+    const statOverdue = document.getElementById('statOverdue');
+    
+    if (statThisWeek) animateNumber(statThisWeek, thisWeekTasks);
+    if (statCompleted) animateNumber(statCompleted, completedTasks);
+    if (statPending) animateNumber(statPending, pendingTasks);
+    if (statOverdue) animateNumber(statOverdue, overdueTasks);
 }
 
 // Enhanced dashboard cards interactivity

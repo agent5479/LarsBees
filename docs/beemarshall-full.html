@@ -447,6 +447,71 @@
             font-size: 0.75rem;
         }
         
+        /* Reports Styling */
+        .report-category-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .report-category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-accent);
+        }
+        
+        .report-icon-large {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .report-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(31, 200, 222, 0.1);
+        }
+        
+        .quick-report-item {
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: var(--border-radius-md);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .quick-report-item:hover {
+            background: rgba(31, 200, 222, 0.05);
+            border-color: rgba(31, 200, 222, 0.2);
+            transform: translateX(5px);
+        }
+        
+        .quick-stat {
+            padding: 0.5rem;
+        }
+        
+        .quick-stat h6 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .report-preview-item {
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .report-preview-item:hover {
+            background: rgba(31, 200, 222, 0.05);
+            border-color: rgba(31, 200, 222, 0.2);
+        }
+        
         /* Timeline */
         .timeline-container {
             background: var(--primary-bg);
@@ -769,6 +834,11 @@
                                 <i class="bi bi-calendar3"></i> Schedule
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showReports()">
+                                <i class="bi bi-graph-up"></i> Reports
+                            </a>
+                        </li>
                         <li class="nav-item admin-only">
                             <a class="nav-link" href="#" onclick="showEmployees()">
                                 <i class="bi bi-people"></i> Team
@@ -803,8 +873,28 @@
         <div class="container-fluid mt-4">
             <!-- Dashboard View -->
             <div id="dashboardView">
-                <div class="row">
-                    <!-- Enhanced Statistics Cards -->
+                <!-- Dashboard Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h1 class="h3 mb-1">Dashboard Overview</h1>
+                                <p class="text-muted mb-0">Monitor your apiary operations and key metrics</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-outline-primary me-2" onclick="showReports()">
+                                    <i class="bi bi-graph-up"></i> View Reports
+                                </button>
+                                <button class="btn btn-primary" onclick="showScheduleTaskModal()">
+                                    <i class="bi bi-plus"></i> Quick Schedule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Key Metrics Row -->
+                <div class="row mb-4">
                     <div class="col-lg-3 col-md-6 mb-4">
                         <div class="card dashboard-stat-card clusters-card" onclick="showClusters()" data-target="clusters">
                             <div class="card-body text-center position-relative">
@@ -863,12 +953,18 @@
                     </div>
                 </div>
 
+                <!-- Main Content Row -->
                 <div class="row">
-                    <!-- Map -->
+                    <!-- Map Section -->
                     <div class="col-lg-8 mb-4">
                         <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-map"></i> Cluster Locations</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-map"></i> Cluster Locations</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="showClusters()">
+                                        <i class="bi bi-geo-alt"></i> Manage Clusters
+                                    </button>
+                                </div>
                             </div>
                             <div class="card-body p-0">
                                 <div id="map"></div>
@@ -876,11 +972,15 @@
                         </div>
                     </div>
 
-                    <!-- Calendar Widget -->
+                    <!-- Right Sidebar -->
                     <div class="col-lg-4 mb-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-calendar-week"></i> Upcoming Tasks</h5>
+                        <!-- Calendar Widget -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-calendar-week"></i> Upcoming Tasks</h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showScheduledTasks()">
+                                    <i class="bi bi-calendar3"></i> View All
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div id="calendarWidget">
@@ -888,15 +988,56 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Quick Stats -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Quick Stats</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="quickStats">
+                                    <div class="row text-center">
+                                        <div class="col-6 mb-3">
+                                            <div class="quick-stat">
+                                                <h6 class="text-primary mb-1" id="statThisWeek">0</h6>
+                                                <small class="text-muted">This Week</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <div class="quick-stat">
+                                                <h6 class="text-success mb-1" id="statCompleted">0</h6>
+                                                <small class="text-muted">Completed</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="quick-stat">
+                                                <h6 class="text-warning mb-1" id="statPending">0</h6>
+                                                <small class="text-muted">Pending</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="quick-stat">
+                                                <h6 class="text-danger mb-1" id="statOverdue">0</h6>
+                                                <small class="text-muted">Overdue</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Recent Activity Row -->
                 <div class="row">
                     <!-- Recent Actions -->
                     <div class="col-lg-8 mb-4">
                         <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-clock-history"></i> Recent Actions</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Actions</h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showActions()">
+                                    <i class="bi bi-list-check"></i> View All
+                                </button>
                             </div>
                             <div class="card-body">
                                 <div id="recentActions">
@@ -906,15 +1047,50 @@
                         </div>
                     </div>
 
-                    <!-- Scheduled Tasks Preview -->
+                    <!-- Reports Preview -->
                     <div class="col-lg-4 mb-4">
                         <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-calendar-check"></i> Scheduled Tasks</h5>
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Reports</h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showReports()">
+                                    <i class="bi bi-graph-up"></i> View Reports
+                                </button>
                             </div>
                             <div class="card-body">
-                                <div id="scheduledTasksPreview">
-                                    <p class="text-muted">Loading scheduled tasks...</p>
+                                <div id="reportsPreview">
+                                    <div class="report-preview-item">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="report-icon me-3">
+                                                <i class="bi bi-bar-chart text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Hive Performance</h6>
+                                                <small class="text-muted">Track colony health metrics</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="report-preview-item">
+                                        <div class="d-flex align-items-center mb-3">
+                                            <div class="report-icon me-3">
+                                                <i class="bi bi-heart-pulse text-success"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Health & Mortality</h6>
+                                                <small class="text-muted">Monitor disease and losses</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="report-preview-item">
+                                        <div class="d-flex align-items-center">
+                                            <div class="report-icon me-3">
+                                                <i class="bi bi-gear text-info"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-1">Operations</h6>
+                                                <small class="text-muted">Task completion and efficiency</small>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1434,6 +1610,146 @@
                             <div class="card-body">
                                 <div id="employeesList">
                                     <p class="text-muted">Loading employees...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports View -->
+            <div id="reportsView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-graph-up"></i> Reports & Analytics</h2>
+                    <div>
+                        <button class="btn btn-outline-primary" onclick="exportReportData()">
+                            <i class="bi bi-download"></i> Export Data
+                        </button>
+                        <button class="btn btn-primary" onclick="generateCustomReport()">
+                            <i class="bi bi-plus"></i> Custom Report
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Report Categories -->
+                <div class="row mb-4">
+                    <div class="col-lg-4 mb-3">
+                        <div class="card report-category-card" onclick="showHivePerformanceReport()">
+                            <div class="card-body text-center">
+                                <div class="report-icon-large mb-3">
+                                    <i class="bi bi-bar-chart text-primary"></i>
+                                </div>
+                                <h5>Hive Performance</h5>
+                                <p class="text-muted">Track colony health, productivity, and growth metrics</p>
+                                <div class="report-stats">
+                                    <small class="text-primary">Colony strength, honey production, brood patterns</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <div class="card report-category-card" onclick="showHealthMortalityReport()">
+                            <div class="card-body text-center">
+                                <div class="report-icon-large mb-3">
+                                    <i class="bi bi-heart-pulse text-success"></i>
+                                </div>
+                                <h5>Health & Mortality</h5>
+                                <p class="text-muted">Monitor disease outbreaks, losses, and treatment effectiveness</p>
+                                <div class="report-stats">
+                                    <small class="text-success">Disease reports, mortality rates, treatment tracking</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3">
+                        <div class="card report-category-card" onclick="showOperationsReport()">
+                            <div class="card-body text-center">
+                                <div class="report-icon-large mb-3">
+                                    <i class="bi bi-gear text-info"></i>
+                                </div>
+                                <h5>Operations</h5>
+                                <p class="text-muted">Task completion, efficiency metrics, and resource usage</p>
+                                <div class="report-stats">
+                                    <small class="text-info">Task completion rates, time tracking, resource utilization</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Reports -->
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-graph-up-arrow"></i> Quick Reports</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="quick-report-item" onclick="generateQuickReport('monthly')">
+                                            <div class="d-flex align-items-center">
+                                                <div class="report-icon me-3">
+                                                    <i class="bi bi-calendar-month text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Monthly Summary</h6>
+                                                    <small class="text-muted">Last 30 days overview</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="quick-report-item" onclick="generateQuickReport('seasonal')">
+                                            <div class="d-flex align-items-center">
+                                                <div class="report-icon me-3">
+                                                    <i class="bi bi-sun text-warning"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Seasonal Analysis</h6>
+                                                    <small class="text-muted">Seasonal trends and patterns</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="quick-report-item" onclick="generateQuickReport('cluster')">
+                                            <div class="d-flex align-items-center">
+                                                <div class="report-icon me-3">
+                                                    <i class="bi bi-geo-alt text-success"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Cluster Performance</h6>
+                                                    <small class="text-muted">Compare cluster productivity</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="quick-report-item" onclick="generateQuickReport('health')">
+                                            <div class="d-flex align-items-center">
+                                                <div class="report-icon me-3">
+                                                    <i class="bi bi-shield-check text-danger"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-1">Health Dashboard</h6>
+                                                    <small class="text-muted">Disease and health monitoring</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-clock-history"></i> Recent Reports</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentReports">
+                                    <p class="text-muted">No recent reports generated.</p>
                                 </div>
                             </div>
                         </div>
