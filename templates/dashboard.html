@@ -35,6 +35,16 @@
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
+
+.action-row:hover {
+    background-color: rgba(0,123,255,0.1) !important;
+    transform: scale(1.01);
+    transition: all 0.2s ease-in-out;
+}
+
+.action-row:hover td {
+    border-color: rgba(0,123,255,0.2);
+}
 </style>
 {% endblock %}
 
@@ -165,10 +175,10 @@
                         </thead>
                         <tbody>
                             {% for action in recent_actions %}
-                            <tr>
+                            <tr class="action-row" data-href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" style="cursor: pointer;">
                                 <td>{{ action.action_date.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
-                                    <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}">
+                                    <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" class="text-decoration-none">
                                         {{ action.cluster.name }}
                                     </a>
                                 </td>
@@ -218,6 +228,32 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Ensure cursor shows as pointer
         card.style.cursor = 'pointer';
+    });
+    
+    // Make action rows clickable
+    const actionRows = document.querySelectorAll('.action-row');
+    
+    actionRows.forEach(function(row) {
+        row.addEventListener('click', function(e) {
+            // Don't navigate if clicking on the cluster name link
+            if (e.target.tagName === 'A') {
+                return;
+            }
+            
+            const href = this.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
+        });
+        
+        // Add hover effect
+        row.addEventListener('mouseenter', function() {
+            this.style.backgroundColor = 'rgba(0,123,255,0.1)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.backgroundColor = '';
+        });
     });
 });
 </script>
