@@ -6,15 +6,34 @@
 <style>
 .hover-card {
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .hover-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    text-decoration: none;
 }
 
 .hover-card:hover .card-body {
     cursor: pointer;
+}
+
+.dashboard-stat-card {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+}
+
+.dashboard-stat-card:hover {
+    text-decoration: none;
+    color: inherit;
+}
+
+.dashboard-stat-card:hover .card {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
 }
 </style>
 {% endblock %}
@@ -30,8 +49,8 @@
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <a href="{{ url_for('clusters') }}" class="text-decoration-none">
-            <div class="card bg-warning text-dark hover-card">
+        <a href="{{ url_for('clusters') }}" class="dashboard-stat-card">
+            <div class="card bg-warning text-dark">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -45,8 +64,8 @@
         </a>
     </div>
     <div class="col-md-3">
-        <a href="{{ url_for('clusters') }}" class="text-decoration-none">
-            <div class="card bg-success text-white hover-card">
+        <a href="{{ url_for('clusters') }}" class="dashboard-stat-card">
+            <div class="card bg-success text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -60,8 +79,8 @@
         </a>
     </div>
     <div class="col-md-3">
-        <a href="{{ url_for('actions') }}" class="text-decoration-none">
-            <div class="card bg-info text-white hover-card">
+        <a href="{{ url_for('actions') }}" class="dashboard-stat-card">
+            <div class="card bg-info text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -75,8 +94,8 @@
         </a>
     </div>
     <div class="col-md-3">
-        <a href="{{ url_for('disease_report') }}" class="text-decoration-none">
-            <div class="card bg-danger text-white hover-card">
+        <a href="{{ url_for('disease_report') }}" class="dashboard-stat-card">
+            <div class="card bg-danger text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
@@ -177,6 +196,31 @@
 
 {% block extra_js %}
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_key }}&callback=initMap" async defer></script>
+<script>
+// Ensure dashboard stat cards are clickable
+document.addEventListener('DOMContentLoaded', function() {
+    const statCards = document.querySelectorAll('.dashboard-stat-card');
+    
+    statCards.forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            // Ensure the click event works properly
+            window.location.href = this.href;
+        });
+        
+        // Add visual feedback on click
+        card.addEventListener('mousedown', function(e) {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        card.addEventListener('mouseup', function(e) {
+            this.style.transform = '';
+        });
+        
+        // Ensure cursor shows as pointer
+        card.style.cursor = 'pointer';
+    });
+});
+</script>
 <script>
 function initMap() {
     // Default center - Collingwood, New Zealand
