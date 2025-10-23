@@ -8,7 +8,7 @@
 
 ### Option 1: Static Landing Page on GitHub Pages ✅
 **What it does:** Marketing page showing features (no login, no database)
-**URL:** https://agent5479.github.io/LarsBees/
+**URL:** https://agent5479.github.io/BeeMarshall/
 
 ### Option 2: Full Flask Application on Python Hosting 🚀
 **What it does:** Complete working application with all features
@@ -28,10 +28,10 @@ git init
 git add .
 
 # Commit
-git commit -m "Initial commit - LarsBees Apiary Management"
+git commit -m "Initial commit - BeeMarshall Apiary Management"
 
 # Add remote repository
-git remote add origin https://github.com/agent5479/LarsBees.git
+git remote add origin https://github.com/agent5479/BeeMarshall.git
 
 # Push to GitHub
 git branch -M main
@@ -40,7 +40,7 @@ git push -u origin main
 
 ### Step 2: Enable GitHub Pages
 
-1. Go to your repository: https://github.com/agent5479/LarsBees
+1. Go to your repository: https://github.com/agent5479/BeeMarshall
 2. Click **Settings** tab
 3. Click **Pages** in the left sidebar
 4. Under **Source**, select **Deploy from a branch**
@@ -58,7 +58,7 @@ Since I created `docs/index.html`:
 
 Your static landing page will be live at:
 ```
-https://agent5479.github.io/LarsBees/
+https://agent5479.github.io/BeeMarshall/
 ```
 
 **What visitors will see:**
@@ -206,7 +206,7 @@ https://larsbees.onrender.com/
 ### Best Strategy: Use Both!
 
 1. **GitHub Pages** - Marketing/landing page
-   - URL: https://agent5479.github.io/LarsBees/
+   - URL: https://agent5479.github.io/BeeMarshall/
    - Shows features and encourages downloads
    - Links to full app
 
@@ -243,7 +243,7 @@ git add .
 git commit -m "Add LarsBees Apiary Management System"
 
 # Add remote (replace with your actual repo)
-git remote add origin https://github.com/agent5479/LarsBees.git
+git remote add origin https://github.com/agent5479/BeeMarshall.git
 
 # Push
 git push -u origin main
@@ -257,7 +257,7 @@ Then:
 
 Wait 1-2 minutes, then visit:
 ```
-https://agent5479.github.io/LarsBees/
+https://agent5479.github.io/BeeMarshall/
 ```
 
 ---
@@ -304,7 +304,7 @@ https://agent5479.github.io/LarsBees/
 **To get it live:**
 1. Push to GitHub
 2. Enable GitHub Pages with `/docs` folder
-3. Visit https://agent5479.github.io/LarsBees/
+3. Visit https://agent5479.github.io/BeeMarshall/
 
 **For full app:**
 1. Deploy to Heroku/PythonAnywhere/Render

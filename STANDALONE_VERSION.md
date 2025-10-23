@@ -1,8 +1,8 @@
-# 🌟 LarsBees - Standalone HTML Version
+# 🌟 BeeMarshall - Standalone HTML Version
 
 ## ✅ **Pure HTML/JavaScript - No Python Needed!**
 
-I've created a **completely standalone version** of LarsBees that runs entirely in your browser!
+I've created a **completely standalone version** of BeeMarshall that runs entirely in your browser!
 
 ---
 
@@ -50,7 +50,7 @@ docs/
 1. **Push to GitHub** (use `deploy-to-github.bat`)
 
 2. **Enable GitHub Pages**
-   - Go to: https://github.com/agent5479/LarsBees/settings/pages
+   - Go to: https://github.com/agent5479/BeeMarshall/settings/pages
    - Source: Deploy from a branch
    - Branch: main
    - Folder: /docs
@@ -58,7 +58,7 @@ docs/
 
 3. **Access Your App**
    ```
-   https://agent5479.github.io/LarsBees/
+   https://agent5479.github.io/BeeMarshall/
    ```
    
 4. **Click "Launch App"** to open the application
@@ -209,7 +209,7 @@ Add this (optional):
 
 4. **Visit:**
    ```
-   https://agent5479.github.io/LarsBees/
+   https://agent5479.github.io/BeeMarshall/
    ```
 
 5. **Click "Launch App"**

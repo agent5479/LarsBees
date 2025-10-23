@@ -54,10 +54,10 @@ git init
 git add .
 
 # 3. Commit
-git commit -m "Deploy LarsBees to GitHub Pages"
+git commit -m "Deploy BeeMarshall to GitHub Pages"
 
 # 4. Add remote
-git remote add origin https://github.com/agent5479/LarsBees.git
+git remote add origin https://github.com/agent5479/BeeMarshall.git
 
 # 5. Push
 git branch -M main

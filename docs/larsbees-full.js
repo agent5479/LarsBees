@@ -1,4 +1,4 @@
-// LarsBees - Full Multi-User System with Master Admin
+// BeeMarshall - Full Multi-User System with Master Admin
 // Master User: Lars (can add employees, delete records)
 // Employees: Can add/view, cannot delete
 
@@ -1776,7 +1776,7 @@ function deleteRequirement(id) {
 
 // Copy calendar feed link for scheduled tasks
 function copyCalendarFeedLink() {
-    const feedURL = 'https://agent5479.github.io/LarsBees/scheduled-tasks-feed.html';
+    const feedURL = 'https://agent5479.github.io/BeeMarshall/scheduled-tasks-feed.html';
     
     // Copy to clipboard
     navigator.clipboard.writeText(feedURL).then(() => {
@@ -1813,10 +1813,10 @@ function generateICS(requirements) {
     let icsContent = [
         'BEGIN:VCALENDAR',
         'VERSION:2.0',
-        'PRODID:-//LarsBees//Seasonal Requirements//EN',
+        'PRODID:-//BeeMarshall//Seasonal Requirements//EN',
         'CALSCALE:GREGORIAN',
         'METHOD:PUBLISH',
-        'X-WR-CALNAME:LarsBees Seasonal Requirements',
+        'X-WR-CALNAME:BeeMarshall Seasonal Requirements',
         'X-WR-TIMEZONE:Pacific/Auckland',
         'X-WR-CALDESC:Seasonal requirements and deadlines for apiary management'
     ];
@@ -1860,7 +1860,7 @@ function generateICSEvent(req) {
     if (req.notes) {
         description += `\\nNotes: ${req.notes}`;
     }
-    description += `\\n\\nCreated in LarsBees Apiary Management`;
+    description += `\\n\\nCreated in BeeMarshall Apiary Management`;
     
     // Create event
     const event = [

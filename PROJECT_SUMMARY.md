@@ -1,7 +1,7 @@
-# 🐝 LarsBees - Project Summary
+# 🐝 BeeMarshall - Project Summary
 
 ## Overview
-LarsBees is a comprehensive web-based apiary (beekeeping) management system designed for both hobbyist and professional beekeepers. It provides an intuitive interface for managing multiple hive locations, tracking individual hives, and logging all maintenance activities.
+BeeMarshall is a comprehensive web-based apiary (beekeeping) management system designed for both hobbyist and professional beekeepers. It provides an intuitive interface for managing multiple hive locations, tracking individual hives, and logging all maintenance activities.
 
 ## Technology Stack
 

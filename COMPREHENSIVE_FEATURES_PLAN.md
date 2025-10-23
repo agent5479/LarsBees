@@ -1,4 +1,4 @@
-# 🐝 LarsBees - Comprehensive Features Plan
+# 🐝 BeeMarshall - Comprehensive Features Plan
 
 ## 👥 **Users: Lars + 1 Employee (2 people, real-time sync)**
 

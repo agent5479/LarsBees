@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Database Migration Script for LarsBees Enhanced Features
+Database Migration Script for BeeMarshall Enhanced Features
 This script adds new fields to existing tables and creates new tables for enhanced functionality.
 """
 
@@ -173,7 +173,7 @@ def migrate_database():
         return True
 
 if __name__ == "__main__":
-    print("LarsBees Database Migration")
+    print("BeeMarshall Database Migration")
     print("=" * 40)
     
     if migrate_database():

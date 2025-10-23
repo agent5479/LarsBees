@@ -1,10 +1,10 @@
-# 🧪 Testing Guide - LarsBees
+# 🧪 Testing Guide - BeeMarshall
 
 ## 🔍 **If Login Button Not Working**
 
 ### **Check Browser Console:**
 
-1. **Open the app:** https://agent5479.github.io/LarsBees/larsbees-full.html
+1. **Open the app:** https://agent5479.github.io/BeeMarshall/larsbees-full.html
 
 2. **Open browser console:**
    - **Chrome/Edge:** Press `F12` or `Ctrl+Shift+I`

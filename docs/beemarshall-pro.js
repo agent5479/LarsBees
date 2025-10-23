@@ -1,4 +1,4 @@
-// LarsBees Pro - Comprehensive Apiary Management
+// BeeMarshall Pro - Comprehensive Apiary Management
 // Real-time sync for Lars + Employee
 
 // COMPREHENSIVE TASK LIST

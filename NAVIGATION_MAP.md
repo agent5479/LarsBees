@@ -1,4 +1,4 @@
-# 🗺️ LarsBees Navigation Map
+# 🗺️ BeeMarshall Navigation Map
 
 ## Complete Site Structure & User Flow
 

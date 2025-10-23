@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LarsBees Scheduled Tasks Calendar Feed</title>
+    <title>BeeMarshall Scheduled Tasks Calendar Feed</title>
 </head>
 <body>
     <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px;">
-        <h1>🐝 LarsBees Scheduled Tasks Calendar</h1>
+        <h1>🐝 BeeMarshall Scheduled Tasks Calendar</h1>
         <p>Loading calendar feed from Firebase...</p>
         <div id="status">Connecting to database...</div>
     </div>
@@ -59,7 +59,7 @@
                     <h3>✅ Calendar Feed Generated!</h3>
                     <p>The .ics file has been downloaded with ${scheduledTasks.length} scheduled task(s).</p>
                     <p><strong>Bookmark this page</strong> and visit it anytime to get the latest scheduled tasks!</p>
-                    <p style="margin-top: 15px;"><small>This page always fetches the latest data from LarsBees.</small></p>
+                    <p style="margin-top: 15px;"><small>This page always fetches the latest data from BeeMarshall.</small></p>
                 </div>
             `;
         }).catch(error => {
@@ -75,12 +75,12 @@
             let icsContent = [
                 'BEGIN:VCALENDAR',
                 'VERSION:2.0',
-                'PRODID:-//LarsBees//Scheduled Tasks//EN',
+                'PRODID:-//BeeMarshall//Scheduled Tasks//EN',
                 'CALSCALE:GREGORIAN',
                 'METHOD:PUBLISH',
-                'X-WR-CALNAME:LarsBees Scheduled Tasks',
+                'X-WR-CALNAME:BeeMarshall Scheduled Tasks',
                 'X-WR-TIMEZONE:Pacific/Auckland',
-                'X-WR-CALDESC:Scheduled beekeeping tasks from LarsBees'
+                'X-WR-CALDESC:Scheduled beekeeping tasks from BeeMarshall'
             ];
             
             scheduledTasks.filter(t => !t.completed).forEach(task => {
@@ -120,7 +120,7 @@
             if (task.notes) {
                 desc += `\\nNotes: ${task.notes}\\n`;
             }
-            desc += `\\nScheduled in LarsBees Apiary Management`;
+            desc += `\\nScheduled in BeeMarshall Apiary Management`;
             return desc;
         }
 

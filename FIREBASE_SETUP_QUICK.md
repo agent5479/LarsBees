@@ -4,7 +4,7 @@
 
 1. Go to: https://console.firebase.google.com/
 2. Click "Add project"
-3. Name: `LarsBees`
+3. Name: `BeeMarshall`
 4. Disable Google Analytics (optional)
 5. Click "Create project"
 6. Wait ~30 seconds
@@ -30,7 +30,7 @@
 2. Click **"Project settings"**
 3. Scroll down to **"Your apps"** section
 4. Click the **web icon** `</>`
-5. App nickname: `LarsBees Web`
+5. App nickname: `BeeMarshall Web`
 6. ❌ Don't check "Firebase Hosting"
 7. Click **"Register app"**
 8. **COPY the firebaseConfig object** - you'll see something like:

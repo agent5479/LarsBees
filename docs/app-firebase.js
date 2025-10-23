@@ -1,4 +1,4 @@
-// LarsBees - Firebase Cloud Sync Version
+// BeeMarshall - Firebase Cloud Sync Version
 // Data synced across all browsers/devices using Firebase
 
 // Default task types

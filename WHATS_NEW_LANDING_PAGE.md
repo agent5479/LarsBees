@@ -2,7 +2,7 @@
 
 ## Update Summary
 
-LarsBees now includes a beautiful, professional landing page that serves as the public-facing entry point to the application!
+BeeMarshall now includes a beautiful, professional landing page that serves as the public-facing entry point to the application!
 
 ## What Was Added
 

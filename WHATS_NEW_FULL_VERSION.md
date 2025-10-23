@@ -1,4 +1,4 @@
-# 🎉 What's New - LarsBees Full Version
+# 🎉 What's New - BeeMarshall Full Version
 
 ## 🚀 **Major Update: Secure Multi-User System**
 
@@ -113,7 +113,7 @@ docs/
 
 ### 1. First Login (Creates Master Account)
 ```
-URL: https://agent5479.github.io/LarsBees/larsbees-full.html
+URL: https://agent5479.github.io/BeeMarshall/larsbees-full.html
 Username: Lars
 Password: [choose your password]
 → You are now ADMIN!
@@ -130,7 +130,7 @@ Add Employee:
 
 ### 3. Employees Login
 ```
-URL: https://agent5479.github.io/LarsBees/larsbees-full.html
+URL: https://agent5479.github.io/BeeMarshall/larsbees-full.html
 Username: John Smith
 Password: Employee123
 → They can now log actions!
@@ -269,12 +269,12 @@ Password: Employee123
 
 **Main App:**
 ```
-https://agent5479.github.io/LarsBees/larsbees-full.html
+https://agent5479.github.io/BeeMarshall/larsbees-full.html
 ```
 
 **Landing Page:**
 ```
-https://agent5479.github.io/LarsBees/
+https://agent5479.github.io/BeeMarshall/
 ```
 
 ---
@@ -305,7 +305,7 @@ You now have:
 
 **Start using it in 2-3 minutes at:**
 ```
-https://agent5479.github.io/LarsBees/larsbees-full.html
+https://agent5479.github.io/BeeMarshall/larsbees-full.html
 ```
 
 **Happy Beekeeping, Lars!** 🍯

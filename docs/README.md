@@ -1,4 +1,4 @@
-# 🐝 LarsBees - Choose Your Version
+# 🐝 BeeMarshall - Choose Your Version
 
 ## Two Versions Available!
 
@@ -118,8 +118,8 @@ docs/
 ## 🆘 Help
 
 - **Firebase Setup:** See [FIREBASE_SETUP.md](../FIREBASE_SETUP.md)
-- **GitHub Repo:** https://github.com/agent5479/LarsBees
-- **Issues:** https://github.com/agent5479/LarsBees/issues
+- **GitHub Repo:** https://github.com/agent5479/BeeMarshall
+- **Issues:** https://github.com/agent5479/BeeMarshall/issues
 
 ---
 

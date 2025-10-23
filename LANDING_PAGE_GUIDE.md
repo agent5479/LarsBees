@@ -1,8 +1,8 @@
-# 🎨 LarsBees Landing Page Guide
+# 🎨 BeeMarshall Landing Page Guide
 
 ## Overview
 
-The LarsBees landing page serves as the public-facing entry point to the application, designed to showcase features and encourage user registration.
+The BeeMarshall landing page serves as the public-facing entry point to the application, designed to showcase features and encourage user registration.
 
 ## Landing Page Structure
 

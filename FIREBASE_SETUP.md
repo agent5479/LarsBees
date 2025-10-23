@@ -1,4 +1,4 @@
-# 🔥 Firebase Setup Guide - Cloud Sync for LarsBees
+# 🔥 Firebase Setup Guide - Cloud Sync for BeeMarshall
 
 ## 🌟 **Why Firebase?**
 
@@ -26,7 +26,7 @@ Firebase Realtime Database allows your data to **sync across all browsers and de
 2. **Click "Add project"**
 
 3. **Enter project name**
-   - Name: `LarsBees` (or any name you prefer)
+   - Name: `BeeMarshall` (or any name you prefer)
    - Click "Continue"
 
 4. **Google Analytics** (optional)
@@ -94,7 +94,7 @@ Firebase Realtime Database allows your data to **sync across all browsers and de
 4. **Click the web icon** `</>` to add a web app
 
 5. **Register app:**
-   - App nickname: `LarsBees Web`
+   - App nickname: `BeeMarshall Web`
    - ❌ No need to check "Firebase Hosting"
    - Click "Register app"
 

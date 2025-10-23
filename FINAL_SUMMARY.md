@@ -1,4 +1,4 @@
-# 🎊 LarsBees Pro - COMPLETE & DEPLOYED!
+# 🎊 BeeMarshall Pro - COMPLETE & DEPLOYED!
 
 ## ✅ **Your Professional Apiary Management System is LIVE!**
 
@@ -6,9 +6,9 @@
 
 ## 🌐 **Access URL**
 
-### **LarsBees Pro (Recommended):**
+### **BeeMarshall Pro (Recommended):**
 ```
-https://agent5479.github.io/LarsBees/larsbees-pro.html
+https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 ```
 
 **📱 Bookmark this on your phone for field use!**
@@ -300,13 +300,13 @@ Employee's Tablet
 ## 🎯 **Your URLs**
 
 ### **Main App (Use This):**
-https://agent5479.github.io/LarsBees/larsbees-pro.html
+https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 
 ### **Landing Page:**
-https://agent5479.github.io/LarsBees/
+https://agent5479.github.io/BeeMarshall/
 
 ### **GitHub Repository:**
-https://github.com/agent5479/LarsBees
+https://github.com/agent5479/BeeMarshall
 
 ---
 
@@ -314,7 +314,7 @@ https://github.com/agent5479/LarsBees
 
 GitHub Pages is rebuilding your site right now. 
 
-**Then visit:** https://agent5479.github.io/LarsBees/larsbees-pro.html
+**Then visit:** https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 
 ---
 

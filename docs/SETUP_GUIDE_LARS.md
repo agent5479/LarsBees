@@ -1,4 +1,4 @@
-# 🔐 LarsBees - Setup Guide for Lars (Master User)
+# 🔐 BeeMarshall - Setup Guide for Lars (Master User)
 
 ## 🎯 **Complete System with Security & Team Management**
 
@@ -47,7 +47,7 @@
 
 ### Step 1: Access the App
 ```
-https://agent5479.github.io/LarsBees/larsbees-full.html
+https://agent5479.github.io/BeeMarshall/larsbees-full.html
 ```
 
 ### Step 2: Create Master Account
@@ -82,7 +82,7 @@ https://agent5479.github.io/LarsBees/larsbees-full.html
 ## 👥 **Employee Access**
 
 ### How Employees Login:
-1. Visit: https://agent5479.github.io/LarsBees/larsbees-full.html
+1. Visit: https://agent5479.github.io/BeeMarshall/larsbees-full.html
 2. **Username:** Their name (you gave them)
 3. **Password:** Password you created for them
 4. Login
@@ -350,7 +350,7 @@ https://agent5479.github.io/LarsBees/larsbees-full.html
 
 ### **URL:**
 ```
-https://agent5479.github.io/LarsBees/larsbees-full.html
+https://agent5479.github.io/BeeMarshall/larsbees-full.html
 ```
 
 ### **Lars Login:**

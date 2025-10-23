@@ -1,4 +1,4 @@
-# 👥 LarsBees Pro - User Guide for Lars & Employee
+# 👥 BeeMarshall Pro - User Guide for Lars & Employee
 
 ## 🚀 Quick Start for the Field
 
@@ -6,7 +6,7 @@
 
 1. **Both Lars and Employee visit:**
    ```
-   https://agent5479.github.io/LarsBees/larsbees-pro.html
+   https://agent5479.github.io/BeeMarshall/larsbees-pro.html
    ```
 
 2. **Agree on a shared password** (e.g., "HoneyTeam2025")

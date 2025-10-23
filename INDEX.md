@@ -1,6 +1,6 @@
-# 🐝 LarsBees Documentation Index
+# 🐝 BeeMarshall Documentation Index
 
-Welcome to LarsBees - Your complete apiary management solution!
+Welcome to BeeMarshall - Your complete apiary management solution!
 
 ## 📚 Documentation Guide
 

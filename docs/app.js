@@ -1,4 +1,4 @@
-// LarsBees - Standalone JavaScript Application
+// BeeMarshall - Standalone JavaScript Application
 // All data stored in browser's localStorage
 
 // Default task types

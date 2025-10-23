@@ -1,4 +1,4 @@
-# 🐝 LarsBees Pro - Quick Start for Lars
+# 🐝 BeeMarshall Pro - Quick Start for Lars
 
 ## ✅ **Your Complete Apiary Management System is LIVE!**
 
@@ -8,7 +8,7 @@
 
 ### **Main URL:**
 ```
-https://agent5479.github.io/LarsBees/larsbees-pro.html
+https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 ```
 
 **Bookmark this on your phone and computer!**
@@ -18,7 +18,7 @@ https://agent5479.github.io/LarsBees/larsbees-pro.html
 ## 🚀 **First Time Setup (2 minutes)**
 
 ### Step 1: Open on Your Device
-Visit: https://agent5479.github.io/LarsBees/larsbees-pro.html
+Visit: https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 
 ### Step 2: Create Your Account
 - **Your Name:** `Lars`
@@ -27,7 +27,7 @@ Visit: https://agent5479.github.io/LarsBees/larsbees-pro.html
 
 ### Step 3: Share with Employee
 Give your employee:
-- **URL:** https://agent5479.github.io/LarsBees/larsbees-pro.html
+- **URL:** https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 - **Team Password:** `HoneyHarvest2025` (whatever you chose)
 - **Their Name:** They enter their own name
 
@@ -189,7 +189,7 @@ Organized in 9 categories:
 ## 🚀 **Getting Started Today**
 
 ### Right Now:
-1. **Open:** https://agent5479.github.io/LarsBees/larsbees-pro.html
+1. **Open:** https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 2. **Login** with a password you choose
 3. **Add your first cluster**
 4. **Log your first action**
@@ -237,9 +237,9 @@ Your comprehensive apiary management system includes:
 
 ## 🔗 **Important Links**
 
-- **App:** https://agent5479.github.io/LarsBees/larsbees-pro.html
+- **App:** https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 - **User Guide:** See USER_GUIDE.md in repository
-- **GitHub:** https://github.com/agent5479/LarsBees
+- **GitHub:** https://github.com/agent5479/BeeMarshall
 
 ---
 

@@ -1,6 +1,6 @@
-# 🐝 START HERE - LarsBees Quick Guide
+# 🐝 START HERE - BeeMarshall Quick Guide
 
-## Welcome to LarsBees!
+## Welcome to BeeMarshall!
 
 Your complete **Apiary Management System** is ready to use! This guide will get you up and running in minutes.
 

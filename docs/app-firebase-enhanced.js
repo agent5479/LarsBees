@@ -1,4 +1,4 @@
-// LarsBees - Enhanced Firebase Version with Comprehensive Features
+// BeeMarshall - Enhanced Firebase Version with Comprehensive Features
 // For Lars + Employee field use
 
 // COMPREHENSIVE TASK LIST - Organized by Category
