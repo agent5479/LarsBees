@@ -870,6 +870,9 @@
                         <button class="btn btn-primary" onclick="showScheduleTaskModal()">
                             <i class="bi bi-plus"></i> Schedule New Task
                         </button>
+                        <button class="btn btn-success ms-2" onclick="showScheduleForNextVisit()">
+                            <i class="bi bi-calendar-plus"></i> Schedule for Next Visit
+                        </button>
                         <button class="btn btn-outline-info ms-2" onclick="showSuggestedSchedule()">
                             <i class="bi bi-lightbulb"></i> Suggested Schedule
                         </button>
@@ -899,6 +902,83 @@
                                 <div id="scheduleTimeline">
                                     <p class="text-muted">Loading timeline...</p>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule for Next Visit View -->
+            <div id="scheduleForNextVisitView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-calendar-plus"></i> Schedule for Next Visit</h2>
+                    <button class="btn btn-secondary" onclick="showScheduledTasks()">
+                        <i class="bi bi-arrow-left"></i> Back to Schedule
+                    </button>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-geo-alt"></i> Add tasks to do on next visit to this cluster:</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="nextVisitForm">
+                                    <div class="mb-3">
+                                        <label for="nextVisitCluster" class="form-label">Select Cluster *</label>
+                                        <select class="form-select" id="nextVisitCluster" required onchange="loadNextVisitTasks()">
+                                            <option value="">Choose cluster...</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Tasks to Schedule for Next Visit *</label>
+                                        <div class="mb-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="filterNextVisitTasks('common')">
+                                                <i class="bi bi-star"></i> Common Tasks
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filterNextVisitTasks('all')">
+                                                <i class="bi bi-list"></i> All Tasks
+                                            </button>
+                                        </div>
+                                        <div id="nextVisitTaskCheckboxes"></div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nextVisitDate" class="form-label">Planned Visit Date *</label>
+                                            <input type="date" class="form-control" id="nextVisitDate" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="nextVisitTime" class="form-label">Planned Visit Time (Optional)</label>
+                                            <input type="time" class="form-control" id="nextVisitTime">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="nextVisitPriority" class="form-label">Priority</label>
+                                        <select class="form-select" id="nextVisitPriority">
+                                            <option value="normal">Normal</option>
+                                            <option value="high">High</option>
+                                            <option value="urgent">Urgent</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="nextVisitNotes" class="form-label">Notes for Next Visit</label>
+                                        <textarea class="form-control" id="nextVisitNotes" rows="3" placeholder="Any specific instructions or notes for the next visit..."></textarea>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="bi bi-calendar-plus"></i> Schedule Tasks for Next Visit
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="showScheduledTasks()">
+                                            <i class="bi bi-x"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>

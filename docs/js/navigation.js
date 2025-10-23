@@ -1,7 +1,7 @@
 // BeeMarshall - Navigation Module
 
 function hideAllViews() {
-    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'flaggedView', 'employeesView', 'manageTasksView', 'seasonalRequirementsView', 'suggestedScheduleView'].forEach(id => {
+    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'scheduleForNextVisitView', 'flaggedView', 'employeesView', 'manageTasksView', 'seasonalRequirementsView', 'suggestedScheduleView'].forEach(id => {
         document.getElementById(id)?.classList.add('hidden');
     });
 }

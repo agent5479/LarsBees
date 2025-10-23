@@ -527,3 +527,115 @@ function editSuggestion(suggestionId) {
         alert(`Edit suggestion: ${suggestion.taskName}\n\nThis feature will allow customizing seasonal suggestions in future updates.`);
     }
 }
+
+// Schedule for Next Visit functionality
+function showScheduleForNextVisit() {
+    hideAllViews();
+    document.getElementById('scheduleForNextVisitView').classList.remove('hidden');
+    populateNextVisitForm();
+}
+
+function populateNextVisitForm() {
+    const clusterSelect = document.getElementById('nextVisitCluster');
+    clusterSelect.innerHTML = '<option value="">Choose cluster...</option>' +
+        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('nextVisitDate').valueAsDate = tomorrow;
+    
+    // Populate tasks
+    populateNextVisitTasks();
+    
+    // Add form submit event listener
+    document.getElementById('nextVisitForm').addEventListener('submit', handleNextVisitForm);
+}
+
+function populateNextVisitTasks() {
+    const tasksByCategory = {};
+    tasks.forEach(task => {
+        if (!tasksByCategory[task.category]) tasksByCategory[task.category] = [];
+        tasksByCategory[task.category].push(task);
+    });
+    
+    const html = Object.keys(tasksByCategory).sort().map(category => `
+        <div class="col-md-6 mb-3 category-section">
+            <h6 class="category-header"><i class="bi bi-tag-fill"></i> ${category}</h6>
+            ${tasksByCategory[category].map(task => `
+                <div class="form-check task-checkbox-item ${task.common ? 'common-task' : ''}" data-common="${task.common}">
+                    <input class="form-check-input next-visit-task-checkbox" type="checkbox" value="${task.id}" id="nextVisitTask${task.id}">
+                    <label class="form-check-label" for="nextVisitTask${task.id}">
+                        ${task.name}
+                        ${task.common ? '<span class="badge bg-success badge-sm">★</span>' : ''}
+                    </label>
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+    
+    document.getElementById('nextVisitTaskCheckboxes').innerHTML = `<div class="row">${html}</div>`;
+    filterNextVisitTasks('common');
+}
+
+function filterNextVisitTasks(filter) {
+    document.querySelectorAll('#nextVisitTaskCheckboxes .task-checkbox-item').forEach(item => {
+        item.style.display = (filter === 'all' || item.dataset.common === 'true') ? '' : 'none';
+    });
+}
+
+function handleNextVisitForm(e) {
+    e.preventDefault();
+    
+    const clusterId = parseInt(document.getElementById('nextVisitCluster').value);
+    const date = document.getElementById('nextVisitDate').value;
+    const time = document.getElementById('nextVisitTime').value;
+    const priority = document.getElementById('nextVisitPriority').value;
+    const notes = document.getElementById('nextVisitNotes').value;
+    
+    if (!clusterId) {
+        alert('Please select a cluster.');
+        return;
+    }
+    
+    const selectedTasks = Array.from(document.querySelectorAll('.next-visit-task-checkbox:checked'))
+        .map(cb => parseInt(cb.value));
+    
+    if (selectedTasks.length === 0) {
+        alert('Please select at least one task to schedule for next visit.');
+        return;
+    }
+    
+    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Scheduling tasks for next visit...', 'syncing');
+    
+    const promises = selectedTasks.map(taskId => {
+        const task = tasks.find(t => t.id === taskId);
+        const scheduledTask = {
+            id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            clusterId: clusterId,
+            taskId: taskId,
+            dueDate: date,
+            scheduledTime: time,
+            priority: priority,
+            notes: notes,
+            completed: false,
+            createdBy: currentUser.username,
+            createdAt: new Date().toISOString(),
+            type: 'next-visit'
+        };
+        return database.ref(`scheduledTasks/${scheduledTask.id}`).set(scheduledTask);
+    });
+    
+    Promise.all(promises).then(() => {
+        showSyncStatus(`<i class="bi bi-check"></i> ${selectedTasks.length} task(s) scheduled for next visit by ${currentUser.username}`);
+        document.getElementById('nextVisitForm').reset();
+        
+        // Set default date to tomorrow again
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('nextVisitDate').valueAsDate = tomorrow;
+        
+        // Go back to scheduled tasks view
+        showScheduledTasks();
+    });
+}
