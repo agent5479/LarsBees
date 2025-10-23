@@ -5,64 +5,382 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BeeMarshall - Militant Apiary Logistics</title>
     
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
-    <link rel="stylesheet" href="beemarshall-pro.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        .flag-urgent { border-left-color: #dc3545 !important; border-left-width: 6px !important; }
-        .flag-warning { border-left-color: #ffc107 !important; border-left-width: 6px !important; }
-        .flag-info { border-left-color: #17a2b8 !important; border-left-width: 6px !important; }
-        .scheduled-task { background-color: #fff3cd; border-left: 4px solid #ffc107; }
-        .admin-only { opacity: 1; }
-        .employee-hidden { display: none; }
+        /* BeeMarshall Enhanced UI - Following Design Philosophy */
+        
+        :root {
+            /* Color Palette */
+            --primary-bg: #FFFFFF;
+            --primary-accent: #1FC8DE;
+            --secondary-accent: #F7F9FA;
+            --text-primary: #2C3E50;
+            --text-secondary: #7F8C8D;
+            --success: #27AE60;
+            --warning: #F39C12;
+            --danger: #E74C3C;
+            --info: #3498DB;
+            
+            /* Typography */
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-size-base: 16px;
+            --line-height-base: 1.6;
+            
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            
+            /* Border Radius */
+            --border-radius-sm: 0.375rem;
+            --border-radius-md: 0.5rem;
+            --border-radius-lg: 0.75rem;
+            --border-radius-xl: 1rem;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            line-height: var(--line-height-base);
+            color: var(--text-primary);
+            background-color: var(--secondary-accent);
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-accent) 0%, #17a2b8 100%);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            background: rgba(31, 200, 222, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+            font-size: 1.5rem;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-1px);
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            background: var(--primary-bg);
+        }
+        
+        .card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-accent) 0%, #17a2b8 100%);
+            color: white;
+            border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0 !important;
+            font-weight: 600;
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: var(--border-radius-md);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-accent) 0%, #17a2b8 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #2ECC71 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning) 0%, #F1C40F 100%);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #E67E22 100%);
+        }
+        
+        /* Forms */
+        .form-control, .form-select {
+            border-radius: var(--border-radius-md);
+            border: 2px solid #E9ECEF;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 0.2rem rgba(31, 200, 222, 0.25);
+        }
+        
+        /* Dashboard Stats */
+        .dashboard-stat-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Action Items */
+        .action-item {
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            margin-bottom: var(--spacing-sm);
+            background: var(--primary-bg);
+            border-left: 4px solid var(--primary-accent);
+            transition: all 0.3s ease;
+        }
+        
+        .action-item:hover {
+            background: var(--secondary-accent);
+            transform: translateX(4px);
+        }
+        
+        .action-item.flag-urgent {
+            border-left-color: var(--danger);
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .action-item.flag-warning {
+            border-left-color: var(--warning);
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .action-item.flag-info {
+            border-left-color: var(--info);
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        /* Map */
+        #map {
+            height: 400px;
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Calendar Widget */
+        .calendar-widget {
+            background: var(--primary-bg);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .calendar-date {
+            margin-bottom: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            background: var(--secondary-accent);
+        }
+        
+        .calendar-date.today {
+            background: rgba(31, 200, 222, 0.1);
+            border-left: 4px solid var(--primary-accent);
+        }
+        
+        .calendar-date.tomorrow {
+            background: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--info);
+        }
+        
+        .calendar-task {
+            background: var(--primary-bg);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        /* Timeline */
+        .timeline-container {
+            background: var(--primary-bg);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .timeline-date {
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-md);
+            background: var(--secondary-accent);
+        }
+        
+        .timeline-date.today {
+            background: rgba(31, 200, 222, 0.1);
+            border-left: 4px solid var(--primary-accent);
+        }
+        
+        .timeline-date.past {
+            opacity: 0.7;
+        }
+        
+        .timeline-task {
+            background: var(--primary-bg);
+            padding: var(--spacing-sm);
+            border-radius: var(--border-radius-sm);
+            margin-bottom: var(--spacing-xs);
+        }
+        
+        .timeline-task.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        
+        /* Cluster Cards */
+        .cluster-card {
+            transition: all 0.3s ease;
+        }
+        
+        .cluster-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        /* Custom Cluster Markers */
+        .custom-cluster-marker {
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+        }
+        
+        /* Sync Status */
+        .sync-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            background: var(--primary-bg);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-sm) var(--spacing-md);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+        }
+        
+        .sync-indicator.syncing {
+            background: rgba(243, 156, 18, 0.1);
+            border-left: 4px solid var(--warning);
+        }
+        
+        .sync-indicator.error {
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+            
+            .card {
+                margin-bottom: var(--spacing-md);
+            }
+            
+            #map {
+                height: 300px;
+            }
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Employee hidden */
+        .employee-hidden {
+            display: none !important;
+        }
+        
+        /* Admin badge */
+        .admin-badge {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: white;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
     <!-- Sync Status Indicator -->
-    <div id="syncIndicator" class="sync-indicator hidden" onclick="manualSync()" style="cursor: pointer;" title="Click to sync now">
-        <i class="bi bi-cloud-check"></i> <span id="syncText">Synced</span>
+    <div id="syncIndicator" class="sync-indicator hidden">
+        <span id="syncText"></span>
     </div>
+
     <!-- Login Screen -->
-    <div id="loginScreen" class="login-container">
-        <div class="login-card">
-            <div class="card shadow-lg">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <i class="bi bi-hexagon-fill text-warning" style="font-size: 4rem;"></i>
-                        <h2 class="mt-3">BeeMarshall</h2>
-                        <p class="text-muted">Professional Apiary Management</p>
-                        <small class="badge bg-success">Secure Multi-User System</small>
-                    </div>
-                    
-                    <!-- Login Form -->
-                    <div id="loginFormContainer">
+    <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+        <div class="row w-100">
+            <div class="col-md-6 col-lg-4 mx-auto">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-fill text-warning" style="font-size: 4rem;"></i>
+                            <h2 class="mt-3">BeeMarshall</h2>
+                            <p class="text-muted">Militant Apiary Logistics</p>
+                        </div>
+                        
                         <form id="loginForm">
                             <div class="mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text" id="loginUsername" class="form-control" placeholder="Your username" required>
+                                <label for="loginUsername" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="loginUsername" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Password</label>
+                                <label for="loginPassword" class="form-label">Password</label>
                                 <div class="input-group">
-                                    <input type="password" id="loginPassword" class="form-control" placeholder="Your password" required>
+                                    <input type="password" class="form-control" id="loginPassword" required>
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
-                                        <i class="bi bi-eye" id="passwordToggleIcon"></i>
+                                        <i id="passwordToggleIcon" class="bi bi-eye"></i>
                                     </button>
                                 </div>
                             </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-warning btn-lg">
-                                    <i class="bi bi-box-arrow-in-right"></i> Login
-                                </button>
-                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Login</button>
                         </form>
                         
-                        <div class="alert alert-info mt-3">
-                            <small><strong>First time?</strong> The master account will be created automatically. Employees should ask Lars for login credentials.</small>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                First time? Use username "Lars" to create master account
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -70,723 +388,711 @@
         </div>
     </div>
 
-    <!-- Main Application -->
+    <!-- Main App -->
     <div id="mainApp" class="hidden">
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-warning sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
-                <a class="navbar-brand text-dark" href="#" onclick="showDashboard()">
+                <a class="navbar-brand" href="#" onclick="showDashboard()">
                     <i class="bi bi-shield-fill"></i> BeeMarshall
                 </a>
+                
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showDashboard()">
-                                <i class="bi bi-speedometer2"></i> Dashboard
+                            <a class="nav-link" href="#" onclick="showDashboard()">
+                                <i class="bi bi-house"></i> Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showClusters()">
+                            <a class="nav-link" href="#" onclick="showClusters()">
                                 <i class="bi bi-geo-alt"></i> Clusters
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showActions()">
+                            <a class="nav-link" href="#" onclick="showActions()">
                                 <i class="bi bi-list-check"></i> Actions
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showScheduledTasks()">
-                                <i class="bi bi-calendar-check"></i> Scheduled
+                            <a class="nav-link" href="#" onclick="showScheduledTasks()">
+                                <i class="bi bi-calendar3"></i> Schedule
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showFlagged()">
-                                <i class="bi bi-flag-fill text-danger"></i> Flagged
-                            </a>
-                        </li>
-                        <li class="nav-item admin-only" id="navEmployees">
-                            <a class="nav-link text-dark" href="#" onclick="showEmployees()">
+                        <li class="nav-item admin-only">
+                            <a class="nav-link" href="#" onclick="showEmployees()">
                                 <i class="bi bi-people"></i> Team
                             </a>
                         </li>
-                        <li class="nav-item admin-only">
-                            <a class="nav-link text-dark" href="#" onclick="showManageTasks()">
-                                <i class="bi bi-card-checklist"></i> Manage Tasks
-                            </a>
-                        </li>
-                        <li class="nav-item admin-only">
-                            <a class="nav-link text-dark" href="#" onclick="showSeasonalRequirements()">
-                                <i class="bi bi-calendar2-event"></i> Seasonal Requirements
-                            </a>
-                        </li>
                     </ul>
+                    
                     <ul class="navbar-nav">
-                        <li class="nav-item admin-only">
-                            <button class="btn btn-sm btn-outline-dark mx-2" onclick="exportAllDataToCSV()">
-                                <i class="bi bi-download"></i> Export Data
-                            </button>
-                        </li>
                         <li class="nav-item">
-                            <span class="nav-link text-dark">
-                                <i class="bi bi-person-circle"></i> <span id="currentUserDisplay">User</span>
-                                <span id="adminBadge" class="badge bg-danger hidden">ADMIN</span>
+                            <span class="navbar-text me-3">
+                                <i class="bi bi-person-circle"></i> 
+                                <span id="currentUserDisplay"></span>
+                                <span id="adminBadge" class="badge admin-badge ms-2 hidden">ADMIN</span>
                             </span>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="logout()">
+                            <span id="syncStatus" class="navbar-text me-3">
+                                <i class="bi bi-wifi text-success"></i> Online
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <button class="btn btn-outline-light" onclick="logout()">
                                 <i class="bi bi-box-arrow-right"></i> Logout
-                            </a>
+                            </button>
                         </li>
                     </ul>
                 </div>
             </div>
         </nav>
 
-        <!-- Dashboard View -->
-        <div id="dashboardView" class="container mt-4">
-            <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
-            
-            <!-- Stats -->
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="card bg-warning">
-                        <div class="card-body stat-card">
-                            <h6>Total Clusters</h6>
-                            <h2 id="statClusters">0</h2>
+        <!-- Main Content -->
+        <div class="container-fluid mt-4">
+            <!-- Dashboard View -->
+            <div id="dashboardView">
+                <div class="row">
+                    <!-- Statistics Cards -->
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card dashboard-stat-card" onclick="showClusters()">
+                            <div class="card-body text-center">
+                                <i class="bi bi-geo-alt-fill text-primary" style="font-size: 2rem;"></i>
+                                <h3 id="statClusters" class="mt-2">0</h3>
+                                <p class="text-muted">Total Clusters</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-success text-white">
-                        <div class="card-body stat-card">
-                            <h6>Total Hives</h6>
-                            <h2 id="statHives">0</h2>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card dashboard-stat-card" onclick="showClusters()">
+                            <div class="card-body text-center">
+                                <i class="bi bi-hexagon-fill text-success" style="font-size: 2rem;"></i>
+                                <h3 id="statHives" class="mt-2">0</h3>
+                                <p class="text-muted">Total Hives</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-info text-white">
-                        <div class="card-body stat-card">
-                            <h6>Total Actions</h6>
-                            <h2 id="statActions">0</h2>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card dashboard-stat-card" onclick="showActions()">
+                            <div class="card-body text-center">
+                                <i class="bi bi-list-check text-info" style="font-size: 2rem;"></i>
+                                <h3 id="statActions" class="mt-2">0</h3>
+                                <p class="text-muted">Total Actions</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card bg-danger text-white">
-                        <div class="card-body stat-card">
-                            <h6>Flagged Issues</h6>
-                            <h2 id="statFlagged">0</h2>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Flagged Items Alert -->
-            <div id="flaggedAlert" class="alert alert-danger hidden">
-                <h5><i class="bi bi-exclamation-triangle-fill"></i> Urgent Flagged Items!</h5>
-                <div id="flaggedItemsList"></div>
-                <button class="btn btn-danger mt-2" onclick="showFlagged()">View All Flagged Items</button>
-            </div>
-
-            <!-- Map -->
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="bi bi-map"></i> Hive Cluster Locations</h5>
-                </div>
-                <div class="card-body p-0">
-                    <div id="map"></div>
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-warning" onclick="showAddClusterForm()">
-                        <i class="bi bi-plus-circle"></i> Add New Cluster
-                    </button>
-                </div>
-            </div>
-
-            <!-- Recent Actions & Scheduled Tasks -->
-            <div class="row">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header bg-info text-white">
-                            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Actions</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="recentActions"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Scheduled Tasks</h5>
-                        </div>
-                        <div class="card-body">
-                            <div id="scheduledTasksPreview"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Clusters View -->
-        <div id="clustersView" class="container mt-4 hidden">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="bi bi-geo-alt"></i> Hive Clusters</h1>
-                <button class="btn btn-warning btn-lg" onclick="showAddClusterForm()">
-                    <i class="bi bi-plus-circle"></i> Add Cluster
-                </button>
-            </div>
-
-            <div id="clustersList" class="row"></div>
-        </div>
-
-        <!-- Add/Edit Cluster Form -->
-        <div id="clusterFormView" class="container mt-4 hidden">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header bg-warning">
-                            <h4 class="mb-0" id="clusterFormTitle">Add Hive Cluster</h4>
-                        </div>
-                        <div class="card-body">
-                            <form id="clusterForm">
-                                <input type="hidden" id="clusterId">
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Cluster Name</label>
-                                    <input type="text" id="clusterName" class="form-control form-control-lg" placeholder="e.g., North Field Apiary" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Description</label>
-                                    <textarea id="clusterDescription" class="form-control" rows="2" placeholder="Brief description"></textarea>
-                                </div>
-                                
-                                <div class="card mb-3 bg-light">
-                                    <div class="card-body">
-                                        <h6 class="card-title"><i class="bi bi-geo-alt"></i> Location</h6>
-                                        
-                                        <div class="row mb-3">
-                                            <div class="col-md-6">
-                                                <label class="form-label">Latitude</label>
-                                                <input type="number" step="any" id="clusterLat" class="form-control" placeholder="-41.27" required>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <label class="form-label">Longitude</label>
-                                                <input type="number" step="any" id="clusterLng" class="form-control" placeholder="173.28" required>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="d-grid gap-2 d-md-flex">
-                                            <button type="button" id="useLocationBtn" class="btn btn-success flex-fill">
-                                                <i class="bi bi-crosshair"></i> Use My GPS Location
-                                            </button>
-                                            <button type="button" class="btn btn-outline-info flex-fill" onclick="showMapPicker()">
-                                                <i class="bi bi-map"></i> Pick on Map
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Map picker -->
-                                        <div id="mapPickerContainer" class="hidden mt-3">
-                                            <div id="mapPicker" style="height: 350px; border-radius: 5px;"></div>
-                                            <small class="text-muted">Click map or drag marker to set location</small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Number of Hives</label>
-                                        <input type="number" id="clusterHiveCount" class="form-control" value="1" min="1" required>
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Harvest Timeline</label>
-                                        <input type="text" id="clusterHarvest" class="form-control" placeholder="Spring 2025">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label class="form-label">Sugar Requirements</label>
-                                        <input type="text" id="clusterSugar" class="form-control" placeholder="10kg/month">
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Notes</label>
-                                    <textarea id="clusterNotes" class="form-control" rows="3" placeholder="Special notes..."></textarea>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-secondary" onclick="showClusters()">
-                                        <i class="bi bi-x"></i> Cancel
-                                    </button>
-                                    <button type="submit" class="btn btn-warning btn-lg">
-                                        <i class="bi bi-check-circle"></i> Save Cluster
-                                    </button>
-                                </div>
-                            </form>
-                            
-                            <!-- Anomaly Management (for edit mode) -->
-                            <div id="anomalySection" class="mt-4 pt-4 border-top hidden">
-                                <h5 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Anomaly Management</h5>
-                                <p class="text-muted">Break cluster into individual hives for tracking infections or problems.</p>
-                                <button class="btn btn-danger" onclick="breakIntoIndividualHives()">
-                                    <i class="bi bi-diagram-3"></i> Break Into Individual Hives
-                                </button>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card dashboard-stat-card" onclick="showFlagged()">
+                            <div class="card-body text-center">
+                                <i class="bi bi-flag-fill text-warning" style="font-size: 2rem;"></i>
+                                <h3 id="statFlagged" class="mt-2">0</h3>
+                                <p class="text-muted">Flagged Issues</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Actions View -->
-        <div id="actionsView" class="container mt-4 hidden">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="bi bi-list-check"></i> Action History</h1>
-                <button class="btn btn-warning btn-lg" onclick="showLogActionForm()">
-                    <i class="bi bi-plus-circle"></i> Log Action
-                </button>
-            </div>
-            
-            <!-- Filters -->
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Filter by Cluster</label>
-                            <select id="filterCluster" class="form-select" onchange="renderActions()"></select>
+                <div class="row">
+                    <!-- Map -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-map"></i> Cluster Locations</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="map"></div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Filter by Category</label>
-                            <select id="filterCategory" class="form-select" onchange="renderActions()"></select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Filter by Employee</label>
-                            <select id="filterEmployee" class="form-select" onchange="renderActions()"></select>
+                    </div>
+
+                    <!-- Calendar Widget -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-calendar-week"></i> Upcoming Tasks</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="calendarWidget">
+                                    <p class="text-muted">Loading calendar...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                <div class="row">
+                    <!-- Recent Actions -->
+                    <div class="col-lg-8 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-clock-history"></i> Recent Actions</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentActions">
+                                    <p class="text-muted">Loading actions...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scheduled Tasks Preview -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-calendar-check"></i> Scheduled Tasks</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="scheduledTasksPreview">
+                                    <p class="text-muted">Loading scheduled tasks...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flagged Items Alert -->
+                <div id="flaggedAlert" class="alert alert-warning hidden">
+                    <h6><i class="bi bi-exclamation-triangle"></i> Urgent Items Require Attention</h6>
+                    <div id="flaggedItemsList"></div>
+                </div>
             </div>
 
-            <div id="actionsList"></div>
-        </div>
+            <!-- Clusters View -->
+            <div id="clustersView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-geo-alt"></i> Hive Clusters</h2>
+                    <button class="btn btn-primary" onclick="showAddClusterForm()">
+                        <i class="bi bi-plus"></i> Add Cluster
+                    </button>
+                </div>
+                
+                <div id="clusterTypeFilter" class="mb-4"></div>
+                
+                <div class="row" id="clustersList">
+                    <p class="text-center text-muted my-5">Loading clusters...</p>
+                </div>
+            </div>
 
-        <!-- Log Action Form -->
-        <div id="logActionView" class="container mt-4 hidden">
-            <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Log Hive Action</h2>
-            
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="card">
-                        <div class="card-header bg-warning">
-                            <h5 class="mb-0">Action Log</h5>
-                        </div>
-                        <div class="card-body">
-                            <form id="actionForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Select Cluster</label>
-                                    <select id="actionCluster" class="form-select form-select-lg" required onchange="loadClusterHives()"></select>
-                                </div>
-                                
-                                <div id="individualHiveSelect" class="mb-3 hidden">
-                                    <label class="form-label">Specific Hive (Optional)</label>
-                                    <select id="actionHive" class="form-select">
-                                        <option value="">All hives in cluster</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Action Date</label>
-                                    <input type="date" id="actionDate" class="form-control form-control-lg" required>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="form-label mb-0">Select Tasks</label>
-                                        <div class="btn-group btn-group-sm">
-                                            <input type="radio" class="btn-check" name="taskFilter" id="filterCommon" checked onclick="filterTaskCheckboxes('common')">
-                                            <label class="btn btn-outline-success" for="filterCommon">
-                                                <i class="bi bi-star-fill"></i> Common
-                                            </label>
-                                            <input type="radio" class="btn-check" name="taskFilter" id="filterAll" onclick="filterTaskCheckboxes('all')">
-                                            <label class="btn btn-outline-warning" for="filterAll">All</label>
+            <!-- Cluster Form View -->
+            <div id="clusterFormView" class="hidden">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 id="clusterFormTitle">Add New Hive Cluster</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="clusterForm">
+                                    <input type="hidden" id="clusterId">
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="clusterName" class="form-label">Cluster Name *</label>
+                                            <input type="text" class="form-control" id="clusterName" required>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="clusterType" class="form-label">Cluster Type *</label>
+                                            <select class="form-select" id="clusterType" required>
+                                                <option value="production">Production</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    <div id="taskCheckboxes" class="task-checkboxes-container"></div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Notes</label>
-                                    <textarea id="actionNotes" class="form-control" rows="3" placeholder="Observations, measurements, details..."></textarea>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label">Flag This Entry</label>
-                                    <select id="actionFlag" class="form-select">
-                                        <option value="">No Flag (Normal)</option>
-                                        <option value="urgent">🚨 Urgent - Immediate Attention Required</option>
-                                        <option value="warning">⚠️ Warning - Monitor Closely</option>
-                                        <option value="info">ℹ️ Info - For Review</option>
-                                    </select>
-                                    <small class="text-muted">Flag problems, infections, or important events for team visibility</small>
-                                </div>
-
-                                <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-secondary" onclick="showDashboard()">Cancel</button>
-                                    <button type="submit" class="btn btn-warning btn-lg">
-                                        <i class="bi bi-check-circle-fill"></i> Log Actions
-                                    </button>
-                                </div>
-                            </form>
+                                    
+                                    <div class="mb-3">
+                                        <label for="clusterDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="clusterDescription" rows="3"></textarea>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label for="clusterLat" class="form-label">Latitude *</label>
+                                            <input type="number" class="form-control" id="clusterLat" step="0.000001" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="clusterLng" class="form-label">Longitude *</label>
+                                            <input type="number" class="form-control" id="clusterLng" step="0.000001" required>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label for="clusterHiveCount" class="form-label">Hive Count *</label>
+                                            <input type="number" class="form-control" id="clusterHiveCount" min="1" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <button type="button" class="btn btn-outline-primary" id="useLocationBtn">
+                                            <i class="bi bi-crosshair"></i> Use Current Location
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary ms-2" onclick="showMapPicker()">
+                                            <i class="bi bi-map"></i> Pick on Map
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Landowner Information -->
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6><i class="bi bi-person"></i> Landowner Information</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="landownerName" class="form-label">Name</label>
+                                                    <input type="text" class="form-control" id="landownerName">
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="landownerPhone" class="form-label">Phone</label>
+                                                    <input type="tel" class="form-control" id="landownerPhone">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="landownerEmail" class="form-label">Email</label>
+                                                    <input type="email" class="form-control" id="landownerEmail">
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="landownerAddress" class="form-label">Address</label>
+                                                    <input type="text" class="form-control" id="landownerAddress">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Site Classification -->
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6><i class="bi bi-geo"></i> Site Classification</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="siteType" class="form-label">Site Type</label>
+                                                    <select class="form-select" id="siteType">
+                                                        <option value="">Select site type...</option>
+                                                        <option value="summer">Summer Site</option>
+                                                        <option value="winter">Winter Site</option>
+                                                        <option value="year-round">Year-round Site</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="accessType" class="form-label">Access Type</label>
+                                                    <select class="form-select" id="accessType">
+                                                        <option value="">Select access type...</option>
+                                                        <option value="all-weather">All Weather</option>
+                                                        <option value="dry-only">Dry Only</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="contactBeforeVisit">
+                                                        <label class="form-check-label" for="contactBeforeVisit">
+                                                            Contact Landowner Before Visit
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="isQuarantine">
+                                                        <label class="form-check-label" for="isQuarantine">
+                                                            Quarantine Site
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="clusterHarvest" class="form-label">Harvest Timeline</label>
+                                            <input type="text" class="form-control" id="clusterHarvest" placeholder="e.g., Late January - Early February">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="clusterSugar" class="form-label">Sugar Requirements</label>
+                                            <input type="text" class="form-control" id="clusterSugar" placeholder="e.g., 20kg for winter">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="clusterNotes" class="form-label">Notes</label>
+                                        <textarea class="form-control" id="clusterNotes" rows="3"></textarea>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check"></i> Save Cluster
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="showClusters()">
+                                            <i class="bi bi-x"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Sidebar -->
-                <div class="col-lg-4">
-                    <div class="card bg-light">
+                <!-- Map Picker -->
+                <div id="mapPickerContainer" class="hidden mt-4">
+                    <div class="card">
                         <div class="card-header">
-                            <h6 class="mb-0"><i class="bi bi-calendar-plus"></i> Schedule for Next Visit</h6>
+                            <h6><i class="bi bi-map"></i> Pick Location on Map</h6>
                         </div>
-                        <div class="card-body">
-                            <p class="small">Add tasks to do on next visit to this cluster:</p>
-                            <button class="btn btn-primary w-100" onclick="showScheduleTaskModal()">
-                                <i class="bi bi-plus"></i> Add Scheduled Task
-                            </button>
+                        <div class="card-body p-0">
+                            <div id="mapPicker" style="height: 400px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions View -->
+            <div id="actionsView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-list-check"></i> Actions</h2>
+                    <button class="btn btn-primary" onclick="showLogActionForm()">
+                        <i class="bi bi-plus"></i> Log Action
+                    </button>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterCluster">
+                            <option value="">All Clusters</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterCategory">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="filterEmployee">
+                            <option value="">All Employees</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-secondary w-100" onclick="renderActions()">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="actionsList">
+                    <p class="text-center text-muted my-5">Loading actions...</p>
+                </div>
+            </div>
+
+            <!-- Log Action Form View -->
+            <div id="logActionView" class="hidden">
+                <div class="row">
+                    <div class="col-lg-8 mx-auto">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-plus-circle"></i> Log New Action</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="actionForm">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="actionCluster" class="form-label">Cluster *</label>
+                                            <select class="form-select" id="actionCluster" required onchange="loadClusterHives()">
+                                                <option value="">Select cluster...</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="actionDate" class="form-label">Date *</label>
+                                            <input type="date" class="form-control" id="actionDate" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="individualHiveSelect" class="mb-3 hidden">
+                                        <label for="actionHive" class="form-label">Specific Hive (Optional)</label>
+                                        <select class="form-select" id="actionHive">
+                                            <option value="">All hives in cluster</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Tasks Performed *</label>
+                                        <div class="mb-2">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="filterTaskCheckboxes('common')">
+                                                <i class="bi bi-star"></i> Common Tasks
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="filterTaskCheckboxes('all')">
+                                                <i class="bi bi-list"></i> All Tasks
+                                            </button>
+                                        </div>
+                                        <div id="taskCheckboxes"></div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="actionFlag" class="form-label">Flag</label>
+                                            <select class="form-select" id="actionFlag">
+                                                <option value="">No flag</option>
+                                                <option value="info">Info</option>
+                                                <option value="warning">Warning</option>
+                                                <option value="urgent">Urgent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="actionNotes" class="form-label">Notes</label>
+                                        <textarea class="form-control" id="actionNotes" rows="3"></textarea>
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check"></i> Log Action
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="showActions()">
+                                            <i class="bi bi-x"></i> Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduled Tasks View -->
+            <div id="scheduledView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-calendar3"></i> Scheduled Tasks</h2>
+                    <div>
+                        <button class="btn btn-primary" onclick="showScheduleTaskModal()">
+                            <i class="bi bi-plus"></i> Schedule New Task
+                        </button>
+                        <button class="btn btn-outline-info ms-2" onclick="showSuggestedSchedule()">
+                            <i class="bi bi-lightbulb"></i> Suggested Schedule
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-list-check"></i> Scheduled Tasks</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="scheduledTasksList">
+                                    <p class="text-muted">Loading scheduled tasks...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-timeline"></i> Timeline</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="scheduleTimeline">
+                                    <p class="text-muted">Loading timeline...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggested Schedule View -->
+            <div id="suggestedScheduleView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-lightbulb"></i> Suggested Schedule</h2>
+                    <button class="btn btn-secondary" onclick="showScheduledTasks()">
+                        <i class="bi bi-arrow-left"></i> Back to Schedule
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="bi bi-calendar-heart"></i> Seasonal Task Suggestions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="suggestedTasksList">
+                            <p class="text-muted">Loading suggestions...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flagged Items View -->
+            <div id="flaggedView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-flag"></i> Flagged Items</h2>
+                </div>
+                
+                <div id="flaggedItemsList2">
+                    <p class="text-center text-muted my-5">Loading flagged items...</p>
+                </div>
+            </div>
+
+            <!-- Employee Management View -->
+            <div id="employeesView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-people"></i> Team Management</h2>
+                </div>
+                
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-person-plus"></i> Add Employee</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="addEmployeeForm">
+                                    <div class="mb-3">
+                                        <label for="newEmployeeName" class="form-label">Employee Name</label>
+                                        <input type="text" class="form-control" id="newEmployeeName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="newEmployeePassword" class="form-label">Password</label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="newEmployeePassword" required>
+                                            <button class="btn btn-outline-secondary" type="button" onclick="toggleEmployeePasswordVisibility()">
+                                                <i id="employeePasswordToggleIcon" class="bi bi-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus"></i> Add Employee
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="bi bi-people-fill"></i> Current Team</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="employeesList">
+                                    <p class="text-muted">Loading employees...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Scheduled Tasks View -->
-        <div id="scheduledView" class="container mt-4 hidden">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mb-0"><i class="bi bi-calendar-check"></i> Scheduled Tasks</h1>
-                <button class="btn btn-primary" onclick="copyCalendarFeedLink()">
-                    <i class="bi bi-link-45deg"></i> Copy Calendar Feed Link
-                </button>
-            </div>
-            
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> <strong>Share with Staff:</strong> 
-                Click "Copy Calendar Feed Link" to get a URL that always shows the latest scheduled tasks. 
-                Staff can bookmark it and download updates anytime, or add to Google Calendar.
-            </div>
-            
-            <div id="scheduledTasksList"></div>
-        </div>
-
-        <!-- Flagged Items View -->
-        <div id="flaggedView" class="container mt-4 hidden">
-            <h1 class="mb-4"><i class="bi bi-flag-fill text-danger"></i> Flagged Items</h1>
-            <div id="flaggedItemsList2"></div>
-        </div>
-
-        <!-- Employee Management (Admin Only) -->
-        <div id="employeesView" class="container mt-4 hidden">
-            <h1 class="mb-4"><i class="bi bi-people"></i> Team Management</h1>
-            
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">Add New Employee</h5>
-                </div>
-                <div class="card-body">
-                    <form id="addEmployeeForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Employee Name</label>
-                                <input type="text" id="newEmployeeName" class="form-control" placeholder="Full name" required>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Employee Password</label>
-                                <div class="input-group">
-                                    <input type="password" id="newEmployeePassword" class="form-control" placeholder="Create password" required>
-                                    <button class="btn btn-outline-secondary" type="button" onclick="toggleEmployeePasswordVisibility()">
-                                        <i class="bi bi-eye" id="employeePasswordToggleIcon"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-person-plus"></i> Add Employee
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Current Team Members</h5>
-                </div>
-                <div class="card-body">
-                    <div id="employeesList"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Task Management (Admin Only) -->
-        <div id="manageTasksView" class="container mt-4 hidden">
-            <h1 class="mb-4"><i class="bi bi-card-checklist"></i> Task Management</h1>
-            <p class="text-muted">Customize your task list. Add new tasks, rename existing ones, or remove tasks you don't need.</p>
-            
-            <!-- Add New Task -->
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add New Task</h5>
-                </div>
-                <div class="card-body">
-                    <form id="addTaskForm">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Category</label>
-                                <select id="newTaskCategory" class="form-select" required>
-                                    <option value="">Select or type new...</option>
-                                    <option value="Inspection">Inspection</option>
-                                    <option value="Feeding">Feeding</option>
-                                    <option value="Treatment">Treatment</option>
-                                    <option value="Harvest">Harvest</option>
-                                    <option value="Maintenance">Maintenance</option>
-                                    <option value="Seasonal">Seasonal</option>
-                                    <option value="Queen Management">Queen Management</option>
-                                    <option value="Problems">Problems</option>
-                                    <option value="Records">Records</option>
-                                </select>
-                                <input type="text" id="newTaskCategoryCustom" class="form-control mt-2" placeholder="Or enter new category name">
-                            </div>
-                            <div class="col-md-5 mb-3">
-                                <label class="form-label">Task Name</label>
-                                <input type="text" id="newTaskName" class="form-control" placeholder="e.g., Rodent Management Check" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Commonly Used?</label>
-                                <div class="form-check form-switch mt-2">
-                                    <input class="form-check-input" type="checkbox" id="newTaskCommon">
-                                    <label class="form-check-label" for="newTaskCommon">Show in quick list</label>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-plus-circle"></i> Add Task
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Current Tasks by Category -->
-            <div class="card">
-                <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="bi bi-list-task"></i> Current Tasks</h5>
-                </div>
-                <div class="card-body">
-                    <div id="tasksList"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Seasonal Requirements (Admin Only) -->
-        <div id="seasonalRequirementsView" class="container mt-4 hidden">
-            <h1 class="mb-4"><i class="bi bi-calendar2-event"></i> Seasonal Requirements</h1>
-            <p class="text-muted">Set required tasks with deadlines. Get notified when clusters haven't completed required tasks.</p>
-            
-            <!-- Add New Requirement -->
-            <div class="card mb-4">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-plus-circle"></i> Add Seasonal Requirement</h5>
-                </div>
-                <div class="card-body">
-                    <form id="addRequirementForm">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Requirement Name</label>
-                                <input type="text" id="requirementName" class="form-control" placeholder="e.g., Burnoff Required, Annual Inspection, Varroa Treatment" required>
-                                <small class="text-muted">Custom requirement or regulatory task</small>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Due Date</label>
-                                <input type="date" id="requirementDueDate" class="form-control" required>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Alert Days Before</label>
-                                <input type="number" id="requirementAlertDays" class="form-control" value="14" min="1" max="90">
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Frequency</label>
-                                <select id="requirementFrequency" class="form-select" required>
-                                    <option value="once">One-time only</option>
-                                    <option value="annual" selected>Annual (Repeats yearly)</option>
-                                    <option value="biannual">Biannual (2x per year)</option>
-                                    <option value="quarterly">Quarterly (4x per year)</option>
-                                    <option value="monthly">Monthly</option>
+        <!-- Schedule Task Modal -->
+        <div class="modal fade" id="scheduleTaskModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Schedule New Task</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="scheduleTaskForm">
+                            <div class="mb-3">
+                                <label for="scheduleCluster" class="form-label">Cluster *</label>
+                                <select class="form-select" id="scheduleCluster" required>
+                                    <option value="">Select cluster...</option>
                                 </select>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Priority</label>
-                                <select id="requirementPriority" class="form-select">
+                            
+                            <div class="mb-3">
+                                <label for="scheduleTask" class="form-label">Task *</label>
+                                <select class="form-select" id="scheduleTask" required>
+                                    <option value="">Select task...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="scheduleDueDate" class="form-label">Due Date *</label>
+                                    <input type="date" class="form-control" id="scheduleDueDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="scheduleTime" class="form-label">Time (Optional)</label>
+                                    <input type="time" class="form-control" id="scheduleTime">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="schedulePriority" class="form-label">Priority</label>
+                                <select class="form-select" id="schedulePriority">
                                     <option value="normal">Normal</option>
                                     <option value="high">High</option>
-                                    <option value="urgent">Urgent/Regulatory</option>
+                                    <option value="urgent">Urgent</option>
                                 </select>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Category</label>
-                                <select id="requirementCategory" class="form-select">
-                                    <option value="regulatory">Regulatory/Legal</option>
-                                    <option value="seasonal">Seasonal Task</option>
-                                    <option value="treatment">Treatment</option>
-                                    <option value="maintenance">Maintenance</option>
-                                    <option value="inspection">Inspection</option>
-                                    <option value="other">Other</option>
-                                </select>
+                            
+                            <div class="mb-3">
+                                <label for="scheduleNotes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="scheduleNotes" rows="3"></textarea>
                             </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label"><strong>Apply to Clusters:</strong></label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="clusterSelection" id="allClusters" value="all" checked>
-                                <label class="form-check-label" for="allClusters">
-                                    All Clusters (Current and Future)
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="clusterSelection" id="specificClusters" value="specific">
-                                <label class="form-check-label" for="specificClusters">
-                                    Select Specific Clusters
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <div id="clusterSelectionContainer" class="mb-3 hidden">
-                            <div class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-                                <div id="clusterCheckboxes"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label class="form-label">Notes (Optional)</label>
-                            <textarea id="requirementNotes" class="form-control" rows="2" placeholder="e.g., Required by fire authority, Contact inspector before..."></textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-plus-circle"></i> Add Requirement
-                        </button>
-                    </form>
-                </div>
-            </div>
-            
-            <!-- Current Requirements -->
-            <div class="card mb-4">
-                <div class="card-header bg-warning d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-list-check"></i> Current Requirements</h5>
-                    <button class="btn btn-sm btn-success" onclick="exportAllRequirementsToCalendar()">
-                        <i class="bi bi-calendar-plus"></i> Export All to Calendar
-                    </button>
-                </div>
-                <div class="card-body">
-                    <div id="requirementsList"></div>
-                </div>
-            </div>
-
-            <!-- Compliance Status by Cluster -->
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Compliance Status</h5>
-                </div>
-                <div class="card-body">
-                    <div id="complianceStatus"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="handleScheduleTask(event)">Schedule Task</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Schedule Task Modal -->
-    <div class="modal fade" id="scheduleTaskModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Schedule Task for Next Visit</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="scheduleTaskForm">
-                        <div class="mb-3">
-                            <label class="form-label">Cluster</label>
-                            <select id="scheduleCluster" class="form-select" required></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Task</label>
-                            <select id="scheduleTask" class="form-select" required></select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Due Date (Optional)</label>
-                            <input type="date" id="scheduleDueDate" class="form-control">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Priority</label>
-                            <select id="schedulePriority" class="form-select">
-                                <option value="normal">Normal</option>
-                                <option value="high">High Priority</option>
-                                <option value="urgent">Urgent</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Notes</label>
-                            <textarea id="scheduleNotes" class="form-control" rows="2"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Schedule Task</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-    
-    <!-- Leaflet.js for OpenStreetMap - No API key needed! -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Global callback for maps
-        window.mapsLoaded = function() {
-            console.log('OpenStreetMap loaded successfully');
-            // Maps will initialize when needed
-        }
-        // Trigger immediately since Leaflet loads synchronously
-        window.mapsLoaded();
-    </script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- BeeMarshall Modules -->
+    <script src="js/tasks.js"></script>
+    <script src="js/scheduling.js"></script>
+    <script src="js/clusters.js"></script>
+    <script src="js/actions.js"></script>
+    <script src="js/employees.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/core.js"></script>
     
     <!-- Firebase Configuration -->
     <script>
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyALV0NmXT2VIZBrAR6D7rSnphNljhFIeb0",
             authDomain: "larsbees-378aa.firebaseapp.com",
             databaseURL: "https://larsbees-378aa-default-rtdb.firebaseio.com",
             projectId: "larsbees-378aa",
-            storageBucket: "larsbees-378aa.firebasestorage.app",
-            messagingSenderId: "101401288589",
-            appId: "1:101401288589:web:a4208c078ec609364fe7c4",
-            measurementId: "G-KYV5R1YJBB"
+            storageBucket: "larsbees-378aa.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
         };
         
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        
+        // Initialize dashboard functionality after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make dashboard cards clickable
+            setTimeout(() => {
+                makeDashboardCardsClickable();
+                makeRecentActionsClickable();
+            }, 1000);
+        });
     </script>
-    
-    <!-- Application JavaScript -->
-    <script src="beemarshall-full.js"></script>
 </body>
 </html>
-
