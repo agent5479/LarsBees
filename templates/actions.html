@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Actions - LarsBees{% endblock %}
+{% block title %}Action History - BeeMarshall{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col">
-        <h1 class="display-5"><i class="bi bi-list-check"></i> Hive Actions</h1>
+        <h1 class="display-5"><i class="bi bi-list-check"></i> Action History</h1>
         <p class="lead text-muted">Track all your hive management activities</p>
     </div>
     <div class="col-auto">
@@ -62,15 +62,22 @@
                     <tr {% if action.is_archived %}class="table-secondary"{% endif %}>
                         <td>{{ action.action_date.strftime('%Y-%m-%d %H:%M') }}</td>
                         <td>
-                            <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}">
-                                {{ action.cluster.name }}
+                            <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" 
+                               class="text-decoration-none fw-bold">
+                                <i class="bi bi-geo-alt-fill text-warning"></i> {{ action.cluster.name }}
                             </a>
                         </td>
                         <td>
                             {% if action.individual_hive %}
-                                {{ action.individual_hive.hive_number }}
+                                <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}#hive-{{ action.individual_hive.id }}" 
+                                   class="text-decoration-none">
+                                    <i class="bi bi-hexagon-fill text-warning"></i> {{ action.individual_hive.hive_number }}
+                                </a>
                             {% else %}
-                                <small class="text-muted">All hives</small>
+                                <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" 
+                                   class="text-decoration-none">
+                                    <small class="text-muted"><i class="bi bi-hexagon"></i> All hives</small>
+                                </a>
                             {% endif %}
                         </td>
                         <td>
@@ -78,15 +85,21 @@
                         </td>
                         <td>{{ action.description[:100] if action.description else '-' }}</td>
                         <td>
-                            {% if action.is_archived %}
-                            <button class="btn btn-sm btn-outline-success" onclick="unarchiveAction({{ action.id }})">
-                                <i class="bi bi-arrow-counterclockwise"></i> Unarchive
-                            </button>
-                            {% else %}
-                            <button class="btn btn-sm btn-outline-secondary" onclick="archiveAction({{ action.id }})">
-                                <i class="bi bi-archive"></i> Archive
-                            </button>
-                            {% endif %}
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('log_action') }}?cluster_id={{ action.cluster_id }}{% if action.individual_hive_id %}&hive_id={{ action.individual_hive_id }}{% endif %}" 
+                                   class="btn btn-sm btn-warning" title="Log new action for this cluster">
+                                    <i class="bi bi-plus-circle"></i>
+                                </a>
+                                {% if action.is_archived %}
+                                <button class="btn btn-sm btn-outline-success" onclick="unarchiveAction({{ action.id }})" title="Unarchive action">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-secondary" onclick="archiveAction({{ action.id }})" title="Archive action">
+                                    <i class="bi bi-archive"></i>
+                                </button>
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

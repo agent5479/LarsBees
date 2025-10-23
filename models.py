@@ -31,8 +31,14 @@ class User(UserMixin, db.Model):
     can_manage_users = db.Column(db.Boolean, default=False)
     created_by_admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
+    # Multi-tenant architecture
+    organization_id = db.Column(db.String(100), nullable=True)  # Firebase organization ID
+    is_organization_admin = db.Column(db.Boolean, default=False)
+    is_super_admin = db.Column(db.Boolean, default=False)  # Only for system administrators
+    
     # Relationships
     hive_clusters = db.relationship('HiveCluster', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
+    organization = db.relationship('Organization', backref='users', lazy='dynamic')
     
     def set_password(self, password):
         """Hash and set password"""
@@ -59,6 +65,24 @@ class User(UserMixin, db.Model):
         """Check if user can edit other users"""
         return self.is_admin or self.can_manage_users or self.role in ['admin', 'owner', 'director']
     
+    def is_super_admin(self):
+        """Check if user is a super admin (system-wide)"""
+        return self.is_super_admin
+    
+    def is_org_admin(self):
+        """Check if user is an organization admin"""
+        return self.is_organization_admin or self.role in ['admin', 'owner']
+    
+    def can_manage_organization(self):
+        """Check if user can manage organization settings"""
+        return self.is_organization_admin or self.is_super_admin or self.role in ['admin', 'owner']
+    
+    def get_organization_users(self):
+        """Get all users in the same organization"""
+        if not self.organization_id:
+            return User.query.filter_by(id=self.id)
+        return User.query.filter_by(organization_id=self.organization_id)
+    
     def get_role_display_name(self):
         """Get display name for role"""
         role_names = {
@@ -80,6 +104,48 @@ class User(UserMixin, db.Model):
             'trial': 'Trial'
         }
         return status_names.get(self.status, self.status.title())
+
+
+class Organization(db.Model):
+    """Organization model for multi-tenant architecture"""
+    __tablename__ = 'organizations'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    firebase_org_id = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    
+    # Organization settings
+    max_users = db.Column(db.Integer, default=10)
+    max_clusters = db.Column(db.Integer, default=50)
+    subscription_tier = db.Column(db.String(50), default='basic')  # basic, pro, enterprise
+    
+    # Contact information
+    contact_email = db.Column(db.String(120))
+    contact_phone = db.Column(db.String(20))
+    address = db.Column(db.Text)
+    
+    # Status
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    users = db.relationship('User', backref='organization', lazy='dynamic')
+    
+    def __repr__(self):
+        return f'<Organization {self.name}>'
+    
+    def get_user_count(self):
+        """Get number of active users in organization"""
+        return self.users.filter_by(is_active=True).count()
+    
+    def get_cluster_count(self):
+        """Get number of clusters in organization"""
+        return HiveCluster.query.join(User).filter(
+            User.organization_id == self.firebase_org_id,
+            HiveCluster.is_active == True
+        ).count()
 
 
 class HiveCluster(db.Model):

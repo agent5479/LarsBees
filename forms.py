@@ -375,3 +375,68 @@ class UserCreateForm(FlaskForm):
         if user:
             raise ValidationError('Email already registered. Please use a different one.')
 
+
+class OrganizationForm(FlaskForm):
+    """Form for creating/editing organizations"""
+    name = StringField('Organization Name', validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField('Description', validators=[Optional()])
+    
+    # Contact information
+    contact_email = StringField('Contact Email', validators=[Optional(), Email(), Length(max=120)])
+    contact_phone = StringField('Contact Phone', validators=[Optional(), Length(max=20)])
+    address = TextAreaField('Address', validators=[Optional()])
+    
+    # Organization settings
+    max_users = IntegerField('Maximum Users', validators=[Optional(), NumberRange(min=1, max=1000)], default=10)
+    max_clusters = IntegerField('Maximum Clusters', validators=[Optional(), NumberRange(min=1, max=10000)], default=50)
+    subscription_tier = SelectField('Subscription Tier', choices=[
+        ('basic', 'Basic'),
+        ('pro', 'Professional'),
+        ('enterprise', 'Enterprise')
+    ], default='basic')
+
+
+class OrganizationUserForm(FlaskForm):
+    """Form for adding users to organization"""
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    
+    first_name = StringField('First Name', validators=[Optional(), Length(max=100)])
+    last_name = StringField('Last Name', validators=[Optional(), Length(max=100)])
+    phone = StringField('Phone', validators=[Optional(), Length(max=20)])
+    
+    # Role and status management
+    role = SelectField('Role', choices=[
+        ('admin', 'Administrator'),
+        ('owner', 'Owner'),
+        ('director', 'Director'),
+        ('staff', 'Staff Member'),
+        ('contractor', 'Contractor'),
+        ('trial', 'Trial User')
+    ], validators=[DataRequired()], default='staff')
+    
+    status = SelectField('Status', choices=[
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+        ('trial', 'Trial')
+    ], validators=[DataRequired()], default='active')
+    
+    # Admin permissions
+    is_organization_admin = BooleanField('Organization Administrator')
+    can_manage_users = BooleanField('Can Manage Users')
+    
+    def validate_username(self, username):
+        from models import User
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('Username already taken. Please choose a different one.')
+    
+    def validate_email(self, email):
+        from models import User
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('Email already registered. Please use a different one.')
+

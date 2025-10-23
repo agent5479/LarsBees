@@ -460,9 +460,28 @@ def create_app(config_name='default'):
         """Log new hive action"""
         form = HiveActionForm()
         
+        # Get pre-filled parameters from URL
+        cluster_id = request.args.get('cluster_id', type=int)
+        hive_id = request.args.get('hive_id', type=int)
+        
         # Populate cluster choices
         clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
         form.cluster_id.choices = [(c.id, c.name) for c in clusters]
+        
+        # Pre-fill cluster if specified
+        if cluster_id:
+            form.cluster_id.data = cluster_id
+            
+            # Populate individual hive choices for the selected cluster
+            individual_hives = IndividualHive.query.filter_by(cluster_id=cluster_id, is_active=True).all()
+            form.individual_hive_id.choices = [(0, '-- All Hives --')] + [(h.id, h.hive_number) for h in individual_hives]
+            
+            # Pre-fill individual hive if specified
+            if hive_id:
+                form.individual_hive_id.data = hive_id
+        else:
+            # Populate individual hive choices (empty initially)
+            form.individual_hive_id.choices = [(0, '-- Select Cluster First --')]
         
         # Populate task type choices
         task_types = TaskType.query.filter_by(is_active=True).order_by(TaskType.order).all()
