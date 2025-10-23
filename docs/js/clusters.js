@@ -138,6 +138,32 @@ function showAddClusterForm() {
     }, 100);
 }
 
+function validateCoordinates() {
+    const lat = parseFloat(document.getElementById('clusterLat').value);
+    const lng = parseFloat(document.getElementById('clusterLng').value);
+    
+    const latField = document.getElementById('clusterLat');
+    const lngField = document.getElementById('clusterLng');
+    
+    // Reset validation classes
+    latField.classList.remove('is-valid', 'is-invalid');
+    lngField.classList.remove('is-valid', 'is-invalid');
+    
+    // Validate latitude
+    if (!isNaN(lat) && lat >= -90 && lat <= 90) {
+        latField.classList.add('is-valid');
+    } else if (latField.value.trim() !== '') {
+        latField.classList.add('is-invalid');
+    }
+    
+    // Validate longitude
+    if (!isNaN(lng) && lng >= -180 && lng <= 180) {
+        lngField.classList.add('is-valid');
+    } else if (lngField.value.trim() !== '') {
+        lngField.classList.add('is-invalid');
+    }
+}
+
 function populateClusterTypeDropdown() {
     const typeSelect = document.getElementById('clusterType');
     if (!typeSelect) return;
@@ -154,13 +180,32 @@ function populateClusterTypeDropdown() {
 function handleSaveCluster(e) {
     e.preventDefault();
     
+    // Validate coordinates
+    const lat = parseFloat(document.getElementById('clusterLat').value);
+    const lng = parseFloat(document.getElementById('clusterLng').value);
+    
+    if (isNaN(lat) || isNaN(lng)) {
+        alert('Please enter valid GPS coordinates.');
+        return;
+    }
+    
+    if (lat < -90 || lat > 90) {
+        alert('Latitude must be between -90 and 90 degrees.');
+        return;
+    }
+    
+    if (lng < -180 || lng > 180) {
+        alert('Longitude must be between -180 and 180 degrees.');
+        return;
+    }
+    
     const id = document.getElementById('clusterId').value;
     const cluster = {
         id: id ? parseInt(id) : Date.now(),
         name: document.getElementById('clusterName').value,
         description: document.getElementById('clusterDescription').value,
-        latitude: parseFloat(document.getElementById('clusterLat').value),
-        longitude: parseFloat(document.getElementById('clusterLng').value),
+        latitude: parseFloat(document.getElementById('clusterLat').value) || 0,
+        longitude: parseFloat(document.getElementById('clusterLng').value) || 0,
         hiveCount: parseInt(document.getElementById('clusterHiveCount').value),
         harvestTimeline: document.getElementById('clusterHarvest').value,
         sugarRequirements: document.getElementById('clusterSugar').value,
@@ -197,8 +242,17 @@ function editCluster(id) {
     document.getElementById('clusterId').value = cluster.id;
     document.getElementById('clusterName').value = cluster.name;
     document.getElementById('clusterDescription').value = cluster.description || '';
-    document.getElementById('clusterLat').value = cluster.latitude;
-    document.getElementById('clusterLng').value = cluster.longitude;
+    // Ensure coordinates are properly formatted as numbers
+    const lat = parseFloat(cluster.latitude);
+    const lng = parseFloat(cluster.longitude);
+    
+    console.log('Editing cluster coordinates:', { 
+        original: { lat: cluster.latitude, lng: cluster.longitude },
+        parsed: { lat, lng }
+    });
+    
+    document.getElementById('clusterLat').value = isNaN(lat) ? '' : lat.toFixed(6);
+    document.getElementById('clusterLng').value = isNaN(lng) ? '' : lng.toFixed(6);
     document.getElementById('clusterHiveCount').value = cluster.hiveCount;
     document.getElementById('clusterHarvest').value = cluster.harvestTimeline || '';
     document.getElementById('clusterSugar').value = cluster.sugarRequirements || '';
@@ -217,6 +271,10 @@ function editCluster(id) {
     
     // Populate cluster type dropdown
     populateClusterTypeDropdown();
+    
+    // Add event listeners for coordinate validation
+    document.getElementById('clusterLat').addEventListener('blur', validateCoordinates);
+    document.getElementById('clusterLng').addEventListener('blur', validateCoordinates);
     
     // Setup GPS button
     setTimeout(() => {
@@ -462,8 +520,15 @@ function getCurrentLocation() {
     
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            document.getElementById('clusterLat').value = position.coords.latitude.toFixed(6);
-            document.getElementById('clusterLng').value = position.coords.longitude.toFixed(6);
+            const lat = position.coords.latitude.toFixed(6);
+            const lng = position.coords.longitude.toFixed(6);
+            
+            document.getElementById('clusterLat').value = lat;
+            document.getElementById('clusterLng').value = lng;
+            
+            // Trigger validation to show success state
+            validateCoordinates();
+            
             showSyncStatus('<i class="bi bi-check"></i> Location captured!', 'success');
         },
         (error) => {

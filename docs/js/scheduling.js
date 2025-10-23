@@ -528,6 +528,122 @@ function editSuggestion(suggestionId) {
     }
 }
 
+// Calendar Feed Generation
+function generateCalendarFeed() {
+    const futureTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return !task.completed && taskDate >= today;
+    }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    
+    if (futureTasks.length === 0) {
+        alert('No scheduled tasks to export to calendar.');
+        return;
+    }
+    
+    const icsContent = generateICS(futureTasks);
+    downloadICS(icsContent, 'BeeMarshall-Scheduled-Tasks.ics');
+}
+
+function generateICS(tasks) {
+    const now = new Date();
+    const nowUTC = now.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    
+    let icsContent = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//BeeMarshall//Scheduled Tasks//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'X-WR-CALNAME:BeeMarshall Scheduled Tasks',
+        'X-WR-TIMEZONE:Pacific/Auckland',
+        'X-WR-CALDESC:Scheduled beekeeping tasks from BeeMarshall'
+    ];
+    
+    tasks.forEach(task => {
+        const cluster = clusters.find(c => c.id === task.clusterId);
+        const taskObj = tasks.find(tk => tk.id === task.taskId);
+        const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
+        
+        const startDate = new Date(task.dueDate);
+        if (task.scheduledTime) {
+            const [hours, minutes] = task.scheduledTime.split(':');
+            startDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        } else {
+            startDate.setHours(9, 0, 0, 0); // Default to 9 AM if no time specified
+        }
+        
+        const endDate = new Date(startDate.getTime() + (2 * 60 * 60 * 1000)); // 2 hours duration
+        
+        const startUTC = startDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const endUTC = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        
+        const summary = displayTaskName;
+        const description = `Cluster: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `Notes: ${task.notes}` : ''}`;
+        const location = cluster?.name || 'Apiary Location';
+        
+        icsContent.push(
+            'BEGIN:VEVENT',
+            `UID:${task.id}@beemarshall.com`,
+            `DTSTART:${startUTC}`,
+            `DTEND:${endUTC}`,
+            `DTSTAMP:${nowUTC}`,
+            `SUMMARY:${summary}`,
+            `DESCRIPTION:${description.replace(/\n/g, '\\n')}`,
+            `LOCATION:${location}`,
+            `STATUS:CONFIRMED`,
+            `PRIORITY:${task.priority === 'urgent' ? '1' : task.priority === 'high' ? '2' : '3'}`,
+            `CATEGORIES:BEEKEEPING`,
+            `CREATED:${nowUTC}`,
+            `LAST-MODIFIED:${nowUTC}`,
+            'END:VEVENT'
+        );
+    });
+    
+    icsContent.push('END:VCALENDAR');
+    
+    return icsContent.join('\r\n');
+}
+
+function downloadICS(icsContent, filename) {
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+}
+
+function copyCalendarFeedLink() {
+    // Generate a data URL for the ICS file
+    const futureTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return !task.completed && taskDate >= today;
+    });
+    
+    if (futureTasks.length === 0) {
+        alert('No scheduled tasks available for calendar feed.');
+        return;
+    }
+    
+    const icsContent = generateICS(futureTasks);
+    const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
+    
+    // Copy the data URL to clipboard
+    navigator.clipboard.writeText(dataUrl).then(() => {
+        alert(`📋 Calendar Feed Link Copied!\n\n✅ Share this link with your team!\n\nStaff can:\n• Import directly to Google Calendar, Outlook, etc.\n• Bookmark for automatic updates\n• Use as a live calendar feed\n\nThe link contains ${futureTasks.length} scheduled task(s) and will always show current data.`);
+    }).catch(err => {
+        // Fallback: download the file instead
+        downloadICS(icsContent, 'BeeMarshall-Scheduled-Tasks.ics');
+        alert('📋 Calendar file downloaded!\n\n✅ Share this .ics file with your team!\n\nStaff can import it to their calendar applications.');
+    });
+}
+
 // Schedule for Next Visit functionality
 function showScheduleForNextVisit() {
     hideAllViews();

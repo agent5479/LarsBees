@@ -977,11 +977,13 @@
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label for="clusterLat" class="form-label">Latitude *</label>
-                                            <input type="number" class="form-control" id="clusterLat" step="0.000001" required>
+                                            <input type="number" class="form-control" id="clusterLat" step="0.000001" min="-90" max="90" placeholder="-40.6764" required>
+                                            <div class="form-text">Enter latitude (e.g., -40.6764 for Collingwood, NZ)</div>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="clusterLng" class="form-label">Longitude *</label>
-                                            <input type="number" class="form-control" id="clusterLng" step="0.000001" required>
+                                            <input type="number" class="form-control" id="clusterLng" step="0.000001" min="-180" max="180" placeholder="172.6856" required>
+                                            <div class="form-text">Enter longitude (e.g., 172.6856 for Collingwood, NZ)</div>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label for="clusterHiveCount" class="form-label">Hive Count *</label>
@@ -1241,6 +1243,12 @@
                         </button>
                         <button class="btn btn-outline-info ms-2" onclick="showSuggestedSchedule()">
                             <i class="bi bi-lightbulb"></i> Suggested Schedule
+                        </button>
+                        <button class="btn btn-outline-success ms-2" onclick="generateCalendarFeed()">
+                            <i class="bi bi-download"></i> Export Calendar
+                        </button>
+                        <button class="btn btn-outline-primary ms-2" onclick="copyCalendarFeedLink()">
+                            <i class="bi bi-link-45deg"></i> Copy Feed Link
                         </button>
                     </div>
                 </div>
