@@ -1,5 +1,35 @@
 // BeeMarshall - Enhanced Scheduling Module
 
+// Check for overdue tasks and automatically flag them as urgent
+function checkAndFlagOverdueTasks() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let hasUpdates = false;
+    
+    scheduledTasks.forEach(task => {
+        if (!task.completed) {
+            const taskDate = new Date(task.dueDate);
+            taskDate.setHours(0, 0, 0, 0);
+            
+            // If task is overdue and not already urgent, mark as urgent
+            if (taskDate < today && task.priority !== 'urgent') {
+                task.priority = 'urgent';
+                task.overdue = true;
+                task.overdueDate = new Date().toISOString();
+                hasUpdates = true;
+                
+                console.log(`Task "${task.taskId}" is overdue and marked as urgent`);
+            }
+        }
+    });
+    
+    // Save updates to Firebase if any changes were made
+    if (hasUpdates) {
+        saveScheduledTasks();
+    }
+}
+
 // Enhanced scheduling with timeline view and task completion
 function showScheduledTasks() {
     hideAllViews();
@@ -9,6 +39,9 @@ function showScheduledTasks() {
 }
 
 function renderScheduledTasks() {
+    // Check for overdue tasks first
+    checkAndFlagOverdueTasks();
+    
     const pending = scheduledTasks.filter(t => !t.completed);
     const completed = scheduledTasks.filter(t => t.completed);
     
@@ -60,6 +93,9 @@ function renderScheduledTasks() {
                                     <button class="btn btn-outline-primary btn-sm" onclick="editScheduledTask('${t.id}')">
                                         <i class="bi bi-pencil"></i> Edit
                                     </button>
+                                    ${isOverdue ? `<button class="btn btn-outline-warning btn-sm" onclick="rescheduleOverdueTask('${t.id}')">
+                                        <i class="bi bi-calendar-plus"></i> Reschedule
+                                    </button>` : ''}
                                     <button class="btn btn-outline-danger btn-sm" onclick="cancelScheduledTask('${t.id}')">
                                         <i class="bi bi-x-circle"></i> Cancel
                                     </button>
@@ -528,6 +564,83 @@ function editSuggestion(suggestionId) {
     }
 }
 
+// Reschedule overdue task - transform it into a new scheduled task
+function rescheduleOverdueTask(taskId) {
+    const task = scheduledTasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const newDate = prompt(`Reschedule "${getTaskDisplayName(null, task.taskId)}" to a new date:\n\nCurrent due date: ${new Date(task.dueDate).toLocaleDateString()}\n\nEnter new date (YYYY-MM-DD):`, new Date().toISOString().split('T')[0]);
+    
+    if (newDate && newDate !== new Date(task.dueDate).toISOString().split('T')[0]) {
+        // Validate date
+        const newDateObj = new Date(newDate);
+        if (isNaN(newDateObj.getTime())) {
+            alert('Invalid date format. Please use YYYY-MM-DD format.');
+            return;
+        }
+        
+        // Update the task
+        task.dueDate = newDate;
+        task.priority = 'normal'; // Reset priority
+        task.overdue = false;
+        task.overdueDate = null;
+        task.rescheduled = true;
+        task.rescheduledDate = new Date().toISOString();
+        task.rescheduledBy = currentUser.username;
+        
+        // Save to Firebase
+        saveScheduledTasks();
+        
+        // Refresh the display
+        renderScheduledTasks();
+        renderScheduleTimeline();
+        
+        alert(`Task rescheduled successfully to ${newDateObj.toLocaleDateString()}!`);
+    }
+}
+
+// Enhanced edit scheduled task function
+function editScheduledTask(taskId) {
+    const task = scheduledTasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const cluster = clusters.find(c => c.id === task.clusterId);
+    const taskName = getTaskDisplayName(null, task.taskId);
+    
+    // Create a simple edit form
+    const newDate = prompt(`Edit "${taskName}" for ${cluster?.name || 'Unknown'}:\n\nCurrent due date: ${new Date(task.dueDate).toLocaleDateString()}\nEnter new date (YYYY-MM-DD):`, new Date(task.dueDate).toISOString().split('T')[0]);
+    
+    if (newDate) {
+        const newDateObj = new Date(newDate);
+        if (isNaN(newDateObj.getTime())) {
+            alert('Invalid date format. Please use YYYY-MM-DD format.');
+            return;
+        }
+        
+        // Update the task
+        task.dueDate = newDate;
+        
+        // If it was overdue and new date is in the future, reset priority
+        if (task.overdue && newDateObj > new Date()) {
+            task.priority = 'normal';
+            task.overdue = false;
+            task.overdueDate = null;
+        }
+        
+        task.lastModified = new Date().toISOString();
+        task.lastModifiedBy = currentUser.username;
+        
+        // Save to Firebase
+        saveScheduledTasks();
+        
+        // Refresh the display
+        renderScheduledTasks();
+        renderScheduleTimeline();
+        
+        alert(`Task updated successfully!`);
+    }
+}
+
 // Calendar Feed Generation
 function generateCalendarFeed() {
     const futureTasks = scheduledTasks.filter(task => {
@@ -618,6 +731,8 @@ function downloadICS(icsContent, filename) {
 }
 
 function copyCalendarFeedLink() {
+    console.log('copyCalendarFeedLink called - generating ICS data URL');
+    
     // Generate a data URL for the ICS file
     const futureTasks = scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
@@ -625,6 +740,8 @@ function copyCalendarFeedLink() {
         today.setHours(0, 0, 0, 0);
         return !task.completed && taskDate >= today;
     });
+    
+    console.log(`Found ${futureTasks.length} future tasks for calendar feed`);
     
     if (futureTasks.length === 0) {
         alert('No scheduled tasks available for calendar feed.');
@@ -634,10 +751,13 @@ function copyCalendarFeedLink() {
     const icsContent = generateICS(futureTasks);
     const dataUrl = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(icsContent);
     
+    console.log('Generated ICS data URL:', dataUrl.substring(0, 100) + '...');
+    
     // Copy the data URL to clipboard
     navigator.clipboard.writeText(dataUrl).then(() => {
         alert(`📋 Calendar Feed Link Copied!\n\n✅ Share this link with your team!\n\nStaff can:\n• Import directly to Google Calendar, Outlook, etc.\n• Bookmark for automatic updates\n• Use as a live calendar feed\n\nThe link contains ${futureTasks.length} scheduled task(s) and will always show current data.`);
     }).catch(err => {
+        console.log('Clipboard copy failed, falling back to download:', err);
         // Fallback: download the file instead
         downloadICS(icsContent, 'BeeMarshall-Scheduled-Tasks.ics');
         alert('📋 Calendar file downloaded!\n\n✅ Share this .ics file with your team!\n\nStaff can import it to their calendar applications.');

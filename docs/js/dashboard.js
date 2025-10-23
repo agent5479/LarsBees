@@ -8,7 +8,15 @@ function showDashboard() {
 
 function updateDashboard() {
     const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
-    const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length;
+    
+    // Check for overdue tasks and update flagged count
+    checkAndFlagOverdueTasks();
+    const overdueTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        return !task.completed && taskDate < new Date();
+    }).length;
+    
+    const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
     
     // Animate number changes
     animateNumber(document.getElementById('statClusters'), clusters.length);
@@ -19,13 +27,41 @@ function updateDashboard() {
     // Update quick stats
     updateQuickStats();
     
-    // Show flagged alert if any
+    // Show flagged alert if any urgent actions or overdue tasks
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');
-    if (urgentFlagged.length > 0) {
-        const flaggedHtml = urgentFlagged.slice(0, 3).map(a => {
-            const cluster = clusters.find(c => c.id === a.clusterId);
-            return `<div class="mb-2"><strong>${cluster?.name || 'Unknown'}:</strong> ${a.taskName} - ${a.notes}</div>`;
-        }).join('');
+    const overdueTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        return !task.completed && taskDate < new Date();
+    });
+    
+    if (urgentFlagged.length > 0 || overdueTasks.length > 0) {
+        let flaggedHtml = '';
+        
+        // Add urgent actions
+        if (urgentFlagged.length > 0) {
+            flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
+                const cluster = clusters.find(c => c.id === a.clusterId);
+                return `<div class="mb-2"><strong>${cluster?.name || 'Unknown'}:</strong> ${a.taskName} - ${a.notes}</div>`;
+            }).join('');
+        }
+        
+        // Add overdue tasks
+        if (overdueTasks.length > 0) {
+            flaggedHtml += overdueTasks.slice(0, 3).map(task => {
+                const cluster = clusters.find(c => c.id === task.clusterId);
+                const taskName = getTaskDisplayName(null, task.taskId);
+                return `
+                    <div class="mb-2">
+                        <strong>OVERDUE: ${taskName}</strong> - ${cluster?.name || 'Unknown'}
+                        <br><small>Due: ${new Date(task.dueDate).toLocaleDateString()}</small>
+                        <br><button class="btn btn-sm btn-outline-warning mt-1" onclick="rescheduleOverdueTask('${task.id}')">
+                            <i class="bi bi-calendar-plus"></i> Reschedule
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
         document.getElementById('flaggedItemsList').innerHTML = flaggedHtml;
         document.getElementById('flaggedAlert').classList.remove('hidden');
     } else {
@@ -277,6 +313,36 @@ function updateQuickStats() {
     if (statCompleted) animateNumber(statCompleted, completedTasks);
     if (statPending) animateNumber(statPending, pendingTasks);
     if (statOverdue) animateNumber(statOverdue, overdueTasks);
+}
+
+// Check for overdue tasks and automatically flag them as urgent
+function checkAndFlagOverdueTasks() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    let hasUpdates = false;
+    
+    scheduledTasks.forEach(task => {
+        if (!task.completed) {
+            const taskDate = new Date(task.dueDate);
+            taskDate.setHours(0, 0, 0, 0);
+            
+            // If task is overdue and not already urgent, mark as urgent
+            if (taskDate < today && task.priority !== 'urgent') {
+                task.priority = 'urgent';
+                task.overdue = true;
+                task.overdueDate = new Date().toISOString();
+                hasUpdates = true;
+                
+                console.log(`Task "${task.taskId}" is overdue and marked as urgent`);
+            }
+        }
+    });
+    
+    // Save updates to Firebase if any changes were made
+    if (hasUpdates) {
+        saveScheduledTasks();
+    }
 }
 
 // Enhanced dashboard cards interactivity
