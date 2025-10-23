@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import io
 from flask import Flask, render_template, redirect, url_for, flash, request, jsonify, make_response
@@ -8,6 +8,161 @@ from werkzeug.security import generate_password_hash
 from config import config
 from models import db, User, HiveCluster, IndividualHive, TaskType, HiveAction, DiseaseReport, init_default_tasks
 from forms import LoginForm, RegistrationForm, HiveClusterForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm
+
+def calculate_time_series_data(clusters, start_date, end_date, group_by):
+    """Calculate time series data for analytics dashboard"""
+    data = {
+        'hive_strength': [],
+        'supers_added': [],
+        'hive_deaths': [],
+        'disease_observations': []
+    }
+    
+    # Generate time periods based on group_by
+    if group_by == 'months':
+        current = start_date.replace(day=1)
+        while current <= end_date:
+            next_month = current.replace(month=current.month + 1) if current.month < 12 else current.replace(year=current.year + 1, month=1)
+            
+            # Calculate metrics for this month
+            total_strong = sum(c.strong_hives or 0 for c in clusters)
+            total_medium = sum(c.medium_hives or 0 for c in clusters)
+            total_weak = sum(c.weak_hives or 0 for c in clusters)
+            hive_strength = total_strong + (total_medium * 0.5) + (total_weak * 0.25)
+            
+            # Count supers added (approximated from actions)
+            supers_added = HiveAction.query.filter(
+                HiveAction.cluster_id.in_([c.id for c in clusters]),
+                HiveAction.task_name.like('%super%'),
+                HiveAction.action_date >= current,
+                HiveAction.action_date < next_month
+            ).count()
+            
+            # Count hive deaths
+            hive_deaths = sum(c.dead_hives or 0 for c in clusters)
+            
+            # Count disease observations
+            disease_obs = DiseaseReport.query.filter(
+                DiseaseReport.cluster_id.in_([c.id for c in clusters]),
+                DiseaseReport.report_date >= current,
+                DiseaseReport.report_date < next_month
+            ).count()
+            
+            data['hive_strength'].append({'period': current.strftime('%Y-%m'), 'value': hive_strength})
+            data['supers_added'].append({'period': current.strftime('%Y-%m'), 'value': supers_added})
+            data['hive_deaths'].append({'period': current.strftime('%Y-%m'), 'value': hive_deaths})
+            data['disease_observations'].append({'period': current.strftime('%Y-%m'), 'value': disease_obs})
+            
+            current = next_month
+    
+    return data
+
+def calculate_categorical_breakdowns(clusters, start_date, end_date):
+    """Calculate categorical breakdowns for analytics dashboard"""
+    cluster_ids = [c.id for c in clusters]
+    
+    # Death reasons (from actions with death-related tasks)
+    death_reasons = defaultdict(int)
+    death_actions = HiveAction.query.filter(
+        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.action_date >= start_date,
+        HiveAction.action_date <= end_date,
+        HiveAction.task_name.like('%death%')
+    ).all()
+    
+    for action in death_actions:
+        death_reasons[action.task_name] += 1
+    
+    # Disease observations
+    diseases = defaultdict(int)
+    disease_reports = DiseaseReport.query.filter(
+        DiseaseReport.cluster_id.in_(cluster_ids),
+        DiseaseReport.report_date >= start_date,
+        DiseaseReport.report_date <= end_date
+    ).all()
+    
+    for report in disease_reports:
+        if report.afb_count > 0:
+            diseases['AFB'] += report.afb_count
+        if report.varroa_count > 0:
+            diseases['Varroa'] += report.varroa_count
+        if report.chalkbrood_count > 0:
+            diseases['Chalkbrood'] += report.chalkbrood_count
+        if report.sacbrood_count > 0:
+            diseases['Sacbrood'] += report.sacbrood_count
+        if report.dwv_count > 0:
+            diseases['DWV'] += report.dwv_count
+    
+    # Requeening reasons
+    requeening_reasons = defaultdict(int)
+    requeen_actions = HiveAction.query.filter(
+        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.action_date >= start_date,
+        HiveAction.action_date <= end_date,
+        HiveAction.task_name.like('%queen%')
+    ).all()
+    
+    for action in requeen_actions:
+        requeening_reasons[action.task_name] += 1
+    
+    # Consumables used
+    consumables = defaultdict(int)
+    consumable_actions = HiveAction.query.filter(
+        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.action_date >= start_date,
+        HiveAction.action_date <= end_date,
+        HiveAction.task_name.in_(['Varroa Treatment', 'Sugar Syrup Feeding', 'Pollen Patty'])
+    ).all()
+    
+    for action in consumable_actions:
+        consumables[action.task_name] += 1
+    
+    return {
+        'death_reasons': dict(death_reasons),
+        'diseases': dict(diseases),
+        'requeening_reasons': dict(requeening_reasons),
+        'consumables': dict(consumables)
+    }
+
+def calculate_key_metrics(clusters, start_date, end_date):
+    """Calculate key performance metrics"""
+    cluster_ids = [c.id for c in clusters]
+    
+    # Total hive counts
+    total_hives = sum(c.hive_count for c in clusters)
+    total_strong = sum(c.strong_hives or 0 for c in clusters)
+    total_medium = sum(c.medium_hives or 0 for c in clusters)
+    total_weak = sum(c.weak_hives or 0 for c in clusters)
+    total_dead = sum(c.dead_hives or 0 for c in clusters)
+    
+    # Actions in period
+    total_actions = HiveAction.query.filter(
+        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.action_date >= start_date,
+        HiveAction.action_date <= end_date
+    ).count()
+    
+    # Disease reports
+    total_disease_reports = DiseaseReport.query.filter(
+        DiseaseReport.cluster_id.in_(cluster_ids),
+        DiseaseReport.report_date >= start_date,
+        DiseaseReport.report_date <= end_date
+    ).count()
+    
+    # Quarantine sites
+    quarantine_sites = sum(1 for c in clusters if c.is_quarantine)
+    
+    return {
+        'total_hives': total_hives,
+        'total_strong': total_strong,
+        'total_medium': total_medium,
+        'total_weak': total_weak,
+        'total_dead': total_dead,
+        'total_actions': total_actions,
+        'total_disease_reports': total_disease_reports,
+        'quarantine_sites': quarantine_sites,
+        'health_score': (total_strong + total_medium * 0.5) / max(total_hives, 1) * 100
+    }
 
 def create_app(config_name='default'):
     """Application factory pattern"""
@@ -879,6 +1034,59 @@ def create_app(config_name='default'):
         }
         
         return render_template('export_management.html', stats=stats)
+    
+    @app.route('/report-dashboard')
+    @login_required
+    def report_dashboard():
+        """Advanced analytics dashboard for hive performance and health"""
+        # Get date range parameters
+        start_date = request.args.get('start_date', datetime.utcnow().replace(month=4, day=29).strftime('%Y-%m-%d'))
+        end_date = request.args.get('end_date', datetime.utcnow().replace(month=10, day=29).strftime('%Y-%m-%d'))
+        group_by = request.args.get('group_by', 'months')  # months or days
+        
+        # Parse dates
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        # Get all clusters for the user
+        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        
+        # Calculate time series data
+        time_series_data = calculate_time_series_data(clusters, start_dt, end_dt, group_by)
+        
+        # Calculate categorical breakdowns
+        categorical_data = calculate_categorical_breakdowns(clusters, start_dt, end_dt)
+        
+        # Calculate key metrics
+        key_metrics = calculate_key_metrics(clusters, start_dt, end_dt)
+        
+        return render_template('report_dashboard.html', 
+                             time_series_data=time_series_data,
+                             categorical_data=categorical_data,
+                             key_metrics=key_metrics,
+                             start_date=start_date,
+                             end_date=end_date,
+                             group_by=group_by,
+                             clusters=clusters)
+    
+    @app.route('/api/report-data')
+    @login_required
+    def api_report_data():
+        """API endpoint for report dashboard data"""
+        start_date = request.args.get('start_date', datetime.utcnow().replace(month=4, day=29).strftime('%Y-%m-%d'))
+        end_date = request.args.get('end_date', datetime.utcnow().replace(month=10, day=29).strftime('%Y-%m-%d'))
+        group_by = request.args.get('group_by', 'months')
+        
+        start_dt = datetime.strptime(start_date, '%Y-%m-%d')
+        end_dt = datetime.strptime(end_date, '%Y-%m-%d')
+        
+        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        
+        return jsonify({
+            'time_series': calculate_time_series_data(clusters, start_dt, end_dt, group_by),
+            'categorical': calculate_categorical_breakdowns(clusters, start_dt, end_dt),
+            'key_metrics': calculate_key_metrics(clusters, start_dt, end_dt)
+        })
     
     # Debug routes (only available in debug mode)
     if app.config['DEBUG']:
