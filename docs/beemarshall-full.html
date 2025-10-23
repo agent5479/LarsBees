@@ -1815,6 +1815,65 @@
                 </div>
             </div>
         </div>
+
+        <!-- Edit Scheduled Task Modal -->
+        <div class="modal fade" id="editScheduledTaskModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Scheduled Task</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editScheduledTaskForm">
+                            <input type="hidden" id="editTaskId">
+                            <div class="mb-3">
+                                <label for="editTaskCluster" class="form-label">Cluster *</label>
+                                <select class="form-select" id="editTaskCluster" required>
+                                    <option value="">Select cluster...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="editTaskType" class="form-label">Task *</label>
+                                <select class="form-select" id="editTaskType" required>
+                                    <option value="">Select task...</option>
+                                </select>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="editTaskDate" class="form-label">Due Date *</label>
+                                    <input type="date" class="form-control" id="editTaskDate" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="editTaskTime" class="form-label">Time (Optional)</label>
+                                    <input type="time" class="form-control" id="editTaskTime">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="editTaskPriority" class="form-label">Priority</label>
+                                <select class="form-select" id="editTaskPriority">
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="editTaskNotes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="editTaskNotes" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="handleEditScheduledTask()">Update Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->

@@ -599,46 +599,99 @@ function rescheduleOverdueTask(taskId) {
     }
 }
 
-// Enhanced edit scheduled task function
+// Enhanced edit scheduled task function - opens modal
 function editScheduledTask(taskId) {
     const task = scheduledTasks.find(t => t.id === taskId);
     if (!task) return;
     
-    const cluster = clusters.find(c => c.id === task.clusterId);
-    const taskName = getTaskDisplayName(null, task.taskId);
+    // Populate the edit modal
+    document.getElementById('editTaskId').value = task.id;
+    document.getElementById('editTaskCluster').value = task.clusterId;
+    document.getElementById('editTaskType').value = task.taskId;
+    document.getElementById('editTaskDate').value = new Date(task.dueDate).toISOString().split('T')[0];
+    document.getElementById('editTaskTime').value = task.scheduledTime || '';
+    document.getElementById('editTaskPriority').value = task.priority || 'normal';
+    document.getElementById('editTaskNotes').value = task.notes || '';
     
-    // Create a simple edit form
-    const newDate = prompt(`Edit "${taskName}" for ${cluster?.name || 'Unknown'}:\n\nCurrent due date: ${new Date(task.dueDate).toLocaleDateString()}\nEnter new date (YYYY-MM-DD):`, new Date(task.dueDate).toISOString().split('T')[0]);
+    // Populate dropdowns
+    populateEditTaskDropdowns();
     
-    if (newDate) {
-        const newDateObj = new Date(newDate);
-        if (isNaN(newDateObj.getTime())) {
-            alert('Invalid date format. Please use YYYY-MM-DD format.');
-            return;
-        }
-        
-        // Update the task
-        task.dueDate = newDate;
-        
-        // If it was overdue and new date is in the future, reset priority
-        if (task.overdue && newDateObj > new Date()) {
-            task.priority = 'normal';
-            task.overdue = false;
-            task.overdueDate = null;
-        }
-        
-        task.lastModified = new Date().toISOString();
-        task.lastModifiedBy = currentUser.username;
-        
-        // Save to Firebase
-        saveScheduledTasks();
-        
-        // Refresh the display
-        renderScheduledTasks();
-        renderScheduleTimeline();
-        
-        alert(`Task updated successfully!`);
+    // Show the modal
+    const modal = new bootstrap.Modal(document.getElementById('editScheduledTaskModal'));
+    modal.show();
+}
+
+// Populate edit task dropdowns
+function populateEditTaskDropdowns() {
+    // Populate cluster dropdown
+    const clusterSelect = document.getElementById('editTaskCluster');
+    clusterSelect.innerHTML = '<option value="">Select cluster...</option>' + 
+        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    
+    // Populate task dropdown
+    const taskSelect = document.getElementById('editTaskType');
+    taskSelect.innerHTML = '<option value="">Select task...</option>' + 
+        Object.entries(COMPREHENSIVE_TASKS).map(([key, task]) => 
+            `<option value="${key}">${task.name}</option>`
+        ).join('');
+}
+
+// Handle edit scheduled task form submission
+function handleEditScheduledTask() {
+    const taskId = document.getElementById('editTaskId').value;
+    const task = scheduledTasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    // Get form values
+    const clusterId = document.getElementById('editTaskCluster').value;
+    const taskType = document.getElementById('editTaskType').value;
+    const dueDate = document.getElementById('editTaskDate').value;
+    const scheduledTime = document.getElementById('editTaskTime').value;
+    const priority = document.getElementById('editTaskPriority').value;
+    const notes = document.getElementById('editTaskNotes').value;
+    
+    // Validate
+    if (!clusterId || !taskType || !dueDate) {
+        alert('Please fill in all required fields.');
+        return;
     }
+    
+    const newDateObj = new Date(dueDate);
+    if (isNaN(newDateObj.getTime())) {
+        alert('Invalid date format.');
+        return;
+    }
+    
+    // Update the task
+    task.clusterId = clusterId;
+    task.taskId = taskType;
+    task.dueDate = dueDate;
+    task.scheduledTime = scheduledTime || null;
+    task.priority = priority;
+    task.notes = notes;
+    
+    // If it was overdue and new date is in the future, reset priority
+    if (task.overdue && newDateObj > new Date()) {
+        task.priority = 'normal';
+        task.overdue = false;
+        task.overdueDate = null;
+    }
+    
+    task.lastModified = new Date().toISOString();
+    task.lastModifiedBy = currentUser.username;
+    
+    // Save to Firebase
+    saveScheduledTasks();
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('editScheduledTaskModal'));
+    modal.hide();
+    
+    // Refresh the display
+    renderScheduledTasks();
+    renderScheduleTimeline();
+    
+    alert('Task updated successfully!');
 }
 
 // Calendar Feed Generation
@@ -874,4 +927,19 @@ function handleNextVisitForm(e) {
         // Go back to scheduled tasks view
         showScheduledTasks();
     });
+}
+
+// Schedule task for specific cluster (called from map popup)
+function scheduleTaskForCluster(clusterId) {
+    // Show the schedule task modal
+    const modal = new bootstrap.Modal(document.getElementById('scheduleTaskModal'));
+    modal.show();
+    
+    // Pre-populate the cluster dropdown
+    setTimeout(() => {
+        const clusterSelect = document.getElementById('scheduleCluster');
+        if (clusterSelect) {
+            clusterSelect.value = clusterId;
+        }
+    }, 100);
 }

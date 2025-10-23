@@ -452,9 +452,14 @@ function initMap() {
                 iconAnchor: [10, 10]
             });
             
+            // Get pending tasks for this cluster
+            const clusterTasks = scheduledTasks.filter(task => 
+                task.clusterId === cluster.id && !task.completed
+            ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+            
             const marker = L.marker([cluster.latitude, cluster.longitude], { icon: customIcon })
                 .bindPopup(`
-                    <div style="padding:10px; min-width:200px;">
+                    <div style="padding:10px; min-width:250px;">
                         <h6>
                             <a href="#" onclick="viewClusterDetails(${cluster.id}); return false;" style="color: ${typeInfo.color}; text-decoration: none; font-weight: bold; cursor: pointer;">
                                 <i class="bi ${typeInfo.icon}"></i> ${cluster.name}
@@ -466,7 +471,40 @@ function initMap() {
                         ${cluster.harvestTimeline ? `<p class="mb-1"><strong>Harvest:</strong> ${cluster.harvestTimeline}</p>` : ''}
                         ${cluster.sugarRequirements ? `<p class="mb-1"><strong>Sugar:</strong> ${cluster.sugarRequirements}</p>` : ''}
                         ${cluster.landownerName ? `<p class="mb-1"><strong>Landowner:</strong> ${cluster.landownerName}</p>` : ''}
-                        <div class="mt-2 d-grid gap-1">
+                        
+                        ${clusterTasks.length > 0 ? `
+                            <div class="mt-3">
+                                <h6 class="mb-2"><i class="bi bi-list-check"></i> Pending Tasks (${clusterTasks.length})</h6>
+                                <div class="pending-tasks-list" style="max-height: 150px; overflow-y: auto;">
+                                    ${clusterTasks.slice(0, 5).map(task => {
+                                        const taskName = getTaskDisplayName(null, task.taskId);
+                                        const dueDate = new Date(task.dueDate);
+                                        const isOverdue = dueDate < new Date();
+                                        const priorityClass = task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'secondary';
+                                        
+                                        return `
+                                            <div class="pending-task-item mb-2 p-2" style="border-left: 3px solid var(--${priorityClass}); background: rgba(0,0,0,0.05); border-radius: 3px;">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <strong style="font-size: 0.85rem;">${taskName}</strong>
+                                                        <br><small class="text-muted">Due: ${dueDate.toLocaleDateString()}</small>
+                                                        ${isOverdue ? '<br><span class="badge bg-danger" style="font-size: 0.7rem;">OVERDUE</span>' : ''}
+                                                        ${task.priority !== 'normal' ? `<br><span class="badge bg-${priorityClass}" style="font-size: 0.7rem;">${task.priority.toUpperCase()}</span>` : ''}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                    ${clusterTasks.length > 5 ? `<small class="text-muted">... and ${clusterTasks.length - 5} more tasks</small>` : ''}
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="mt-3">
+                                <p class="text-muted mb-0"><i class="bi bi-check-circle"></i> No pending tasks</p>
+                            </div>
+                        `}
+                        
+                        <div class="mt-3 d-grid gap-1">
                             <button class="btn btn-sm btn-primary" onclick="viewClusterDetails(${cluster.id}); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
@@ -476,10 +514,15 @@ function initMap() {
                             <button class="btn btn-sm btn-outline-warning" onclick="editCluster(${cluster.id}); return false;">
                                 <i class="bi bi-pencil"></i> Edit Cluster
                             </button>
+                            ${clusterTasks.length > 0 ? `
+                                <button class="btn btn-sm btn-outline-info" onclick="showScheduledTasks(); return false;">
+                                    <i class="bi bi-list-check"></i> View All Tasks
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 `, {
-                    maxWidth: 250,
+                    maxWidth: 300,
                     className: 'cluster-popup'
                 })
                 .on('popupopen', function() {
