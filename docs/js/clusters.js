@@ -339,7 +339,7 @@ function initMap() {
     
     const center = clusters.length > 0 
         ? [clusters[0].latitude, clusters[0].longitude]
-        : [-41.27, 173.28]; // Tasman region, New Zealand
+        : [-40.6764, 172.6856]; // Collingwood, NZ
     
     // Create map if it doesn't exist
     if (!map) {
@@ -398,7 +398,7 @@ function initMap() {
                 .bindPopup(`
                     <div style="padding:10px; min-width:200px;">
                         <h6>
-                            <a href="#" onclick="viewClusterDetails(${cluster.id}); return false;" style="color: ${typeInfo.color}; text-decoration: none;">
+                            <a href="#" onclick="viewClusterDetails(${cluster.id}); return false;" style="color: ${typeInfo.color}; text-decoration: none; font-weight: bold; cursor: pointer;">
                                 <i class="bi ${typeInfo.icon}"></i> ${cluster.name}
                             </a>
                         </h6>
@@ -408,16 +408,30 @@ function initMap() {
                         ${cluster.harvestTimeline ? `<p class="mb-1"><strong>Harvest:</strong> ${cluster.harvestTimeline}</p>` : ''}
                         ${cluster.sugarRequirements ? `<p class="mb-1"><strong>Sugar:</strong> ${cluster.sugarRequirements}</p>` : ''}
                         ${cluster.landownerName ? `<p class="mb-1"><strong>Landowner:</strong> ${cluster.landownerName}</p>` : ''}
-                        <div class="mt-2">
-                            <button class="btn btn-sm btn-primary" onclick="viewClusterDetails(${cluster.id})">
+                        <div class="mt-2 d-grid gap-1">
+                            <button class="btn btn-sm btn-primary" onclick="viewClusterDetails(${cluster.id}); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
-                            <button class="btn btn-sm btn-success" onclick="scheduleTaskForCluster(${cluster.id})">
+                            <button class="btn btn-sm btn-success" onclick="scheduleTaskForCluster(${cluster.id}); return false;">
                                 <i class="bi bi-calendar-plus"></i> Schedule Task
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="editCluster(${cluster.id}); return false;">
+                                <i class="bi bi-pencil"></i> Edit Cluster
                             </button>
                         </div>
                     </div>
-                `)
+                `, {
+                    maxWidth: 250,
+                    className: 'cluster-popup'
+                })
+                .on('popupopen', function() {
+                    // Ensure popup events work correctly
+                    const popup = this.getPopup();
+                    const popupElement = popup.getElement();
+                    if (popupElement) {
+                        popupElement.style.zIndex = '1000';
+                    }
+                })
                 .addTo(map);
             
             markers.push(marker);
@@ -473,8 +487,8 @@ function showMapPicker() {
     
     if (!container.classList.contains('hidden')) {
         setTimeout(() => {
-            const lat = parseFloat(document.getElementById('clusterLat').value) || -41.27; // Tasman, NZ
-            const lng = parseFloat(document.getElementById('clusterLng').value) || 173.28;
+            const lat = parseFloat(document.getElementById('clusterLat').value) || -40.6764; // Collingwood, NZ
+            const lng = parseFloat(document.getElementById('clusterLng').value) || 172.6856;
             
             // Clear existing map if any
             if (mapPicker) {

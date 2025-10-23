@@ -286,6 +286,32 @@
             font-size: 10px;
         }
         
+        /* Map Popup Styling */
+        .cluster-popup .leaflet-popup-content {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .cluster-popup .leaflet-popup-content-wrapper {
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .cluster-popup a {
+            transition: all 0.3s ease;
+        }
+        
+        .cluster-popup a:hover {
+            text-decoration: underline !important;
+            transform: scale(1.05);
+        }
+        
+        .cluster-popup .btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--border-radius-sm);
+        }
+        
         /* Sync Status */
         .sync-indicator {
             position: fixed;
