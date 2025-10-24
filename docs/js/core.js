@@ -900,7 +900,7 @@ function loadDataFromFirebase() {
             showSyncStatus('', 'success');
         }
         checkAllDataLoaded();
-    }).catch(error => {
+    }, (error) => {
         console.log('❌ Tenant clusters access failed:', error.message);
         showSyncStatus('', 'error');
         checkAllDataLoaded();
@@ -913,7 +913,7 @@ function loadDataFromFirebase() {
         console.log('📊 Actions loaded for', currentTenantId + ':', actions.length);
         console.log('📊 Actions array:', actions);
         checkAllDataLoaded();
-    }).catch(error => {
+    }, (error) => {
         console.log('❌ Tenant actions access failed:', error.message);
         checkAllDataLoaded();
     });
@@ -922,7 +922,7 @@ function loadDataFromFirebase() {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
         console.log('📊 Individual hives loaded for', currentTenantId + ':', individualHives.length);
         checkAllDataLoaded();
-    }).catch(error => {
+    }, (error) => {
         console.log('❌ Tenant hives access failed:', error.message);
         checkAllDataLoaded();
     });
@@ -932,7 +932,7 @@ function loadDataFromFirebase() {
         console.log('📊 Scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
         updateScheduledTasksPreview();
         checkAllDataLoaded();
-    }).catch(error => {
+    }, (error) => {
         console.log('❌ Tenant tasks access failed:', error.message);
         checkAllDataLoaded();
     });

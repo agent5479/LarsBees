@@ -2222,21 +2222,27 @@
             document.getElementById('mapPlaceholder').style.display = 'none';
             document.getElementById('map').style.display = 'block';
             
+            // Check if map is already initialized
+            if (window.beeMarshallMap) {
+                console.log('🗺️ Map already initialized, skipping...');
+                return;
+            }
+            
             // Initialize Leaflet map
             if (typeof L !== 'undefined') {
-                const map = L.map('map').setView([-40.6781, 172.6886], 13); // Collingwood, NZ
+                window.beeMarshallMap = L.map('map').setView([-40.6781, 172.6886], 13); // Collingwood, NZ
                 
                 // Add OpenStreetMap tiles
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
-                }).addTo(map);
+                }).addTo(window.beeMarshallMap);
                 
                 // Add cluster markers
                 if (typeof clusters !== 'undefined' && clusters.length > 0) {
                     clusters.forEach(cluster => {
                         if (cluster.lat && cluster.lng) {
                             const marker = L.marker([cluster.lat, cluster.lng])
-                                .addTo(map)
+                                .addTo(window.beeMarshallMap)
                                 .bindPopup(`
                                     <div class="cluster-popup">
                                         <h6><a href="#" onclick="showClusters(); return false;">${cluster.name}</a></h6>

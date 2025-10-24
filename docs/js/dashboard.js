@@ -144,7 +144,10 @@ function updateScheduledTasksPreview() {
         }).join('')
         : '<p class="text-muted">No scheduled tasks.</p>';
     
-    document.getElementById('scheduledTasksPreview').innerHTML = html;
+    const scheduledTasksElement = document.getElementById('scheduledTasksPreview');
+    if (scheduledTasksElement) {
+        scheduledTasksElement.innerHTML = html;
+    }
 }
 
 function updateCalendarWidget() {
