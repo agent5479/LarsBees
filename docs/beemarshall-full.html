@@ -884,7 +884,7 @@
     </div>
 
     <!-- Login Screen -->
-    <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center">
+    <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 25%, #CD853F 50%, #D2691E 75%, #8B4513 100%);">
         <div class="row w-100">
             <div class="col-md-6 col-lg-4 mx-auto">
                 <div class="card shadow-lg" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
@@ -1855,64 +1855,150 @@
             </div>
         </div>
 
-        <!-- Edit Scheduled Task Modal -->
-        <div class="modal fade" id="editScheduledTaskModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Scheduled Task</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editScheduledTaskForm">
-                            <input type="hidden" id="editTaskId">
-                            <div class="mb-3">
-                                <label for="editTaskCluster" class="form-label">Cluster *</label>
-                                <select class="form-select" id="editTaskCluster" required>
-                                    <option value="">Select cluster...</option>
-                                </select>
+    <!-- Edit Scheduled Task Modal -->
+    <div class="modal fade" id="editScheduledTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Scheduled Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editScheduledTaskForm">
+                        <input type="hidden" id="editTaskId">
+                        <div class="mb-3">
+                            <label for="editTaskCluster" class="form-label">Cluster *</label>
+                            <select class="form-select" id="editTaskCluster" required>
+                                <option value="">Select cluster...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTaskType" class="form-label">Task *</label>
+                            <select class="form-select" id="editTaskType" required>
+                                <option value="">Select task...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editTaskDate" class="form-label">Due Date *</label>
+                                <input type="date" class="form-control" id="editTaskDate" required>
                             </div>
-                            
-                            <div class="mb-3">
-                                <label for="editTaskType" class="form-label">Task *</label>
-                                <select class="form-select" id="editTaskType" required>
-                                    <option value="">Select task...</option>
-                                </select>
+                            <div class="col-md-6 mb-3">
+                                <label for="editTaskTime" class="form-label">Time (Optional)</label>
+                                <input type="time" class="form-control" id="editTaskTime">
                             </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="editTaskDate" class="form-label">Due Date *</label>
-                                    <input type="date" class="form-control" id="editTaskDate" required>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="editTaskTime" class="form-label">Time (Optional)</label>
-                                    <input type="time" class="form-control" id="editTaskTime">
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="editTaskPriority" class="form-label">Priority</label>
-                                <select class="form-select" id="editTaskPriority">
-                                    <option value="normal">Normal</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="editTaskNotes" class="form-label">Notes</label>
-                                <textarea class="form-control" id="editTaskNotes" rows="3"></textarea>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="handleEditScheduledTask()">Update Task</button>
-                    </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTaskPriority" class="form-label">Priority</label>
+                            <select class="form-select" id="editTaskPriority">
+                                <option value="normal">Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="editTaskNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="editTaskNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="handleEditScheduledTask()">Update Task</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Welcome Popup Modal -->
+    <div class="modal fade" id="welcomeModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-hexagon-fill me-2" style="color: var(--accent); font-size: 1.5rem;"></i>
+                        Welcome to BeeMarshall
+                    </h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4 class="mb-3" id="welcomeUserName">Dashboard Loaded Successfully!</h4>
+                    <p class="text-muted mb-4" id="welcomeMessage">
+                        Your apiary management system is ready. All data has been synchronized and the dashboard is fully operational.
+                    </p>
+                    
+                    <!-- System Status Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-3 text-center">
+                                    <i class="bi bi-database-check text-primary"></i>
+                                    <div class="small fw-semibold mt-1">Data Loaded</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-3 text-center">
+                                    <i class="bi bi-map text-success"></i>
+                                    <div class="small fw-semibold mt-1">Map Ready</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-3 text-center">
+                                    <i class="bi bi-calendar3 text-info"></i>
+                                    <div class="small fw-semibold mt-1">Scheduler Active</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card bg-light border-0">
+                                <div class="card-body p-3 text-center">
+                                    <i class="bi bi-graph-up text-warning"></i>
+                                    <div class="small fw-semibold mt-1">Reports Ready</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Stats -->
+                    <div class="alert alert-info border-0" style="background: rgba(23, 162, 184, 0.1);">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="fw-bold" id="welcomeClustersCount">0</div>
+                                <div class="small text-muted">Clusters</div>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold" id="welcomeHivesCount">0</div>
+                                <div class="small text-muted">Hives</div>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold" id="welcomeTasksCount">0</div>
+                                <div class="small text-muted">Tasks</div>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold" id="welcomeActionsCount">0</div>
+                                <div class="small text-muted">Actions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal" onclick="dismissWelcomeModal()">
+                        <i class="bi bi-arrow-right me-2"></i>Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
 
     <!-- Scripts -->

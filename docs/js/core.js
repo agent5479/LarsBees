@@ -214,6 +214,60 @@ function updateSystemStatus() {
     }
 }
 
+// Welcome Popup Functions
+function showWelcomePopup() {
+    console.log('🎉 Showing welcome popup - dashboard fully loaded!');
+    
+    // Update welcome message with user info
+    const welcomeUserName = document.getElementById('welcomeUserName');
+    const welcomeMessage = document.getElementById('welcomeMessage');
+    
+    if (welcomeUserName) {
+        welcomeUserName.textContent = `Welcome back, ${currentUser.username}!`;
+    }
+    
+    if (welcomeMessage) {
+        welcomeMessage.textContent = `Your apiary management system is ready. All data has been synchronized and the dashboard is fully operational.`;
+    }
+    
+    // Update quick stats
+    updateWelcomeStats();
+    
+    // Show the modal
+    const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
+    welcomeModal.show();
+    
+    // Update debug info
+    updateDebugInfo('systemStatus', 'Dashboard fully loaded');
+    console.log('✅ Welcome popup displayed - all systems operational');
+}
+
+function updateWelcomeStats() {
+    // Calculate totals
+    const clustersCount = clusters.length;
+    const hivesCount = clusters.reduce((total, cluster) => total + (cluster.hiveCount || 0), 0);
+    const tasksCount = scheduledTasks.length;
+    const actionsCount = actions.length;
+    
+    // Update the display
+    const welcomeClustersCount = document.getElementById('welcomeClustersCount');
+    const welcomeHivesCount = document.getElementById('welcomeHivesCount');
+    const welcomeTasksCount = document.getElementById('welcomeTasksCount');
+    const welcomeActionsCount = document.getElementById('welcomeActionsCount');
+    
+    if (welcomeClustersCount) welcomeClustersCount.textContent = clustersCount;
+    if (welcomeHivesCount) welcomeHivesCount.textContent = hivesCount;
+    if (welcomeTasksCount) welcomeTasksCount.textContent = tasksCount;
+    if (welcomeActionsCount) welcomeActionsCount.textContent = actionsCount;
+    
+    console.log(`📊 Welcome stats: ${clustersCount} clusters, ${hivesCount} hives, ${tasksCount} tasks, ${actionsCount} actions`);
+}
+
+function dismissWelcomeModal() {
+    console.log('👋 Welcome modal dismissed - user ready to start');
+    updateDebugInfo('systemStatus', 'User acknowledged welcome - ready for use');
+}
+
 // Enhanced Authentication System with Notifications
 function handleLogin(e) {
     e.preventDefault();
@@ -458,6 +512,11 @@ function showMainApp() {
     }
     
     showDashboard();
+    
+    // Show welcome popup after a short delay to ensure everything is loaded
+    setTimeout(() => {
+        showWelcomePopup();
+    }, 1000);
 }
 
 // Load data from Firebase
