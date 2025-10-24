@@ -323,6 +323,11 @@ function completeScheduledTask(id) {
             alert('✅ Task completed and logged as action!');
             renderScheduledTasks();
             renderScheduleTimeline();
+            
+            // Refresh calendar if it's visible
+            if (calendar && isCalendarView) {
+                refreshCalendar();
+            }
         });
 }
 
@@ -691,6 +696,11 @@ function handleEditScheduledTask() {
     renderScheduledTasks();
     renderScheduleTimeline();
     
+    // Refresh calendar if it's visible
+    if (calendar && isCalendarView) {
+        refreshCalendar();
+    }
+    
     alert('Task updated successfully!');
 }
 
@@ -942,4 +952,214 @@ function scheduleTaskForCluster(clusterId) {
             clusterSelect.value = clusterId;
         }
     }, 100);
+}
+
+// Calendar View Functions
+let calendar = null;
+let isCalendarView = false;
+
+function toggleCalendarView() {
+    const calendarView = document.getElementById('calendarView');
+    const listView = document.getElementById('listView');
+    const toggleBtn = document.getElementById('calendarToggleBtn');
+    
+    if (isCalendarView) {
+        // Switch to list view
+        calendarView.classList.add('hidden');
+        listView.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="bi bi-calendar3"></i> Calendar View';
+        isCalendarView = false;
+    } else {
+        // Switch to calendar view
+        listView.classList.add('hidden');
+        calendarView.classList.remove('hidden');
+        toggleBtn.innerHTML = '<i class="bi bi-list"></i> List View';
+        isCalendarView = true;
+        
+        // Initialize calendar if not already done
+        if (!calendar) {
+            initializeCalendar();
+        } else {
+            // Refresh calendar with current data
+            refreshCalendar();
+        }
+    }
+}
+
+function initializeCalendar() {
+    const calendarEl = document.getElementById('taskCalendar');
+    
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        height: 'auto',
+        events: function(fetchInfo, successCallback, failureCallback) {
+            // Convert scheduled tasks to FullCalendar events
+            const events = scheduledTasks.map(task => {
+                const cluster = clusters.find(c => c.id === task.clusterId);
+                const taskName = getTaskDisplayName(null, task.taskId);
+                const dueDate = new Date(task.dueDate);
+                const isOverdue = dueDate < new Date() && !task.completed;
+                
+                return {
+                    id: task.id,
+                    title: `${taskName} - ${cluster?.name || 'Unknown'}`,
+                    start: task.dueDate,
+                    allDay: !task.scheduledTime,
+                    extendedProps: {
+                        task: task,
+                        cluster: cluster,
+                        taskName: taskName
+                    },
+                    className: [
+                        `priority-${task.priority || 'normal'}`,
+                        task.completed ? 'completed' : '',
+                        isOverdue ? 'overdue' : ''
+                    ].filter(Boolean).join(' ')
+                };
+            });
+            
+            successCallback(events);
+        },
+        eventClick: function(info) {
+            const task = info.event.extendedProps.task;
+            showTaskDetails(task);
+        },
+        dateClick: function(info) {
+            // Allow scheduling new tasks by clicking on dates
+            const clickedDate = info.dateStr;
+            scheduleTaskForDate(clickedDate);
+        },
+        eventDidMount: function(info) {
+            // Add custom styling and tooltips
+            const task = info.event.extendedProps.task;
+            const cluster = info.event.extendedProps.cluster;
+            
+            // Add tooltip
+            info.el.title = `${task.notes || 'No notes'}\nCluster: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}`;
+        }
+    });
+    
+    calendar.render();
+}
+
+function refreshCalendar() {
+    if (calendar) {
+        calendar.refetchEvents();
+    }
+}
+
+function showTaskDetails(task) {
+    const cluster = clusters.find(c => c.id === task.clusterId);
+    const taskName = getTaskDisplayName(null, task.taskId);
+    
+    const modal = new bootstrap.Modal(document.createElement('div'));
+    const modalHtml = `
+        <div class="modal fade" id="taskDetailsModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Task Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Task:</strong> ${taskName}<br>
+                                <strong>Cluster:</strong> ${cluster?.name || 'Unknown'}<br>
+                                <strong>Due Date:</strong> ${new Date(task.dueDate).toLocaleDateString()}<br>
+                                <strong>Priority:</strong> <span class="badge bg-${task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'info'}">${task.priority || 'normal'}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Status:</strong> ${task.completed ? 'Completed' : 'Pending'}<br>
+                                <strong>Time:</strong> ${task.scheduledTime || 'All day'}<br>
+                                <strong>Notes:</strong> ${task.notes || 'None'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        ${!task.completed ? `
+                            <button type="button" class="btn btn-success" onclick="completeScheduledTask('${task.id}')">
+                                <i class="bi bi-check"></i> Mark Complete
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="editScheduledTask('${task.id}')">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const taskModal = new bootstrap.Modal(document.getElementById('taskDetailsModal'));
+    taskModal.show();
+    
+    // Clean up modal after it's hidden
+    document.getElementById('taskDetailsModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function scheduleTaskForDate(dateStr) {
+    // Pre-populate the schedule task modal with the selected date
+    const modal = new bootstrap.Modal(document.getElementById('scheduleTaskModal'));
+    modal.show();
+    
+    setTimeout(() => {
+        const dateInput = document.getElementById('scheduleDueDate');
+        if (dateInput) {
+            dateInput.value = dateStr;
+        }
+    }, 100);
+}
+
+function exportToGoogleCalendar() {
+    // Generate Google Calendar URL with events
+    const futureTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return !task.completed && taskDate >= today;
+    });
+    
+    if (futureTasks.length === 0) {
+        alert('No scheduled tasks to export.');
+        return;
+    }
+    
+    // Create Google Calendar URL
+    const baseUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+    const events = futureTasks.map(task => {
+        const cluster = clusters.find(c => c.id === task.clusterId);
+        const taskName = getTaskDisplayName(null, task.taskId);
+        const startDate = new Date(task.dueDate).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        const endDate = new Date(new Date(task.dueDate).getTime() + 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        
+        return {
+            text: encodeURIComponent(`${taskName} - ${cluster?.name || 'Unknown'}`),
+            dates: `${startDate}/${endDate}`,
+            details: encodeURIComponent(task.notes || ''),
+            location: encodeURIComponent(cluster?.name || '')
+        };
+    });
+    
+    // For now, export the first event (Google Calendar doesn't support multiple events in one URL)
+    const firstEvent = events[0];
+    const googleUrl = `${baseUrl}&text=${firstEvent.text}&dates=${firstEvent.dates}&details=${firstEvent.details}&location=${firstEvent.location}`;
+    
+    // Open Google Calendar
+    window.open(googleUrl, '_blank');
+    
+    // Also provide ICS download as alternative
+    const icsContent = generateICS(futureTasks);
+    downloadICS(icsContent, 'BeeMarshall-Tasks.ics');
+    
+    alert(`📅 Google Calendar opened with first task!\n\n📋 ICS file downloaded with all ${futureTasks.length} tasks.\n\nYou can import the .ics file into Google Calendar to add all tasks at once.`);
 }
