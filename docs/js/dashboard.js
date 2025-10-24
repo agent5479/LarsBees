@@ -1,7 +1,7 @@
 // BeeMarshall - Dashboard Module with Calendar Widget
 
-// Helper function to safely get task name (handles deleted tasks)
-function getTaskDisplayName(taskName, taskId) {
+// Helper function to safely get task name (handles deleted tasks) - make globally accessible
+window.getTaskDisplayName = function(taskName, taskId) {
     // If task exists in current tasks, use it
     const currentTask = tasks.find(t => t.name === taskName || t.id === taskId);
     if (currentTask) {
@@ -19,7 +19,7 @@ function getTaskDisplayName(taskName, taskId) {
     }
     
     return '[Unknown Task]';
-}
+};
 
 function showDashboard() {
     hideAllViews();

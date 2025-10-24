@@ -38,7 +38,7 @@ function showTasks() {
 // Make renderTasksList globally accessible
 window.renderTasksList = function(filterCategory = 'All') {
     // Use the comprehensive tasks list directly
-    const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
     
     // Filter tasks by category if specified
     let filteredTasks = tasksToUse;
@@ -144,7 +144,7 @@ function handleAddTask(e) {
 }
 
 function editTask(taskId) {
-    const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
     const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
     
@@ -162,7 +162,7 @@ function editTask(taskId) {
 }
 
 function deleteTask(taskId) {
-    const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
     const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
     
@@ -230,7 +230,7 @@ function showAddTaskForm() {
         };
         
         // Use the global tasks array if available, otherwise use COMPREHENSIVE_TASKS
-        const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+        const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
         tasksToUse.push(newTask);
         localStorage.setItem('tasks', JSON.stringify(tasksToUse));
         renderTasksList();

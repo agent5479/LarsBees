@@ -983,7 +983,11 @@ function loadDataFromFirebase() {
             tasks = Object.values(snapshot.val());
             // Refresh task management view if it's open
             if (!document.getElementById('manageTasksView')?.classList.contains('hidden')) {
-                renderTasksList();
+                if (typeof renderTasksList === 'function') {
+                    renderTasksList();
+                } else {
+                    console.log('⚠️ renderTasksList not available yet');
+                }
             }
         }
     });

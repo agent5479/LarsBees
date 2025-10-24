@@ -480,23 +480,14 @@ function initMap() {
     const center = [-40.6764, 172.6856]; // Collingwood, NZ
     console.log('📍 Map center set to Collingwood, NZ');
     
-    // Create map if it doesn't exist
-    if (!map) {
-        try {
-            map = L.map('map').setView(center, 10);
-            
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-            
-            console.log('OpenStreetMap initialized successfully');
-        } catch (error) {
-            console.error('Error creating map:', error);
-            return;
-        }
+    // Use global map if it exists, otherwise skip
+    if (!window.beeMarshallMap) {
+        console.log('🗺️ Global map not initialized, skipping cluster rendering');
+        return;
     }
+    
+    // Use the global map
+    map = window.beeMarshallMap;
     
     // Clear existing markers
     if (map._layers) {
