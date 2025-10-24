@@ -63,30 +63,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize system status
     updateSystemStatus();
     
-    // LOGIN BYPASS FOR TESTING - Auto-login as GBTech
-    console.log('🚀 BYPASSING LOGIN - Auto-logging in as GBTech for testing');
+    // Check if user is already logged in
+    const savedUser = localStorage.getItem('currentUser');
+    const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+    const savedTenantId = localStorage.getItem('currentTenantId');
     
-    // Set GBTech user data
-    currentUser = {
-        username: 'GBTech',
-        role: 'admin',
-        tenantId: 'gbtech',
-        createdAt: new Date().toISOString()
-    };
-    currentTenantId = 'gbtech';
-    isAdmin = true;
-    
-    // Store in localStorage
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    localStorage.setItem('isAdmin', 'true');
-    localStorage.setItem('currentTenantId', 'gbtech');
-    
-    console.log('✅ GBTech auto-login successful');
-    console.log('🏢 Tenant ID:', currentTenantId);
-    
-    // Show main app and load data
-    showMainApp();
-    loadDataFromFirebase();
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        isAdmin = savedIsAdmin;
+        currentTenantId = savedTenantId;
+        console.log('🏢 Restored tenant:', currentTenantId);
+        showMainApp();
+        loadDataFromFirebase();
+    } else {
+        checkFirstTimeSetup();
+    }
     
     // Setup event listeners with error checking
     const loginForm = document.getElementById('loginForm');
