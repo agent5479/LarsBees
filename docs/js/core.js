@@ -859,64 +859,28 @@ function loadDataFromFirebase() {
         clusters = data ? Object.values(data) : [];
         console.log('📊 Clusters loaded for', currentTenantId + ':', clusters.length);
         if (clusters.length === 0) {
-            console.log('⚠️ No clusters found - checking if data exists in old structure...');
-            // Check if data exists in old structure (for migration)
-            database.ref('clusters').once('value', (oldSnapshot) => {
-                const oldData = oldSnapshot.val();
-                console.log('🔍 Old clusters data:', oldData);
-                if (oldData) {
-                    console.log('📦 Found old data - starting automated migration...');
-                    showSyncStatus('', 'syncing');
-                    // Show migration button for Lars
-                    if (currentTenantId === 'lars') {
-                        const migrationButton = document.getElementById('migrationButton');
-                        if (migrationButton) {
-                            migrationButton.style.display = 'inline-block';
-                        }
-                        autoMigrateLarsData();
-                    }
-                } else {
-                    console.log('📭 No old data found - starting fresh');
-                    showSyncStatus('', 'success');
-                }
-            });
+            console.log('📭 No clusters found - starting fresh');
+            showSyncStatus('', 'success');
         } else {
             showSyncStatus('', 'success');
         }
         updateDashboard(); // Update dashboard (map will load when user clicks)
     }).catch(error => {
-        console.log('❌ Tenant clusters access failed, using old structure:', error.message);
-        // Fallback to old structure due to permission issues
-        database.ref('clusters').on('value', (oldSnapshot) => {
-            clusters = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
-            console.log('📊 Clusters loaded from old structure:', clusters.length);
-            showSyncStatus('', 'success');
-            updateDashboard();
-        });
+        console.log('❌ Tenant clusters access failed:', error.message);
+        showSyncStatus('', 'error');
     });
     
     database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateDashboard();
     }).catch(error => {
-        console.log('❌ Tenant actions access failed, using old structure:', error.message);
-        // Fallback to old structure
-        database.ref('actions').on('value', (oldSnapshot) => {
-            actions = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
-            console.log('📊 Actions loaded from old structure:', actions.length);
-            updateDashboard();
-        });
+        console.log('❌ Tenant actions access failed:', error.message);
     });
     
     database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
     }).catch(error => {
-        console.log('❌ Tenant hives access failed, using old structure:', error.message);
-        // Fallback to old structure
-        database.ref('individualHives').on('value', (oldSnapshot) => {
-            individualHives = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
-            console.log('📊 Individual hives loaded from old structure:', individualHives.length);
-        });
+        console.log('❌ Tenant hives access failed:', error.message);
     });
     
     database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
