@@ -13,9 +13,26 @@ const VERSION_HISTORY = [
 const MASTER_USERNAME = 'Lars';
 const MASTER_PASSWORD = 'LarsHoney2025!';
 
+// Additional admin accounts with isolated data
+const ADMIN_ACCOUNTS = {
+    'Lars': {
+        username: 'Lars',
+        password: 'LarsHoney2025!',
+        tenantId: 'lars',
+        role: 'master_admin'
+    },
+    'GBTech': {
+        username: 'GBTech',
+        password: '1q2w3e!Q@W#E',
+        tenantId: 'gbtech',
+        role: 'admin'
+    }
+};
+
 // Global variables
 let currentUser = null;
 let isAdmin = false;
+let currentTenantId = null; // For data isolation
 let clusters = [];
 let actions = [];
 let individualHives = [];
@@ -48,10 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const savedUser = localStorage.getItem('currentUser');
     const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+    const savedTenantId = localStorage.getItem('currentTenantId');
     
     if (savedUser) {
         currentUser = JSON.parse(savedUser);
         isAdmin = savedIsAdmin;
+        currentTenantId = savedTenantId;
+        console.log('🏢 Restored tenant:', currentTenantId);
         showMainApp();
         loadDataFromFirebase();
     } else {
@@ -404,27 +424,36 @@ function handleLogin(e) {
         return;
     }
     
-    // SIMPLIFIED AUTHENTICATION - Always use fallback for reliability
-    console.log('🔄 Using simplified authentication system...');
-    updateDebugInfo('firebaseStatus', 'Using simplified auth system');
+    // MULTI-TENANT AUTHENTICATION SYSTEM
+    console.log('🔄 Using multi-tenant authentication system...');
+    updateDebugInfo('firebaseStatus', 'Using multi-tenant auth system');
     
-    // Check credentials
-    if (username.toLowerCase() === 'lars' && password === 'LarsHoney2025!') {
-        console.log('✅ Admin login successful');
-        showLoginStatus('success', 'Login successful! Redirecting to dashboard...', false);
-        updateDebugInfo('systemStatus', 'Authentication successful');
+    // Check credentials against admin accounts
+    const adminAccount = Object.values(ADMIN_ACCOUNTS).find(account => 
+        account.username.toLowerCase() === username.toLowerCase() && account.password === password
+    );
+    
+    if (adminAccount) {
+        console.log('✅ Admin login successful:', adminAccount.username);
+        showLoginStatus('success', `Login successful! Welcome ${adminAccount.username}!`, false);
+        updateDebugInfo('systemStatus', 'Multi-tenant authentication successful');
         
-        // Set user data
+        // Set user data with tenant isolation
         currentUser = {
-            username: 'Lars',
-            role: 'admin',
+            username: adminAccount.username,
+            role: adminAccount.role,
+            tenantId: adminAccount.tenantId,
             createdAt: new Date().toISOString()
         };
+        currentTenantId = adminAccount.tenantId;
         isAdmin = true;
+        
+        // Store in localStorage
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
         localStorage.setItem('isAdmin', 'true');
+        localStorage.setItem('currentTenantId', currentTenantId);
         
-        // Initialize data
+        // Initialize data for this tenant
         clusters = [];
         actions = [];
         scheduledTasks = [];
@@ -433,6 +462,7 @@ function handleLogin(e) {
         // Delay to show success message then redirect
         setTimeout(() => {
             console.log('🚀 Redirecting to dashboard...');
+            console.log('🏢 Tenant ID:', currentTenantId);
             showMainApp();
             updateDashboard();
         }, 1500);
@@ -440,7 +470,7 @@ function handleLogin(e) {
         return;
     } else {
         console.log('❌ Invalid credentials');
-        showLoginStatus('danger', 'Invalid credentials. Use: Username: Lars, Password: LarsHoney2025!', false);
+        showLoginStatus('danger', 'Invalid credentials. Available accounts: Lars, GBTech', false);
         updateDebugInfo('lastError', 'Invalid username or password');
         return;
     }
@@ -623,27 +653,35 @@ function updateDashboardStats() {
     updateQuickStats();
 }
 
-// Load data from Firebase
+// Load data from Firebase with tenant isolation
 function loadDataFromFirebase() {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Loading...', 'syncing');
     
-    database.ref('clusters').on('value', (snapshot) => {
+    if (!currentTenantId) {
+        console.error('❌ No tenant ID found');
+        return;
+    }
+    
+    console.log('🏢 Loading data for tenant:', currentTenantId);
+    
+    // Load tenant-specific data
+    database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
         clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
-        console.log('📊 Clusters loaded:', clusters.length);
+        console.log('📊 Clusters loaded for', currentTenantId + ':', clusters.length);
         updateDashboard(); // Update dashboard (map will load when user clicks)
         showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
-    database.ref('actions').on('value', (snapshot) => {
+    database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateDashboard();
     });
     
-    database.ref('individualHives').on('value', (snapshot) => {
+    database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
     });
     
-    database.ref('scheduledTasks').on('value', (snapshot) => {
+    database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateScheduledTasksPreview();
     });
@@ -685,7 +723,12 @@ function loadDataFromFirebase() {
 }
 
 function loadEmployees() {
-    database.ref('employees').on('value', (snapshot) => {
+    if (!currentTenantId) {
+        console.error('❌ No tenant ID for employee loading');
+        return;
+    }
+    
+    database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
         employees = snapshot.val() ? Object.values(snapshot.val()) : [];
         renderEmployees();
     });

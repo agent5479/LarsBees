@@ -225,7 +225,10 @@ function handleSaveCluster(e) {
     };
     
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
-    database.ref(`clusters/${cluster.id}`).set(cluster)
+    
+    // Use tenant-specific path for data isolation
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    database.ref(`${tenantPath}/${cluster.id}`).set(cluster)
         .then(() => {
             showSyncStatus('<i class="bi bi-check"></i> Saved by ' + currentUser.username);
             showClusters();
@@ -379,7 +382,9 @@ function deleteCluster(id) {
     }
     
     if (confirm('Delete this cluster? This cannot be undone!')) {
-        database.ref(`clusters/${id}`).remove();
+        // Use tenant-specific path for data isolation
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+        database.ref(`${tenantPath}/${id}`).remove();
     }
 }
 

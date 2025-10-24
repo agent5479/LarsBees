@@ -309,11 +309,14 @@ function completeScheduledTask(id) {
         originalScheduledTaskId: id
     };
     
-    // Save the action
-    database.ref(`actions/${action.id}`).set(action)
+    // Save the action with tenant isolation
+    const actionsPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+    const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
+    
+    database.ref(`${actionsPath}/${action.id}`).set(action)
         .then(() => {
             // Mark scheduled task as completed
-            return database.ref(`scheduledTasks/${id}`).update({
+            return database.ref(`${tasksPath}/${id}`).update({
                 completed: true,
                 completedBy: currentUser.username,
                 completedAt: new Date().toISOString()

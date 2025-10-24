@@ -33,12 +33,12 @@ function updateDashboard() {
     
     // Show flagged alert if any urgent actions or overdue tasks
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');
-    const overdueTasks = scheduledTasks.filter(task => {
+    const overdueTasksForAlert = scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < new Date();
     });
     
-    if (urgentFlagged.length > 0 || overdueTasks.length > 0) {
+    if (urgentFlagged.length > 0 || overdueTasksForAlert.length > 0) {
         let flaggedHtml = '';
         
         // Add urgent actions
@@ -50,8 +50,8 @@ function updateDashboard() {
         }
         
         // Add overdue tasks
-        if (overdueTasks.length > 0) {
-            flaggedHtml += overdueTasks.slice(0, 3).map(task => {
+        if (overdueTasksForAlert.length > 0) {
+            flaggedHtml += overdueTasksForAlert.slice(0, 3).map(task => {
                 const cluster = clusters.find(c => c.id === task.clusterId);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 return `

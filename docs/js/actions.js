@@ -102,7 +102,9 @@ function handleLogAction(e) {
             loggedBy: currentUser.username,
             createdAt: new Date().toISOString()
         };
-        return database.ref(`actions/${action.id}`).set(action);
+        // Use tenant-specific path for data isolation
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+        return database.ref(`${tenantPath}/${action.id}`).set(action);
     });
     
     Promise.all(promises).then(() => {
@@ -226,5 +228,7 @@ function renderFlaggedItems() {
 }
 
 function unflagAction(id) {
-    database.ref(`actions/${id}/flag`).set('');
+    // Use tenant-specific path for data isolation
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+    database.ref(`${tenantPath}/${id}/flag`).set('');
 }
