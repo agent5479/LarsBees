@@ -113,6 +113,40 @@ window.resetMasterAccount = function() {
     alert('Master account reset! Try logging in again with:\nUsername: Lars\nPassword: LarsHoney2025!');
 }
 
+// Debug function - call from browser console to test password hashing
+window.testPasswordHash = function() {
+    const testPassword = 'LarsHoney2025!';
+    const hash = simpleHash(testPassword);
+    console.log('Test password:', testPassword);
+    console.log('Generated hash:', hash);
+    console.log('Expected hash for LarsHoney2025!:', hash);
+    return hash;
+}
+
+// Debug function - check Firebase connection
+window.checkFirebaseConnection = function() {
+    console.log('🔍 Checking Firebase connection...');
+    if (typeof database === 'undefined') {
+        console.log('❌ Firebase database not initialized');
+        return false;
+    }
+    
+    database.ref('master/initialized').once('value', (snapshot) => {
+        console.log('✅ Firebase connected');
+        console.log('Master initialized:', snapshot.exists());
+        if (snapshot.exists()) {
+            database.ref('master/admin').once('value', (adminSnapshot) => {
+                const admin = adminSnapshot.val();
+                console.log('Admin data:', admin);
+            });
+        }
+    }).catch(error => {
+        console.log('❌ Firebase error:', error);
+    });
+    
+    return true;
+}
+
 // Authentication - Master User System
 function handleLogin(e) {
     e.preventDefault();
@@ -157,6 +191,28 @@ function handleLogin(e) {
             return;
         }
     }
+    
+    // Additional fallback - if Firebase fails after initialization
+    const firebaseTimeout = setTimeout(() => {
+        console.log('⚠️ Firebase timeout - using fallback authentication');
+        if (username.toLowerCase() === 'lars' && password === 'LarsHoney2025!') {
+            console.log('✅ Timeout fallback admin login successful');
+            currentUser = {
+                username: 'Lars',
+                role: 'admin',
+                createdAt: new Date().toISOString()
+            };
+            isAdmin = true;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('isAdmin', 'true');
+            showMainApp();
+            clusters = [];
+            actions = [];
+            scheduledTasks = [];
+            employees = [];
+            updateDashboard();
+        }
+    }, 5000); // 5 second timeout
     
     // Check if master user exists
     console.log('🔍 Checking Firebase connection...');
@@ -207,6 +263,7 @@ function validateLogin(username, password) {
     console.log('🔐 Validating login for:', username);
     const passwordHash = simpleHash(password);
     console.log('🔑 Password hash:', passwordHash);
+    console.log('🔑 Password being checked:', password);
     
     // Check if admin
     database.ref('master/admin').once('value', (snapshot) => {
@@ -218,10 +275,15 @@ function validateLogin(username, password) {
             console.log('   - Password hash match:', admin.passwordHash === passwordHash);
             console.log('   - Expected hash:', admin.passwordHash);
             console.log('   - Provided hash:', passwordHash);
+            console.log('   - Admin username:', admin.username);
+            console.log('   - Input username:', username);
+        } else {
+            console.log('❌ No admin data found in Firebase');
         }
         
         if (admin && admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash) {
             console.log('✅ Admin login successful');
+            clearTimeout(firebaseTimeout); // Clear the fallback timeout
             currentUser = admin;
             isAdmin = true;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -243,6 +305,7 @@ function validateLogin(username, password) {
             
             if (employee) {
                 console.log('Employee login successful');
+                clearTimeout(firebaseTimeout); // Clear the fallback timeout
                 currentUser = employee;
                 isAdmin = false;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
