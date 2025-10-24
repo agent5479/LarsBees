@@ -4,7 +4,7 @@
 **BeeMarshall** is a comprehensive beekeeping management system designed for professional apiary operations. The system provides multi-user support, real-time data synchronization, and advanced scheduling capabilities for beekeeping operations.
 
 ### **Core Philosophy**
-- **Militantly Organized Logistics**: Professional-grade organization for apiarists
+- **Professionally Organized Logistics**: Professional-grade organization for apiarists
 - **Multi-User Architecture**: Secure data isolation per organization
 - **Real-Time Synchronization**: Firebase-powered cloud data management
 - **Field-Ready Interface**: Mobile-optimized for field operations
