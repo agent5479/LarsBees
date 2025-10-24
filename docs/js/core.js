@@ -10,21 +10,21 @@ const VERSION_HISTORY = [
 ];
 
 // Master account credentials
-const MASTER_USERNAME = 'Lars';
-const MASTER_PASSWORD = 'LarsHoney2025!';
+const MASTER_USERNAME = 'GBTech';
+const MASTER_PASSWORD = '1q2w3e!Q@W#E';
 
-// Additional admin accounts with isolated data
+// Multi-tenant admin accounts with GBTech as master
 const ADMIN_ACCOUNTS = {
-    'Lars': {
-        username: 'Lars',
-        password: 'LarsHoney2025!',
-        tenantId: 'lars',
-        role: 'master_admin'
-    },
     'GBTech': {
         username: 'GBTech',
         password: '1q2w3e!Q@W#E',
         tenantId: 'gbtech',
+        role: 'master_admin'
+    },
+    'Lars': {
+        username: 'Lars',
+        password: 'LarsHoney2025!',
+        tenantId: 'lars',
         role: 'admin'
     }
 };
@@ -192,25 +192,27 @@ window.testGBTechLogin = function() {
     handleLogin({ preventDefault: () => {} });
 };
 
-// Data migration function for existing users
-window.migrateLarsData = function() {
-    console.log('🔄 Starting data migration for Lars...');
+// Automated data migration function
+function autoMigrateLarsData() {
+    console.log('🔄 Starting automated data migration for Lars...');
     
-    if (currentTenantId !== 'lars') {
-        alert('❌ This migration is only for Lars account');
-        return;
-    }
-    
-    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Migrating data...', 'syncing');
+    let migrationPromises = [];
+    let migrationCount = 0;
+    let totalMigrations = 5;
     
     // Migrate clusters
     database.ref('clusters').once('value', (snapshot) => {
         const oldClusters = snapshot.val();
         if (oldClusters) {
-            console.log('📦 Migrating clusters...');
-            database.ref(`tenants/lars/clusters`).set(oldClusters).then(() => {
-                console.log('✅ Clusters migrated successfully');
-            });
+            console.log('📦 Auto-migrating clusters...');
+            migrationPromises.push(
+                database.ref(`tenants/lars/clusters`).set(oldClusters).then(() => {
+                    console.log('✅ Clusters migrated successfully');
+                    migrationCount++;
+                })
+            );
+        } else {
+            migrationCount++;
         }
     });
     
@@ -218,10 +220,15 @@ window.migrateLarsData = function() {
     database.ref('actions').once('value', (snapshot) => {
         const oldActions = snapshot.val();
         if (oldActions) {
-            console.log('📦 Migrating actions...');
-            database.ref(`tenants/lars/actions`).set(oldActions).then(() => {
-                console.log('✅ Actions migrated successfully');
-            });
+            console.log('📦 Auto-migrating actions...');
+            migrationPromises.push(
+                database.ref(`tenants/lars/actions`).set(oldActions).then(() => {
+                    console.log('✅ Actions migrated successfully');
+                    migrationCount++;
+                })
+            );
+        } else {
+            migrationCount++;
         }
     });
     
@@ -229,10 +236,15 @@ window.migrateLarsData = function() {
     database.ref('scheduledTasks').once('value', (snapshot) => {
         const oldTasks = snapshot.val();
         if (oldTasks) {
-            console.log('📦 Migrating scheduled tasks...');
-            database.ref(`tenants/lars/scheduledTasks`).set(oldTasks).then(() => {
-                console.log('✅ Scheduled tasks migrated successfully');
-            });
+            console.log('📦 Auto-migrating scheduled tasks...');
+            migrationPromises.push(
+                database.ref(`tenants/lars/scheduledTasks`).set(oldTasks).then(() => {
+                    console.log('✅ Scheduled tasks migrated successfully');
+                    migrationCount++;
+                })
+            );
+        } else {
+            migrationCount++;
         }
     });
     
@@ -240,10 +252,15 @@ window.migrateLarsData = function() {
     database.ref('employees').once('value', (snapshot) => {
         const oldEmployees = snapshot.val();
         if (oldEmployees) {
-            console.log('📦 Migrating employees...');
-            database.ref(`tenants/lars/employees`).set(oldEmployees).then(() => {
-                console.log('✅ Employees migrated successfully');
-            });
+            console.log('📦 Auto-migrating employees...');
+            migrationPromises.push(
+                database.ref(`tenants/lars/employees`).set(oldEmployees).then(() => {
+                    console.log('✅ Employees migrated successfully');
+                    migrationCount++;
+                })
+            );
+        } else {
+            migrationCount++;
         }
     });
     
@@ -251,17 +268,36 @@ window.migrateLarsData = function() {
     database.ref('individualHives').once('value', (snapshot) => {
         const oldHives = snapshot.val();
         if (oldHives) {
-            console.log('📦 Migrating individual hives...');
-            database.ref(`tenants/lars/individualHives`).set(oldHives).then(() => {
-                console.log('✅ Individual hives migrated successfully');
-                showSyncStatus('<i class="bi bi-check"></i> Migration complete!', 'success');
-                // Reload data after migration
-                setTimeout(() => {
-                    loadDataFromFirebase();
-                }, 2000);
-            });
+            console.log('📦 Auto-migrating individual hives...');
+            migrationPromises.push(
+                database.ref(`tenants/lars/individualHives`).set(oldHives).then(() => {
+                    console.log('✅ Individual hives migrated successfully');
+                    migrationCount++;
+                })
+            );
+        } else {
+            migrationCount++;
         }
     });
+    
+    // Wait for all migrations to complete
+    Promise.all(migrationPromises).then(() => {
+        console.log('🎉 Automated migration completed successfully!');
+        showSyncStatus('<i class="bi bi-check"></i> Auto-migration complete!', 'success');
+        
+        // Reload data after migration
+        setTimeout(() => {
+            loadDataFromFirebase();
+        }, 1500);
+    }).catch(error => {
+        console.error('❌ Migration error:', error);
+        showSyncStatus('<i class="bi bi-exclamation-triangle"></i> Migration failed', 'warning');
+    });
+}
+
+// Manual migration function (for backup)
+window.migrateLarsData = function() {
+    autoMigrateLarsData();
 };
 
 // Debug function - check Firebase connection
@@ -778,14 +814,11 @@ function loadDataFromFirebase() {
                 const oldData = oldSnapshot.val();
                 console.log('🔍 Old clusters data:', oldData);
                 if (oldData) {
-                    console.log('📦 Found old data - migration needed');
-                    showSyncStatus('<i class="bi bi-exclamation-triangle"></i> Data migration needed', 'warning');
-                    // Show migration button for Lars
+                    console.log('📦 Found old data - starting automated migration...');
+                    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Auto-migrating data...', 'syncing');
+                    // Automatically migrate data for Lars
                     if (currentTenantId === 'lars') {
-                        const migrationButton = document.getElementById('migrationButton');
-                        if (migrationButton) {
-                            migrationButton.style.display = 'inline-block';
-                        }
+                        autoMigrateLarsData();
                     }
                 } else {
                     console.log('📭 No old data found - starting fresh');
