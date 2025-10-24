@@ -14,40 +14,104 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
     <style>
+        /* BeeMarshall Enhanced UI - Honey Theme */
         :root {
-            --primary-bg: #f8f9fa;
-            --secondary-accent: #e9ecef;
-            --primary-accent: #1fc8de;
-            --text-primary: #212529;
-            --text-secondary: #6c757d;
-            --success: #28a745;
-            --warning: #ffc107;
-            --danger: #dc3545;
-            --info: #17a2b8;
+            /* Enhanced Honey Design System */
+            --brand: #8B4513;
+            --muted: #A0522D;
+            --accent: #FFC107;
+            --bg: #FFF8DC;
+            --glass: rgba(255,248,220,0.95);
+            --shadow: 0 8px 32px rgba(139,69,19,0.15);
+            --radius: 12px;
+            --transition: all .22s cubic-bezier(.4,0,.2,1);
+            
+            /* Honey Color Palette */
+            --primary-bg: var(--bg);
+            --primary-accent: #FFC107; /* Honey yellow */
+            --secondary-accent: #FFF8DC;
+            --text-primary: var(--brand);
+            --text-secondary: var(--muted);
+            --success: #8FBC8F;
+            --warning: #DAA520;
+            --danger: #CD853F;
+            --info: #DEB887;
         }
         
         body {
-            background-color: var(--primary-bg);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--brand);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            scroll-behavior: smooth;
+        }
+        
+        .navbar {
+            background: linear-gradient(180deg, rgba(255,248,220,0.95), rgba(255,193,7,0.85));
+            backdrop-filter: blur(12px) saturate(1.1);
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 6px 20px rgba(139,69,19,0.15);
+            transition: var(--transition);
         }
         
         .navbar-brand {
-            font-weight: bold;
-            color: var(--primary-accent) !important;
+            font-weight: 700;
+            color: var(--brand) !important;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
         }
         
         .report-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border: none;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: var(--glass);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: var(--transition);
+            backdrop-filter: blur(12px) saturate(1.1);
         }
         
         .report-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(139,69,19,0.1);
+        }
+        
+        /* Button Styles to match main app */
+        .btn {
+            border-radius: var(--radius);
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 8px 22px rgba(139,69,19,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #DAA520);
+            color: var(--brand);
+            border: 2px solid var(--accent);
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 12px 28px rgba(139,69,19,0.25);
+            background: linear-gradient(135deg, #DAA520, var(--accent));
+        }
+        
+        .btn-outline-primary {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--brand);
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--brand);
         }
         
         .report-icon {
@@ -328,25 +392,57 @@
         let scheduledTasks = [];
         
         // Initialize page
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyALV0NmXT2VIZBrAR6D7rSnphNljhFIeb0",
+            authDomain: "beemarshall-378aa.firebaseapp.com",
+            databaseURL: "https://beemarshall-378aa-default-rtdb.firebaseio.com",
+            projectId: "beemarshall-378aa",
+            storageBucket: "beemarshall-378aa.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
         document.addEventListener('DOMContentLoaded', function() {
             loadDataFromFirebase();
             initializeCharts();
         });
         
-        // Load data from Firebase
+        // Get current tenant ID from localStorage
+        function getCurrentTenantId() {
+            return localStorage.getItem('currentTenantId') || 'lars'; // Default to Lars for compatibility
+        }
+        
+        // Load data from Firebase with tenant isolation
         function loadDataFromFirebase() {
-            database.ref('clusters').on('value', (snapshot) => {
+            const currentTenantId = getCurrentTenantId();
+            console.log('🏢 Loading reports data for tenant:', currentTenantId);
+            
+            if (!currentTenantId) {
+                console.error('❌ No tenant ID found for reports');
+                return;
+            }
+            
+            // Load tenant-specific data
+            database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
                 clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
+                console.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
                 updateMetrics();
             });
             
-            database.ref('actions').on('value', (snapshot) => {
+            database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
                 actions = snapshot.val() ? Object.values(snapshot.val()) : [];
+                console.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
                 updateMetrics();
             });
             
-            database.ref('scheduledTasks').on('value', (snapshot) => {
+            database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
                 scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+                console.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
                 updateMetrics();
             });
         }
