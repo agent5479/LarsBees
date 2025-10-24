@@ -46,6 +46,30 @@ let actions = [];
 let individualHives = [];
 let scheduledTasks = [];
 let employees = [];
+// Comprehensive task list for the system
+const COMPREHENSIVE_TASKS = [
+    { id: 'task_1', name: 'Hive Inspection', category: 'Inspection', description: 'Regular hive health and productivity check' },
+    { id: 'task_2', name: 'Honey Harvest', category: 'Harvest', description: 'Collect honey from productive hives' },
+    { id: 'task_3', name: 'Queen Check', category: 'Inspection', description: 'Verify queen presence and health' },
+    { id: 'task_4', name: 'Feeding', category: 'Management', description: 'Provide supplemental feeding if needed' },
+    { id: 'task_5', name: 'Disease Check', category: 'Health', description: 'Screen for diseases and pests' },
+    { id: 'task_6', name: 'Swarm Prevention', category: 'Management', description: 'Manage hive space to prevent swarming' },
+    { id: 'task_7', name: 'Equipment Maintenance', category: 'Maintenance', description: 'Clean and maintain hive equipment' },
+    { id: 'task_8', name: 'Record Keeping', category: 'Administration', description: 'Update hive records and logs' },
+    { id: 'task_9', name: 'Weather Protection', category: 'Management', description: 'Ensure hives are protected from weather' },
+    { id: 'task_10', name: 'Pest Control', category: 'Health', description: 'Monitor and control hive pests' },
+    { id: 'task_11', name: 'Hive Expansion', category: 'Management', description: 'Add supers or frames as needed' },
+    { id: 'task_12', name: 'Colony Splitting', category: 'Management', description: 'Create new colonies from strong hives' },
+    { id: 'task_13', name: 'Winter Preparation', category: 'Seasonal', description: 'Prepare hives for winter months' },
+    { id: 'task_14', name: 'Spring Build-up', category: 'Seasonal', description: 'Help colonies build up for spring' },
+    { id: 'task_15', name: 'Varroa Treatment', category: 'Health', description: 'Apply varroa mite treatment' },
+    { id: 'task_16', name: 'Hive Relocation', category: 'Management', description: 'Move hives to new locations' },
+    { id: 'task_17', name: 'Equipment Sanitization', category: 'Health', description: 'Clean and sanitize hive equipment' },
+    { id: 'task_18', name: 'Emergency Response', category: 'Emergency', description: 'Respond to hive emergencies' },
+    { id: 'task_19', name: 'Queen Replacement', category: 'Management', description: 'Replace failing or missing queens' },
+    { id: 'task_20', name: 'Hive Monitoring', category: 'Inspection', description: 'Regular monitoring of hive activity' }
+];
+
 let tasks = COMPREHENSIVE_TASKS;
 let deletedTasks = {}; // Archive of deleted tasks for historical record display
 let map = null;
