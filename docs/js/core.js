@@ -284,7 +284,7 @@ function autoMigrateLarsData() {
     // Wait for all migrations to complete
     Promise.all(migrationPromises).then(() => {
         console.log('🎉 Automated migration completed successfully!');
-        showSyncStatus('<i class="bi bi-check"></i> Auto-migration complete!', 'success');
+        showSyncStatus('', 'success');
         
         // Reload data after migration
         setTimeout(() => {
@@ -292,7 +292,7 @@ function autoMigrateLarsData() {
         }, 1500);
     }).catch(error => {
         console.error('❌ Migration error:', error);
-        showSyncStatus('<i class="bi bi-exclamation-triangle"></i> Migration failed', 'warning');
+        showSyncStatus('', 'error');
     });
 }
 
@@ -843,7 +843,7 @@ function updateDashboardStats() {
 
 // Load data from Firebase with tenant isolation
 function loadDataFromFirebase() {
-    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Loading...', 'syncing');
+    showSyncStatus('', 'syncing');
     
     if (!currentTenantId) {
         console.error('❌ No tenant ID found');
@@ -866,7 +866,7 @@ function loadDataFromFirebase() {
                 console.log('🔍 Old clusters data:', oldData);
                 if (oldData) {
                     console.log('📦 Found old data - starting automated migration...');
-                    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Auto-migrating data...', 'syncing');
+                    showSyncStatus('', 'syncing');
                     // Show migration button for Lars
                     if (currentTenantId === 'lars') {
                         const migrationButton = document.getElementById('migrationButton');
@@ -877,11 +877,11 @@ function loadDataFromFirebase() {
                     }
                 } else {
                     console.log('📭 No old data found - starting fresh');
-                    showSyncStatus('<i class="bi bi-cloud-check"></i> Synced (Fresh Start)');
+                    showSyncStatus('', 'success');
                 }
             });
         } else {
-            showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
+            showSyncStatus('', 'success');
         }
         updateDashboard(); // Update dashboard (map will load when user clicks)
     }).catch(error => {
@@ -890,7 +890,7 @@ function loadDataFromFirebase() {
         database.ref('clusters').on('value', (oldSnapshot) => {
             clusters = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
             console.log('📊 Clusters loaded from old structure:', clusters.length);
-            showSyncStatus('<i class="bi bi-cloud-check"></i> Synced (Old Structure)');
+            showSyncStatus('', 'success');
             updateDashboard();
         });
     });

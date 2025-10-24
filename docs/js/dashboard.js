@@ -461,10 +461,16 @@ function showSyncStatus(message, type = 'success') {
     const syncText = document.getElementById('syncText');
     
     indicator.classList.remove('hidden', 'syncing', 'error');
-    if (type === 'syncing') indicator.classList.add('syncing');
-    else if (type === 'error') indicator.classList.add('error');
+    if (type === 'syncing') {
+        indicator.classList.add('syncing');
+        syncText.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Syncing...';
+    } else if (type === 'error') {
+        indicator.classList.add('error');
+        syncText.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Sync Error';
+    } else {
+        syncText.innerHTML = '<i class="bi bi-check-circle"></i> Synced';
+    }
     
-    syncText.innerHTML = message;
     indicator.classList.remove('hidden');
     
     if (type !== 'syncing') {
@@ -474,13 +480,13 @@ function showSyncStatus(message, type = 'success') {
 
 function handleOnline() {
     isOnline = true;
-    showSyncStatus('<i class="bi bi-wifi"></i> Back online', 'success');
+    showSyncStatus('', 'success');
     processSyncQueue();
 }
 
 function handleOffline() {
     isOnline = false;
-    showSyncStatus('<i class="bi bi-wifi-off"></i> Offline mode', 'warning');
+    showSyncStatus('', 'error');
 }
 
 function loadSyncQueue() {
