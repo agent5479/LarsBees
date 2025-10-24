@@ -538,9 +538,10 @@ function validateLogin(username, password) {
             return;
         }
         
-        // Check if employee
-        console.log('Checking employees...');
-        database.ref('employees').once('value', (empSnapshot) => {
+        // Check if employee (tenant-specific)
+        console.log('Checking employees for tenant:', currentTenantId);
+        const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+        database.ref(employeePath).once('value', (empSnapshot) => {
             const employeesList = empSnapshot.val() || {};
             console.log('Employees:', employeesList);
             
