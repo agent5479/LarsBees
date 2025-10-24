@@ -46,32 +46,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize system status
     updateSystemStatus();
     
-    // TEMPORARY: Bypass login for testing
-    console.log('🚀 BYPASSING LOGIN - Going straight to dashboard for testing');
+    const savedUser = localStorage.getItem('currentUser');
+    const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
     
-    // Set up demo user
-    currentUser = {
-        username: 'Lars',
-        role: 'admin',
-        createdAt: new Date().toISOString()
-    };
-    isAdmin = true;
-    
-    // Initialize with empty data for testing
-    clusters = [];
-    actions = [];
-    scheduledTasks = [];
-    employees = [];
-    
-    // Ensure main app is visible and login is hidden
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    
-    // Initialize dashboard
-    showMainApp();
-    updateDashboard();
-    
-    console.log('✅ Bypassed login - dashboard should be visible now');
+    if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        isAdmin = savedIsAdmin;
+        showMainApp();
+        loadDataFromFirebase();
+    } else {
+        checkFirstTimeSetup();
+    }
     
     // Setup event listeners with error checking
     const loginForm = document.getElementById('loginForm');
