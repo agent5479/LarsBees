@@ -82,7 +82,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         console.log('✅ Login form found, adding event listener');
-        loginForm.addEventListener('submit', handleLogin);
+        loginForm.addEventListener('submit', function(e) {
+            console.log('📝 Form submit event triggered');
+            handleLogin(e);
+        });
+        
+        // Also add click listener to the submit button for debugging
+        const loginButton = document.getElementById('loginButton');
+        if (loginButton) {
+            loginButton.addEventListener('click', function(e) {
+                console.log('🖱️ Login button clicked');
+            });
+        }
     } else {
         console.error('❌ Login form not found!');
     }
@@ -164,6 +175,21 @@ window.testPasswordHash = function() {
     console.log('Expected hash for LarsHoney2025!:', hash);
     return hash;
 }
+
+// Test login functions for debugging
+window.testLarsLogin = function() {
+    console.log('🧪 Testing Lars login...');
+    document.getElementById('loginUsername').value = 'Lars';
+    document.getElementById('loginPassword').value = 'LarsHoney2025!';
+    handleLogin({ preventDefault: () => {} });
+};
+
+window.testGBTechLogin = function() {
+    console.log('🧪 Testing GBTech login...');
+    document.getElementById('loginUsername').value = 'GBTech';
+    document.getElementById('loginPassword').value = '1q2w3e!Q@W#E';
+    handleLogin({ preventDefault: () => {} });
+};
 
 // Debug function - check Firebase connection
 window.checkFirebaseConnection = function() {
@@ -402,6 +428,7 @@ window.testDashboard = function() {
 function handleLogin(e) {
     e.preventDefault();
     console.log('🔐 Login form submitted - handleLogin function called');
+    console.log('🔍 Event details:', e);
     
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
