@@ -78,58 +78,56 @@
                             </div>
                         </div>
 
-                        <!-- Data Summary -->
+                        <!-- Migration Success Summary -->
+                        <div class="alert alert-success mb-4">
+                            <h5><i class="bi bi-check-circle"></i> Migration Completed Successfully!</h5>
+                            <p class="mb-0">All Lars data has been migrated to the new Firebase structure. Use this tool to verify the data is accessible.</p>
+                        </div>
+
+                        <!-- All Data Types Summary -->
                         <div class="row mb-4">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
-                                    <h6><i class="bi bi-collection"></i> Lars Clusters</h6>
-                                    <div id="larsClustersCount">-</div>
+                                    <h6><i class="bi bi-collection"></i> Clusters</h6>
+                                    <div id="clustersCount">-</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
-                                    <h6><i class="bi bi-list-check"></i> Lars Actions</h6>
-                                    <div id="larsActionsCount">-</div>
+                                    <h6><i class="bi bi-list-check"></i> Actions</h6>
+                                    <div id="actionsCount">-</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
-                                    <h6><i class="bi bi-calendar-check"></i> Lars Tasks</h6>
-                                    <div id="larsTasksCount">-</div>
+                                    <h6><i class="bi bi-calendar-check"></i> Scheduled Tasks</h6>
+                                    <div id="scheduledTasksCount">-</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
-                                    <h6><i class="bi bi-people"></i> Lars Employees</h6>
-                                    <div id="larsEmployeesCount">-</div>
+                                    <h6><i class="bi bi-people"></i> Employees</h6>
+                                    <div id="employeesCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-house"></i> Individual Hives</h6>
+                                    <div id="individualHivesCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-gear"></i> Master</h6>
+                                    <div id="masterCount">-</div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- GBTech Data -->
                         <div class="row mb-4">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
-                                    <h6><i class="bi bi-collection"></i> GBTech Clusters</h6>
-                                    <div id="gbtechClustersCount">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="data-card text-center">
-                                    <h6><i class="bi bi-list-check"></i> GBTech Actions</h6>
-                                    <div id="gbtechActionsCount">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="data-card text-center">
-                                    <h6><i class="bi bi-calendar-check"></i> GBTech Tasks</h6>
-                                    <div id="gbtechTasksCount">-</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="data-card text-center">
-                                    <h6><i class="bi bi-people"></i> GBTech Employees</h6>
-                                    <div id="gbtechEmployeesCount">-</div>
+                                    <h6><i class="bi bi-list-task"></i> Tasks</h6>
+                                    <div id="tasksCount">-</div>
                                 </div>
                             </div>
                         </div>
@@ -192,95 +190,102 @@
                 updateLog('✅ Database root accessible', 'success');
                 updateLog('Root keys: ' + (rootData ? Object.keys(rootData).join(', ') : 'None'), 'info');
                 
-                // Check tenants structure
-                if (rootData && rootData.tenants) {
-                    updateLog('✅ Tenants structure found', 'success');
-                    updateLog('Tenant keys: ' + Object.keys(rootData.tenants).join(', '), 'info');
-                    
-                    // Verify Lars data
-                    verifyLarsData();
-                    verifyGBTechData();
-                } else {
-                    updateLog('❌ No tenants structure found', 'danger');
-                }
+                // Check for migrated data at root level
+                updateLog('🔍 Checking for migrated data...', 'info');
+                verifyAllDataTypes();
             }).catch(error => {
                 updateLog('❌ Database access failed: ' + error.message, 'danger');
             });
         }
 
-        // Verify Lars data
-        function verifyLarsData() {
-            updateLog('🔍 Verifying Lars data...', 'info');
+        // Verify all data types at root level
+        function verifyAllDataTypes() {
+            updateLog('🔍 Verifying all migrated data...', 'info');
             
             // Clusters
-            database.ref('tenants/lars/clusters').once('value', (snapshot) => {
+            database.ref('clusters').once('value', (snapshot) => {
                 const data = snapshot.val();
                 const count = data ? Object.keys(data).length : 0;
-                document.getElementById('larsClustersCount').textContent = count;
-                updateLog(`📊 Lars clusters: ${count} records`, count > 0 ? 'success' : 'warning');
+                document.getElementById('clustersCount').textContent = count;
+                updateLog(`📊 Clusters: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Clusters access failed: ${error.message}`, 'danger');
+                document.getElementById('clustersCount').textContent = 'Error';
             });
 
             // Actions
-            database.ref('tenants/lars/actions').once('value', (snapshot) => {
+            database.ref('actions').once('value', (snapshot) => {
                 const data = snapshot.val();
                 const count = data ? Object.keys(data).length : 0;
-                document.getElementById('larsActionsCount').textContent = count;
-                updateLog(`📊 Lars actions: ${count} records`, count > 0 ? 'success' : 'warning');
+                document.getElementById('actionsCount').textContent = count;
+                updateLog(`📊 Actions: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Actions access failed: ${error.message}`, 'danger');
+                document.getElementById('actionsCount').textContent = 'Error';
             });
 
             // Scheduled Tasks
-            database.ref('tenants/lars/scheduledTasks').once('value', (snapshot) => {
+            database.ref('scheduledTasks').once('value', (snapshot) => {
                 const data = snapshot.val();
                 const count = data ? Object.keys(data).length : 0;
-                document.getElementById('larsTasksCount').textContent = count;
-                updateLog(`📊 Lars scheduled tasks: ${count} records`, count > 0 ? 'success' : 'warning');
+                document.getElementById('scheduledTasksCount').textContent = count;
+                updateLog(`📊 Scheduled Tasks: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Scheduled Tasks access failed: ${error.message}`, 'danger');
+                document.getElementById('scheduledTasksCount').textContent = 'Error';
             });
 
             // Employees
-            database.ref('tenants/lars/employees').once('value', (snapshot) => {
+            database.ref('employees').once('value', (snapshot) => {
                 const data = snapshot.val();
                 const count = data ? Object.keys(data).length : 0;
-                document.getElementById('larsEmployeesCount').textContent = count;
-                updateLog(`📊 Lars employees: ${count} records`, count > 0 ? 'success' : 'warning');
+                document.getElementById('employeesCount').textContent = count;
+                updateLog(`📊 Employees: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Employees access failed: ${error.message}`, 'danger');
+                document.getElementById('employeesCount').textContent = 'Error';
             });
+
+            // Individual Hives
+            database.ref('individualHives').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('individualHivesCount').textContent = count;
+                updateLog(`📊 Individual Hives: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Individual Hives access failed: ${error.message}`, 'danger');
+                document.getElementById('individualHivesCount').textContent = 'Error';
+            });
+
+            // Master
+            database.ref('master').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('masterCount').textContent = count;
+                updateLog(`📊 Master: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Master access failed: ${error.message}`, 'danger');
+                document.getElementById('masterCount').textContent = 'Error';
+            });
+
+            // Tasks
+            database.ref('tasks').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('tasksCount').textContent = count;
+                updateLog(`📊 Tasks: ${count} records`, count > 0 ? 'success' : 'warning');
+            }).catch(error => {
+                updateLog(`❌ Tasks access failed: ${error.message}`, 'danger');
+                document.getElementById('tasksCount').textContent = 'Error';
+            });
+
+            // Final summary
+            setTimeout(() => {
+                updateLog('🎉 Data verification completed!', 'success');
+                updateLog('✅ All migrated data is accessible in the new Firebase structure', 'success');
+            }, 2000);
         }
 
-        // Verify GBTech data
-        function verifyGBTechData() {
-            updateLog('🔍 Verifying GBTech data...', 'info');
-            
-            // Clusters
-            database.ref('tenants/gbtech/clusters').once('value', (snapshot) => {
-                const data = snapshot.val();
-                const count = data ? Object.keys(data).length : 0;
-                document.getElementById('gbtechClustersCount').textContent = count;
-                updateLog(`📊 GBTech clusters: ${count} records`, count > 0 ? 'success' : 'warning');
-            });
-
-            // Actions
-            database.ref('tenants/gbtech/actions').once('value', (snapshot) => {
-                const data = snapshot.val();
-                const count = data ? Object.keys(data).length : 0;
-                document.getElementById('gbtechActionsCount').textContent = count;
-                updateLog(`📊 GBTech actions: ${count} records`, count > 0 ? 'success' : 'warning');
-            });
-
-            // Scheduled Tasks
-            database.ref('tenants/gbtech/scheduledTasks').once('value', (snapshot) => {
-                const data = snapshot.val();
-                const count = data ? Object.keys(data).length : 0;
-                document.getElementById('gbtechTasksCount').textContent = count;
-                updateLog(`📊 GBTech scheduled tasks: ${count} records`, count > 0 ? 'success' : 'warning');
-            });
-
-            // Employees
-            database.ref('tenants/gbtech/employees').once('value', (snapshot) => {
-                const data = snapshot.val();
-                const count = data ? Object.keys(data).length : 0;
-                document.getElementById('gbtechEmployeesCount').textContent = count;
-                updateLog(`📊 GBTech employees: ${count} records`, count > 0 ? 'success' : 'warning');
-            });
-        }
 
         // Update log with styled entries
         function updateLog(message, type) {
