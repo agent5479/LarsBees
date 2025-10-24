@@ -292,13 +292,16 @@
                 return;
             }
 
-            // Test source connection
+            // Test source connection using known working paths
             updateLog('Testing source database connection...', 'info');
-            sourceDatabase.ref('/').once('value', (snapshot) => {
-                updateLog('✅ Source database accessible', 'success');
+            sourceDatabase.ref('clusters').once('value', (snapshot) => {
+                updateLog('✅ Source database accessible (clusters path)', 'success');
                 loadSourceDataCounts();
             }).catch(error => {
                 updateLog('❌ Source database error: ' + error.message, 'danger');
+                updateLog('⚠️ Trying alternative approach...', 'warning');
+                // Try to load data anyway - some paths might work
+                loadSourceDataCounts();
             });
 
             // Test target connection
@@ -319,6 +322,9 @@
                 const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
                 document.getElementById('clustersCount').textContent = count;
                 updateLog(`📁 Clusters: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Clusters access failed: ${error.message}`, 'danger');
+                document.getElementById('clustersCount').textContent = 'Error';
             });
 
             // Actions
@@ -326,6 +332,9 @@
                 const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
                 document.getElementById('actionsCount').textContent = count;
                 updateLog(`📁 Actions: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Actions access failed: ${error.message}`, 'danger');
+                document.getElementById('actionsCount').textContent = 'Error';
             });
 
             // Scheduled Tasks
@@ -333,6 +342,9 @@
                 const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
                 document.getElementById('tasksCount').textContent = count;
                 updateLog(`📁 Scheduled Tasks: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Scheduled Tasks access failed: ${error.message}`, 'danger');
+                document.getElementById('tasksCount').textContent = 'Error';
             });
 
             // Employees
@@ -340,6 +352,9 @@
                 const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
                 document.getElementById('employeesCount').textContent = count;
                 updateLog(`📁 Employees: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Employees access failed: ${error.message}`, 'danger');
+                document.getElementById('employeesCount').textContent = 'Error';
             });
         }
 
@@ -369,11 +384,15 @@
                         checkCloningProgress();
                     }).catch(error => {
                         updateLog('❌ Clusters cloning failed: ' + error.message, 'danger');
+                        checkCloningProgress();
                     });
                 } else {
                     updateLog('📭 No clusters to clone', 'info');
                     checkCloningProgress();
                 }
+            }).catch(error => {
+                updateLog('❌ Cannot access clusters: ' + error.message, 'danger');
+                checkCloningProgress();
             });
 
             // Clone actions
@@ -388,11 +407,15 @@
                         checkCloningProgress();
                     }).catch(error => {
                         updateLog('❌ Actions cloning failed: ' + error.message, 'danger');
+                        checkCloningProgress();
                     });
                 } else {
                     updateLog('📭 No actions to clone', 'info');
                     checkCloningProgress();
                 }
+            }).catch(error => {
+                updateLog('❌ Cannot access actions: ' + error.message, 'danger');
+                checkCloningProgress();
             });
 
             // Clone scheduled tasks
@@ -407,11 +430,15 @@
                         checkCloningProgress();
                     }).catch(error => {
                         updateLog('❌ Scheduled tasks cloning failed: ' + error.message, 'danger');
+                        checkCloningProgress();
                     });
                 } else {
                     updateLog('📭 No scheduled tasks to clone', 'info');
                     checkCloningProgress();
                 }
+            }).catch(error => {
+                updateLog('❌ Cannot access scheduled tasks: ' + error.message, 'danger');
+                checkCloningProgress();
             });
 
             // Clone employees
@@ -426,11 +453,15 @@
                         checkCloningProgress();
                     }).catch(error => {
                         updateLog('❌ Employees cloning failed: ' + error.message, 'danger');
+                        checkCloningProgress();
                     });
                 } else {
                     updateLog('📭 No employees to clone', 'info');
                     checkCloningProgress();
                 }
+            }).catch(error => {
+                updateLog('❌ Cannot access employees: ' + error.message, 'danger');
+                checkCloningProgress();
             });
 
             // Check cloning progress
