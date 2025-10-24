@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeeMarshall - Reports Dashboard</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-bg: #f8f9fa;
+            --secondary-accent: #e9ecef;
+            --primary-accent: #1fc8de;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+        
+        body {
+            background-color: var(--primary-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: var(--primary-accent) !important;
+        }
+        
+        .report-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .report-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        
+        .report-icon.hive-performance {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .report-icon.health-mortality {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+        }
+        
+        .report-icon.operations {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid var(--primary-accent);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-accent);
+        }
+        
+        .back-button {
+            background: var(--primary-accent);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s ease;
+        }
+        
+        .back-button:hover {
+            background: #17a2b8;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="beemarshall-full.html">
+                <i class="bi bi-graph-up"></i> BeeMarshall Reports
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="beemarshall-full.html">
+                    <i class="bi bi-arrow-left"></i> Back to Main App
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1"><i class="bi bi-graph-up"></i> Reports Dashboard</h1>
+                        <p class="text-muted mb-0">Analytics and insights for your beekeeping operations</p>
+                    </div>
+                    <div>
+                        <a href="beemarshall-full.html" class="back-button">
+                            <i class="bi bi-arrow-left"></i> Back to Main App
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="bi bi-houses text-primary" style="font-size: 2rem;"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number" id="totalClusters">0</div>
+                            <div class="text-muted">Total Clusters</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="bi bi-bee text-warning" style="font-size: 2rem;"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number" id="totalHives">0</div>
+                            <div class="text-muted">Total Hives</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number" id="totalActions">0</div>
+                            <div class="text-muted">Actions Logged</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="bi bi-flag text-danger" style="font-size: 2rem;"></i>
+                        </div>
+                        <div>
+                            <div class="stat-number" id="flaggedIssues">0</div>
+                            <div class="text-muted">Flagged Issues</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Categories -->
+        <div class="row">
+            <!-- Hive Performance -->
+            <div class="col-lg-4 mb-4">
+                <div class="report-card h-100">
+                    <div class="card-body text-center">
+                        <div class="report-icon hive-performance mx-auto">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <h5 class="card-title">Hive Performance</h5>
+                        <p class="card-text text-muted">Track hive strength, productivity, and growth over time</p>
+                        <div class="chart-container">
+                            <canvas id="hivePerformanceChart"></canvas>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="generateHivePerformanceReport()">
+                            <i class="bi bi-download"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health & Mortality -->
+            <div class="col-lg-4 mb-4">
+                <div class="report-card h-100">
+                    <div class="card-body text-center">
+                        <div class="report-icon health-mortality mx-auto">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <h5 class="card-title">Health & Mortality</h5>
+                        <p class="card-text text-muted">Monitor disease outbreaks, mortality rates, and health trends</p>
+                        <div class="chart-container">
+                            <canvas id="healthMortalityChart"></canvas>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="generateHealthMortalityReport()">
+                            <i class="bi bi-download"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operations -->
+            <div class="col-lg-4 mb-4">
+                <div class="report-card h-100">
+                    <div class="card-body text-center">
+                        <div class="report-icon operations mx-auto">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <h5 class="card-title">Operations</h5>
+                        <p class="card-text text-muted">Analyze task completion, efficiency, and resource usage</p>
+                        <div class="chart-container">
+                            <canvas id="operationsChart"></canvas>
+                        </div>
+                        <button class="btn btn-outline-primary btn-sm" onclick="generateOperationsReport()">
+                            <i class="bi bi-download"></i> Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Reports -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="report-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Reports</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-outline-success w-100" onclick="generateQuickReport('monthly')">
+                                    <i class="bi bi-calendar-month"></i> Monthly Summary
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-outline-info w-100" onclick="generateQuickReport('seasonal')">
+                                    <i class="bi bi-sun"></i> Seasonal Analysis
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-outline-warning w-100" onclick="generateQuickReport('cluster')">
+                                    <i class="bi bi-houses"></i> Cluster Performance
+                                </button>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <button class="btn btn-outline-danger w-100" onclick="generateQuickReport('health')">
+                                    <i class="bi bi-heart-pulse"></i> Health Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyALV0NmXT2VIZBrAR6D7rSnphNljhFIeb0",
+            authDomain: "larsbees-378aa.firebaseapp.com",
+            databaseURL: "https://larsbees-378aa-default-rtdb.firebaseio.com",
+            projectId: "larsbees-378aa",
+            storageBucket: "larsbees-378aa.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Global variables
+        let clusters = [];
+        let actions = [];
+        let scheduledTasks = [];
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromFirebase();
+            initializeCharts();
+        });
+        
+        // Load data from Firebase
+        function loadDataFromFirebase() {
+            database.ref('clusters').on('value', (snapshot) => {
+                clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
+                updateMetrics();
+            });
+            
+            database.ref('actions').on('value', (snapshot) => {
+                actions = snapshot.val() ? Object.values(snapshot.val()) : [];
+                updateMetrics();
+            });
+            
+            database.ref('scheduledTasks').on('value', (snapshot) => {
+                scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+                updateMetrics();
+            });
+        }
+        
+        // Update key metrics
+        function updateMetrics() {
+            document.getElementById('totalClusters').textContent = clusters.length;
+            document.getElementById('totalHives').textContent = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+            document.getElementById('totalActions').textContent = actions.length;
+            document.getElementById('flaggedIssues').textContent = actions.filter(a => a.flag && a.flag !== 'normal').length;
+        }
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Hive Performance Chart
+            const hiveCtx = document.getElementById('hivePerformanceChart').getContext('2d');
+            new Chart(hiveCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Hive Strength',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Health & Mortality Chart
+            const healthCtx = document.getElementById('healthMortalityChart').getContext('2d');
+            new Chart(healthCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Healthy', 'Diseased', 'Dead'],
+                    datasets: [{
+                        data: [85, 10, 5],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Operations Chart
+            const opsCtx = document.getElementById('operationsChart').getContext('2d');
+            new Chart(opsCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Completed', 'Pending', 'Overdue'],
+                    datasets: [{
+                        label: 'Tasks',
+                        data: [45, 12, 3],
+                        backgroundColor: ['#17a2b8', '#ffc107', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Report generation functions
+        function generateHivePerformanceReport() {
+            alert('Hive Performance Report\n\nThis report will show:\n• Hive strength trends\n• Productivity metrics\n• Growth patterns\n• Performance comparisons\n\nFeature coming soon!');
+        }
+        
+        function generateHealthMortalityReport() {
+            alert('Health & Mortality Report\n\nThis report will show:\n• Disease outbreak patterns\n• Mortality rates\n• Health trends\n• Risk assessments\n\nFeature coming soon!');
+        }
+        
+        function generateOperationsReport() {
+            alert('Operations Report\n\nThis report will show:\n• Task completion rates\n• Efficiency metrics\n• Resource usage\n• Performance indicators\n\nFeature coming soon!');
+        }
+        
+        function generateQuickReport(type) {
+            const reports = {
+                'monthly': 'Monthly Summary Report',
+                'seasonal': 'Seasonal Analysis Report',
+                'cluster': 'Cluster Performance Report',
+                'health': 'Health Dashboard Report'
+            };
+            
+            alert(`${reports[type]}\n\nThis report will provide:\n• Key performance indicators\n• Trend analysis\n• Comparative data\n• Actionable insights\n\nFeature coming soon!`);
+        }
+    </script>
+</body>
+</html>
