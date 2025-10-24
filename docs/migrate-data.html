@@ -100,8 +100,8 @@
                                 </button>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-warning w-100" onclick="skipClusters()" id="skipButton" style="display: none;">
-                                    <i class="bi bi-skip-forward"></i> Skip Clusters
+                                <button class="btn btn-info w-100" onclick="checkPermissions()" id="permissionsButton">
+                                    <i class="bi bi-shield-check"></i> Check Permissions
                                 </button>
                             </div>
                             <div class="col-md-3">
@@ -146,6 +146,37 @@
                                     <div id="employeesCount">-</div>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Firebase Permissions Info -->
+                        <div class="alert alert-warning mb-4">
+                            <h5><i class="bi bi-shield-exclamation"></i> Required Firebase Permissions</h5>
+                            <p>For successful migration, both Firebase projects need proper security rules:</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Source Database (larsbees-378aa)</h6>
+                                    <pre class="bg-light p-2 small"><code>{
+  "rules": {
+    ".read": true,
+    ".write": false
+  }
+}</code></pre>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Target Database (beemarshall-a311e)</h6>
+                                    <pre class="bg-light p-2 small"><code>{
+  "rules": {
+    "tenants": {
+      "lars": {
+        ".write": true,
+        ".read": true
+      }
+    }
+  }
+}</code></pre>
+                                </div>
+                            </div>
+                            <p class="mb-0"><strong>Note:</strong> Click "Check Permissions" to verify access before migration.</p>
                         </div>
 
                         <!-- Migration Log -->
@@ -293,7 +324,6 @@
             updateLog('🚀 Starting data migration process...', 'info');
             document.getElementById('migrateButton').disabled = true;
             document.getElementById('migrateButton').innerHTML = '<i class="bi bi-arrow-clockwise"></i> Migrating...';
-            document.getElementById('skipButton').style.display = 'block';
 
             let totalSteps = 4;
             let completedSteps = 0;
@@ -304,17 +334,15 @@
                 document.getElementById('progressText').textContent = message;
             }
 
-            // Migrate clusters with timeout and better error handling
+            // Migrate clusters with comprehensive error handling
             updateLog('📦 Migrating clusters...', 'info');
             updateProgress(1, totalSteps, 'Migrating clusters...');
             
             // Add timeout for the operation
             const clusterTimeout = setTimeout(() => {
-                updateLog('⏰ Clusters migration timeout - continuing with next step', 'warning');
-                completedSteps++;
-                updateProgress(completedSteps, totalSteps, 'Clusters timeout');
-                migrateActions();
-            }, 10000); // 10 second timeout
+                updateLog('⏰ Clusters migration timeout - retrying with different approach', 'warning');
+                retryClusterMigration();
+            }, 15000); // 15 second timeout
             
             sourceDatabase.ref('clusters').once('value', (snapshot) => {
                 clearTimeout(clusterTimeout);
@@ -399,11 +427,96 @@
             }).catch(error => {
                 clearTimeout(clusterTimeout);
                 updateLog('❌ Failed to read clusters: ' + error.message, 'danger');
-                updateLog('🔄 Skipping clusters and continuing...', 'warning');
-                completedSteps++;
-                updateProgress(completedSteps, totalSteps, 'Clusters skipped');
-                migrateActions();
+                updateLog('🔄 Retrying cluster migration with different approach...', 'warning');
+                retryClusterMigration();
             });
+
+            // Retry cluster migration with different strategies
+            function retryClusterMigration() {
+                updateLog('🔄 Retrying cluster migration...', 'info');
+                
+                // Try reading clusters with different approach
+                sourceDatabase.ref('clusters').limitToFirst(1).once('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        updateLog('✅ Can read clusters - trying full migration', 'success');
+                        migrateAllClusters();
+                    } else {
+                        updateLog('📭 No clusters found in source database', 'warning');
+                        completedSteps++;
+                        updateProgress(completedSteps, totalSteps, 'No clusters found');
+                        migrateActions();
+                    }
+                }).catch(error => {
+                    updateLog('❌ Cluster retry failed: ' + error.message, 'danger');
+                    updateLog('🔧 This indicates a Firebase permissions issue', 'warning');
+                    updateLog('💡 Required permissions:', 'info');
+                    updateLog('   - Source: READ access to /clusters', 'info');
+                    updateLog('   - Target: WRITE access to /tenants/lars/clusters', 'info');
+                    updateLog('🔄 Continuing with other data types...', 'warning');
+                    completedSteps++;
+                    updateProgress(completedSteps, totalSteps, 'Clusters failed');
+                    migrateActions();
+                });
+            }
+
+            // Migrate all clusters with proper error handling
+            function migrateAllClusters() {
+                sourceDatabase.ref('clusters').once('value', (snapshot) => {
+                    const clusters = snapshot.val();
+                    if (clusters) {
+                        updateLog(`📊 Found ${Object.keys(clusters).length} clusters to migrate`, 'info');
+                        
+                        // Try direct migration first
+                        targetDatabase.ref('tenants/lars/clusters').set(clusters).then(() => {
+                            updateLog(`✅ All clusters migrated successfully: ${Object.keys(clusters).length} records`, 'success');
+                            completedSteps++;
+                            updateProgress(completedSteps, totalSteps, 'Clusters migrated');
+                            migrateActions();
+                        }).catch(error => {
+                            updateLog('❌ Direct cluster migration failed: ' + error.message, 'danger');
+                            updateLog('🔄 Trying individual cluster migration...', 'info');
+                            migrateClustersIndividually(clusters);
+                        });
+                    } else {
+                        updateLog('📭 No clusters to migrate', 'info');
+                        completedSteps++;
+                        updateProgress(completedSteps, totalSteps, 'No clusters found');
+                        migrateActions();
+                    }
+                });
+            }
+
+            // Migrate clusters one by one
+            function migrateClustersIndividually(clusters) {
+                const clusterKeys = Object.keys(clusters);
+                let migratedCount = 0;
+                let failedCount = 0;
+
+                function migrateNextCluster(index) {
+                    if (index >= clusterKeys.length) {
+                        updateLog(`✅ Individual cluster migration completed: ${migratedCount} migrated, ${failedCount} failed`, 'success');
+                        completedSteps++;
+                        updateProgress(completedSteps, totalSteps, 'Clusters migrated');
+                        migrateActions();
+                        return;
+                    }
+
+                    const key = clusterKeys[index];
+                    const clusterData = clusters[key];
+
+                    targetDatabase.ref(`tenants/lars/clusters/${key}`).set(clusterData).then(() => {
+                        migratedCount++;
+                        updateLog(`✅ Migrated cluster ${index + 1}/${clusterKeys.length}: ${key}`, 'success');
+                        setTimeout(() => migrateNextCluster(index + 1), 100);
+                    }).catch(error => {
+                        failedCount++;
+                        updateLog(`❌ Failed to migrate cluster ${key}: ${error.message}`, 'danger');
+                        setTimeout(() => migrateNextCluster(index + 1), 100);
+                    });
+                }
+
+                migrateNextCluster(0);
+            }
 
             function migrateActions() {
                 updateLog('📦 Migrating actions...', 'info');
@@ -504,16 +617,88 @@
             document.getElementById('migrationLog').innerHTML = '<div class="log-entry log-info">Log cleared</div>';
         }
 
-        // Skip clusters and continue with other data
-        function skipClusters() {
-            updateLog('⏭️ Skipping clusters migration...', 'warning');
-            updateLog('🔄 Continuing with actions migration...', 'info');
+        // Check Firebase permissions for both databases
+        function checkPermissions() {
+            updateLog('🔍 Checking Firebase permissions...', 'info');
             
-            // Hide skip button
-            document.getElementById('skipButton').style.display = 'none';
+            if (!initializeFirebase()) {
+                return;
+            }
+
+            // Test source database permissions
+            updateLog('Testing source database permissions...', 'info');
+            sourceDatabase.ref('clusters').once('value', (snapshot) => {
+                updateLog('✅ Source clusters: READ access confirmed', 'success');
+                
+                // Test target database permissions
+                updateLog('Testing target database permissions...', 'info');
+                targetDatabase.ref('tenants/lars/test').set({
+                    timestamp: new Date().toISOString(),
+                    test: 'permission_test'
+                }).then(() => {
+                    updateLog('✅ Target database: WRITE access confirmed', 'success');
+                    updateLog('🎯 All permissions verified - migration should work', 'success');
+                    
+                    // Clean up test data
+                    targetDatabase.ref('tenants/lars/test').remove();
+                    
+                    // Test specific data access
+                    testDataAccess();
+                }).catch(error => {
+                    updateLog('❌ Target database WRITE failed: ' + error.message, 'danger');
+                    updateLog('🔧 Required: Firebase security rules need to allow writes', 'warning');
+                    updateLog('💡 Solution: Update Firebase rules to allow writes to /tenants/lars/*', 'info');
+                });
+            }).catch(error => {
+                updateLog('❌ Source database READ failed: ' + error.message, 'danger');
+                updateLog('🔧 Required: Firebase security rules need to allow reads', 'warning');
+                updateLog('💡 Solution: Update Firebase rules to allow reads from root level', 'info');
+            });
+        }
+
+        // Test access to specific data
+        function testDataAccess() {
+            updateLog('🔍 Testing specific data access...', 'info');
             
-            // Continue with actions
-            window.migrateActions();
+            // Test clusters
+            sourceDatabase.ref('clusters').once('value', (snapshot) => {
+                const clusters = snapshot.val();
+                if (clusters) {
+                    updateLog(`✅ Clusters accessible: ${Object.keys(clusters).length} records`, 'success');
+                } else {
+                    updateLog('📭 No clusters found in source', 'warning');
+                }
+            });
+
+            // Test actions
+            sourceDatabase.ref('actions').once('value', (snapshot) => {
+                const actions = snapshot.val();
+                if (actions) {
+                    updateLog(`✅ Actions accessible: ${Object.keys(actions).length} records`, 'success');
+                } else {
+                    updateLog('📭 No actions found in source', 'warning');
+                }
+            });
+
+            // Test scheduled tasks
+            sourceDatabase.ref('scheduledTasks').once('value', (snapshot) => {
+                const tasks = snapshot.val();
+                if (tasks) {
+                    updateLog(`✅ Scheduled tasks accessible: ${Object.keys(tasks).length} records`, 'success');
+                } else {
+                    updateLog('📭 No scheduled tasks found in source', 'warning');
+                }
+            });
+
+            // Test employees
+            sourceDatabase.ref('employees').once('value', (snapshot) => {
+                const employees = snapshot.val();
+                if (employees) {
+                    updateLog(`✅ Employees accessible: ${Object.keys(employees).length} records`, 'success');
+                } else {
+                    updateLog('📭 No employees found in source', 'warning');
+                }
+            });
         }
 
         // Make migrateActions globally accessible
