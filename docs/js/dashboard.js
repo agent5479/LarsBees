@@ -8,7 +8,15 @@ function showDashboard() {
 
 function updateDashboard() {
     console.log('📊 Updating dashboard with data...');
+    console.log('🔍 Current data state:', {
+        clusters: clusters.length,
+        actions: actions.length,
+        scheduledTasks: scheduledTasks.length,
+        individualHives: individualHives.length
+    });
+    
     const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    console.log('📊 Total hives calculated:', totalHives);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
@@ -18,12 +26,20 @@ function updateDashboard() {
     }).length;
     
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount;
+    console.log('📊 Flagged count calculated:', flaggedCount);
     
     // Set numbers directly without animation
     document.getElementById('statClusters').textContent = clusters.length;
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = actions.length;
     document.getElementById('statFlagged').textContent = flaggedCount;
+    
+    console.log('📊 Dashboard cards updated:', {
+        clusters: clusters.length,
+        hives: totalHives,
+        actions: actions.length,
+        flagged: flaggedCount
+    });
     
     // Update quick stats
     updateQuickStats();

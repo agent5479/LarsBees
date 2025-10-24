@@ -869,10 +869,20 @@ function loadDataFromFirebase() {
     
     function checkAllDataLoaded() {
         dataLoadCount++;
+        console.log(`📊 Data load progress: ${dataLoadCount}/${totalDataTypes}`);
         if (dataLoadCount >= totalDataTypes) {
             console.log('✅ All data loaded, updating dashboard');
+            console.log('🔍 Final data state:', {
+                clusters: clusters.length,
+                actions: actions.length,
+                scheduledTasks: scheduledTasks.length,
+                individualHives: individualHives.length
+            });
             isLoadingData = false;
-            updateDashboard();
+            // Small delay to ensure data is properly set
+            setTimeout(() => {
+                updateDashboard();
+            }, 100);
         }
     }
     
@@ -881,6 +891,7 @@ function loadDataFromFirebase() {
         console.log('🔍 Raw clusters data for', currentTenantId + ':', data);
         clusters = data ? Object.values(data) : [];
         console.log('📊 Clusters loaded for', currentTenantId + ':', clusters.length);
+        console.log('📊 Clusters array:', clusters);
         
         if (clusters.length === 0) {
             console.log('📭 No clusters found - starting fresh');
@@ -896,8 +907,11 @@ function loadDataFromFirebase() {
     });
     
     database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
-        actions = snapshot.val() ? Object.values(snapshot.val()) : [];
+        const data = snapshot.val();
+        console.log('🔍 Raw actions data for', currentTenantId + ':', data);
+        actions = data ? Object.values(data) : [];
         console.log('📊 Actions loaded for', currentTenantId + ':', actions.length);
+        console.log('📊 Actions array:', actions);
         checkAllDataLoaded();
     }).catch(error => {
         console.log('❌ Tenant actions access failed:', error.message);
