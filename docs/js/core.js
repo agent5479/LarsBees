@@ -652,7 +652,7 @@ function handleLogin(e) {
             console.log('🚀 Redirecting to dashboard...');
             console.log('🏢 Tenant ID:', currentTenantId);
             showMainApp();
-            updateDashboard();
+            loadDataFromFirebase();
         }, 1500);
         
         return;
@@ -803,8 +803,8 @@ function showMainApp() {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.add('employee-hidden'));
     }
     
-    // Initialize dashboard but don't load map yet
-    showDashboardWithoutMap();
+    // Initialize dashboard
+    showDashboard();
     
     // Show welcome popup after a short delay to ensure everything is loaded
     setTimeout(() => {

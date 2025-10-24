@@ -432,6 +432,25 @@
                 console.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
                 updateMetrics();
             });
+            
+            // Load additional data types for comprehensive reporting
+            database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
+                const individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
+                console.log('📊 Reports individual hives loaded for', currentTenantId + ':', individualHives.length);
+                updateMetrics();
+            });
+            
+            database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
+                const employees = snapshot.val() ? Object.values(snapshot.val()) : [];
+                console.log('📊 Reports employees loaded for', currentTenantId + ':', employees.length);
+                updateMetrics();
+            });
+            
+            database.ref(`tenants/${currentTenantId}/tasks`).on('value', (snapshot) => {
+                const tasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+                console.log('📊 Reports tasks loaded for', currentTenantId + ':', tasks.length);
+                updateMetrics();
+            });
         }
         
         // Update key metrics
