@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeeMarshall Data Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --light-yellow: #FFFACD;
+            --dark-yellow: #DAA520;
+            --white: #FFFFFF;
+            --black: #000000;
+            --accent: #FFD700;
+        }
+
+        body {
+            background: var(--white);
+            font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .card {
+            background: var(--white);
+            border: 2px solid var(--dark-yellow);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(218,165,32,0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--dark-yellow), var(--accent));
+            color: var(--black);
+            border: 2px solid var(--dark-yellow);
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin: 4px 0;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .log-info { background: rgba(13, 202, 240, 0.1); color: #0DCAF0; }
+        .log-success { background: rgba(25, 135, 84, 0.1); color: #198754; }
+        .log-warning { background: rgba(255, 193, 7, 0.1); color: #FFC107; }
+        .log-danger { background: rgba(220, 53, 69, 0.1); color: #DC3545; }
+
+        .data-card {
+            background: var(--light-yellow);
+            border: 1px solid var(--dark-yellow);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="bi bi-hexagon-fill"></i> BeeMarshall Data Verification</h4>
+                        <p class="mb-0">Verifying data in new Firebase project (beemarshall-a311e)</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary w-100" onclick="verifyData()">
+                                    <i class="bi bi-search"></i> Verify Data
+                                </button>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-outline-secondary w-100" onclick="clearLog()">
+                                    <i class="bi bi-trash"></i> Clear Log
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Data Summary -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-collection"></i> Lars Clusters</h6>
+                                    <div id="larsClustersCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-list-check"></i> Lars Actions</h6>
+                                    <div id="larsActionsCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-calendar-check"></i> Lars Tasks</h6>
+                                    <div id="larsTasksCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-people"></i> Lars Employees</h6>
+                                    <div id="larsEmployeesCount">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- GBTech Data -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-collection"></i> GBTech Clusters</h6>
+                                    <div id="gbtechClustersCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-list-check"></i> GBTech Actions</h6>
+                                    <div id="gbtechActionsCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-calendar-check"></i> GBTech Tasks</h6>
+                                    <div id="gbtechTasksCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-people"></i> GBTech Employees</h6>
+                                    <div id="gbtechEmployeesCount">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Verification Log -->
+                        <div id="verificationLog" style="height: 400px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 6px;">
+                            <div class="log-entry log-info">Ready to verify data...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration for new BeeMarshall project
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLqjik76P7c72rgrMvo1lw86G3MOIIuNA",
+            authDomain: "beemarshall-a311e.firebaseapp.com",
+            databaseURL: "https://beemarshall-a311e-default-rtdb.firebaseio.com",
+            projectId: "beemarshall-a311e",
+            storageBucket: "beemarshall-a311e.firebasestorage.app",
+            messagingSenderId: "502475319497",
+            appId: "1:502475319497:web:36e8120b0ca2c997870518",
+            measurementId: "G-4WMTWPWWFD"
+        };
+
+        let database;
+
+        // Initialize Firebase
+        function initializeFirebase() {
+            try {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                updateLog('✅ Firebase initialized successfully', 'success');
+                updateLog('Project: beemarshall-a311e', 'info');
+                return true;
+            } catch (error) {
+                updateLog('❌ Firebase initialization failed: ' + error.message, 'danger');
+                return false;
+            }
+        }
+
+        // Verify data in new Firebase
+        function verifyData() {
+            updateLog('🔄 Starting data verification...', 'info');
+            
+            if (!initializeFirebase()) {
+                return;
+            }
+
+            // Check root structure
+            updateLog('Checking database structure...', 'info');
+            database.ref('/').once('value', (snapshot) => {
+                const rootData = snapshot.val();
+                updateLog('✅ Database root accessible', 'success');
+                updateLog('Root keys: ' + (rootData ? Object.keys(rootData).join(', ') : 'None'), 'info');
+                
+                // Check tenants structure
+                if (rootData && rootData.tenants) {
+                    updateLog('✅ Tenants structure found', 'success');
+                    updateLog('Tenant keys: ' + Object.keys(rootData.tenants).join(', '), 'info');
+                    
+                    // Verify Lars data
+                    verifyLarsData();
+                    verifyGBTechData();
+                } else {
+                    updateLog('❌ No tenants structure found', 'danger');
+                }
+            }).catch(error => {
+                updateLog('❌ Database access failed: ' + error.message, 'danger');
+            });
+        }
+
+        // Verify Lars data
+        function verifyLarsData() {
+            updateLog('🔍 Verifying Lars data...', 'info');
+            
+            // Clusters
+            database.ref('tenants/lars/clusters').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('larsClustersCount').textContent = count;
+                updateLog(`📊 Lars clusters: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+
+            // Actions
+            database.ref('tenants/lars/actions').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('larsActionsCount').textContent = count;
+                updateLog(`📊 Lars actions: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+
+            // Scheduled Tasks
+            database.ref('tenants/lars/scheduledTasks').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('larsTasksCount').textContent = count;
+                updateLog(`📊 Lars scheduled tasks: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+
+            // Employees
+            database.ref('tenants/lars/employees').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('larsEmployeesCount').textContent = count;
+                updateLog(`📊 Lars employees: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+        }
+
+        // Verify GBTech data
+        function verifyGBTechData() {
+            updateLog('🔍 Verifying GBTech data...', 'info');
+            
+            // Clusters
+            database.ref('tenants/gbtech/clusters').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('gbtechClustersCount').textContent = count;
+                updateLog(`📊 GBTech clusters: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+
+            // Actions
+            database.ref('tenants/gbtech/actions').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('gbtechActionsCount').textContent = count;
+                updateLog(`📊 GBTech actions: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+
+            // Scheduled Tasks
+            database.ref('tenants/gbtech/scheduledTasks').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('gbtechTasksCount').textContent = count;
+                updateLog(`📊 GBTech scheduled tasks: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+
+            // Employees
+            database.ref('tenants/gbtech/employees').once('value', (snapshot) => {
+                const data = snapshot.val();
+                const count = data ? Object.keys(data).length : 0;
+                document.getElementById('gbtechEmployeesCount').textContent = count;
+                updateLog(`📊 GBTech employees: ${count} records`, count > 0 ? 'success' : 'warning');
+            });
+        }
+
+        // Update log with styled entries
+        function updateLog(message, type) {
+            const log = document.getElementById('verificationLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.innerHTML = `[${timestamp}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // Clear log
+        function clearLog() {
+            document.getElementById('verificationLog').innerHTML = '<div class="log-entry log-info">Log cleared</div>';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateLog('🔄 BeeMarshall Data Verification Tool initialized', 'info');
+            updateLog('Click "Verify Data" to check the new Firebase database', 'info');
+        });
+    </script>
+</body>
+</html>
