@@ -2,6 +2,12 @@
 // Master User: Lars (can add employees, delete records)
 // Employees: Can add/view, cannot delete
 
+// Version Management
+const APP_VERSION = '0.91';
+const VERSION_HISTORY = [
+    { version: '0.91', date: '2024-12-19', changes: ['Fixed dashboard loading issue', 'Enhanced login system', 'Added welcome popup', 'Improved map initialization'] }
+];
+
 // Master account credentials
 const MASTER_USERNAME = 'Lars';
 const MASTER_PASSWORD = 'LarsHoney2025!';
@@ -31,6 +37,10 @@ let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category,
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Content Loaded - Initializing BeeMarshall...');
+    console.log(`📦 BeeMarshall v${APP_VERSION} - Professional Apiary Management System`);
+    
+    // Update version display
+    updateVersionDisplay();
     
     // Initialize system status
     updateSystemStatus();
@@ -232,6 +242,7 @@ function updateDebugInfo(elementId, value) {
 function updateSystemStatus() {
     // Update system status
     updateDebugInfo('systemStatus', 'System ready');
+    updateDebugInfo('versionInfo', `v${APP_VERSION}`);
     
     // Check Firebase status
     if (typeof database !== 'undefined') {
@@ -304,6 +315,38 @@ function updateWelcomeStats() {
 function dismissWelcomeModal() {
     console.log('👋 Welcome modal dismissed - user ready to start');
     updateDebugInfo('systemStatus', 'User acknowledged welcome - ready for use');
+}
+
+// Version Management Functions
+function updateVersionDisplay() {
+    const versionElements = document.querySelectorAll('.version-tag .badge');
+    versionElements.forEach(element => {
+        element.innerHTML = `<i class="bi bi-tag-fill me-1"></i>v${APP_VERSION}`;
+    });
+    console.log(`🏷️ Version display updated to v${APP_VERSION}`);
+}
+
+function getVersionInfo() {
+    return {
+        current: APP_VERSION,
+        history: VERSION_HISTORY,
+        latest: VERSION_HISTORY[VERSION_HISTORY.length - 1]
+    };
+}
+
+function getVersionChanges(version = APP_VERSION) {
+    const versionInfo = VERSION_HISTORY.find(v => v.version === version);
+    return versionInfo ? versionInfo.changes : [];
+}
+
+// Debug function to show version information
+window.showVersionInfo = function() {
+    const info = getVersionInfo();
+    console.log('📦 BeeMarshall Version Information:');
+    console.log(`Current Version: v${info.current}`);
+    console.log('Version History:', info.history);
+    console.log('Latest Changes:', info.latest.changes);
+    return info;
 }
 
 // Simplified Robust Authentication System

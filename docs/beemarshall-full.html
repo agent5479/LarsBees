@@ -161,6 +161,21 @@
             border-radius: var(--radius);
         }
         
+        /* Version Tag Styling */
+        .version-tag {
+            margin-top: 0.5rem;
+        }
+        .version-tag .badge {
+            background: linear-gradient(135deg, var(--primary-accent), #17a2b8) !important;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        .version-tag .badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
         /* Enhanced Form Styles */
         .form-control {
             border-radius: var(--radius);
@@ -893,6 +908,11 @@
                             <i class="bi bi-hexagon-fill" style="font-size: 4rem; color: var(--accent);"></i>
                             <h2 class="mt-3" style="color: var(--brand);">BeeMarshall</h2>
                             <p class="text-muted">Professional Apiary Management System</p>
+                            <div class="version-tag">
+                                <span class="badge bg-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                                    <i class="bi bi-tag-fill me-1"></i>v0.91
+                                </span>
+                            </div>
                         </div>
                         
                         <!-- Login Status Messages -->
@@ -942,7 +962,8 @@
                                             <strong>System Status:</strong> <span id="systemStatus">Checking...</span><br>
                                             <strong>Firebase:</strong> <span id="firebaseStatus">Connecting...</span><br>
                                             <strong>Last Error:</strong> <span id="lastError">None</span><br>
-                                            <strong>Session:</strong> <span id="sessionInfo">Not logged in</span>
+                                            <strong>Session:</strong> <span id="sessionInfo">Not logged in</span><br>
+                                            <strong>Version:</strong> <span id="versionInfo">v0.91</span>
                                         </small>
                                     </div>
                                 </div>
