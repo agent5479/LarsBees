@@ -122,43 +122,68 @@
 
                         <!-- Data Preview -->
                         <div class="row mb-4">
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
                                     <h6><i class="bi bi-collection"></i> Clusters</h6>
                                     <div id="clustersCount">-</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
                                     <h6><i class="bi bi-list-check"></i> Actions</h6>
                                     <div id="actionsCount">-</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
-                                    <h6><i class="bi bi-calendar-check"></i> Tasks</h6>
-                                    <div id="tasksCount">-</div>
+                                    <h6><i class="bi bi-calendar-check"></i> Scheduled Tasks</h6>
+                                    <div id="scheduledTasksCount">-</div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <div class="data-card text-center">
                                     <h6><i class="bi bi-people"></i> Employees</h6>
                                     <div id="employeesCount">-</div>
                                 </div>
                             </div>
+                            <div class="col-md-2">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-house"></i> Individual Hives</h6>
+                                    <div id="individualHivesCount">-</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-gear"></i> Master</h6>
+                                    <div id="masterCount">-</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-2">
+                                <div class="data-card text-center">
+                                    <h6><i class="bi bi-list-task"></i> Tasks</h6>
+                                    <div id="tasksCount">-</div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Firebase Permissions Info -->
-                        <div class="alert alert-warning mb-4">
-                            <h5><i class="bi bi-shield-exclamation"></i> Required Firebase Permissions</h5>
-                            <p>For successful migration, both Firebase projects need proper security rules:</p>
+                        <div class="alert alert-success mb-4">
+                            <h5><i class="bi bi-shield-check"></i> Firebase Rules Updated</h5>
+                            <p>Both databases now have comprehensive security rules that allow full data migration:</p>
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6>Source Database (larsbees-378aa)</h6>
                                     <pre class="bg-light p-2 small"><code>{
   "rules": {
-    ".read": true,
-    ".write": false
+    "master": { ".read": true, ".write": true },
+    "employees": { ".read": true, ".write": true },
+    "clusters": { ".read": true, ".write": true },
+    "actions": { ".read": true, ".write": true },
+    "individualHives": { ".read": true, ".write": true },
+    "scheduledTasks": { ".read": true, ".write": true },
+    "tasks": { ".read": true, ".write": true }
   }
 }</code></pre>
                                 </div>
@@ -166,17 +191,18 @@
                                     <h6>Target Database (beemarshall-a311e)</h6>
                                     <pre class="bg-light p-2 small"><code>{
   "rules": {
-    "tenants": {
-      "lars": {
-        ".write": true,
-        ".read": true
-      }
-    }
+    "master": { ".read": true, ".write": true },
+    "employees": { ".read": true, ".write": true },
+    "clusters": { ".read": true, ".write": true },
+    "actions": { ".read": true, ".write": true },
+    "individualHives": { ".read": true, ".write": true },
+    "scheduledTasks": { ".read": true, ".write": true },
+    "tasks": { ".read": true, ".write": true }
   }
 }</code></pre>
                                 </div>
                             </div>
-                            <p class="mb-0"><strong>Note:</strong> Click "Check Permissions" to verify access before migration.</p>
+                            <p class="mb-0"><strong>✅ Ready to migrate:</strong> All data types are now accessible for migration.</p>
                         </div>
 
                         <!-- Migration Log -->
@@ -296,11 +322,11 @@
             // Scheduled Tasks
             sourceDatabase.ref('scheduledTasks').once('value', (snapshot) => {
                 const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
-                document.getElementById('tasksCount').textContent = count;
+                document.getElementById('scheduledTasksCount').textContent = count;
                 updateLog(`📁 Scheduled Tasks: ${count} records`, 'info');
             }).catch(error => {
                 updateLog(`❌ Scheduled Tasks access failed: ${error.message}`, 'danger');
-                document.getElementById('tasksCount').textContent = 'Error';
+                document.getElementById('scheduledTasksCount').textContent = 'Error';
             });
 
             // Employees
@@ -311,6 +337,36 @@
             }).catch(error => {
                 updateLog(`❌ Employees access failed: ${error.message}`, 'danger');
                 document.getElementById('employeesCount').textContent = 'Error';
+            });
+
+            // Individual Hives
+            sourceDatabase.ref('individualHives').once('value', (snapshot) => {
+                const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
+                document.getElementById('individualHivesCount').textContent = count;
+                updateLog(`📁 Individual Hives: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Individual Hives access failed: ${error.message}`, 'danger');
+                document.getElementById('individualHivesCount').textContent = 'Error';
+            });
+
+            // Master
+            sourceDatabase.ref('master').once('value', (snapshot) => {
+                const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
+                document.getElementById('masterCount').textContent = count;
+                updateLog(`📁 Master: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Master access failed: ${error.message}`, 'danger');
+                document.getElementById('masterCount').textContent = 'Error';
+            });
+
+            // Tasks
+            sourceDatabase.ref('tasks').once('value', (snapshot) => {
+                const count = snapshot.val() ? Object.keys(snapshot.val()).length : 0;
+                document.getElementById('tasksCount').textContent = count;
+                updateLog(`📁 Tasks: ${count} records`, 'info');
+            }).catch(error => {
+                updateLog(`❌ Tasks access failed: ${error.message}`, 'danger');
+                document.getElementById('tasksCount').textContent = 'Error';
             });
         }
 
@@ -325,7 +381,7 @@
             document.getElementById('migrateButton').disabled = true;
             document.getElementById('migrateButton').innerHTML = '<i class="bi bi-arrow-clockwise"></i> Migrating...';
 
-            let totalSteps = 4;
+            let totalSteps = 7; // Updated for all data types
             let completedSteps = 0;
 
             function updateProgress(step, total, message) {
@@ -406,7 +462,7 @@
                         const key = clusterKeys[startIndex];
                         const clusterData = clusters[key];
                         
-                        targetDatabase.ref(`tenants/lars/clusters/${key}`).set(clusterData).then(() => {
+                        targetDatabase.ref(`clusters/${key}`).set(clusterData).then(() => {
                             migratedCount++;
                             updateLog(`✅ Migrated cluster ${startIndex + 1}/${clusterKeys.length}: ${key}`, 'success');
                             setTimeout(() => migrateIndividualClusters(clusters, startIndex + 1), 200);
@@ -467,7 +523,7 @@
                         updateLog(`📊 Found ${Object.keys(clusters).length} clusters to migrate`, 'info');
                         
                         // Try direct migration first
-                        targetDatabase.ref('tenants/lars/clusters').set(clusters).then(() => {
+                        targetDatabase.ref('clusters').set(clusters).then(() => {
                             updateLog(`✅ All clusters migrated successfully: ${Object.keys(clusters).length} records`, 'success');
                             completedSteps++;
                             updateProgress(completedSteps, totalSteps, 'Clusters migrated');
@@ -504,7 +560,7 @@
                     const key = clusterKeys[index];
                     const clusterData = clusters[key];
 
-                    targetDatabase.ref(`tenants/lars/clusters/${key}`).set(clusterData).then(() => {
+                    targetDatabase.ref(`clusters/${key}`).set(clusterData).then(() => {
                         migratedCount++;
                         updateLog(`✅ Migrated cluster ${index + 1}/${clusterKeys.length}: ${key}`, 'success');
                         setTimeout(() => migrateNextCluster(index + 1), 100);
@@ -524,7 +580,7 @@
                 sourceDatabase.ref('actions').once('value', (snapshot) => {
                     const actions = snapshot.val();
                     if (actions) {
-                        targetDatabase.ref('tenants/lars/actions').set(actions).then(() => {
+                        targetDatabase.ref('actions').set(actions).then(() => {
                             completedSteps++;
                             updateLog(`✅ Actions migrated: ${Object.keys(actions).length} records`, 'success');
                             updateProgress(completedSteps, totalSteps, 'Actions migrated');
@@ -548,7 +604,7 @@
                 sourceDatabase.ref('scheduledTasks').once('value', (snapshot) => {
                     const tasks = snapshot.val();
                     if (tasks) {
-                        targetDatabase.ref('tenants/lars/scheduledTasks').set(tasks).then(() => {
+                        targetDatabase.ref('scheduledTasks').set(tasks).then(() => {
                             completedSteps++;
                             updateLog(`✅ Scheduled tasks migrated: ${Object.keys(tasks).length} records`, 'success');
                             updateProgress(completedSteps, totalSteps, 'Tasks migrated');
@@ -572,15 +628,11 @@
                 sourceDatabase.ref('employees').once('value', (snapshot) => {
                     const employees = snapshot.val();
                     if (employees) {
-                        targetDatabase.ref('tenants/lars/employees').set(employees).then(() => {
+                        targetDatabase.ref('employees').set(employees).then(() => {
                             completedSteps++;
                             updateLog(`✅ Employees migrated: ${Object.keys(employees).length} records`, 'success');
-                            updateProgress(completedSteps, totalSteps, 'Migration Complete!');
-                            
-                            updateLog('🎉 Data migration completed successfully!', 'success');
-                            updateLog('✅ All Lars data has been migrated to the new Firebase structure', 'success');
-                            document.getElementById('migrateButton').innerHTML = '<i class="bi bi-check-circle"></i> Migration Complete';
-                            document.getElementById('migrateButton').className = 'btn btn-success w-100';
+                            updateProgress(completedSteps, totalSteps, 'Employees migrated');
+                            migrateIndividualHives();
                         }).catch(error => {
                             updateLog('❌ Employees migration failed: ' + error.message, 'danger');
                             updateLog('🎉 Core data migration completed with some errors', 'warning');
@@ -589,6 +641,88 @@
                         });
                     } else {
                         updateLog('📭 No employees to migrate', 'info');
+                        completedSteps++;
+                        updateProgress(completedSteps, totalSteps, 'Migration Complete!');
+                        
+                        updateLog('🎉 Data migration completed successfully!', 'success');
+                        updateLog('✅ All Lars data has been migrated to the new Firebase structure', 'success');
+                        document.getElementById('migrateButton').innerHTML = '<i class="bi bi-check-circle"></i> Migration Complete';
+                        document.getElementById('migrateButton').className = 'btn btn-success w-100';
+                    }
+                });
+            }
+
+            function migrateIndividualHives() {
+                updateLog('📦 Migrating individual hives...', 'info');
+                updateProgress(5, totalSteps, 'Migrating individual hives...');
+                sourceDatabase.ref('individualHives').once('value', (snapshot) => {
+                    const hives = snapshot.val();
+                    if (hives) {
+                        targetDatabase.ref('individualHives').set(hives).then(() => {
+                            completedSteps++;
+                            updateLog(`✅ Individual hives migrated: ${Object.keys(hives).length} records`, 'success');
+                            updateProgress(completedSteps, totalSteps, 'Individual hives migrated');
+                            migrateMaster();
+                        }).catch(error => {
+                            updateLog('❌ Individual hives migration failed: ' + error.message, 'danger');
+                            migrateMaster();
+                        });
+                    } else {
+                        updateLog('📭 No individual hives to migrate', 'info');
+                        completedSteps++;
+                        updateProgress(completedSteps, totalSteps, 'No individual hives found');
+                        migrateMaster();
+                    }
+                });
+            }
+
+            function migrateMaster() {
+                updateLog('📦 Migrating master data...', 'info');
+                updateProgress(6, totalSteps, 'Migrating master data...');
+                sourceDatabase.ref('master').once('value', (snapshot) => {
+                    const master = snapshot.val();
+                    if (master) {
+                        targetDatabase.ref('master').set(master).then(() => {
+                            completedSteps++;
+                            updateLog(`✅ Master data migrated: ${Object.keys(master).length} records`, 'success');
+                            updateProgress(completedSteps, totalSteps, 'Master data migrated');
+                            migrateTasks();
+                        }).catch(error => {
+                            updateLog('❌ Master data migration failed: ' + error.message, 'danger');
+                            migrateTasks();
+                        });
+                    } else {
+                        updateLog('📭 No master data to migrate', 'info');
+                        completedSteps++;
+                        updateProgress(completedSteps, totalSteps, 'No master data found');
+                        migrateTasks();
+                    }
+                });
+            }
+
+            function migrateTasks() {
+                updateLog('📦 Migrating tasks...', 'info');
+                updateProgress(7, totalSteps, 'Migrating tasks...');
+                sourceDatabase.ref('tasks').once('value', (snapshot) => {
+                    const tasks = snapshot.val();
+                    if (tasks) {
+                        targetDatabase.ref('tasks').set(tasks).then(() => {
+                            completedSteps++;
+                            updateLog(`✅ Tasks migrated: ${Object.keys(tasks).length} records`, 'success');
+                            updateProgress(completedSteps, totalSteps, 'Migration Complete!');
+                            
+                            updateLog('🎉 Data migration completed successfully!', 'success');
+                            updateLog('✅ All Lars data has been migrated to the new Firebase structure', 'success');
+                            document.getElementById('migrateButton').innerHTML = '<i class="bi bi-check-circle"></i> Migration Complete';
+                            document.getElementById('migrateButton').className = 'btn btn-success w-100';
+                        }).catch(error => {
+                            updateLog('❌ Tasks migration failed: ' + error.message, 'danger');
+                            updateLog('🎉 Core data migration completed with some errors', 'warning');
+                            document.getElementById('migrateButton').innerHTML = '<i class="bi bi-exclamation-triangle"></i> Migration Partial';
+                            document.getElementById('migrateButton').className = 'btn btn-warning w-100';
+                        });
+                    } else {
+                        updateLog('📭 No tasks to migrate', 'info');
                         completedSteps++;
                         updateProgress(completedSteps, totalSteps, 'Migration Complete!');
                         
