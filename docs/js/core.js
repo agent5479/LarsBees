@@ -851,7 +851,7 @@ function loadDataFromFirebase() {
     
     console.log('🏢 Loading data for tenant:', currentTenantId);
     
-    // Load tenant-specific data
+    // Load tenant-specific data with fallback to old structure
     database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('🔍 Raw clusters data for', currentTenantId + ':', data);
@@ -883,20 +883,52 @@ function loadDataFromFirebase() {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
         }
         updateDashboard(); // Update dashboard (map will load when user clicks)
+    }).catch(error => {
+        console.log('❌ Tenant clusters access failed, using old structure:', error.message);
+        // Fallback to old structure due to permission issues
+        database.ref('clusters').on('value', (oldSnapshot) => {
+            clusters = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
+            console.log('📊 Clusters loaded from old structure:', clusters.length);
+            showSyncStatus('<i class="bi bi-cloud-check"></i> Synced (Old Structure)');
+            updateDashboard();
+        });
     });
     
     database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateDashboard();
+    }).catch(error => {
+        console.log('❌ Tenant actions access failed, using old structure:', error.message);
+        // Fallback to old structure
+        database.ref('actions').on('value', (oldSnapshot) => {
+            actions = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
+            console.log('📊 Actions loaded from old structure:', actions.length);
+            updateDashboard();
+        });
     });
     
     database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
+    }).catch(error => {
+        console.log('❌ Tenant hives access failed, using old structure:', error.message);
+        // Fallback to old structure
+        database.ref('individualHives').on('value', (oldSnapshot) => {
+            individualHives = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
+            console.log('📊 Individual hives loaded from old structure:', individualHives.length);
+        });
     });
     
     database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateScheduledTasksPreview();
+    }).catch(error => {
+        console.log('❌ Tenant tasks access failed, using old structure:', error.message);
+        // Fallback to old structure
+        database.ref('scheduledTasks').on('value', (oldSnapshot) => {
+            scheduledTasks = oldSnapshot.val() ? Object.values(oldSnapshot.val()) : [];
+            console.log('📊 Scheduled tasks loaded from old structure:', scheduledTasks.length);
+            updateScheduledTasksPreview();
+        });
     });
     
     if (isAdmin) {

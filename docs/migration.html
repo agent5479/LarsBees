@@ -166,24 +166,31 @@
                     
                     <!-- Additional Controls -->
                     <div class="row mt-3">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="d-grid">
                                 <button class="btn btn-info btn-sm" onclick="testFirebaseConnection()">
                                     <i class="bi bi-wifi"></i> Test Connection
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="d-grid">
                                 <button class="btn btn-success btn-sm" onclick="testFirebaseConfig()">
                                     <i class="bi bi-gear"></i> Test Config
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <div class="d-grid">
                                 <button class="btn btn-warning btn-sm" onclick="testDataAccess()">
                                     <i class="bi bi-shield-check"></i> Test Data Access
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button class="btn btn-danger btn-sm" onclick="testHivesData()">
+                                    <i class="bi bi-bug"></i> Test Hives Data
                                 </button>
                             </div>
                         </div>
@@ -724,6 +731,77 @@
             }).catch(error => {
                 updateLog('❌ Write permission failed: ' + error.message, 'danger');
                 updateLog('Error code: ' + error.code, 'danger');
+            });
+        }
+        
+        // Test hives data specifically
+        function testHivesData() {
+            updateLog('Testing hives data access...', 'info');
+            
+            // Test if hives path exists
+            updateLog('Checking if /hives path exists...', 'info');
+            database.ref('hives').once('value', (snapshot) => {
+                const hives = snapshot.val();
+                if (hives) {
+                    const count = Object.keys(hives).length;
+                    updateLog(`✅ Hives data found: ${count} records`, 'success');
+                    updateLog('Sample hive keys: ' + Object.keys(hives).slice(0, 5).join(', '), 'info');
+                    
+                    // Test write access to hives
+                    updateLog('Testing hives write access...', 'info');
+                    database.ref('test/hives_write').set({
+                        timestamp: new Date().toISOString(),
+                        test: 'hives_write_test'
+                    }).then(() => {
+                        updateLog('✅ Hives write access successful', 'success');
+                        // Clean up
+                        database.ref('test/hives_write').remove();
+                        
+                        // Test tenant hives write
+                        updateLog('Testing tenant hives write access...', 'info');
+                        database.ref('tenants/lars/test_hives').set({
+                            timestamp: new Date().toISOString(),
+                            test: 'tenant_hives_write_test'
+                        }).then(() => {
+                            updateLog('✅ Tenant hives write access successful', 'success');
+                            // Clean up
+                            database.ref('tenants/lars/test_hives').remove();
+                            updateLog('🎯 Hives migration should work!', 'success');
+                        }).catch(error => {
+                            updateLog('❌ Tenant hives write failed: ' + error.message, 'danger');
+                            updateLog('Error code: ' + error.code, 'danger');
+                        });
+                    }).catch(error => {
+                        updateLog('❌ Hives write access failed: ' + error.message, 'danger');
+                        updateLog('Error code: ' + error.code, 'danger');
+                    });
+                } else {
+                    updateLog('📭 No hives data found in /hives path', 'info');
+                }
+            }).catch(error => {
+                updateLog('❌ Cannot access /hives path: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
+                
+                // Check alternative hives paths
+                updateLog('Checking alternative hives paths...', 'info');
+                const alternativePaths = [
+                    'clusters/*/hives',
+                    'tenants/*/hives', 
+                    'hiveData',
+                    'hiveRecords',
+                    'individualHives'
+                ];
+                
+                alternativePaths.forEach(path => {
+                    database.ref(path).once('value', (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            updateLog(`✅ Found hives data in: ${path}`, 'success');
+                        }
+                    }).catch(() => {
+                        // Path doesn't exist, continue
+                    });
+                });
             });
         }
         
