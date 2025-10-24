@@ -466,7 +466,7 @@ function showSyncStatus(message, type = 'success') {
         syncText.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Syncing...';
     } else if (type === 'error') {
         indicator.classList.add('error');
-        syncText.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Sync Error';
+        syncText.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Error';
     } else {
         syncText.innerHTML = '<i class="bi bi-check-circle"></i> Synced';
     }
@@ -474,7 +474,7 @@ function showSyncStatus(message, type = 'success') {
     indicator.classList.remove('hidden');
     
     if (type !== 'syncing') {
-        setTimeout(() => indicator.classList.add('hidden'), 3000);
+        setTimeout(() => indicator.classList.add('hidden'), 2000);
     }
 }
 
