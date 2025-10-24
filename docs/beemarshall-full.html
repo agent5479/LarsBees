@@ -944,7 +944,7 @@
     </div>
 
     <!-- Login Screen -->
-    <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center hidden" style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 25%, #CD853F 50%, #D2691E 75%, #8B4513 100%);">
+    <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #8B4513 0%, #A0522D 25%, #CD853F 50%, #D2691E 75%, #8B4513 100%);">
         <div class="row w-100">
             <div class="col-md-6 col-lg-4 mx-auto">
                 <div class="card shadow-lg" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
@@ -966,7 +966,7 @@
                             <span id="loginStatusText">Checking system status...</span>
                         </div>
                         
-                        <form id="loginForm" onsubmit="console.log('Form submit event triggered'); return false;">
+                        <form id="loginForm">
                             <div class="mb-3">
                                 <label for="loginUsername" class="form-label fw-semibold">Username</label>
                                 <input type="text" class="form-control" id="loginUsername" required 
@@ -982,7 +982,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2" id="loginButton" onclick="console.log('Login button clicked');">
+                            <button type="submit" class="btn btn-primary w-100 py-2" id="loginButton">
                                 <span id="loginButtonText">Login</span>
                                 <span id="loginSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
                             </button>
@@ -1026,7 +1026,7 @@
     </div>
 
     <!-- Main App -->
-    <div id="mainApp">
+    <div id="mainApp" class="hidden">
         <!-- Navigation -->
         <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
@@ -2098,7 +2098,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- BeeMarshall Modules -->
+    <!-- BeeMarshall Modules v0.92 -->
     <script src="js/tasks.js"></script>
     <script src="js/scheduling.js"></script>
     <script src="js/clusters.js"></script>
@@ -2107,6 +2107,9 @@
     <script src="js/navigation.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/core.js"></script>
+    
+    <!-- Legacy Forwarding Script (for cached references) -->
+    <script src="larsbees-full.js"></script>
     
     <!-- Firebase Configuration -->
     <script>
