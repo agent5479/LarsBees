@@ -135,10 +135,13 @@ function showTasks() {
 }
 
 function renderTasksList(filterCategory = 'All') {
+    // Use the comprehensive tasks list directly
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+    
     // Filter tasks by category if specified
-    let filteredTasks = tasks;
+    let filteredTasks = tasksToUse;
     if (filterCategory !== 'All') {
-        filteredTasks = tasks.filter(task => task.category === filterCategory);
+        filteredTasks = tasksToUse.filter(task => task.category === filterCategory);
     }
     
     // Group tasks by category
@@ -239,7 +242,8 @@ function handleAddTask(e) {
 }
 
 function editTask(taskId) {
-    const task = tasks.find(t => t.id === taskId);
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+    const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
     
     const newName = prompt(`Edit task name:\n\nCurrent: ${task.name}\n\nEnter new name:`, task.name);
@@ -256,7 +260,8 @@ function editTask(taskId) {
 }
 
 function deleteTask(taskId) {
-    const task = tasks.find(t => t.id === taskId);
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+    const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
     
     // Check how many actions use this task
@@ -322,8 +327,10 @@ function showAddTaskForm() {
             createdBy: currentUser.username
         };
         
-        tasks.push(newTask);
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+        // Use the global tasks array if available, otherwise use COMPREHENSIVE_TASKS
+        const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
+        tasksToUse.push(newTask);
+        localStorage.setItem('tasks', JSON.stringify(tasksToUse));
         renderTasksList();
         
         console.log('New task added:', newTask);
