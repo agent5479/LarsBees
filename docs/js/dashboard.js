@@ -28,10 +28,8 @@ function updateDashboard() {
     // Update quick stats
     updateQuickStats();
     
-    // Update map with cluster data
-    if (typeof updateMapWithClusters === 'function') {
-        updateMapWithClusters();
-    }
+    // Note: Map is now lazy-loaded - only initialize when user clicks
+    console.log('📊 Dashboard updated - map will load when user clicks it');
     
     // Show flagged alert if any urgent actions or overdue tasks
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');

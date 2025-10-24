@@ -395,6 +395,27 @@ function updateMapWithClusters() {
     }
 }
 
+// Activate map when user clicks the placeholder
+function activateMap() {
+    console.log('🗺️ User clicked to activate map...');
+    
+    // Hide placeholder
+    const placeholder = document.getElementById('mapPlaceholder');
+    const mapElement = document.getElementById('map');
+    
+    if (placeholder && mapElement) {
+        placeholder.style.display = 'none';
+        mapElement.style.display = 'block';
+        
+        // Initialize map
+        initMap();
+        
+        console.log('✅ Map activated and initialized');
+    } else {
+        console.error('❌ Map elements not found');
+    }
+}
+
 // Enhanced map with cluster type colors
 function initMap() {
     console.log('🗺️ Initializing map...');

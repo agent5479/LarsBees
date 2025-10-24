@@ -176,6 +176,51 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
+        /* Map Placeholder Styling */
+        .map-placeholder {
+            height: 400px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px dashed #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-placeholder:hover {
+            background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+            border-color: var(--primary-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .map-placeholder-content {
+            text-align: center;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .map-placeholder::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0,0,0,0.02) 10px,
+                rgba(0,0,0,0.02) 20px
+            );
+            z-index: 1;
+        }
+        
         /* Enhanced Form Styles */
         .form-control {
             border-radius: var(--radius);
@@ -1143,7 +1188,19 @@
                                 </div>
                             </div>
                             <div class="card-body p-0">
-                                <div id="map"></div>
+                                <!-- Map Placeholder (Grayed Out) -->
+                                <div id="mapPlaceholder" class="map-placeholder" onclick="activateMap()">
+                                    <div class="map-placeholder-content">
+                                        <i class="bi bi-map" style="font-size: 3rem; color: #6c757d;"></i>
+                                        <h6 class="mt-3 text-muted">Click to Load Map</h6>
+                                        <p class="text-muted small">Interactive map will load when you click here</p>
+                                        <button class="btn btn-outline-primary btn-sm mt-2">
+                                            <i class="bi bi-play-circle me-1"></i>Initialize Map
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Actual Map (Hidden Initially) -->
+                                <div id="map" style="height: 400px; display: none;"></div>
                             </div>
                         </div>
                     </div>

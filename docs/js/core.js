@@ -601,7 +601,7 @@ function loadDataFromFirebase() {
     database.ref('clusters').on('value', (snapshot) => {
         clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
         console.log('📊 Clusters loaded:', clusters.length);
-        updateDashboard(); // Now update with full dashboard including map
+        updateDashboard(); // Update dashboard (map will load when user clicks)
         showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
