@@ -1389,9 +1389,14 @@
             <div id="clustersView" class="hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="bi bi-geo-alt"></i> Hive Clusters</h2>
-                    <button class="btn btn-primary" onclick="showAddClusterForm()">
-                        <i class="bi bi-plus"></i> Add Cluster
-                    </button>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="exportClustersCSV()">
+                            <i class="bi bi-download"></i> Export CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="showAddClusterForm()">
+                            <i class="bi bi-plus"></i> Add Cluster
+                        </button>
+                    </div>
                 </div>
                 
                 <div id="clusterTypeFilter" class="mb-4"></div>
@@ -1443,8 +1448,103 @@
                                             <div class="form-text">Enter longitude (e.g., 172.6856 for Collingwood, NZ)</div>
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label for="clusterHiveCount" class="form-label">Hive Count *</label>
-                                            <input type="number" class="form-control" id="clusterHiveCount" min="1" required>
+                                            <label for="clusterHiveCount" class="form-label">Total Hive Count *</label>
+                                            <input type="number" class="form-control" id="clusterHiveCount" min="1" required onchange="updateHiveStrengthTotals()">
+                                            <div class="form-text">Total number of hives in this cluster</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hive Strength Breakdown -->
+                                    <div class="card mt-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-hexagon-fill"></i> Hive Strength Distribution</h6>
+                                            <small class="text-muted">Break down your hives by strength rating</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="hiveStrong" class="form-label">Strong Hives</label>
+                                                    <input type="number" class="form-control" id="hiveStrong" min="0" value="0" onchange="updateHiveStrengthTotals()">
+                                                    <div class="form-text">Healthy, productive hives</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="hiveMedium" class="form-label">Medium Hives</label>
+                                                    <input type="number" class="form-control" id="hiveMedium" min="0" value="0" onchange="updateHiveStrengthTotals()">
+                                                    <div class="form-text">Average health and production</div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="hiveWeak" class="form-label">Weak Hives</label>
+                                                    <input type="number" class="form-control" id="hiveWeak" min="0" value="0" onchange="updateHiveStrengthTotals()">
+                                                    <div class="form-text">Struggling, need attention</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="hiveNUC" class="form-label">NUC Hives</label>
+                                                    <input type="number" class="form-control" id="hiveNUC" min="0" value="0" onchange="updateHiveStrengthTotals()">
+                                                    <div class="form-text">Nucleus colonies</div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="hiveDead" class="form-label">Dead Hives</label>
+                                                    <input type="number" class="form-control" id="hiveDead" min="0" value="0" onchange="updateHiveStrengthTotals()">
+                                                    <div class="form-text">Failed or dead colonies</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="alert alert-info">
+                                                        <strong>Total Breakdown:</strong> <span id="hiveStrengthTotal">0</span> hives
+                                                        <br><small id="hiveStrengthStatus" class="text-muted">Enter hive counts above</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hive Stack Configuration -->
+                                    <div class="card mt-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-stack"></i> Hive Stack Configuration</h6>
+                                            <small class="text-muted">Configure your hive stack types and platforms</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="stackDoubles" class="form-label">Double Stacks</label>
+                                                    <input type="number" class="form-control" id="stackDoubles" min="0" value="0" onchange="updateStackTotals()">
+                                                    <div class="form-text">Two brood boxes stacked</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="stackTopSplits" class="form-label">Top-Splits</label>
+                                                    <input type="number" class="form-control" id="stackTopSplits" min="0" value="0" onchange="updateStackTotals()">
+                                                    <div class="form-text">Split colonies with top boxes</div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="stackSingles" class="form-label">Single Stacks</label>
+                                                    <input type="number" class="form-control" id="stackSingles" min="0" value="0" onchange="updateStackTotals()">
+                                                    <div class="form-text">Single brood box hives</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="stackNUCs" class="form-label">NUC Stacks</label>
+                                                    <input type="number" class="form-control" id="stackNUCs" min="0" value="0" onchange="updateStackTotals()">
+                                                    <div class="form-text">Nucleus colony stacks</div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label for="stackEmpty" class="form-label">Empty Platforms</label>
+                                                    <input type="number" class="form-control" id="stackEmpty" min="0" value="0" onchange="updateStackTotals()">
+                                                    <div class="form-text">Unused hive platforms</div>
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <div class="alert alert-info">
+                                                        <strong>Stack Total:</strong> <span id="stackTotal">0</span> stacks
+                                                        <br><small id="stackStatus" class="text-muted">Enter stack counts above</small>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
@@ -1579,9 +1679,14 @@
             <div id="actionsView" class="hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="bi bi-list-check"></i> Actions</h2>
-                    <button class="btn btn-primary" onclick="showLogActionForm()">
-                        <i class="bi bi-plus"></i> Log Action
-                    </button>
+                    <div>
+                        <button class="btn btn-outline-success me-2" onclick="exportActionsCSV()">
+                            <i class="bi bi-download"></i> Export CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="showLogActionForm()">
+                            <i class="bi bi-plus"></i> Log Action
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="row mb-4">
@@ -2301,6 +2406,382 @@
             }
         }
         
+        // Hive strength breakdown functions
+        function updateHiveStrengthTotals() {
+            const totalHives = parseInt(document.getElementById('clusterHiveCount').value) || 0;
+            const strong = parseInt(document.getElementById('hiveStrong').value) || 0;
+            const medium = parseInt(document.getElementById('hiveMedium').value) || 0;
+            const weak = parseInt(document.getElementById('hiveWeak').value) || 0;
+            const nuc = parseInt(document.getElementById('hiveNUC').value) || 0;
+            const dead = parseInt(document.getElementById('hiveDead').value) || 0;
+            
+            const breakdownTotal = strong + medium + weak + nuc + dead;
+            const totalElement = document.getElementById('hiveStrengthTotal');
+            const statusElement = document.getElementById('hiveStrengthStatus');
+            
+            if (totalElement) {
+                totalElement.textContent = breakdownTotal;
+            }
+            
+            if (statusElement) {
+                if (breakdownTotal === 0) {
+                    statusElement.textContent = 'Enter hive counts above';
+                    statusElement.className = 'text-muted';
+                } else if (breakdownTotal === totalHives) {
+                    statusElement.textContent = '✅ Breakdown matches total hive count';
+                    statusElement.className = 'text-success';
+                } else if (breakdownTotal < totalHives) {
+                    statusElement.textContent = `⚠️ Breakdown (${breakdownTotal}) is less than total (${totalHives})`;
+                    statusElement.className = 'text-warning';
+                } else {
+                    statusElement.textContent = `❌ Breakdown (${breakdownTotal}) exceeds total (${totalHives})`;
+                    statusElement.className = 'text-danger';
+                }
+            }
+        }
+        
+        // Auto-distribute hives when total count changes
+        function autoDistributeHives() {
+            const totalHives = parseInt(document.getElementById('clusterHiveCount').value) || 0;
+            if (totalHives > 0) {
+                // Suggest a proportional distribution
+                const strong = Math.round(totalHives * 0.4); // 40% strong
+                const medium = Math.round(totalHives * 0.3); // 30% medium
+                const weak = Math.round(totalHives * 0.2); // 20% weak
+                const nuc = Math.round(totalHives * 0.05); // 5% NUC
+                const dead = Math.round(totalHives * 0.05); // 5% dead
+                
+                document.getElementById('hiveStrong').value = strong;
+                document.getElementById('hiveMedium').value = medium;
+                document.getElementById('hiveWeak').value = weak;
+                document.getElementById('hiveNUC').value = nuc;
+                document.getElementById('hiveDead').value = dead;
+                
+                updateHiveStrengthTotals();
+            }
+        }
+        
+        // Stack configuration functions
+        function updateStackTotals() {
+            const doubles = parseInt(document.getElementById('stackDoubles').value) || 0;
+            const topSplits = parseInt(document.getElementById('stackTopSplits').value) || 0;
+            const singles = parseInt(document.getElementById('stackSingles').value) || 0;
+            const nucs = parseInt(document.getElementById('stackNUCs').value) || 0;
+            const empty = parseInt(document.getElementById('stackEmpty').value) || 0;
+            
+            const stackTotal = doubles + topSplits + singles + nucs + empty;
+            const totalElement = document.getElementById('stackTotal');
+            const statusElement = document.getElementById('stackStatus');
+            
+            if (totalElement) {
+                totalElement.textContent = stackTotal;
+            }
+            
+            if (statusElement) {
+                if (stackTotal === 0) {
+                    statusElement.textContent = 'Enter stack counts above';
+                    statusElement.className = 'text-muted';
+                } else {
+                    statusElement.textContent = `📊 Stack breakdown: ${doubles} doubles, ${topSplits} top-splits, ${singles} singles, ${nucs} NUCs, ${empty} empty`;
+                    statusElement.className = 'text-info';
+                }
+            }
+        }
+        
+        // Auto-distribute stacks when total count changes
+        function autoDistributeStacks() {
+            const totalHives = parseInt(document.getElementById('clusterHiveCount').value) || 0;
+            if (totalHives > 0) {
+                // Suggest a proportional stack distribution
+                const doubles = Math.round(totalHives * 0.3); // 30% doubles
+                const topSplits = Math.round(totalHives * 0.2); // 20% top-splits
+                const singles = Math.round(totalHives * 0.4); // 40% singles
+                const nucs = Math.round(totalHives * 0.05); // 5% NUCs
+                const empty = Math.round(totalHives * 0.05); // 5% empty
+                
+                document.getElementById('stackDoubles').value = doubles;
+                document.getElementById('stackTopSplits').value = topSplits;
+                document.getElementById('stackSingles').value = singles;
+                document.getElementById('stackNUCs').value = nucs;
+                document.getElementById('stackEmpty').value = empty;
+                
+                updateStackTotals();
+            }
+        }
+        
+        // CSV Export Functions
+        function exportClustersCSV() {
+            if (!clusters || clusters.length === 0) {
+                alert('No cluster data available to export.');
+                return;
+            }
+            
+            const csvData = clusters.map(cluster => {
+                return {
+                    'Cluster ID': cluster.id,
+                    'Name': cluster.name,
+                    'Description': cluster.description || '',
+                    'Latitude': cluster.latitude,
+                    'Longitude': cluster.longitude,
+                    'Total Hives': cluster.hiveCount,
+                    'Strong Hives': cluster.hiveStrength?.strong || 0,
+                    'Medium Hives': cluster.hiveStrength?.medium || 0,
+                    'Weak Hives': cluster.hiveStrength?.weak || 0,
+                    'NUC Hives': cluster.hiveStrength?.nuc || 0,
+                    'Dead Hives': cluster.hiveStrength?.dead || 0,
+                    'Double Stacks': cluster.hiveStacks?.doubles || 0,
+                    'Top-Splits': cluster.hiveStacks?.topSplits || 0,
+                    'Single Stacks': cluster.hiveStacks?.singles || 0,
+                    'NUC Stacks': cluster.hiveStacks?.nucs || 0,
+                    'Empty Platforms': cluster.hiveStacks?.empty || 0,
+                    'Cluster Type': cluster.clusterType || '',
+                    'Landowner Name': cluster.landownerName || '',
+                    'Landowner Phone': cluster.landownerPhone || '',
+                    'Landowner Email': cluster.landownerEmail || '',
+                    'Landowner Address': cluster.landownerAddress || '',
+                    'Site Type': cluster.siteType || '',
+                    'Access Type': cluster.accessType || '',
+                    'Contact Before Visit': cluster.contactBeforeVisit ? 'Yes' : 'No',
+                    'Quarantine': cluster.isQuarantine ? 'Yes' : 'No',
+                    'Harvest Timeline': cluster.harvestTimeline || '',
+                    'Sugar Requirements': cluster.sugarRequirements || '',
+                    'Notes': cluster.notes || '',
+                    'Created At': cluster.createdAt || '',
+                    'Last Modified By': cluster.lastModifiedBy || '',
+                    'Last Modified At': cluster.lastModifiedAt || ''
+                };
+            });
+            
+            downloadCSV(csvData, `clusters_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function exportActionsCSV() {
+            if (!actions || actions.length === 0) {
+                alert('No action data available to export.');
+                return;
+            }
+            
+            const csvData = actions.map(action => {
+                return {
+                    'Action ID': action.id,
+                    'Cluster Name': action.clusterName || '',
+                    'Action Type': action.actionType || '',
+                    'Description': action.description || '',
+                    'Date': action.date || '',
+                    'Time': action.time || '',
+                    'Performed By': action.performedBy || '',
+                    'Hive Count': action.hiveCount || '',
+                    'Honey Harvested': action.honeyHarvested || '',
+                    'Sugar Fed': action.sugarFed || '',
+                    'Disease Found': action.diseaseFound || '',
+                    'Disease Type': action.diseaseType || '',
+                    'Treatment Applied': action.treatmentApplied || '',
+                    'Weather': action.weather || '',
+                    'Temperature': action.temperature || '',
+                    'Notes': action.notes || '',
+                    'Flag': action.flag || '',
+                    'Created At': action.createdAt || ''
+                };
+            });
+            
+            downloadCSV(csvData, `actions_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function exportScheduledTasksCSV() {
+            if (!scheduledTasks || scheduledTasks.length === 0) {
+                alert('No scheduled task data available to export.');
+                return;
+            }
+            
+            const csvData = scheduledTasks.map(task => {
+                return {
+                    'Task ID': task.id,
+                    'Title': task.title || '',
+                    'Description': task.description || '',
+                    'Due Date': task.dueDate || '',
+                    'Priority': task.priority || '',
+                    'Cluster Name': task.clusterName || '',
+                    'Assigned To': task.assignedTo || '',
+                    'Status': task.completed ? 'Completed' : 'Pending',
+                    'Completed At': task.completedAt || '',
+                    'Created At': task.createdAt || ''
+                };
+            });
+            
+            downloadCSV(csvData, `scheduled_tasks_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function exportAllDataCSV() {
+            const allData = [];
+            
+            // Add clusters data
+            if (clusters && clusters.length > 0) {
+                clusters.forEach(cluster => {
+                    allData.push({
+                        'Data Type': 'Cluster',
+                        'ID': cluster.id,
+                        'Name': cluster.name,
+                        'Description': cluster.description || '',
+                        'Latitude': cluster.latitude,
+                        'Longitude': cluster.longitude,
+                        'Total Hives': cluster.hiveCount,
+                        'Strong Hives': cluster.hiveStrength?.strong || 0,
+                        'Medium Hives': cluster.hiveStrength?.medium || 0,
+                        'Weak Hives': cluster.hiveStrength?.weak || 0,
+                        'NUC Hives': cluster.hiveStrength?.nuc || 0,
+                        'Dead Hives': cluster.hiveStrength?.dead || 0,
+                        'Double Stacks': cluster.hiveStacks?.doubles || 0,
+                        'Top-Splits': cluster.hiveStacks?.topSplits || 0,
+                        'Single Stacks': cluster.hiveStacks?.singles || 0,
+                        'NUC Stacks': cluster.hiveStacks?.nucs || 0,
+                        'Empty Platforms': cluster.hiveStacks?.empty || 0,
+                        'Cluster Type': cluster.clusterType || '',
+                        'Landowner Name': cluster.landownerName || '',
+                        'Landowner Phone': cluster.landownerPhone || '',
+                        'Landowner Email': cluster.landownerEmail || '',
+                        'Landowner Address': cluster.landownerAddress || '',
+                        'Site Type': cluster.siteType || '',
+                        'Access Type': cluster.accessType || '',
+                        'Contact Before Visit': cluster.contactBeforeVisit ? 'Yes' : 'No',
+                        'Quarantine': cluster.isQuarantine ? 'Yes' : 'No',
+                        'Harvest Timeline': cluster.harvestTimeline || '',
+                        'Sugar Requirements': cluster.sugarRequirements || '',
+                        'Notes': cluster.notes || '',
+                        'Created At': cluster.createdAt || '',
+                        'Last Modified By': cluster.lastModifiedBy || '',
+                        'Last Modified At': cluster.lastModifiedAt || ''
+                    });
+                });
+            }
+            
+            // Add actions data
+            if (actions && actions.length > 0) {
+                actions.forEach(action => {
+                    allData.push({
+                        'Data Type': 'Action',
+                        'ID': action.id,
+                        'Name': action.clusterName || '',
+                        'Description': action.description || '',
+                        'Action Type': action.actionType || '',
+                        'Date': action.date || '',
+                        'Time': action.time || '',
+                        'Performed By': action.performedBy || '',
+                        'Hive Count': action.hiveCount || '',
+                        'Honey Harvested': action.honeyHarvested || '',
+                        'Sugar Fed': action.sugarFed || '',
+                        'Disease Found': action.diseaseFound || '',
+                        'Disease Type': action.diseaseType || '',
+                        'Treatment Applied': action.treatmentApplied || '',
+                        'Weather': action.weather || '',
+                        'Temperature': action.temperature || '',
+                        'Notes': action.notes || '',
+                        'Flag': action.flag || '',
+                        'Created At': action.createdAt || '',
+                        'Last Modified By': '',
+                        'Last Modified At': ''
+                    });
+                });
+            }
+            
+            // Add scheduled tasks data
+            if (scheduledTasks && scheduledTasks.length > 0) {
+                scheduledTasks.forEach(task => {
+                    allData.push({
+                        'Data Type': 'Scheduled Task',
+                        'ID': task.id,
+                        'Name': task.title || '',
+                        'Description': task.description || '',
+                        'Due Date': task.dueDate || '',
+                        'Priority': task.priority || '',
+                        'Cluster Name': task.clusterName || '',
+                        'Assigned To': task.assignedTo || '',
+                        'Status': task.completed ? 'Completed' : 'Pending',
+                        'Completed At': task.completedAt || '',
+                        'Created At': task.createdAt || '',
+                        'Last Modified By': '',
+                        'Last Modified At': ''
+                    });
+                });
+            }
+            
+            if (allData.length === 0) {
+                alert('No data available to export.');
+                return;
+            }
+            
+            downloadCSV(allData, `beemarshall_complete_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function downloadCSV(data, filename) {
+            if (!data || data.length === 0) {
+                alert('No data to export.');
+                return;
+            }
+            
+            // Convert data to CSV format
+            const headers = Object.keys(data[0]);
+            const csvContent = [
+                headers.join(','),
+                ...data.map(row => 
+                    headers.map(header => {
+                        const value = row[header] || '';
+                        // Escape commas and quotes in CSV
+                        return `"${String(value).replace(/"/g, '""')}"`;
+                    }).join(',')
+                )
+            ].join('\n');
+            
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log(`📊 CSV exported: ${filename} (${data.length} records)`);
+        }
+        
+        // Handle navigation from reports
+        function handleReportsNavigation() {
+            const navigateToCluster = localStorage.getItem('navigateToCluster');
+            const scheduleTaskData = localStorage.getItem('scheduleTaskForCluster');
+            
+            if (navigateToCluster) {
+                localStorage.removeItem('navigateToCluster');
+                // Navigate to clusters view and highlight specific cluster
+                showClusters();
+                setTimeout(() => {
+                    const clusterElement = document.querySelector(`[data-cluster-id="${navigateToCluster}"]`);
+                    if (clusterElement) {
+                        clusterElement.scrollIntoView({ behavior: 'smooth' });
+                        clusterElement.style.border = '2px solid var(--accent)';
+                        clusterElement.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.5)';
+                    }
+                }, 1000);
+            }
+            
+            if (scheduleTaskData) {
+                const data = JSON.parse(scheduleTaskData);
+                localStorage.removeItem('scheduleTaskForCluster');
+                // Navigate to scheduled tasks and pre-fill form
+                showScheduledTasks();
+                setTimeout(() => {
+                    // Pre-fill task form with suggested tasks
+                    const taskForm = document.getElementById('taskForm');
+                    if (taskForm && data.suggestedTasks) {
+                        const taskTitle = document.getElementById('taskTitle');
+                        const taskDescription = document.getElementById('taskDescription');
+                        if (taskTitle) taskTitle.value = data.suggestedTasks[0] || 'Scheduled Task';
+                        if (taskDescription) taskDescription.value = `Task for cluster ${data.clusterId} - ${data.category} hives`;
+                    }
+                }, 1000);
+            }
+        }
+        
         // Initialize dashboard functionality after DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Make dashboard cards clickable
@@ -2308,6 +2789,15 @@
                 makeDashboardCardsClickable();
                 makeRecentActionsClickable();
             }, 1000);
+            
+            // Add auto-distribute button
+            const hiveCountField = document.getElementById('clusterHiveCount');
+            if (hiveCountField) {
+                hiveCountField.addEventListener('change', autoDistributeHives);
+            }
+            
+            // Handle reports navigation
+            handleReportsNavigation();
         });
     </script>
 </body>

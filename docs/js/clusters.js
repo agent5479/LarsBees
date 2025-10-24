@@ -207,6 +207,22 @@ function handleSaveCluster(e) {
         latitude: parseFloat(document.getElementById('clusterLat').value) || 0,
         longitude: parseFloat(document.getElementById('clusterLng').value) || 0,
         hiveCount: parseInt(document.getElementById('clusterHiveCount').value),
+        // Hive strength breakdown
+        hiveStrength: {
+            strong: parseInt(document.getElementById('hiveStrong').value) || 0,
+            medium: parseInt(document.getElementById('hiveMedium').value) || 0,
+            weak: parseInt(document.getElementById('hiveWeak').value) || 0,
+            nuc: parseInt(document.getElementById('hiveNUC').value) || 0,
+            dead: parseInt(document.getElementById('hiveDead').value) || 0
+        },
+        // Hive stack configuration
+        hiveStacks: {
+            doubles: parseInt(document.getElementById('stackDoubles').value) || 0,
+            topSplits: parseInt(document.getElementById('stackTopSplits').value) || 0,
+            singles: parseInt(document.getElementById('stackSingles').value) || 0,
+            nucs: parseInt(document.getElementById('stackNUCs').value) || 0,
+            empty: parseInt(document.getElementById('stackEmpty').value) || 0
+        },
         harvestTimeline: document.getElementById('clusterHarvest').value,
         sugarRequirements: document.getElementById('clusterSugar').value,
         notes: document.getElementById('clusterNotes').value,

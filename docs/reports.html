@@ -138,6 +138,69 @@
             background: linear-gradient(135deg, #17a2b8, #6f42c1);
         }
         
+        /* Interactive Hive Category Cards */
+        .hive-category-card {
+            background: var(--glass);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hive-category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+            border-color: var(--accent);
+        }
+        
+        .hive-category-card.clickable {
+            cursor: pointer;
+        }
+        
+        .hive-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            transition: var(--transition);
+        }
+        
+        .hive-icon.strong { color: #28a745; }
+        .hive-icon.medium { color: #ffc107; }
+        .hive-icon.weak { color: #fd7e14; }
+        .hive-icon.nuc { color: #6f42c1; }
+        .hive-icon.dead { color: #dc3545; }
+        .hive-icon.empty { color: #6c757d; }
+        
+        .hive-count {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--brand);
+            margin-bottom: 0.25rem;
+        }
+        
+        .hive-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--brand);
+            margin-bottom: 0.25rem;
+        }
+        
+        .hive-description {
+            font-size: 0.9rem;
+            color: var(--muted);
+        }
+        
+        .hive-category-card:hover .hive-icon {
+            transform: scale(1.1);
+        }
+        
+        .hive-category-card:hover .hive-count {
+            color: var(--accent);
+        }
+        
         .chart-container {
             position: relative;
             height: 300px;
@@ -262,6 +325,119 @@
                             <div class="stat-number" id="flaggedIssues">0</div>
                             <div class="text-muted">Flagged Issues</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Hive Analysis -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="report-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-hexagon-fill"></i> Interactive Hive Analysis</h5>
+                        <small class="text-muted">Click on hive categories to see affected clusters and schedule tasks</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Strong Hives -->
+                            <div class="col-md-2 mb-3">
+                                <div class="hive-category-card clickable" data-category="strong" onclick="showClustersByCategory('strong')">
+                                    <div class="hive-icon strong">
+                                        <i class="bi bi-hexagon-fill"></i>
+                                    </div>
+                                    <div class="hive-count" id="strongCount">0</div>
+                                    <div class="hive-label">Strong</div>
+                                    <div class="hive-description">Healthy & Productive</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Medium Hives -->
+                            <div class="col-md-2 mb-3">
+                                <div class="hive-category-card clickable" data-category="medium" onclick="showClustersByCategory('medium')">
+                                    <div class="hive-icon medium">
+                                        <i class="bi bi-hexagon"></i>
+                                    </div>
+                                    <div class="hive-count" id="mediumCount">0</div>
+                                    <div class="hive-label">Medium</div>
+                                    <div class="hive-description">Average Health</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Weak Hives -->
+                            <div class="col-md-2 mb-3">
+                                <div class="hive-category-card clickable" data-category="weak" onclick="showClustersByCategory('weak')">
+                                    <div class="hive-icon weak">
+                                        <i class="bi bi-hexagon"></i>
+                                    </div>
+                                    <div class="hive-count" id="weakCount">0</div>
+                                    <div class="hive-label">Weak</div>
+                                    <div class="hive-description">Need Attention</div>
+                                </div>
+                            </div>
+                            
+                            <!-- NUC Hives -->
+                            <div class="col-md-2 mb-3">
+                                <div class="hive-category-card clickable" data-category="nuc" onclick="showClustersByCategory('nuc')">
+                                    <div class="hive-icon nuc">
+                                        <i class="bi bi-hexagon-half"></i>
+                                    </div>
+                                    <div class="hive-count" id="nucCount">0</div>
+                                    <div class="hive-label">NUC</div>
+                                    <div class="hive-description">Nucleus Colonies</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Dead Hives -->
+                            <div class="col-md-2 mb-3">
+                                <div class="hive-category-card clickable" data-category="dead" onclick="showClustersByCategory('dead')">
+                                    <div class="hive-icon dead">
+                                        <i class="bi bi-hexagon"></i>
+                                    </div>
+                                    <div class="hive-count" id="deadCount">0</div>
+                                    <div class="hive-label">Dead</div>
+                                    <div class="hive-description">Failed Colonies</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Empty Platforms -->
+                            <div class="col-md-2 mb-3">
+                                <div class="hive-category-card clickable" data-category="empty" onclick="showClustersByCategory('empty')">
+                                    <div class="hive-icon empty">
+                                        <i class="bi bi-square"></i>
+                                    </div>
+                                    <div class="hive-count" id="emptyCount">0</div>
+                                    <div class="hive-label">Empty</div>
+                                    <div class="hive-description">Unused Platforms</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cluster Details Modal -->
+        <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="clusterDetailsTitle">Cluster Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="clusterDetailsContent">
+                            <!-- Cluster details will be populated here -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="navigateToCluster()">
+                            <i class="bi bi-arrow-right"></i> Go to Cluster
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="scheduleTaskForCluster()">
+                            <i class="bi bi-calendar-plus"></i> Schedule Task
+                        </button>
                     </div>
                 </div>
             </div>
@@ -419,6 +595,7 @@
                 clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
                 console.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
                 updateMetrics();
+                updateHiveStrengthBreakdown();
             });
             
             database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
@@ -556,6 +733,167 @@
             };
             
             alert(`${reports[type]}\n\nThis report will provide:\n• Key performance indicators\n• Trend analysis\n• Comparative data\n• Actionable insights\n\nFeature coming soon!`);
+        }
+        
+        // Interactive Hive Analysis Functions
+        function updateHiveStrengthBreakdown() {
+            if (!clusters || clusters.length === 0) {
+                console.log('📭 No clusters data for hive strength breakdown');
+                return;
+            }
+            
+            let totalStrong = 0;
+            let totalMedium = 0;
+            let totalWeak = 0;
+            let totalNUC = 0;
+            let totalDead = 0;
+            let totalEmpty = 0;
+            
+            clusters.forEach(cluster => {
+                if (cluster.hiveStrength) {
+                    totalStrong += cluster.hiveStrength.strong || 0;
+                    totalMedium += cluster.hiveStrength.medium || 0;
+                    totalWeak += cluster.hiveStrength.weak || 0;
+                    totalNUC += cluster.hiveStrength.nuc || 0;
+                    totalDead += cluster.hiveStrength.dead || 0;
+                }
+                if (cluster.hiveStacks) {
+                    totalEmpty += cluster.hiveStacks.empty || 0;
+                }
+            });
+            
+            // Update the display
+            document.getElementById('strongCount').textContent = totalStrong;
+            document.getElementById('mediumCount').textContent = totalMedium;
+            document.getElementById('weakCount').textContent = totalWeak;
+            document.getElementById('nucCount').textContent = totalNUC;
+            document.getElementById('deadCount').textContent = totalDead;
+            document.getElementById('emptyCount').textContent = totalEmpty;
+            
+            console.log('📊 Hive strength breakdown updated:', {
+                strong: totalStrong,
+                medium: totalMedium,
+                weak: totalWeak,
+                nuc: totalNUC,
+                dead: totalDead,
+                empty: totalEmpty
+            });
+        }
+        
+        function showClustersByCategory(category) {
+            if (!clusters || clusters.length === 0) {
+                alert('No cluster data available.');
+                return;
+            }
+            
+            const affectedClusters = clusters.filter(cluster => {
+                if (category === 'empty') {
+                    return cluster.hiveStacks && cluster.hiveStacks.empty > 0;
+                } else if (cluster.hiveStrength) {
+                    return cluster.hiveStrength[category] > 0;
+                }
+                return false;
+            });
+            
+            if (affectedClusters.length === 0) {
+                alert(`No clusters found with ${category} hives.`);
+                return;
+            }
+            
+            // Show clusters in modal
+            showClusterDetailsModal(affectedClusters, category);
+        }
+        
+        function showClusterDetailsModal(clusterList, category) {
+            const modal = document.getElementById('clusterDetailsModal');
+            const title = document.getElementById('clusterDetailsTitle');
+            const content = document.getElementById('clusterDetailsContent');
+            
+            title.textContent = `Clusters with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${clusterList.length})`;
+            
+            let html = '<div class="row">';
+            clusterList.forEach(cluster => {
+                const count = category === 'empty' 
+                    ? (cluster.hiveStacks?.empty || 0)
+                    : (cluster.hiveStrength?.[category] || 0);
+                
+                html += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">${cluster.name}</h6>
+                                <p class="card-text">
+                                    <strong>${category.charAt(0).toUpperCase() + category.slice(1)} Hives:</strong> ${count}<br>
+                                    <strong>Total Hives:</strong> ${cluster.hiveCount || 0}<br>
+                                    <strong>Location:</strong> ${cluster.latitude}, ${cluster.longitude}
+                                </p>
+                                <button class="btn btn-sm btn-primary" onclick="navigateToSpecificCluster(${cluster.id})">
+                                    <i class="bi bi-arrow-right"></i> Go to Cluster
+                                </button>
+                                <button class="btn btn-sm btn-success ms-2" onclick="scheduleTaskForSpecificCluster(${cluster.id}, '${category}')">
+                                    <i class="bi bi-calendar-plus"></i> Schedule Task
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            content.innerHTML = html;
+            
+            // Show modal
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
+        }
+        
+        function navigateToSpecificCluster(clusterId) {
+            // Store cluster ID for navigation
+            localStorage.setItem('navigateToCluster', clusterId);
+            // Redirect to main app
+            window.location.href = 'beemarshall-full.html';
+        }
+        
+        function scheduleTaskForSpecificCluster(clusterId, category) {
+            // Store task scheduling info
+            localStorage.setItem('scheduleTaskForCluster', JSON.stringify({
+                clusterId: clusterId,
+                category: category,
+                suggestedTasks: getSuggestedTasksForCategory(category)
+            }));
+            // Redirect to main app
+            window.location.href = 'beemarshall-full.html';
+        }
+        
+        function getSuggestedTasksForCategory(category) {
+            const taskSuggestions = {
+                'strong': ['Honey Harvest', 'Hive Inspection', 'Queen Check'],
+                'medium': ['Hive Inspection', 'Feeding Check', 'Disease Check'],
+                'weak': ['Emergency Feeding', 'Disease Treatment', 'Queen Replacement'],
+                'nuc': ['NUC Development', 'Colony Strengthening', 'Resource Management'],
+                'dead': ['Hive Cleanup', 'Equipment Sanitization', 'Replacement Planning'],
+                'empty': ['Platform Preparation', 'Equipment Setup', 'New Colony Planning']
+            };
+            
+            return taskSuggestions[category] || ['General Maintenance'];
+        }
+        
+        // Navigation functions for modal buttons
+        function navigateToCluster() {
+            // This will be called from the modal footer
+            const clusterId = localStorage.getItem('navigateToCluster');
+            if (clusterId) {
+                window.location.href = `beemarshall-full.html#cluster-${clusterId}`;
+            }
+        }
+        
+        function scheduleTaskForCluster() {
+            // This will be called from the modal footer
+            const taskData = localStorage.getItem('scheduleTaskForCluster');
+            if (taskData) {
+                const data = JSON.parse(taskData);
+                window.location.href = `beemarshall-full.html#schedule-task-${data.clusterId}`;
+            }
         }
     </script>
 </body>
