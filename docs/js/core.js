@@ -192,6 +192,78 @@ window.testGBTechLogin = function() {
     handleLogin({ preventDefault: () => {} });
 };
 
+// Data migration function for existing users
+window.migrateLarsData = function() {
+    console.log('🔄 Starting data migration for Lars...');
+    
+    if (currentTenantId !== 'lars') {
+        alert('❌ This migration is only for Lars account');
+        return;
+    }
+    
+    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Migrating data...', 'syncing');
+    
+    // Migrate clusters
+    database.ref('clusters').once('value', (snapshot) => {
+        const oldClusters = snapshot.val();
+        if (oldClusters) {
+            console.log('📦 Migrating clusters...');
+            database.ref(`tenants/lars/clusters`).set(oldClusters).then(() => {
+                console.log('✅ Clusters migrated successfully');
+            });
+        }
+    });
+    
+    // Migrate actions
+    database.ref('actions').once('value', (snapshot) => {
+        const oldActions = snapshot.val();
+        if (oldActions) {
+            console.log('📦 Migrating actions...');
+            database.ref(`tenants/lars/actions`).set(oldActions).then(() => {
+                console.log('✅ Actions migrated successfully');
+            });
+        }
+    });
+    
+    // Migrate scheduled tasks
+    database.ref('scheduledTasks').once('value', (snapshot) => {
+        const oldTasks = snapshot.val();
+        if (oldTasks) {
+            console.log('📦 Migrating scheduled tasks...');
+            database.ref(`tenants/lars/scheduledTasks`).set(oldTasks).then(() => {
+                console.log('✅ Scheduled tasks migrated successfully');
+            });
+        }
+    });
+    
+    // Migrate employees
+    database.ref('employees').once('value', (snapshot) => {
+        const oldEmployees = snapshot.val();
+        if (oldEmployees) {
+            console.log('📦 Migrating employees...');
+            database.ref(`tenants/lars/employees`).set(oldEmployees).then(() => {
+                console.log('✅ Employees migrated successfully');
+            });
+        }
+    });
+    
+    // Migrate individual hives
+    database.ref('individualHives').once('value', (snapshot) => {
+        const oldHives = snapshot.val();
+        if (oldHives) {
+            console.log('📦 Migrating individual hives...');
+            database.ref(`tenants/lars/individualHives`).set(oldHives).then(() => {
+                console.log('✅ Individual hives migrated successfully');
+                showSyncStatus('<i class="bi bi-check"></i> Migration complete!', 'success');
+                // Reload data after migration
+                setTimeout(() => {
+                    loadDataFromFirebase();
+                }, 2000);
+            });
+        }
+    });
+};
+
 // Debug function - check Firebase connection
 window.checkFirebaseConnection = function() {
     console.log('🔍 Checking Firebase connection...');
@@ -695,10 +767,35 @@ function loadDataFromFirebase() {
     
     // Load tenant-specific data
     database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
-        clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
+        const data = snapshot.val();
+        console.log('🔍 Raw clusters data for', currentTenantId + ':', data);
+        clusters = data ? Object.values(data) : [];
         console.log('📊 Clusters loaded for', currentTenantId + ':', clusters.length);
+        if (clusters.length === 0) {
+            console.log('⚠️ No clusters found - checking if data exists in old structure...');
+            // Check if data exists in old structure (for migration)
+            database.ref('clusters').once('value', (oldSnapshot) => {
+                const oldData = oldSnapshot.val();
+                console.log('🔍 Old clusters data:', oldData);
+                if (oldData) {
+                    console.log('📦 Found old data - migration needed');
+                    showSyncStatus('<i class="bi bi-exclamation-triangle"></i> Data migration needed', 'warning');
+                    // Show migration button for Lars
+                    if (currentTenantId === 'lars') {
+                        const migrationButton = document.getElementById('migrationButton');
+                        if (migrationButton) {
+                            migrationButton.style.display = 'inline-block';
+                        }
+                    }
+                } else {
+                    console.log('📭 No old data found - starting fresh');
+                    showSyncStatus('<i class="bi bi-cloud-check"></i> Synced (Fresh Start)');
+                }
+            });
+        } else {
+            showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
+        }
         updateDashboard(); // Update dashboard (map will load when user clicks)
-        showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
     database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
