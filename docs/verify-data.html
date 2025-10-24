@@ -86,8 +86,16 @@
 
                         <!-- Firebase Rules Note -->
                         <div class="alert alert-info mb-4">
-                            <h5><i class="bi bi-info-circle"></i> Firebase Rules Note</h5>
-                            <p class="mb-0">If you see permission errors, ensure your Firebase rules allow access to the data paths. The tool will check individual data types even if root access fails.</p>
+                            <h5><i class="bi bi-info-circle"></i> Comprehensive Data Location Check</h5>
+                            <p class="mb-0">This tool will check both root-level and tenant-based data structures to confirm exactly where your data is located in the Firebase database.</p>
+                        </div>
+
+                        <!-- Data Location Summary -->
+                        <div class="alert alert-warning mb-4" id="dataLocationSummary" style="display: none;">
+                            <h5><i class="bi bi-map"></i> Data Location Summary</h5>
+                            <div id="locationDetails">
+                                <p class="mb-0">Run verification to see where your data is located...</p>
+                            </div>
                         </div>
 
                         <!-- All Data Types Summary -->
@@ -183,7 +191,7 @@
 
         // Verify data in new Firebase
         function verifyData() {
-            updateLog('🔄 Starting data verification...', 'info');
+            updateLog('🔄 Starting comprehensive data verification...', 'info');
             
             if (!initializeFirebase()) {
                 return;
@@ -199,12 +207,17 @@
                 // Check for migrated data at root level
                 updateLog('🔍 Checking for migrated data...', 'info');
                 verifyAllDataTypes();
+                
+                // Also check tenant-based structure
+                updateLog('🔍 Checking tenant-based structure...', 'info');
+                verifyTenantStructure();
             }).catch(error => {
                 updateLog('❌ Root access failed: ' + error.message, 'warning');
                 updateLog('🔄 This is normal - checking individual data paths...', 'info');
                 
                 // Continue with individual data verification even if root access fails
                 verifyAllDataTypes();
+                verifyTenantStructure();
             });
         }
 
@@ -293,9 +306,133 @@
             setTimeout(() => {
                 updateLog('🎉 Data verification completed!', 'success');
                 updateLog('✅ All migrated data is accessible in the new Firebase structure', 'success');
+                updateDataLocationSummary();
             }, 2000);
         }
 
+        // Verify tenant-based structure
+        function verifyTenantStructure() {
+            updateLog('🔍 Checking tenant-based structure...', 'info');
+            
+            // Check if tenants structure exists
+            database.ref('tenants').once('value', (snapshot) => {
+                const tenantsData = snapshot.val();
+                if (tenantsData) {
+                    updateLog('✅ Tenants structure found', 'success');
+                    updateLog('Tenant keys: ' + Object.keys(tenantsData).join(', '), 'info');
+                    
+                    // Check Lars tenant data
+                    if (tenantsData.lars) {
+                        updateLog('🔍 Checking Lars tenant data...', 'info');
+                        verifyLarsTenantData();
+                    } else {
+                        updateLog('📭 No Lars tenant data found', 'warning');
+                    }
+                    
+                    // Check GBTech tenant data
+                    if (tenantsData.gbtech) {
+                        updateLog('🔍 Checking GBTech tenant data...', 'info');
+                        verifyGBTechTenantData();
+                    } else {
+                        updateLog('📭 No GBTech tenant data found', 'warning');
+                    }
+                } else {
+                    updateLog('📭 No tenants structure found', 'warning');
+                }
+            }).catch(error => {
+                updateLog('❌ Tenants structure access failed: ' + error.message, 'warning');
+            });
+        }
+
+        // Verify Lars tenant data
+        function verifyLarsTenantData() {
+            const dataTypes = ['clusters', 'actions', 'scheduledTasks', 'employees', 'individualHives', 'master', 'tasks'];
+            let completedChecks = 0;
+            
+            dataTypes.forEach(dataType => {
+                database.ref(`tenants/lars/${dataType}`).once('value', (snapshot) => {
+                    const data = snapshot.val();
+                    const count = data ? Object.keys(data).length : 0;
+                    updateLog(`📊 Lars tenant ${dataType}: ${count} records`, count > 0 ? 'success' : 'warning');
+                    
+                    completedChecks++;
+                    if (completedChecks === dataTypes.length) {
+                        updateLog('✅ Lars tenant data verification completed', 'success');
+                    }
+                }).catch(error => {
+                    updateLog(`❌ Lars tenant ${dataType} access failed: ${error.message}`, 'danger');
+                    completedChecks++;
+                });
+            });
+        }
+
+        // Verify GBTech tenant data
+        function verifyGBTechTenantData() {
+            const dataTypes = ['clusters', 'actions', 'scheduledTasks', 'employees', 'individualHives', 'master', 'tasks'];
+            let completedChecks = 0;
+            
+            dataTypes.forEach(dataType => {
+                database.ref(`tenants/gbtech/${dataType}`).once('value', (snapshot) => {
+                    const data = snapshot.val();
+                    const count = data ? Object.keys(data).length : 0;
+                    updateLog(`📊 GBTech tenant ${dataType}: ${count} records`, count > 0 ? 'success' : 'warning');
+                    
+                    completedChecks++;
+                    if (completedChecks === dataTypes.length) {
+                        updateLog('✅ GBTech tenant data verification completed', 'success');
+                    }
+                }).catch(error => {
+                    updateLog(`❌ GBTech tenant ${dataType} access failed: ${error.message}`, 'danger');
+                    completedChecks++;
+                });
+            });
+        }
+
+        // Update data location summary
+        function updateDataLocationSummary() {
+            const summaryDiv = document.getElementById('dataLocationSummary');
+            const detailsDiv = document.getElementById('locationDetails');
+            
+            // Get all the data counts
+            const clusters = document.getElementById('clustersCount').textContent;
+            const actions = document.getElementById('actionsCount').textContent;
+            const scheduledTasks = document.getElementById('scheduledTasksCount').textContent;
+            const employees = document.getElementById('employeesCount').textContent;
+            const individualHives = document.getElementById('individualHivesCount').textContent;
+            const master = document.getElementById('masterCount').textContent;
+            const tasks = document.getElementById('tasksCount').textContent;
+            
+            let summary = '<div class="row">';
+            summary += '<div class="col-md-6">';
+            summary += '<h6>📊 Root Level Data:</h6>';
+            summary += '<ul class="mb-0">';
+            summary += `<li>Clusters: ${clusters} records</li>`;
+            summary += `<li>Actions: ${actions} records</li>`;
+            summary += `<li>Scheduled Tasks: ${scheduledTasks} records</li>`;
+            summary += `<li>Employees: ${employees} records</li>`;
+            summary += `<li>Individual Hives: ${individualHives} records</li>`;
+            summary += `<li>Master: ${master} records</li>`;
+            summary += `<li>Tasks: ${tasks} records</li>`;
+            summary += '</ul>';
+            summary += '</div>';
+            summary += '<div class="col-md-6">';
+            summary += '<h6>🎯 Main Application Access:</h6>';
+            summary += '<p class="mb-2">The main application (beemarshall-full.html) is now configured to access data from the <strong>root level</strong> paths:</p>';
+            summary += '<ul class="mb-0">';
+            summary += '<li><code>/clusters</code></li>';
+            summary += '<li><code>/actions</code></li>';
+            summary += '<li><code>/scheduledTasks</code></li>';
+            summary += '<li><code>/employees</code></li>';
+            summary += '<li><code>/individualHives</code></li>';
+            summary += '<li><code>/master</code></li>';
+            summary += '<li><code>/tasks</code></li>';
+            summary += '</ul>';
+            summary += '</div>';
+            summary += '</div>';
+            
+            detailsDiv.innerHTML = summary;
+            summaryDiv.style.display = 'block';
+        }
 
         // Update log with styled entries
         function updateLog(message, type) {
