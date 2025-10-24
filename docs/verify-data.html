@@ -307,7 +307,7 @@
                 updateLog('🎉 Data verification completed!', 'success');
                 updateLog('✅ All migrated data is accessible in the new Firebase structure', 'success');
                 updateDataLocationSummary();
-            }, 2000);
+            }, 3000);
         }
 
         // Verify tenant-based structure
@@ -404,28 +404,28 @@
             
             let summary = '<div class="row">';
             summary += '<div class="col-md-6">';
-            summary += '<h6>📊 Root Level Data:</h6>';
+            summary += '<h6>📊 Tenant Structure Data:</h6>';
             summary += '<ul class="mb-0">';
-            summary += `<li>Clusters: ${clusters} records</li>`;
-            summary += `<li>Actions: ${actions} records</li>`;
-            summary += `<li>Scheduled Tasks: ${scheduledTasks} records</li>`;
-            summary += `<li>Employees: ${employees} records</li>`;
-            summary += `<li>Individual Hives: ${individualHives} records</li>`;
-            summary += `<li>Master: ${master} records</li>`;
-            summary += `<li>Tasks: ${tasks} records</li>`;
+            summary += `<li>Lars Clusters: ${clusters} records</li>`;
+            summary += `<li>Lars Actions: ${actions} records</li>`;
+            summary += `<li>Lars Scheduled Tasks: ${scheduledTasks} records</li>`;
+            summary += `<li>Lars Employees: ${employees} records</li>`;
+            summary += `<li>Lars Individual Hives: ${individualHives} records</li>`;
+            summary += `<li>Lars Master: ${master} records</li>`;
+            summary += `<li>Lars Tasks: ${tasks} records</li>`;
             summary += '</ul>';
             summary += '</div>';
             summary += '<div class="col-md-6">';
             summary += '<h6>🎯 Main Application Access:</h6>';
-            summary += '<p class="mb-2">The main application (beemarshall-full.html) is now configured to access data from the <strong>root level</strong> paths:</p>';
+            summary += '<p class="mb-2">The main application (beemarshall-full.html) is configured to access data from <strong>tenant-based</strong> paths:</p>';
             summary += '<ul class="mb-0">';
-            summary += '<li><code>/clusters</code></li>';
-            summary += '<li><code>/actions</code></li>';
-            summary += '<li><code>/scheduledTasks</code></li>';
-            summary += '<li><code>/employees</code></li>';
-            summary += '<li><code>/individualHives</code></li>';
-            summary += '<li><code>/master</code></li>';
-            summary += '<li><code>/tasks</code></li>';
+            summary += '<li><code>/tenants/lars/clusters</code></li>';
+            summary += '<li><code>/tenants/lars/actions</code></li>';
+            summary += '<li><code>/tenants/lars/scheduledTasks</code></li>';
+            summary += '<li><code>/tenants/lars/employees</code></li>';
+            summary += '<li><code>/tenants/lars/individualHives</code></li>';
+            summary += '<li><code>/tenants/lars/master</code></li>';
+            summary += '<li><code>/tenants/lars/tasks</code></li>';
             summary += '</ul>';
             summary += '</div>';
             summary += '</div>';

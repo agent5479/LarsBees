@@ -134,9 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check if this is first time setup and initialize master account
 function checkFirstTimeSetup() {
-    database.ref('master/initialized').once('value', (snapshot) => {
+    // Check if tenant structure exists for GBTech
+    database.ref('tenants/gbtech/master/initialized').once('value', (snapshot) => {
         if (!snapshot.exists()) {
-            // Auto-initialize master account
+            // Auto-initialize master account in tenant structure
             initializeMasterAccount();
         }
     });
@@ -150,10 +151,10 @@ function initializeMasterAccount() {
         createdAt: new Date().toISOString()
     };
     
-    database.ref('master/initialized').set(true).then(() => {
-        return database.ref('master/admin').set(masterUser);
+    database.ref('tenants/gbtech/master/initialized').set(true).then(() => {
+        return database.ref('tenants/gbtech/master/admin').set(masterUser);
     }).then(() => {
-        console.log('✅ Master account initialized successfully');
+        console.log('✅ Master account initialized successfully in tenant structure');
         console.log('Username:', MASTER_USERNAME);
         console.log('Password hash:', simpleHash(MASTER_PASSWORD));
     }).catch(error => {
