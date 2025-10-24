@@ -134,10 +134,16 @@ function showTasks() {
     renderTasksList();
 }
 
-function renderTasksList() {
+function renderTasksList(filterCategory = 'All') {
+    // Filter tasks by category if specified
+    let filteredTasks = tasks;
+    if (filterCategory !== 'All') {
+        filteredTasks = tasks.filter(task => task.category === filterCategory);
+    }
+    
     // Group tasks by category
     const tasksByCategory = {};
-    tasks.forEach(task => {
+    filteredTasks.forEach(task => {
         if (!tasksByCategory[task.category]) {
             tasksByCategory[task.category] = [];
         }
