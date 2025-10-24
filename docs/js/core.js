@@ -30,6 +30,9 @@ let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category,
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize system status
+    updateSystemStatus();
+    
     const savedUser = localStorage.getItem('currentUser');
     const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
     
@@ -147,18 +150,87 @@ window.checkFirebaseConnection = function() {
     return true;
 }
 
-// Authentication - Master User System
+// Enhanced Login Status and Debugging Functions
+function showLoginStatus(type, message, isLoading = false) {
+    const statusDiv = document.getElementById('loginStatus');
+    const statusText = document.getElementById('loginStatusText');
+    const loginButton = document.getElementById('loginButton');
+    const loginButtonText = document.getElementById('loginButtonText');
+    const loginSpinner = document.getElementById('loginSpinner');
+    
+    if (statusDiv && statusText) {
+        statusDiv.className = `alert alert-${type}`;
+        statusText.textContent = message;
+        statusDiv.classList.remove('d-none');
+        
+        // Auto-hide success messages after 3 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                statusDiv.classList.add('d-none');
+            }, 3000);
+        }
+    }
+    
+    if (loginButton && loginButtonText && loginSpinner) {
+        if (isLoading) {
+            loginButton.disabled = true;
+            loginButtonText.textContent = 'Authenticating...';
+            loginSpinner.classList.remove('d-none');
+        } else {
+            loginButton.disabled = false;
+            loginButtonText.textContent = 'Login';
+            loginSpinner.classList.add('d-none');
+        }
+    }
+}
+
+function updateDebugInfo(elementId, value) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+function updateSystemStatus() {
+    // Update system status
+    updateDebugInfo('systemStatus', 'System ready');
+    
+    // Check Firebase status
+    if (typeof database !== 'undefined') {
+        updateDebugInfo('firebaseStatus', 'Connected');
+        database.ref('master/initialized').once('value', (snapshot) => {
+            if (snapshot.exists()) {
+                updateDebugInfo('sessionInfo', 'Master account exists');
+            } else {
+                updateDebugInfo('sessionInfo', 'First time setup required');
+            }
+        }).catch(error => {
+            updateDebugInfo('firebaseStatus', 'Connection failed');
+            updateDebugInfo('lastError', error.message);
+        });
+    } else {
+        updateDebugInfo('firebaseStatus', 'Not initialized');
+        updateDebugInfo('sessionInfo', 'Fallback mode available');
+    }
+}
+
+// Enhanced Authentication System with Notifications
 function handleLogin(e) {
     e.preventDefault();
-    console.log('Login form submitted');
+    console.log('🔐 Login form submitted');
     
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     
-    console.log('Username:', username);
+    console.log('👤 Username:', username);
+    
+    // Show loading state
+    showLoginStatus('info', 'Authenticating...', true);
+    updateDebugInfo('systemStatus', 'Authenticating user...');
     
     if (!username || !password) {
-        alert('Please enter both username and password');
+        showLoginStatus('danger', 'Please enter both username and password', false);
+        updateDebugInfo('lastError', 'Missing username or password');
         return;
     }
     
@@ -166,10 +238,14 @@ function handleLogin(e) {
     if (typeof database === 'undefined') {
         console.error('Firebase database not initialized');
         console.log('Using fallback authentication...');
+        updateDebugInfo('firebaseStatus', 'Not available - using fallback');
         
         // Fallback authentication for development/demo
         if (username.toLowerCase() === 'lars' && password === 'LarsHoney2025!') {
             console.log('✅ Fallback admin login successful');
+            showLoginStatus('success', 'Login successful! Redirecting to dashboard...', false);
+            updateDebugInfo('systemStatus', 'Fallback authentication successful');
+            
             currentUser = {
                 username: 'Lars',
                 role: 'admin',
@@ -178,16 +254,21 @@ function handleLogin(e) {
             isAdmin = true;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             localStorage.setItem('isAdmin', 'true');
-            showMainApp();
-            // Initialize with empty data for demo
-            clusters = [];
-            actions = [];
-            scheduledTasks = [];
-            employees = [];
-            updateDashboard();
+            
+            // Delay to show success message
+            setTimeout(() => {
+                showMainApp();
+                // Initialize with empty data for demo
+                clusters = [];
+                actions = [];
+                scheduledTasks = [];
+                employees = [];
+                updateDashboard();
+            }, 1500);
             return;
         } else {
-            alert('Database connection error. Please check your internet connection and try again.\n\nFor demo purposes, use:\nUsername: Lars\nPassword: LarsHoney2025!');
+            showLoginStatus('danger', 'Invalid credentials. For demo: Username: Lars, Password: LarsHoney2025!', false);
+            updateDebugInfo('lastError', 'Invalid credentials in fallback mode');
             return;
         }
     }
@@ -284,12 +365,19 @@ function validateLogin(username, password) {
         if (admin && admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash) {
             console.log('✅ Admin login successful');
             clearTimeout(firebaseTimeout); // Clear the fallback timeout
+            showLoginStatus('success', 'Login successful! Welcome back, ' + admin.username + '!', false);
+            updateDebugInfo('systemStatus', 'Authentication successful');
+            
             currentUser = admin;
             isAdmin = true;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             localStorage.setItem('isAdmin', 'true');
-            showMainApp();
-            loadDataFromFirebase();
+            
+            // Delay to show success message
+            setTimeout(() => {
+                showMainApp();
+                loadDataFromFirebase();
+            }, 1500);
             return;
         }
         
@@ -306,23 +394,33 @@ function validateLogin(username, password) {
             if (employee) {
                 console.log('Employee login successful');
                 clearTimeout(firebaseTimeout); // Clear the fallback timeout
+                showLoginStatus('success', 'Login successful! Welcome, ' + employee.username + '!', false);
+                updateDebugInfo('systemStatus', 'Employee authentication successful');
+                
                 currentUser = employee;
                 isAdmin = false;
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
                 localStorage.setItem('isAdmin', 'false');
-                showMainApp();
-                loadDataFromFirebase();
+                
+                // Delay to show success message
+                setTimeout(() => {
+                    showMainApp();
+                    loadDataFromFirebase();
+                }, 1500);
             } else {
                 console.log('Login failed - no match');
-                alert('❌ Invalid username or password!');
+                showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+                updateDebugInfo('lastError', 'No matching user found');
             }
         }).catch(error => {
             console.error('Employee check error:', error);
-            alert('Error checking credentials. Please try again.');
+            showLoginStatus('danger', 'Error checking credentials. Please try again.', false);
+            updateDebugInfo('lastError', 'Employee check failed: ' + error.message);
         });
     }).catch(error => {
         console.error('Admin check error:', error);
-        alert('Error checking credentials. Please try again.');
+        showLoginStatus('danger', 'Error checking credentials. Please try again.', false);
+        updateDebugInfo('lastError', 'Admin check failed: ' + error.message);
     });
 }
 

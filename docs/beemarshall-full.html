@@ -887,35 +887,66 @@
     <div id="loginScreen" class="container-fluid vh-100 d-flex align-items-center justify-content-center">
         <div class="row w-100">
             <div class="col-md-6 col-lg-4 mx-auto">
-                <div class="card shadow-lg">
+                <div class="card shadow-lg" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
                     <div class="card-body p-5">
                         <div class="text-center mb-4">
-                            <i class="bi bi-shield-fill text-warning" style="font-size: 4rem;"></i>
-                            <h2 class="mt-3">BeeMarshall</h2>
-                            <p class="text-muted">Militant Apiary Logistics</p>
+                            <i class="bi bi-hexagon-fill" style="font-size: 4rem; color: var(--accent);"></i>
+                            <h2 class="mt-3" style="color: var(--brand);">BeeMarshall</h2>
+                            <p class="text-muted">Professional Apiary Management System</p>
+                        </div>
+                        
+                        <!-- Login Status Messages -->
+                        <div id="loginStatus" class="alert alert-info d-none" role="alert">
+                            <i class="bi bi-info-circle"></i>
+                            <span id="loginStatusText">Checking system status...</span>
                         </div>
                         
                         <form id="loginForm">
                             <div class="mb-3">
-                                <label for="loginUsername" class="form-label">Username</label>
-                                <input type="text" class="form-control" id="loginUsername" required>
+                                <label for="loginUsername" class="form-label fw-semibold">Username</label>
+                                <input type="text" class="form-control" id="loginUsername" required 
+                                       placeholder="Enter your username" autocomplete="username">
                             </div>
                             <div class="mb-3">
-                                <label for="loginPassword" class="form-label">Password</label>
+                                <label for="loginPassword" class="form-label fw-semibold">Password</label>
                                 <div class="input-group">
-                                    <input type="password" class="form-control" id="loginPassword" required>
+                                    <input type="password" class="form-control" id="loginPassword" required 
+                                           placeholder="Enter your password" autocomplete="current-password">
                                     <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility()">
                                         <i id="passwordToggleIcon" class="bi bi-eye"></i>
                                     </button>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Login</button>
+                            <button type="submit" class="btn btn-primary w-100 py-2" id="loginButton">
+                                <span id="loginButtonText">Login</span>
+                                <span id="loginSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
+                            </button>
                         </form>
                         
-                        <div class="text-center mt-3">
-                            <small class="text-muted">
-                                First time? Use username "Lars" to create master account
-                            </small>
+                        <div class="mt-4">
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> 
+                                    First time? Use username "Lars" to create master account
+                                </small>
+                            </div>
+                            
+                            <!-- Debug Panel (collapsible) -->
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#debugPanel">
+                                    <i class="bi bi-bug"></i> Debug Information
+                                </button>
+                                <div class="collapse mt-2" id="debugPanel">
+                                    <div class="card card-body bg-light">
+                                        <small>
+                                            <strong>System Status:</strong> <span id="systemStatus">Checking...</span><br>
+                                            <strong>Firebase:</strong> <span id="firebaseStatus">Connecting...</span><br>
+                                            <strong>Last Error:</strong> <span id="lastError">None</span><br>
+                                            <strong>Session:</strong> <span id="sessionInfo">Not logged in</span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
