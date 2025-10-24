@@ -278,7 +278,9 @@ function handleScheduleTask(e) {
         createdAt: new Date().toISOString()
     };
     
-    database.ref(`scheduledTasks/${task.id}`).set(task)
+    // Use tenant-specific path for data isolation
+    const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
+    database.ref(`${tasksPath}/${task.id}`).set(task)
         .then(() => {
             alert('✅ Task scheduled successfully!');
             bootstrap.Modal.getInstance(document.getElementById('scheduleTaskModal')).hide();
@@ -376,7 +378,9 @@ function updateScheduledTask(id) {
         lastModifiedAt: new Date().toISOString()
     };
     
-    database.ref(`scheduledTasks/${id}`).update(updates)
+    // Use tenant-specific path for data isolation
+    const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
+    database.ref(`${tasksPath}/${id}`).update(updates)
         .then(() => {
             alert('✅ Task updated successfully!');
             bootstrap.Modal.getInstance(document.getElementById('scheduleTaskModal')).hide();
@@ -388,7 +392,9 @@ function updateScheduledTask(id) {
 
 function cancelScheduledTask(id) {
     if (confirm('Cancel this scheduled task? This cannot be undone.')) {
-        database.ref(`scheduledTasks/${id}`).remove()
+        // Use tenant-specific path for data isolation
+        const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
+        database.ref(`${tasksPath}/${id}`).remove()
             .then(() => {
                 alert('✅ Task cancelled.');
                 renderScheduledTasks();
@@ -925,7 +931,9 @@ function handleNextVisitForm(e) {
             createdAt: new Date().toISOString(),
             type: 'next-visit'
         };
-        return database.ref(`scheduledTasks/${scheduledTask.id}`).set(scheduledTask);
+        // Use tenant-specific path for data isolation
+        const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
+        return database.ref(`${tasksPath}/${scheduledTask.id}`).set(scheduledTask);
     });
     
     Promise.all(promises).then(() => {

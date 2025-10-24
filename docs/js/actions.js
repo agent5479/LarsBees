@@ -187,7 +187,9 @@ function deleteAction(id) {
     }
     
     if (confirm('Delete this action? This cannot be undone!')) {
-        database.ref(`actions/${id}`).remove();
+        // Use tenant-specific path for data isolation
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+        database.ref(`${tenantPath}/${id}`).remove();
     }
 }
 

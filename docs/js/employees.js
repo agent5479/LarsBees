@@ -36,7 +36,9 @@ function handleAddEmployee(e) {
         createdBy: currentUser.username
     };
     
-    database.ref(`employees/${employeeId}`).set(employee)
+    // Use tenant-specific path for data isolation
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+    database.ref(`${tenantPath}/${employeeId}`).set(employee)
         .then(() => {
             alert(`✅ Employee "${name}" added successfully!\n\nThey can login with:\nUsername: ${name}\nPassword: [the password you set]`);
             document.getElementById('addEmployeeForm').reset();
@@ -79,7 +81,9 @@ function renderEmployees() {
 
 function removeEmployee(id) {
     if (confirm('Remove this employee? They will no longer be able to login.')) {
-        database.ref(`employees/${id}`).remove();
+        // Use tenant-specific path for data isolation
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+        database.ref(`${tenantPath}/${id}`).remove();
     }
 }
 
