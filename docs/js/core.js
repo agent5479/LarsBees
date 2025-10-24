@@ -130,15 +130,41 @@ function handleLogin(e) {
     
     // Check if Firebase is ready
     if (typeof database === 'undefined') {
-        alert('System is still loading. Please wait a moment and try again.');
-        return;
+        console.error('Firebase database not initialized');
+        console.log('Using fallback authentication...');
+        
+        // Fallback authentication for development/demo
+        if (username.toLowerCase() === 'lars' && password === 'LarsHoney2025!') {
+            console.log('✅ Fallback admin login successful');
+            currentUser = {
+                username: 'Lars',
+                role: 'admin',
+                createdAt: new Date().toISOString()
+            };
+            isAdmin = true;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('isAdmin', 'true');
+            showMainApp();
+            // Initialize with empty data for demo
+            clusters = [];
+            actions = [];
+            scheduledTasks = [];
+            employees = [];
+            updateDashboard();
+            return;
+        } else {
+            alert('Database connection error. Please check your internet connection and try again.\n\nFor demo purposes, use:\nUsername: Lars\nPassword: LarsHoney2025!');
+            return;
+        }
     }
     
     // Check if master user exists
+    console.log('🔍 Checking Firebase connection...');
     database.ref('master/initialized').once('value', (snapshot) => {
         console.log('Master initialized:', snapshot.exists());
         
         if (!snapshot.exists()) {
+            console.log('🆕 First time setup detected');
             // First time setup - create master account
             if (username.toLowerCase() === 'lars' || username.toLowerCase() === 'admin') {
                 setupMasterUser(username, password);
@@ -146,12 +172,13 @@ function handleLogin(e) {
                 alert('First time setup: Please use username "Lars" to create the master account.');
             }
         } else {
+            console.log('✅ Existing system - validating credentials');
             // Existing system - check credentials
             validateLogin(username, password);
         }
     }).catch(error => {
-        console.error('Firebase error:', error);
-        alert('Database connection error. Please check your internet connection and try again.');
+        console.error('❌ Firebase error:', error);
+        alert('Database connection error. Please check your internet connection and try again.\n\nError: ' + error.message);
     });
 }
 
