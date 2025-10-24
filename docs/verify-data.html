@@ -84,6 +84,12 @@
                             <p class="mb-0">All Lars data has been migrated to the new Firebase structure. Use this tool to verify the data is accessible.</p>
                         </div>
 
+                        <!-- Firebase Rules Note -->
+                        <div class="alert alert-info mb-4">
+                            <h5><i class="bi bi-info-circle"></i> Firebase Rules Note</h5>
+                            <p class="mb-0">If you see permission errors, ensure your Firebase rules allow access to the data paths. The tool will check individual data types even if root access fails.</p>
+                        </div>
+
                         <!-- All Data Types Summary -->
                         <div class="row mb-4">
                             <div class="col-md-2">
@@ -183,7 +189,7 @@
                 return;
             }
 
-            // Check root structure
+            // Check root structure with better error handling
             updateLog('Checking database structure...', 'info');
             database.ref('/').once('value', (snapshot) => {
                 const rootData = snapshot.val();
@@ -194,7 +200,11 @@
                 updateLog('🔍 Checking for migrated data...', 'info');
                 verifyAllDataTypes();
             }).catch(error => {
-                updateLog('❌ Database access failed: ' + error.message, 'danger');
+                updateLog('❌ Root access failed: ' + error.message, 'warning');
+                updateLog('🔄 This is normal - checking individual data paths...', 'info');
+                
+                // Continue with individual data verification even if root access fails
+                verifyAllDataTypes();
             });
         }
 
