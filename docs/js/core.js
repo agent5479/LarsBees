@@ -46,17 +46,32 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize system status
     updateSystemStatus();
     
-    const savedUser = localStorage.getItem('currentUser');
-    const savedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+    // TEMPORARY: Bypass login for testing
+    console.log('🚀 BYPASSING LOGIN - Going straight to dashboard for testing');
     
-    if (savedUser) {
-        currentUser = JSON.parse(savedUser);
-        isAdmin = savedIsAdmin;
-        showMainApp();
-        loadDataFromFirebase();
-    } else {
-        checkFirstTimeSetup();
-    }
+    // Set up demo user
+    currentUser = {
+        username: 'Lars',
+        role: 'admin',
+        createdAt: new Date().toISOString()
+    };
+    isAdmin = true;
+    
+    // Initialize with empty data for testing
+    clusters = [];
+    actions = [];
+    scheduledTasks = [];
+    employees = [];
+    
+    // Go straight to main app
+    showMainApp();
+    updateDashboard();
+    
+    // Hide login screen and show main app
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.remove('hidden');
+    
+    console.log('✅ Bypassed login - dashboard should be visible now');
     
     // Setup event listeners with error checking
     const loginForm = document.getElementById('loginForm');
@@ -344,10 +359,38 @@ function getVersionChanges(version = APP_VERSION) {
 window.showVersionInfo = function() {
     const info = getVersionInfo();
     console.log('📦 BeeMarshall Version Information:');
-    console.log(`Current Version: v${info.current}`);
+    console.log('Current Version: v${info.current}');
     console.log('Version History:', info.history);
     console.log('Latest Changes:', info.latest.changes);
     return info;
+}
+
+// Test function to verify dashboard is working
+window.testDashboard = function() {
+    console.log('🧪 Testing dashboard functionality...');
+    console.log('Current User:', currentUser);
+    console.log('Is Admin:', isAdmin);
+    console.log('Clusters:', clusters.length);
+    console.log('Actions:', actions.length);
+    console.log('Scheduled Tasks:', scheduledTasks.length);
+    console.log('Dashboard should be visible now');
+    
+    // Check if main app is visible
+    const loginScreen = document.getElementById('loginScreen');
+    const mainApp = document.getElementById('mainApp');
+    
+    console.log('Login Screen Hidden:', loginScreen.classList.contains('hidden'));
+    console.log('Main App Visible:', !mainApp.classList.contains('hidden'));
+    
+    return {
+        user: currentUser,
+        isAdmin: isAdmin,
+        data: { clusters: clusters.length, actions: actions.length, tasks: scheduledTasks.length },
+        ui: { 
+            loginHidden: loginScreen.classList.contains('hidden'),
+            mainVisible: !mainApp.classList.contains('hidden')
+        }
+    };
 }
 
 // Simplified Robust Authentication System
