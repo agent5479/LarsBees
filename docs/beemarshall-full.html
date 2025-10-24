@@ -16,26 +16,28 @@
         /* BeeMarshall Enhanced UI - Following Design Philosophy */
         
         :root {
-            /* Enhanced Honey Design System */
-            --brand: #8B4513;
-            --muted: #A0522D;
-            --accent: #FFC107;
-            --bg: #FFF8DC;
-            --glass: rgba(255,248,220,0.95);
-            --shadow: 0 8px 32px rgba(139,69,19,0.15);
+            /* Hive Design System - Light Yellow, Dark Yellow, White, Black */
+            --light-yellow: #FFFACD;
+            --dark-yellow: #DAA520;
+            --white: #FFFFFF;
+            --black: #000000;
+            --accent: #FFD700;
+            --bg: var(--light-yellow);
+            --glass: rgba(255,250,205,0.95);
+            --shadow: 0 8px 32px rgba(218,165,32,0.15);
             --radius: 12px;
             --transition: all .22s cubic-bezier(.4,0,.2,1);
             
-            /* Honey Color Palette */
-            --primary-bg: var(--bg);
-            --primary-accent: #FFC107; /* Honey yellow */
-            --secondary-accent: #FFF8DC;
-            --text-primary: var(--brand);
-            --text-secondary: var(--muted);
-            --success: #8FBC8F;
-            --warning: #DAA520;
-            --danger: #CD853F;
-            --info: #DEB887;
+            /* Hive Color Palette */
+            --primary-bg: var(--light-yellow);
+            --primary-accent: var(--dark-yellow);
+            --secondary-accent: var(--white);
+            --text-primary: var(--black);
+            --text-secondary: #666666;
+            --success: #32CD32;
+            --warning: var(--dark-yellow);
+            --danger: #DC3545;
+            --info: var(--accent);
             
             /* Enhanced Typography */
             --font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -71,8 +73,8 @@
         html, body {
             height: 100%;
             font-family: var(--font-family);
-            background: var(--bg);
-            color: var(--brand);
+            background: var(--light-yellow);
+            color: var(--black);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             scroll-behavior: smooth;
@@ -117,50 +119,50 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #DAA520);
-            color: var(--brand);
-            border: 2px solid var(--accent);
+            background: linear-gradient(135deg, var(--dark-yellow), var(--accent));
+            color: var(--black);
+            border: 2px solid var(--dark-yellow);
             font-weight: 600;
         }
         
         .btn-primary:hover {
             transform: translateY(-1px) scale(1.02);
-            box-shadow: 0 12px 28px rgba(139,69,19,0.25);
-            background: linear-gradient(135deg, #DAA520, var(--accent));
+            box-shadow: 0 12px 28px rgba(218,165,32,0.25);
+            background: linear-gradient(135deg, var(--accent), var(--dark-yellow));
         }
         
         .btn-outline-primary {
             background: transparent;
-            border: 2px solid var(--accent);
-            color: var(--brand);
+            border: 2px solid var(--dark-yellow);
+            color: var(--black);
         }
         
         .btn-outline-primary:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: var(--brand);
+            background: var(--dark-yellow);
+            border-color: var(--dark-yellow);
+            color: var(--black);
         }
         
         /* Enhanced Card Styles */
         .card {
-            background: var(--glass);
+            background: var(--white);
             border-radius: var(--radius);
+            border: 2px solid var(--dark-yellow);
             box-shadow: var(--shadow);
             transition: var(--transition);
             backdrop-filter: blur(12px) saturate(1.1);
-            border: 1px solid rgba(255,255,255,0.2);
         }
         
         .card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 12px 40px rgba(218,165,32,0.2);
         }
         
         /* Glass morphism for modals */
         .modal-content {
-            background: var(--glass);
+            background: var(--white);
+            border: 2px solid var(--dark-yellow);
             backdrop-filter: blur(12px) saturate(1.1);
-            border: 1px solid rgba(255,255,255,0.2);
             border-radius: var(--radius);
         }
         
@@ -255,10 +257,10 @@
         
         /* Navigation */
         .navbar {
-            background: linear-gradient(180deg, rgba(255,248,220,0.95), rgba(255,193,7,0.85));
+            background: linear-gradient(180deg, var(--white), var(--light-yellow));
             backdrop-filter: blur(12px) saturate(1.1);
-            border-bottom: 2px solid var(--accent);
-            box-shadow: 0 6px 20px rgba(139,69,19,0.15);
+            border-bottom: 2px solid var(--dark-yellow);
+            box-shadow: 0 6px 20px rgba(218,165,32,0.15);
             transition: var(--transition);
         }
         
@@ -269,13 +271,13 @@
         
         .navbar-brand {
             font-weight: 700;
-            color: var(--brand) !important;
+            color: var(--black) !important;
             font-size: 1.5rem;
             text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
         }
         
         .nav-link {
-            color: var(--brand) !important;
+            color: var(--black) !important;
             font-weight: 600;
             transition: all 0.3s ease;
             text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
