@@ -843,52 +843,97 @@ function updateDashboardStats() {
 }
 
 // Load data from Firebase with tenant isolation
+// Prevent multiple simultaneous data loads
+let isLoadingData = false;
+
 function loadDataFromFirebase() {
+    if (isLoadingData) {
+        console.log('⏳ Data loading already in progress, skipping...');
+        return;
+    }
+    
+    isLoadingData = true;
     showSyncStatus('', 'syncing');
     
     if (!currentTenantId) {
         console.error('❌ No tenant ID found');
+        isLoadingData = false;
         return;
     }
     
     console.log('🏢 Loading data for tenant:', currentTenantId);
     
     // Load tenant-specific data
+    // Track data loading completion
+    let dataLoadingComplete = {
+        clusters: false,
+        actions: false,
+        individualHives: false,
+        scheduledTasks: false
+    };
+    
+    function checkDataLoadingComplete() {
+        if (dataLoadingComplete.clusters && dataLoadingComplete.actions && 
+            dataLoadingComplete.individualHives && dataLoadingComplete.scheduledTasks) {
+            console.log('✅ All data loaded, updating dashboard');
+            isLoadingData = false; // Reset loading flag
+            updateDashboard();
+        }
+    }
+    
     database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('🔍 Raw clusters data for', currentTenantId + ':', data);
         clusters = data ? Object.values(data) : [];
         console.log('📊 Clusters loaded for', currentTenantId + ':', clusters.length);
+        dataLoadingComplete.clusters = true;
+        
         if (clusters.length === 0) {
             console.log('📭 No clusters found - starting fresh');
             showSyncStatus('', 'success');
         } else {
             showSyncStatus('', 'success');
         }
-        updateDashboard(); // Update dashboard (map will load when user clicks)
+        checkDataLoadingComplete();
     }).catch(error => {
         console.log('❌ Tenant clusters access failed:', error.message);
         showSyncStatus('', 'error');
+        dataLoadingComplete.clusters = true;
+        checkDataLoadingComplete();
     });
     
     database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
-        updateDashboard();
+        console.log('📊 Actions loaded for', currentTenantId + ':', actions.length);
+        dataLoadingComplete.actions = true;
+        checkDataLoadingComplete();
     }).catch(error => {
         console.log('❌ Tenant actions access failed:', error.message);
+        dataLoadingComplete.actions = true;
+        checkDataLoadingComplete();
     });
     
     database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
+        console.log('📊 Individual hives loaded for', currentTenantId + ':', individualHives.length);
+        dataLoadingComplete.individualHives = true;
+        checkDataLoadingComplete();
     }).catch(error => {
         console.log('❌ Tenant hives access failed:', error.message);
+        dataLoadingComplete.individualHives = true;
+        checkDataLoadingComplete();
     });
     
     database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+        console.log('📊 Scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
+        dataLoadingComplete.scheduledTasks = true;
         updateScheduledTasksPreview();
+        checkDataLoadingComplete();
     }).catch(error => {
         console.log('❌ Tenant tasks access failed:', error.message);
+        dataLoadingComplete.scheduledTasks = true;
+        checkDataLoadingComplete();
     });
     
     if (isAdmin) {

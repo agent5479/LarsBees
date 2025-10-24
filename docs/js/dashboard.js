@@ -6,9 +6,19 @@ function showDashboard() {
     updateDashboard();
 }
 
+// Debounce dashboard updates to prevent multiple rapid calls
+let dashboardUpdateTimeout = null;
+
 function updateDashboard() {
-    console.log('📊 Updating dashboard with data...');
-    const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    // Clear any pending update
+    if (dashboardUpdateTimeout) {
+        clearTimeout(dashboardUpdateTimeout);
+    }
+    
+    // Debounce the update by 100ms
+    dashboardUpdateTimeout = setTimeout(() => {
+        console.log('📊 Updating dashboard with data...');
+        const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
@@ -101,6 +111,7 @@ function updateDashboard() {
     
     updateScheduledTasksPreview();
     updateCalendarWidget();
+    }, 100); // End of debounced timeout
 }
 
 function updateScheduledTasksPreview() {
