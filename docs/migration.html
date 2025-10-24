@@ -166,21 +166,28 @@
                     
                     <!-- Additional Controls -->
                     <div class="row mt-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="d-grid">
                                 <button class="btn btn-info btn-sm" onclick="testFirebaseConnection()">
-                                    <i class="bi bi-wifi"></i> Test Firebase Connection
+                                    <i class="bi bi-wifi"></i> Test Connection
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="d-grid">
                                 <button class="btn btn-success btn-sm" onclick="testFirebaseConfig()">
-                                    <i class="bi bi-gear"></i> Test Firebase Config
+                                    <i class="bi bi-gear"></i> Test Config
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button class="btn btn-warning btn-sm" onclick="testDataAccess()">
+                                    <i class="bi bi-shield-check"></i> Test Data Access
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
                             <div class="d-grid">
                                 <button class="btn btn-secondary btn-sm" onclick="clearLog()">
                                     <i class="bi bi-trash"></i> Clear Log
@@ -251,10 +258,28 @@
                         </div>
                     </div>
                     
+                    <!-- Firebase Security Status -->
+                    <div class="mt-4">
+                        <h5><i class="bi bi-shield-exclamation"></i> Firebase Security Status</h5>
+                        <div class="alert alert-info">
+                            <strong>Important:</strong> The migration tool needs to access both OLD and NEW data structures. 
+                            If you're getting "0 records" in both structures, it likely means:
+                            <ul class="mb-0 mt-2">
+                                <li>Firebase security rules are blocking access</li>
+                                <li>Authentication is required but not provided</li>
+                                <li>Database permissions are restricted</li>
+                            </ul>
+                        </div>
+                        <div class="alert alert-warning">
+                            <strong>Solution:</strong> Use the "Test Data Access" button to diagnose which specific paths are accessible.
+                        </div>
+                    </div>
+                    
                     <!-- Instructions -->
                     <div class="mt-4">
                         <h5><i class="bi bi-list-check"></i> Instructions</h5>
                         <ol>
+                            <li>Click "Test Data Access" to check Firebase permissions</li>
                             <li>Click "Check Data Status" to see current data structure</li>
                             <li>Click "Start Migration" to begin the migration process</li>
                             <li>Wait for the migration to complete</li>
@@ -621,6 +646,67 @@
             } catch (error) {
                 updateLog('❌ Firebase initialization failed: ' + error.message, 'danger');
             }
+        }
+        
+        // Test data access permissions
+        function testDataAccess() {
+            updateLog('Testing data access permissions...', 'info');
+            
+            // Test root level access
+            updateLog('Testing root level access...', 'info');
+            database.ref('/').once('value', (snapshot) => {
+                updateLog('✅ Root level access successful', 'success');
+                const data = snapshot.val();
+                updateLog('Root keys: ' + (data ? Object.keys(data).join(', ') : 'None'), 'info');
+            }).catch(error => {
+                updateLog('❌ Root level access failed: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
+            });
+            
+            // Test old structure access
+            updateLog('Testing OLD structure access...', 'info');
+            database.ref('clusters').once('value', (snapshot) => {
+                updateLog('✅ OLD structure access successful', 'success');
+            }).catch(error => {
+                updateLog('❌ OLD structure access failed: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
+            });
+            
+            // Test new structure access
+            updateLog('Testing NEW structure access...', 'info');
+            database.ref('tenants').once('value', (snapshot) => {
+                updateLog('✅ NEW structure access successful', 'success');
+                const data = snapshot.val();
+                updateLog('Tenant keys: ' + (data ? Object.keys(data).join(', ') : 'None'), 'info');
+            }).catch(error => {
+                updateLog('❌ NEW structure access failed: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
+            });
+            
+            // Test specific tenant access
+            updateLog('Testing Lars tenant access...', 'info');
+            database.ref('tenants/lars').once('value', (snapshot) => {
+                updateLog('✅ Lars tenant access successful', 'success');
+                const data = snapshot.val();
+                updateLog('Lars tenant keys: ' + (data ? Object.keys(data).join(', ') : 'None'), 'info');
+            }).catch(error => {
+                updateLog('❌ Lars tenant access failed: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
+            });
+            
+            // Test write permissions
+            updateLog('Testing write permissions...', 'info');
+            database.ref('test/permissions').set({
+                timestamp: new Date().toISOString(),
+                test: 'write_permission_test'
+            }).then(() => {
+                updateLog('✅ Write permission successful', 'success');
+                // Clean up
+                database.ref('test/permissions').remove();
+            }).catch(error => {
+                updateLog('❌ Write permission failed: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
+            });
         }
         
         // Clear log
