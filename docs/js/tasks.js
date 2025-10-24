@@ -302,3 +302,28 @@ function deleteTask(taskId) {
         });
     }
 }
+
+// Additional task management functions
+function showAddTaskForm() {
+    const taskName = prompt('Enter the name of the new task:');
+    if (taskName && taskName.trim()) {
+        const newTask = {
+            id: Date.now(),
+            name: taskName.trim(),
+            category: 'Custom',
+            common: false,
+            createdAt: new Date().toISOString(),
+            createdBy: currentUser.username
+        };
+        
+        tasks.push(newTask);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        renderTasksList();
+        
+        console.log('New task added:', newTask);
+    }
+}
+
+function filterTasksByCategory(category) {
+    renderTasksList(category);
+}
