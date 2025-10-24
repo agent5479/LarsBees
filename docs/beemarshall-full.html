@@ -16,26 +16,26 @@
         /* BeeMarshall Enhanced UI - Following Design Philosophy */
         
         :root {
-            /* Enhanced Design System */
-            --brand: #111;
-            --muted: #5a5a5a;
-            --accent: #ffb800;
-            --bg: #fafafa;
-            --glass: rgba(255,255,255,0.92);
-            --shadow: 0 8px 32px rgba(0,0,0,0.08);
+            /* Enhanced Honey Design System */
+            --brand: #8B4513;
+            --muted: #A0522D;
+            --accent: #FFC107;
+            --bg: #FFF8DC;
+            --glass: rgba(255,248,220,0.95);
+            --shadow: 0 8px 32px rgba(139,69,19,0.15);
             --radius: 12px;
             --transition: all .22s cubic-bezier(.4,0,.2,1);
             
-            /* Legacy Color Palette for compatibility */
+            /* Honey Color Palette */
             --primary-bg: var(--bg);
-            --primary-accent: #1FC8DE;
-            --secondary-accent: #F7F9FA;
+            --primary-accent: #FFC107; /* Honey yellow */
+            --secondary-accent: #FFF8DC;
             --text-primary: var(--brand);
             --text-secondary: var(--muted);
-            --success: #27AE60;
-            --warning: #F39C12;
-            --danger: #E74C3C;
-            --info: #3498DB;
+            --success: #8FBC8F;
+            --warning: #DAA520;
+            --danger: #CD853F;
+            --info: #DEB887;
             
             /* Enhanced Typography */
             --font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -117,25 +117,28 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #ffe000, var(--accent));
-            color: #000;
-            border: none;
+            background: linear-gradient(135deg, var(--accent), #DAA520);
+            color: var(--brand);
+            border: 2px solid var(--accent);
+            font-weight: 600;
         }
         
         .btn-primary:hover {
             transform: translateY(-1px) scale(1.02);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+            box-shadow: 0 12px 28px rgba(139,69,19,0.25);
+            background: linear-gradient(135deg, #DAA520, var(--accent));
         }
         
         .btn-outline-primary {
             background: transparent;
-            border: 2px solid rgba(0,0,0,0.08);
+            border: 2px solid var(--accent);
             color: var(--brand);
         }
         
         .btn-outline-primary:hover {
-            background: rgba(255,184,0,0.08);
+            background: var(--accent);
             border-color: var(--accent);
+            color: var(--brand);
         }
         
         /* Enhanced Card Styles */
@@ -252,10 +255,10 @@
         
         /* Navigation */
         .navbar {
-            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+            background: linear-gradient(180deg, rgba(255,248,220,0.95), rgba(255,193,7,0.85));
             backdrop-filter: blur(12px) saturate(1.1);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 6px 20px rgba(139,69,19,0.15);
             transition: var(--transition);
         }
         
@@ -266,19 +269,23 @@
         
         .navbar-brand {
             font-weight: 700;
-            color: white !important;
+            color: var(--brand) !important;
             font-size: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
         }
         
         .nav-link {
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-weight: 500;
+            color: var(--brand) !important;
+            font-weight: 600;
             transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
         }
         
         .nav-link:hover {
-            color: white !important;
+            color: var(--brand) !important;
+            background: rgba(255,255,255,0.3);
             transform: translateY(-1px);
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
         }
         
         /* Cards */

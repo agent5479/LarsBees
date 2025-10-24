@@ -83,4 +83,9 @@ function showSuggestedSchedule() {
     renderSuggestedSchedule();
 }
 
+function showReports() {
+    // Open reports in new tab
+    window.open('reports.html', '_blank');
+}
+
 

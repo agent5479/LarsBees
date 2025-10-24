@@ -28,8 +28,13 @@ function updateDashboard() {
     // Update quick stats
     updateQuickStats();
     
-    // Note: Map is now lazy-loaded - only initialize when user clicks
-    console.log('📊 Dashboard updated - map will load when user clicks it');
+    // Auto-load map after data is confirmed
+    console.log('📊 Dashboard updated - auto-loading map with data');
+    setTimeout(() => {
+        if (typeof activateMap === 'function') {
+            activateMap();
+        }
+    }, 1000);
     
     // Show flagged alert if any urgent actions or overdue tasks
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');
