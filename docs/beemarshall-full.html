@@ -1096,8 +1096,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showTasks()">
-                                <i class="bi bi-list-task"></i> Tasks
+                            <a class="nav-link" href="#" onclick="showTaskScheduling()">
+                                <i class="bi bi-calendar-plus"></i> Task Scheduling
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1497,6 +1497,115 @@
                                                         <br><small id="hiveStrengthStatus" class="text-muted">Enter hive counts above</small>
                                                     </div>
                                                 </div>
+                                            </div>
+                                            
+                                            <!-- Detailed Hive Breakdown Summary -->
+                                            <div class="row mt-3" id="hiveBreakdownSummary" style="display: none;">
+                                                <div class="col-12">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0"><i class="bi bi-pie-chart"></i> Detailed Hive Breakdown</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div class="col-md-6">
+                                                                    <h6 class="text-success">Strong Hives</h6>
+                                                                    <div class="progress mb-2" style="height: 20px;">
+                                                                        <div class="progress-bar bg-success" role="progressbar" id="strongProgress" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <small class="text-muted">Healthy, productive colonies</small>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <h6 class="text-warning">Medium Hives</h6>
+                                                                    <div class="progress mb-2" style="height: 20px;">
+                                                                        <div class="progress-bar bg-warning" role="progressbar" id="mediumProgress" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <small class="text-muted">Average health and production</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row mt-3">
+                                                                <div class="col-md-6">
+                                                                    <h6 class="text-danger">Weak Hives</h6>
+                                                                    <div class="progress mb-2" style="height: 20px;">
+                                                                        <div class="progress-bar bg-danger" role="progressbar" id="weakProgress" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <small class="text-muted">Struggling, need attention</small>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <h6 class="text-info">NUC Hives</h6>
+                                                                    <div class="progress mb-2" style="height: 20px;">
+                                                                        <div class="progress-bar bg-info" role="progressbar" id="nucProgress" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <small class="text-muted">Nucleus colonies</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row mt-3">
+                                                                <div class="col-md-6">
+                                                                    <h6 class="text-dark">Dead Hives</h6>
+                                                                    <div class="progress mb-2" style="height: 20px;">
+                                                                        <div class="progress-bar bg-dark" role="progressbar" id="deadProgress" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <small class="text-muted">Failed or dead colonies</small>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <h6 class="text-secondary">Empty Platforms</h6>
+                                                                    <div class="progress mb-2" style="height: 20px;">
+                                                                        <div class="progress-bar bg-secondary" role="progressbar" id="emptyProgress" style="width: 0%"></div>
+                                                                    </div>
+                                                                    <small class="text-muted">Unused hive platforms</small>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Stack Configuration Summary -->
+                                            <div class="row mt-3" id="stackBreakdownSummary" style="display: none;">
+                                                <div class="col-12">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h6 class="mb-0"><i class="bi bi-stack"></i> Stack Configuration Summary</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <div class="col-md-4">
+                                                                    <div class="text-center">
+                                                                        <h5 class="text-primary" id="doublesCount">0</h5>
+                                                                        <small class="text-muted">Double Stacks</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="text-center">
+                                                                        <h5 class="text-success" id="topSplitsCount">0</h5>
+                                                                        <small class="text-muted">Top-Splits</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-4">
+                                                                    <div class="text-center">
+                                                                        <h5 class="text-warning" id="singlesCount">0</h5>
+                                                                        <small class="text-muted">Single Stacks</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row mt-3">
+                                                                <div class="col-md-6">
+                                                                    <div class="text-center">
+                                                                        <h5 class="text-info" id="nucsCount">0</h5>
+                                                                        <small class="text-muted">NUC Stacks</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <div class="text-center">
+                                                                        <h5 class="text-secondary" id="emptyStacksCount">0</h5>
+                                                                        <small class="text-muted">Empty Platforms</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2438,6 +2547,33 @@
                     statusElement.className = 'text-danger';
                 }
             }
+            
+            // Update detailed breakdown summary
+            updateDetailedBreakdown(strong, medium, weak, nuc, dead, totalHives);
+        }
+        
+        function updateDetailedBreakdown(strong, medium, weak, nuc, dead, totalHives) {
+            const breakdownSummary = document.getElementById('hiveBreakdownSummary');
+            const stackSummary = document.getElementById('stackBreakdownSummary');
+            
+            // Show breakdown summary if there are any hives
+            if (strong + medium + weak + nuc + dead > 0) {
+                breakdownSummary.style.display = 'block';
+                
+                // Update progress bars
+                const maxValue = Math.max(strong, medium, weak, nuc, dead, 1);
+                document.getElementById('strongProgress').style.width = `${(strong / maxValue) * 100}%`;
+                document.getElementById('mediumProgress').style.width = `${(medium / maxValue) * 100}%`;
+                document.getElementById('weakProgress').style.width = `${(weak / maxValue) * 100}%`;
+                document.getElementById('nucProgress').style.width = `${(nuc / maxValue) * 100}%`;
+                document.getElementById('deadProgress').style.width = `${(dead / maxValue) * 100}%`;
+                document.getElementById('emptyProgress').style.width = `0%`; // Empty platforms handled separately
+            } else {
+                breakdownSummary.style.display = 'none';
+            }
+            
+            // Update stack configuration summary
+            updateStackBreakdownSummary();
         }
         
         // Auto-distribute hives when total count changes
@@ -2485,6 +2621,33 @@
                     statusElement.textContent = `📊 Stack breakdown: ${doubles} doubles, ${topSplits} top-splits, ${singles} singles, ${nucs} NUCs, ${empty} empty`;
                     statusElement.className = 'text-info';
                 }
+            }
+            
+            // Update stack breakdown summary
+            updateStackBreakdownSummary();
+        }
+        
+        function updateStackBreakdownSummary() {
+            const doubles = parseInt(document.getElementById('stackDoubles').value) || 0;
+            const topSplits = parseInt(document.getElementById('stackTopSplits').value) || 0;
+            const singles = parseInt(document.getElementById('stackSingles').value) || 0;
+            const nucs = parseInt(document.getElementById('stackNUCs').value) || 0;
+            const empty = parseInt(document.getElementById('stackEmpty').value) || 0;
+            
+            const stackSummary = document.getElementById('stackBreakdownSummary');
+            
+            // Show stack summary if there are any stacks
+            if (doubles + topSplits + singles + nucs + empty > 0) {
+                stackSummary.style.display = 'block';
+                
+                // Update stack counts
+                document.getElementById('doublesCount').textContent = doubles;
+                document.getElementById('topSplitsCount').textContent = topSplits;
+                document.getElementById('singlesCount').textContent = singles;
+                document.getElementById('nucsCount').textContent = nucs;
+                document.getElementById('emptyStacksCount').textContent = empty;
+            } else {
+                stackSummary.style.display = 'none';
             }
         }
         
@@ -2743,6 +2906,19 @@
             document.body.removeChild(link);
             
             console.log(`📊 CSV exported: ${filename} (${data.length} records)`);
+        }
+        
+        // Task Scheduling function
+        function showTaskScheduling() {
+            hideAllViews();
+            document.getElementById('scheduledTasksView').classList.remove('hidden');
+            // Focus on the task scheduling interface
+            setTimeout(() => {
+                const scheduleButton = document.querySelector('[onclick="showScheduleTaskModal()"]');
+                if (scheduleButton) {
+                    scheduleButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
         }
         
         // Handle navigation from reports

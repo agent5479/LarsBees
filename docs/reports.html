@@ -744,7 +744,7 @@
                 return;
             }
             
-            // Calculate hive performance metrics
+            // Calculate detailed hive performance metrics using new breakdown data
             const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
             const strongHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.strong || 0), 0);
             const mediumHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.medium || 0), 0);
@@ -752,8 +752,16 @@
             const nucHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.nuc || 0), 0);
             const deadHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
             
+            // Calculate stack configuration metrics
+            const totalDoubles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.doubles || 0), 0);
+            const totalTopSplits = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.topSplits || 0), 0);
+            const totalSingles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.singles || 0), 0);
+            const totalNUCStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.nucs || 0), 0);
+            const totalEmptyStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.empty || 0), 0);
+            
             const performanceRate = totalHives > 0 ? ((strongHives + mediumHives) / totalHives * 100).toFixed(1) : 0;
             const mortalityRate = totalHives > 0 ? (deadHives / totalHives * 100).toFixed(1) : 0;
+            const stackUtilization = totalHives > 0 ? (((totalDoubles + totalTopSplits + totalSingles + totalNUCStacks) / totalHives) * 100).toFixed(1) : 0;
             
             // Create performance chart
             const ctx = document.getElementById('hivePerformanceChart').getContext('2d');
@@ -797,14 +805,31 @@
                 }
             });
             
-            // Show performance summary
+            // Show enhanced performance summary with stack data
             const summary = `
                 <div class="alert alert-info mt-3">
-                    <h6><i class="bi bi-graph-up"></i> Performance Summary</h6>
-                    <p><strong>Performance Rate:</strong> ${performanceRate}% (Strong + Medium hives)</p>
-                    <p><strong>Mortality Rate:</strong> ${mortalityRate}% (Dead hives)</p>
-                    <p><strong>Total Hives:</strong> ${totalHives}</p>
-                    <p><strong>Active Clusters:</strong> ${clusters.length}</p>
+                    <h6><i class="bi bi-graph-up"></i> Enhanced Performance Summary</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Hive Strength Analysis</h6>
+                            <p><strong>Performance Rate:</strong> ${performanceRate}% (Strong + Medium hives)</p>
+                            <p><strong>Mortality Rate:</strong> ${mortalityRate}% (Dead hives)</p>
+                            <p><strong>Strong Hives:</strong> ${strongHives} (${totalHives > 0 ? ((strongHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                            <p><strong>Medium Hives:</strong> ${mediumHives} (${totalHives > 0 ? ((mediumHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                            <p><strong>Weak Hives:</strong> ${weakHives} (${totalHives > 0 ? ((weakHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Stack Configuration Analysis</h6>
+                            <p><strong>Stack Utilization:</strong> ${stackUtilization}%</p>
+                            <p><strong>Double Stacks:</strong> ${totalDoubles}</p>
+                            <p><strong>Top-Splits:</strong> ${totalTopSplits}</p>
+                            <p><strong>Single Stacks:</strong> ${totalSingles}</p>
+                            <p><strong>NUC Stacks:</strong> ${totalNUCStacks}</p>
+                            <p><strong>Empty Platforms:</strong> ${totalEmptyStacks}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Clusters:</strong> ${clusters.length}</p>
                 </div>
             `;
             document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
@@ -993,6 +1018,13 @@
             let totalDead = 0;
             let totalEmpty = 0;
             
+            // Enhanced breakdown with stack data
+            let totalDoubles = 0;
+            let totalTopSplits = 0;
+            let totalSingles = 0;
+            let totalNUCStacks = 0;
+            let totalEmptyStacks = 0;
+            
             clusters.forEach(cluster => {
                 if (cluster.hiveStrength) {
                     totalStrong += cluster.hiveStrength.strong || 0;
@@ -1003,6 +1035,11 @@
                 }
                 if (cluster.hiveStacks) {
                     totalEmpty += cluster.hiveStacks.empty || 0;
+                    totalDoubles += cluster.hiveStacks.doubles || 0;
+                    totalTopSplits += cluster.hiveStacks.topSplits || 0;
+                    totalSingles += cluster.hiveStacks.singles || 0;
+                    totalNUCStacks += cluster.hiveStacks.nucs || 0;
+                    totalEmptyStacks += cluster.hiveStacks.empty || 0;
                 }
             });
             
@@ -1014,13 +1051,22 @@
             document.getElementById('deadCount').textContent = totalDead;
             document.getElementById('emptyCount').textContent = totalEmpty;
             
-            console.log('📊 Hive strength breakdown updated:', {
-                strong: totalStrong,
-                medium: totalMedium,
-                weak: totalWeak,
-                nuc: totalNUC,
-                dead: totalDead,
-                empty: totalEmpty
+            console.log('📊 Enhanced hive strength breakdown updated:', {
+                hiveStrength: {
+                    strong: totalStrong,
+                    medium: totalMedium,
+                    weak: totalWeak,
+                    nuc: totalNUC,
+                    dead: totalDead,
+                    empty: totalEmpty
+                },
+                stackConfiguration: {
+                    doubles: totalDoubles,
+                    topSplits: totalTopSplits,
+                    singles: totalSingles,
+                    nucs: totalNUCStacks,
+                    empty: totalEmptyStacks
+                }
             });
         }
         
@@ -1044,7 +1090,7 @@
                 return;
             }
             
-            // Show clusters in modal
+            // Show clusters in modal with enhanced details
             showClusterDetailsModal(affectedClusters, category);
         }
         
@@ -1061,6 +1107,10 @@
                     ? (cluster.hiveStacks?.empty || 0)
                     : (cluster.hiveStrength?.[category] || 0);
                 
+                // Enhanced cluster details with full breakdown
+                const hiveStrength = cluster.hiveStrength || {};
+                const hiveStacks = cluster.hiveStacks || {};
+                
                 html += `
                     <div class="col-md-6 mb-3">
                         <div class="card">
@@ -1071,12 +1121,42 @@
                                     <strong>Total Hives:</strong> ${cluster.hiveCount || 0}<br>
                                     <strong>Location:</strong> ${cluster.latitude}, ${cluster.longitude}
                                 </p>
-                                <button class="btn btn-sm btn-primary" onclick="navigateToSpecificCluster(${cluster.id})">
-                                    <i class="bi bi-arrow-right"></i> Go to Cluster
-                                </button>
-                                <button class="btn btn-sm btn-success ms-2" onclick="scheduleTaskForSpecificCluster(${cluster.id}, '${category}')">
-                                    <i class="bi bi-calendar-plus"></i> Schedule Task
-                                </button>
+                                
+                                <!-- Enhanced Hive Breakdown -->
+                                <div class="row mb-2">
+                                    <div class="col-6">
+                                        <small class="text-success"><strong>Strong:</strong> ${hiveStrength.strong || 0}</small><br>
+                                        <small class="text-warning"><strong>Medium:</strong> ${hiveStrength.medium || 0}</small><br>
+                                        <small class="text-danger"><strong>Weak:</strong> ${hiveStrength.weak || 0}</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <small class="text-info"><strong>NUC:</strong> ${hiveStrength.nuc || 0}</small><br>
+                                        <small class="text-dark"><strong>Dead:</strong> ${hiveStrength.dead || 0}</small><br>
+                                        <small class="text-secondary"><strong>Empty:</strong> ${hiveStacks.empty || 0}</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stack Configuration -->
+                                <div class="row mb-2">
+                                    <div class="col-12">
+                                        <small class="text-muted">
+                                            <strong>Stacks:</strong> 
+                                            ${hiveStacks.doubles || 0} Doubles, 
+                                            ${hiveStacks.topSplits || 0} Top-Splits, 
+                                            ${hiveStacks.singles || 0} Singles, 
+                                            ${hiveStacks.nucs || 0} NUCs
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-primary" onclick="navigateToSpecificCluster(${cluster.id})">
+                                        <i class="bi bi-arrow-right"></i> Go to Cluster
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="scheduleTaskForSpecificCluster(${cluster.id}, '${category}')">
+                                        <i class="bi bi-calendar-plus"></i> Schedule Task
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

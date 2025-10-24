@@ -285,6 +285,29 @@ function editCluster(id) {
     document.getElementById('accessType').value = cluster.accessType || '';
     document.getElementById('contactBeforeVisit').checked = cluster.contactBeforeVisit || false;
     document.getElementById('isQuarantine').checked = cluster.isQuarantine || false;
+    
+    // Populate hive strength breakdown
+    if (cluster.hiveStrength) {
+        document.getElementById('hiveStrong').value = cluster.hiveStrength.strong || 0;
+        document.getElementById('hiveMedium').value = cluster.hiveStrength.medium || 0;
+        document.getElementById('hiveWeak').value = cluster.hiveStrength.weak || 0;
+        document.getElementById('hiveNUC').value = cluster.hiveStrength.nuc || 0;
+        document.getElementById('hiveDead').value = cluster.hiveStrength.dead || 0;
+    }
+    
+    // Populate stack configuration
+    if (cluster.hiveStacks) {
+        document.getElementById('stackDoubles').value = cluster.hiveStacks.doubles || 0;
+        document.getElementById('stackTopSplits').value = cluster.hiveStacks.topSplits || 0;
+        document.getElementById('stackSingles').value = cluster.hiveStacks.singles || 0;
+        document.getElementById('stackNUCs').value = cluster.hiveStacks.nucs || 0;
+        document.getElementById('stackEmpty').value = cluster.hiveStacks.empty || 0;
+    }
+    
+    // Update the breakdown summaries
+    updateHiveStrengthTotals();
+    updateStackTotals();
+    
     document.getElementById('anomalySection')?.classList.remove('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
     
