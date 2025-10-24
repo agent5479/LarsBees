@@ -901,7 +901,7 @@
                             <span id="loginStatusText">Checking system status...</span>
                         </div>
                         
-                        <form id="loginForm">
+                        <form id="loginForm" onsubmit="console.log('Form submit event triggered'); return false;">
                             <div class="mb-3">
                                 <label for="loginUsername" class="form-label fw-semibold">Username</label>
                                 <input type="text" class="form-control" id="loginUsername" required 
@@ -917,7 +917,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100 py-2" id="loginButton">
+                            <button type="submit" class="btn btn-primary w-100 py-2" id="loginButton" onclick="console.log('Login button clicked');">
                                 <span id="loginButtonText">Login</span>
                                 <span id="loginSpinner" class="spinner-border spinner-border-sm d-none ms-2" role="status"></span>
                             </button>

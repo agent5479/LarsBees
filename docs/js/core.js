@@ -30,6 +30,8 @@ let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category,
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 DOM Content Loaded - Initializing BeeMarshall...');
+    
     // Initialize system status
     updateSystemStatus();
     
@@ -45,8 +47,14 @@ document.addEventListener('DOMContentLoaded', function() {
         checkFirstTimeSetup();
     }
     
-    // Setup event listeners
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
+    // Setup event listeners with error checking
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        console.log('✅ Login form found, adding event listener');
+        loginForm.addEventListener('submit', handleLogin);
+    } else {
+        console.error('❌ Login form not found!');
+    }
     document.getElementById('clusterForm').addEventListener('submit', handleSaveCluster);
     document.getElementById('actionForm').addEventListener('submit', handleLogAction);
     document.getElementById('addEmployeeForm')?.addEventListener('submit', handleAddEmployee);
@@ -301,13 +309,18 @@ function dismissWelcomeModal() {
 // Simplified Robust Authentication System
 function handleLogin(e) {
     e.preventDefault();
-    console.log('🔐 Login form submitted');
+    console.log('🔐 Login form submitted - handleLogin function called');
     
     const username = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value;
     
     console.log('👤 Username:', username);
     console.log('🔑 Password length:', password.length);
+    console.log('🔍 Form elements found:', {
+        usernameField: !!document.getElementById('loginUsername'),
+        passwordField: !!document.getElementById('loginPassword'),
+        loginButton: !!document.getElementById('loginButton')
+    });
     
     // Show loading state
     showLoginStatus('info', 'Authenticating...', true);
