@@ -259,37 +259,29 @@
         
         /* Navigation */
         .navbar {
-            background: linear-gradient(180deg, var(--white), var(--light-yellow));
-            backdrop-filter: blur(12px) saturate(1.1);
-            border-bottom: 2px solid var(--dark-yellow);
-            box-shadow: 0 6px 20px rgba(218,165,32,0.15);
-            transition: var(--transition);
+            background: var(--dark-yellow);
+            border-bottom: 2px solid var(--black);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .navbar.scrolled {
-            background: rgba(31, 200, 222, 0.95);
-            backdrop-filter: blur(10px);
+            background: var(--dark-yellow);
         }
         
         .navbar-brand {
             font-weight: 700;
             color: var(--black) !important;
             font-size: 1.5rem;
-            text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
         }
         
         .nav-link {
             color: var(--black) !important;
             font-weight: 600;
-            transition: all 0.3s ease;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
         }
         
         .nav-link:hover {
-            color: var(--brand) !important;
+            color: var(--white) !important;
             background: rgba(255,255,255,0.3);
-            transform: translateY(-1px);
-            text-shadow: 2px 2px 4px rgba(255,255,255,0.9);
         }
         
         /* Cards */
@@ -297,18 +289,16 @@
             border: none;
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-sm);
-            transition: all 0.3s ease;
             background: var(--primary-bg);
         }
         
         .card:hover {
             box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
         }
         
         .card-header {
-            background: linear-gradient(135deg, var(--primary-accent) 0%, #17a2b8 100%);
-            color: white;
+            background: var(--dark-yellow);
+            color: var(--black);
             border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0 !important;
             font-weight: 600;
         }
@@ -317,12 +307,10 @@
         .btn {
             border-radius: var(--border-radius-md);
             font-weight: 500;
-            transition: all 0.3s ease;
             border: none;
         }
         
         .btn:hover {
-            transform: translateY(-1px);
             box-shadow: var(--shadow-md);
         }
         
@@ -359,7 +347,6 @@
         /* Enhanced Dashboard Stats */
         .dashboard-stat-card {
             cursor: pointer;
-            transition: var(--transition);
             border: 1px solid rgba(255,255,255,0.2);
             position: relative;
             overflow: hidden;
@@ -369,25 +356,7 @@
             box-shadow: var(--shadow);
         }
         
-        .dashboard-stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(31, 200, 222, 0.1) 0%, rgba(23, 162, 184, 0.1) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
-        
-        .dashboard-stat-card:hover::before {
-            opacity: 1;
-        }
-        
         .dashboard-stat-card:hover {
-            transform: translateY(-4px);
             box-shadow: 0 12px 40px rgba(0,0,0,0.1);
             border-color: var(--accent);
         }
@@ -422,11 +391,10 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            transition: all 0.3s ease;
         }
         
         .dashboard-stat-card:hover .stat-number {
-            transform: scale(1.1);
+            color: var(--primary-accent);
         }
         
         .stat-label {
@@ -434,7 +402,6 @@
             font-weight: 500;
             color: var(--text-secondary);
             margin-bottom: 0;
-            transition: all 0.3s ease;
         }
         
         .dashboard-stat-card:hover .stat-label {
@@ -447,13 +414,10 @@
             top: 1rem;
             right: 1rem;
             opacity: 0;
-            transform: translateX(-10px);
-            transition: all 0.3s ease;
         }
         
         .dashboard-stat-card:hover .stat-action-indicator {
             opacity: 1;
-            transform: translateX(0);
         }
         
         .stat-action-indicator i {
@@ -478,20 +442,9 @@
             border-color: var(--warning);
         }
         
-        /* Animation for number changes */
+        /* Static number display */
         .stat-number {
-            animation: countUp 0.6s ease-out;
-        }
-        
-        @keyframes countUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            opacity: 1;
         }
         
         /* Action Items */
@@ -501,12 +454,10 @@
             margin-bottom: var(--spacing-sm);
             background: var(--primary-bg);
             border-left: 4px solid var(--primary-accent);
-            transition: all 0.3s ease;
         }
         
         .action-item:hover {
             background: var(--secondary-accent);
-            transform: translateX(4px);
         }
         
         .action-item.flag-urgent {
@@ -2207,7 +2158,7 @@
             
             // Initialize Leaflet map
             if (typeof L !== 'undefined') {
-                const map = L.map('map').setView([-36.8485, 174.7633], 10); // Collingwood, NZ
+                const map = L.map('map').setView([-40.6781, 172.6886], 13); // Collingwood, NZ
                 
                 // Add OpenStreetMap tiles
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
