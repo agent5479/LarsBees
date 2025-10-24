@@ -2464,7 +2464,14 @@
             
             // Check if map is already initialized
             if (window.beeMarshallMap) {
-                console.log('🗺️ Map already initialized, skipping...');
+                console.log('🗺️ Map already initialized, refreshing markers...');
+                // Clear existing markers
+                if (window.beeMarshallMarkers) {
+                    window.beeMarshallMarkers.forEach(marker => marker.remove());
+                    window.beeMarshallMarkers = [];
+                }
+                // Re-render clusters
+                renderClustersOnMap();
                 return;
             }
             
@@ -2478,40 +2485,81 @@
                 });
                 
                 // Add OpenStreetMap tiles with better loading
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors',
                     maxZoom: 19,
                     tileSize: 256,
                     zoomOffset: 0
                 }).addTo(window.beeMarshallMap);
                 
-                // Wait for tiles to load before adding markers
+                console.log('🗺️ Map initialized successfully');
+                
+                // Wait for map to be ready
                 window.beeMarshallMap.whenReady(() => {
-                    console.log('🗺️ Map tiles loaded, adding cluster markers...');
+                    console.log('🗺️ Map container ready, waiting for tiles...');
                     
-                    // Add cluster markers after tiles are loaded
-                    if (typeof clusters !== 'undefined' && clusters.length > 0) {
-                        clusters.forEach(cluster => {
-                            if (cluster.lat && cluster.lng) {
-                                const marker = L.marker([cluster.lat, cluster.lng])
-                                    .addTo(window.beeMarshallMap)
-                                    .bindPopup(`
-                                        <div class="cluster-popup">
-                                            <h6><a href="#" onclick="showClusters(); return false;">${cluster.name}</a></h6>
-                                            <p><strong>Hives:</strong> ${cluster.hiveCount || 0}</p>
-                                            <p><strong>Type:</strong> ${cluster.type || 'Standard'}</p>
-                                            <p><strong>Status:</strong> ${cluster.status || 'Active'}</p>
-                                        </div>
-                                    `);
-                            }
-                        });
-                        console.log(`📍 Added ${clusters.length} cluster markers`);
-                    }
+                    // Wait for tiles to load completely
+                    tileLayer.on('load', () => {
+                        console.log('🗺️ Map tiles fully loaded, adding cluster markers...');
+                        // Small delay to ensure tiles are rendered
+                        setTimeout(() => {
+                            renderClustersOnMap();
+                        }, 500);
+                    });
+                    
+                    // Fallback timeout in case tiles don't load
+                    setTimeout(() => {
+                        console.log('🗺️ Fallback: Adding markers after timeout...');
+                        renderClustersOnMap();
+                    }, 3000);
                 });
                 
                 console.log('✅ Map activated successfully');
             } else {
                 console.error('❌ Leaflet library not loaded');
+            }
+        }
+        
+        // Function to render clusters on map with proper marker management
+        function renderClustersOnMap() {
+            if (!window.beeMarshallMap) {
+                console.log('🗺️ Map not initialized, skipping marker rendering');
+                return;
+            }
+            
+            // Clear existing markers
+            if (window.beeMarshallMarkers) {
+                window.beeMarshallMarkers.forEach(marker => marker.remove());
+                window.beeMarshallMarkers = [];
+            }
+            
+            // Initialize markers array
+            window.beeMarshallMarkers = [];
+            
+            // Add cluster markers
+            if (typeof clusters !== 'undefined' && clusters.length > 0) {
+                console.log(`📍 Rendering ${clusters.length} cluster markers...`);
+                
+                clusters.forEach(cluster => {
+                    if (cluster.lat && cluster.lng) {
+                        const marker = L.marker([cluster.lat, cluster.lng])
+                            .addTo(window.beeMarshallMap)
+                            .bindPopup(`
+                                <div class="cluster-popup">
+                                    <h6><a href="#" onclick="showClusters(); return false;">${cluster.name}</a></h6>
+                                    <p><strong>Hives:</strong> ${cluster.hiveCount || 0}</p>
+                                    <p><strong>Type:</strong> ${cluster.type || 'Standard'}</p>
+                                    <p><strong>Status:</strong> ${cluster.status || 'Active'}</p>
+                                </div>
+                            `);
+                        
+                        window.beeMarshallMarkers.push(marker);
+                    }
+                });
+                
+                console.log(`📍 Added ${window.beeMarshallMarkers.length} cluster markers`);
+            } else {
+                console.log('📍 No clusters to render on map');
             }
         }
         

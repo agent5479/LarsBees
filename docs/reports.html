@@ -609,18 +609,39 @@
                 console.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
                 updateMetrics();
                 updateHiveStrengthBreakdown();
+                
+                // Auto-generate reports when data loads
+                setTimeout(() => {
+                    if (clusters && clusters.length > 0) {
+                        generateHivePerformanceReport();
+                    }
+                }, 1000);
             });
             
             database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
                 actions = snapshot.val() ? Object.values(snapshot.val()) : [];
                 console.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
                 updateMetrics();
+                
+                // Auto-generate health report when actions load
+                setTimeout(() => {
+                    if (actions && actions.length > 0) {
+                        generateHealthMortalityReport();
+                    }
+                }, 1500);
             });
             
             database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
                 scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
                 console.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
                 updateMetrics();
+                
+                // Auto-generate operations report when tasks load
+                setTimeout(() => {
+                    if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
+                        generateOperationsReport();
+                    }
+                }, 2000);
             });
             
             // Load additional data types for comprehensive reporting

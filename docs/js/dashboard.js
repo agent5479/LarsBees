@@ -1,5 +1,26 @@
 // BeeMarshall - Dashboard Module with Calendar Widget
 
+// Helper function to safely get task name (handles deleted tasks)
+function getTaskDisplayName(taskName, taskId) {
+    // If task exists in current tasks, use it
+    const currentTask = tasks.find(t => t.name === taskName || t.id === taskId);
+    if (currentTask) {
+        return currentTask.name;
+    }
+    
+    // Check if it's a deleted task
+    if (taskId && deletedTasks && deletedTasks[taskId]) {
+        return `[Deleted: ${deletedTasks[taskId].name}]`;
+    }
+    
+    // Fallback to the stored name with deleted indicator
+    if (taskName) {
+        return `[Deleted: ${taskName}]`;
+    }
+    
+    return '[Unknown Task]';
+}
+
 function showDashboard() {
     hideAllViews();
     document.getElementById('dashboardView').classList.remove('hidden');
@@ -27,6 +48,9 @@ function updateDashboard() {
     
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount;
     console.log('📊 Flagged count calculated:', flaggedCount);
+    
+    // Make flaggedCount globally accessible
+    window.flaggedCount = flaggedCount;
     
     // Set numbers directly without animation
     document.getElementById('statClusters').textContent = clusters.length;

@@ -1,106 +1,7 @@
 // BeeMarshall - Task Management Module
 
-// COMPREHENSIVE TASK LIST (70+ tasks)
-const COMPREHENSIVE_TASKS = [
-    // INSPECTION (15 tasks)
-    { id: 101, name: 'General Hive Inspection', category: 'Inspection', common: true },
-    { id: 102, name: 'Queen Check (Present & Laying)', category: 'Inspection', common: true },
-    { id: 103, name: 'Queen Marking', category: 'Inspection', common: false },
-    { id: 104, name: 'Brood Pattern Inspection', category: 'Inspection', common: true },
-    { id: 105, name: 'Comb Condition Check', category: 'Inspection', common: false },
-    { id: 106, name: 'Population Assessment', category: 'Inspection', common: true },
-    { id: 107, name: 'Food Stores Check', category: 'Inspection', common: true },
-    { id: 108, name: 'Varroa Mite Inspection', category: 'Inspection', common: true },
-    { id: 109, name: 'Small Hive Beetle Check', category: 'Inspection', common: true },
-    { id: 110, name: 'Wax Moth Check', category: 'Inspection', common: false },
-    { id: 111, name: 'Disease Inspection (AFB/EFB)', category: 'Inspection', common: false },
-    { id: 112, name: 'Nosema Check', category: 'Inspection', common: false },
-    { id: 113, name: 'Chalkbrood Inspection', category: 'Inspection', common: false },
-    { id: 114, name: 'Entrance Activity Observation', category: 'Inspection', common: true },
-    { id: 115, name: 'Temperament Assessment', category: 'Inspection', common: false },
-    
-    // FEEDING (8 tasks)
-    { id: 201, name: 'Sugar Syrup 1:1 (Spring Build-up)', category: 'Feeding', common: true },
-    { id: 202, name: 'Sugar Syrup 2:1 (Fall Prep)', category: 'Feeding', common: true },
-    { id: 203, name: 'Pollen Substitute', category: 'Feeding', common: false },
-    { id: 204, name: 'Pollen Patty', category: 'Feeding', common: true },
-    { id: 205, name: 'Fondant Feeding', category: 'Feeding', common: false },
-    { id: 206, name: 'Candy Board', category: 'Feeding', common: false },
-    { id: 207, name: 'Emergency Feeding', category: 'Feeding', common: false },
-    { id: 208, name: 'Protein Supplement', category: 'Feeding', common: false },
-    
-    // TREATMENT (8 tasks)
-    { id: 301, name: 'Varroa Treatment - Formic Acid', category: 'Treatment', common: false },
-    { id: 302, name: 'Varroa Treatment - Oxalic Acid', category: 'Treatment', common: false },
-    { id: 303, name: 'Varroa Treatment - Apivar Strips', category: 'Treatment', common: false },
-    { id: 304, name: 'Varroa Treatment - Other', category: 'Treatment', common: false },
-    { id: 305, name: 'Nosema Treatment', category: 'Treatment', common: false },
-    { id: 306, name: 'Small Hive Beetle Treatment', category: 'Treatment', common: false },
-    { id: 307, name: 'Wax Moth Treatment', category: 'Treatment', common: false },
-    { id: 308, name: 'Tracheal Mite Treatment', category: 'Treatment', common: false },
-    
-    // HARVEST (7 tasks)
-    { id: 401, name: 'Honey Harvest', category: 'Harvest', common: true },
-    { id: 402, name: 'Comb Honey Harvest', category: 'Harvest', common: false },
-    { id: 403, name: 'Wax Collection', category: 'Harvest', common: false },
-    { id: 404, name: 'Propolis Collection', category: 'Harvest', common: false },
-    { id: 405, name: 'Pollen Collection', category: 'Harvest', common: false },
-    { id: 406, name: 'Frame Extraction', category: 'Harvest', common: true },
-    { id: 407, name: 'Honey Bottling/Packaging', category: 'Harvest', common: false },
-    
-    // MAINTENANCE (15 tasks)
-    { id: 501, name: 'Add Honey Super', category: 'Maintenance', common: true },
-    { id: 502, name: 'Remove Honey Super', category: 'Maintenance', common: true },
-    { id: 503, name: 'Add Brood Box', category: 'Maintenance', common: false },
-    { id: 504, name: 'Replace Old Frames', category: 'Maintenance', common: false },
-    { id: 505, name: 'Add Foundation', category: 'Maintenance', common: false },
-    { id: 506, name: 'Hive Repair/Painting', category: 'Maintenance', common: false },
-    { id: 507, name: 'Stand Repair', category: 'Maintenance', common: false },
-    { id: 508, name: 'Entrance Reducer - Install', category: 'Maintenance', common: true },
-    { id: 509, name: 'Entrance Reducer - Remove', category: 'Maintenance', common: true },
-    { id: 510, name: 'Queen Excluder - Install', category: 'Maintenance', common: true },
-    { id: 511, name: 'Queen Excluder - Remove', category: 'Maintenance', common: true },
-    { id: 512, name: 'Bottom Board Cleaning', category: 'Maintenance', common: false },
-    { id: 513, name: 'Mouse Guard - Install', category: 'Maintenance', common: true },
-    { id: 514, name: 'Mouse Guard - Remove', category: 'Maintenance', common: true },
-    { id: 515, name: 'Ventilation Adjustment', category: 'Maintenance', common: false },
-    
-    // SEASONAL (5 tasks)
-    { id: 601, name: 'Spring Buildup Preparation', category: 'Seasonal', common: false },
-    { id: 602, name: 'Summer Ventilation Setup', category: 'Seasonal', common: false },
-    { id: 603, name: 'Fall Winterization', category: 'Seasonal', common: true },
-    { id: 604, name: 'Winter Insulation', category: 'Seasonal', common: false },
-    { id: 605, name: 'Spring Cleanup', category: 'Seasonal', common: false },
-    
-    // QUEEN MANAGEMENT (8 tasks)
-    { id: 701, name: 'Requeen Colony', category: 'Queen Management', common: false },
-    { id: 702, name: 'Add Queen Cell', category: 'Queen Management', common: false },
-    { id: 703, name: 'Split Colony', category: 'Queen Management', common: false },
-    { id: 704, name: 'Combine Colonies', category: 'Queen Management', common: false },
-    { id: 705, name: 'Swarm Prevention Measures', category: 'Queen Management', common: false },
-    { id: 706, name: 'Swarm Capture', category: 'Queen Management', common: false },
-    { id: 707, name: 'Nuc Creation', category: 'Queen Management', common: false },
-    { id: 708, name: 'Queen Introduction', category: 'Queen Management', common: false },
-    
-    // PROBLEMS & EMERGENCIES (8 tasks)
-    { id: 801, name: 'Queenless Colony Found', category: 'Problems', common: false },
-    { id: 802, name: 'Laying Worker Present', category: 'Problems', common: false },
-    { id: 803, name: 'Robbing Observed', category: 'Problems', common: false },
-    { id: 804, name: 'Absconding Risk', category: 'Problems', common: false },
-    { id: 805, name: 'Disease Quarantine', category: 'Problems', common: false },
-    { id: 806, name: 'Pest Emergency Response', category: 'Problems', common: false },
-    { id: 807, name: 'Weak Colony Identified', category: 'Problems', common: false },
-    { id: 808, name: 'Aggressive Behavior Noted', category: 'Problems', common: false },
-    
-    // RECORDS & MEASUREMENTS (7 tasks)
-    { id: 901, name: 'Hive Weight Measurement', category: 'Records', common: false },
-    { id: 902, name: 'Temperature Check', category: 'Records', common: false },
-    { id: 903, name: 'Humidity Check', category: 'Records', common: false },
-    { id: 904, name: 'Photo Documentation', category: 'Records', common: true },
-    { id: 905, name: 'Sample Collection', category: 'Records', common: false },
-    { id: 906, name: 'Equipment Inventory', category: 'Records', common: false },
-    { id: 907, name: 'Varroa Mite Count', category: 'Records', common: false }
-];
+// Note: COMPREHENSIVE_TASKS is defined in core.js
+// This module uses the global COMPREHENSIVE_TASKS variable
 
 // Helper function to safely get task name (handles deleted tasks)
 function getTaskDisplayName(taskName, taskId) {
@@ -134,7 +35,8 @@ function showTasks() {
     renderTasksList();
 }
 
-function renderTasksList(filterCategory = 'All') {
+// Make renderTasksList globally accessible
+window.renderTasksList = function(filterCategory = 'All') {
     // Use the comprehensive tasks list directly
     const tasksToUse = typeof tasks !== 'undefined' ? tasks : COMPREHENSIVE_TASKS;
     
@@ -197,7 +99,7 @@ function renderTasksList(filterCategory = 'All') {
     `).join('');
     
     document.getElementById('tasksList').innerHTML = html || '<p class="text-muted">No tasks found. Add your first task above!</p>';
-}
+};
 
 // Add new task
 function handleAddTask(e) {
