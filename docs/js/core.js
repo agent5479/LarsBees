@@ -63,13 +63,13 @@ document.addEventListener('DOMContentLoaded', function() {
     scheduledTasks = [];
     employees = [];
     
-    // Go straight to main app
-    showMainApp();
-    updateDashboard();
-    
-    // Hide login screen and show main app
+    // Ensure main app is visible and login is hidden
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');
+    
+    // Initialize dashboard
+    showMainApp();
+    updateDashboard();
     
     console.log('✅ Bypassed login - dashboard should be visible now');
     
