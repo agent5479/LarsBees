@@ -7,6 +7,7 @@ function showDashboard() {
 }
 
 function updateDashboard() {
+    console.log('📊 Updating dashboard with data...');
     const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
     
     // Check for overdue tasks and update flagged count
@@ -26,6 +27,11 @@ function updateDashboard() {
     
     // Update quick stats
     updateQuickStats();
+    
+    // Update map with cluster data
+    if (typeof updateMapWithClusters === 'function') {
+        updateMapWithClusters();
+    }
     
     // Show flagged alert if any urgent actions or overdue tasks
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');

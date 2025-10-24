@@ -383,21 +383,37 @@ function deleteCluster(id) {
     }
 }
 
+// Update map with new cluster data
+function updateMapWithClusters() {
+    console.log('🔄 Updating map with cluster data...');
+    if (map && clusters && clusters.length > 0) {
+        renderClusters();
+    } else if (map) {
+        console.log('📍 Map exists but no clusters to render');
+    } else {
+        console.log('🗺️ Map not initialized yet');
+    }
+}
+
 // Enhanced map with cluster type colors
 function initMap() {
+    console.log('🗺️ Initializing map...');
     const mapElement = document.getElementById('map');
-    if (!mapElement) return;
+    if (!mapElement) {
+        console.log('❌ Map element not found');
+        return;
+    }
     
     // Check if Leaflet is loaded
     if (typeof L === 'undefined') {
-        console.log('Leaflet not yet loaded, will retry...');
+        console.log('⏳ Leaflet not yet loaded, will retry...');
         setTimeout(initMap, 500);
         return;
     }
     
-    const center = clusters.length > 0 
-        ? [clusters[0].latitude, clusters[0].longitude]
-        : [-40.6764, 172.6856]; // Collingwood, NZ
+    // Always use Collingwood, NZ as default center
+    const center = [-40.6764, 172.6856]; // Collingwood, NZ
+    console.log('📍 Map center set to Collingwood, NZ');
     
     // Create map if it doesn't exist
     if (!map) {
@@ -426,6 +442,14 @@ function initMap() {
         });
     }
     markers = [];
+    
+    // Only render clusters if we have data
+    if (!clusters || clusters.length === 0) {
+        console.log('📍 No clusters to render yet');
+        return;
+    }
+    
+    console.log(`📍 Rendering ${clusters.length} clusters on map`);
     
     // Add marker for each cluster with type-specific colors
     clusters.forEach(cluster => {

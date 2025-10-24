@@ -512,12 +512,43 @@ function showMainApp() {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.add('employee-hidden'));
     }
     
-    showDashboard();
+    // Initialize dashboard but don't load map yet
+    showDashboardWithoutMap();
     
     // Show welcome popup after a short delay to ensure everything is loaded
     setTimeout(() => {
         showWelcomePopup();
     }, 1000);
+}
+
+// Show dashboard without initializing map (for initial load)
+function showDashboardWithoutMap() {
+    hideAllViews();
+    document.getElementById('dashboardView').classList.remove('hidden');
+    updateDashboardStats(); // Only update stats, not map
+}
+
+// Update only dashboard stats without map
+function updateDashboardStats() {
+    const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    
+    // Check for overdue tasks and update flagged count
+    checkAndFlagOverdueTasks();
+    const overdueTasks = scheduledTasks.filter(task => {
+        const taskDate = new Date(task.dueDate);
+        return !task.completed && taskDate < new Date();
+    }).length;
+    
+    const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
+    
+    // Animate number changes
+    animateNumber(document.getElementById('statClusters'), clusters.length);
+    animateNumber(document.getElementById('statHives'), totalHives);
+    animateNumber(document.getElementById('statActions'), actions.length);
+    animateNumber(document.getElementById('statFlagged'), flaggedCount);
+    
+    // Update quick stats
+    updateQuickStats();
 }
 
 // Load data from Firebase
@@ -526,7 +557,8 @@ function loadDataFromFirebase() {
     
     database.ref('clusters').on('value', (snapshot) => {
         clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
-        updateDashboard();
+        console.log('📊 Clusters loaded:', clusters.length);
+        updateDashboard(); // Now update with full dashboard including map
         showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
