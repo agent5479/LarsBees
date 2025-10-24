@@ -164,6 +164,24 @@
                         </div>
                     </div>
                     
+                    <!-- Additional Controls -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <button class="btn btn-info btn-sm" onclick="testFirebaseConnection()">
+                                    <i class="bi bi-wifi"></i> Test Firebase Connection
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <button class="btn btn-secondary btn-sm" onclick="clearLog()">
+                                    <i class="bi bi-trash"></i> Clear Log
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Data Preview -->
                     <div class="mt-4">
                         <h5><i class="bi bi-eye"></i> Data Preview</h5>
@@ -171,25 +189,56 @@
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
                                     <h4 class="text-warning" id="clustersCount">0</h4>
-                                    <small>Clusters</small>
+                                    <small>Clusters (Old)</small>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
                                     <h4 class="text-warning" id="actionsCount">0</h4>
-                                    <small>Actions</small>
+                                    <small>Actions (Old)</small>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
                                     <h4 class="text-warning" id="tasksCount">0</h4>
-                                    <small>Tasks</small>
+                                    <small>Tasks (Old)</small>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="text-center p-3 border rounded">
                                     <h4 class="text-warning" id="employeesCount">0</h4>
-                                    <small>Employees</small>
+                                    <small>Employees (Old)</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- New Structure Preview -->
+                        <div class="mt-3">
+                            <h6><i class="bi bi-arrow-right"></i> New Structure (tenants/lars/)</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded" style="border-color: #32CD32 !important;">
+                                        <h4 class="text-success" id="newClustersCount">0</h4>
+                                        <small>Clusters (New)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded" style="border-color: #32CD32 !important;">
+                                        <h4 class="text-success" id="newActionsCount">0</h4>
+                                        <small>Actions (New)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded" style="border-color: #32CD32 !important;">
+                                        <h4 class="text-success" id="newTasksCount">0</h4>
+                                        <small>Tasks (New)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-center p-3 border rounded" style="border-color: #32CD32 !important;">
+                                        <h4 class="text-success" id="newEmployeesCount">0</h4>
+                                        <small>Employees (New)</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -231,40 +280,113 @@
         // Check data status
         function checkDataStatus() {
             console.log('🔍 Checking data status...');
-            updateLog('Checking data status...', 'info');
+            updateLog('Checking Firebase data structure...', 'info');
             
-            // Check old data structure
+            let oldDataCount = 0;
+            let newDataCount = 0;
+            
+            // Check old data structure (global paths)
+            updateLog('📊 Checking OLD structure (global paths)...', 'info');
+            
             database.ref('clusters').once('value', (snapshot) => {
                 const clusters = snapshot.val();
-                document.getElementById('clustersCount').textContent = clusters ? Object.keys(clusters).length : 0;
-                updateLog(`Found ${clusters ? Object.keys(clusters).length : 0} clusters in old structure`, 'info');
+                const count = clusters ? Object.keys(clusters).length : 0;
+                document.getElementById('clustersCount').textContent = count;
+                oldDataCount += count;
+                updateLog(`📁 /clusters: ${count} records`, count > 0 ? 'warning' : 'info');
+                
+                if (count > 0) {
+                    updateLog(`   Sample cluster keys: ${Object.keys(clusters).slice(0, 3).join(', ')}`, 'info');
+                }
             });
             
             database.ref('actions').once('value', (snapshot) => {
                 const actions = snapshot.val();
-                document.getElementById('actionsCount').textContent = actions ? Object.keys(actions).length : 0;
-                updateLog(`Found ${actions ? Object.keys(actions).length : 0} actions in old structure`, 'info');
+                const count = actions ? Object.keys(actions).length : 0;
+                document.getElementById('actionsCount').textContent = count;
+                oldDataCount += count;
+                updateLog(`📁 /actions: ${count} records`, count > 0 ? 'warning' : 'info');
+                
+                if (count > 0) {
+                    updateLog(`   Sample action keys: ${Object.keys(actions).slice(0, 3).join(', ')}`, 'info');
+                }
             });
             
             database.ref('scheduledTasks').once('value', (snapshot) => {
                 const tasks = snapshot.val();
-                document.getElementById('tasksCount').textContent = tasks ? Object.keys(tasks).length : 0;
-                updateLog(`Found ${tasks ? Object.keys(tasks).length : 0} scheduled tasks in old structure`, 'info');
+                const count = tasks ? Object.keys(tasks).length : 0;
+                document.getElementById('tasksCount').textContent = count;
+                oldDataCount += count;
+                updateLog(`📁 /scheduledTasks: ${count} records`, count > 0 ? 'warning' : 'info');
+                
+                if (count > 0) {
+                    updateLog(`   Sample task keys: ${Object.keys(tasks).slice(0, 3).join(', ')}`, 'info');
+                }
             });
             
             database.ref('employees').once('value', (snapshot) => {
                 const employees = snapshot.val();
-                document.getElementById('employeesCount').textContent = employees ? Object.keys(employees).length : 0;
-                updateLog(`Found ${employees ? Object.keys(employees).length : 0} employees in old structure`, 'info');
+                const count = employees ? Object.keys(employees).length : 0;
+                document.getElementById('employeesCount').textContent = count;
+                oldDataCount += count;
+                updateLog(`📁 /employees: ${count} records`, count > 0 ? 'warning' : 'info');
+                
+                if (count > 0) {
+                    updateLog(`   Sample employee keys: ${Object.keys(employees).slice(0, 3).join(', ')}`, 'info');
+                }
             });
             
-            // Check new structure
+            // Check new structure (tenant paths)
             setTimeout(() => {
+                updateLog('📊 Checking NEW structure (tenant paths)...', 'info');
+                
                 database.ref('tenants/lars/clusters').once('value', (snapshot) => {
                     const newClusters = snapshot.val();
-                    updateLog(`Found ${newClusters ? Object.keys(newClusters).length : 0} clusters in new structure`, 'success');
+                    const count = newClusters ? Object.keys(newClusters).length : 0;
+                    newDataCount += count;
+                    document.getElementById('newClustersCount').textContent = count;
+                    updateLog(`📁 /tenants/lars/clusters: ${count} records`, count > 0 ? 'success' : 'info');
                 });
-            }, 1000);
+                
+                database.ref('tenants/lars/actions').once('value', (snapshot) => {
+                    const newActions = snapshot.val();
+                    const count = newActions ? Object.keys(newActions).length : 0;
+                    newDataCount += count;
+                    document.getElementById('newActionsCount').textContent = count;
+                    updateLog(`📁 /tenants/lars/actions: ${count} records`, count > 0 ? 'success' : 'info');
+                });
+                
+                database.ref('tenants/lars/scheduledTasks').once('value', (snapshot) => {
+                    const newTasks = snapshot.val();
+                    const count = newTasks ? Object.keys(newTasks).length : 0;
+                    newDataCount += count;
+                    document.getElementById('newTasksCount').textContent = count;
+                    updateLog(`📁 /tenants/lars/scheduledTasks: ${count} records`, count > 0 ? 'success' : 'info');
+                });
+                
+                database.ref('tenants/lars/employees').once('value', (snapshot) => {
+                    const newEmployees = snapshot.val();
+                    const count = newEmployees ? Object.keys(newEmployees).length : 0;
+                    newDataCount += count;
+                    document.getElementById('newEmployeesCount').textContent = count;
+                    updateLog(`📁 /tenants/lars/employees: ${count} records`, count > 0 ? 'success' : 'info');
+                });
+                
+                // Summary
+                setTimeout(() => {
+                    updateLog(`📊 SUMMARY: ${oldDataCount} records in OLD structure, ${newDataCount} records in NEW structure`, 'info');
+                    
+                    if (oldDataCount > 0 && newDataCount === 0) {
+                        updateLog('⚠️ Migration needed: Data exists in old structure but not in new structure', 'warning');
+                    } else if (oldDataCount > 0 && newDataCount > 0) {
+                        updateLog('✅ Migration partially complete: Data exists in both structures', 'success');
+                    } else if (oldDataCount === 0 && newDataCount > 0) {
+                        updateLog('✅ Migration complete: All data moved to new structure', 'success');
+                    } else {
+                        updateLog('📭 No data found in either structure', 'info');
+                    }
+                }, 2000);
+            }, 1500);
         }
         
         // Start migration
@@ -387,10 +509,40 @@
             log.scrollTop = log.scrollHeight;
         }
         
+        // Test Firebase connection
+        function testFirebaseConnection() {
+            updateLog('Testing Firebase connection...', 'info');
+            
+            database.ref('.info/connected').on('value', (snapshot) => {
+                if (snapshot.val() === true) {
+                    updateLog('✅ Firebase connected successfully', 'success');
+                } else {
+                    updateLog('❌ Firebase connection failed', 'danger');
+                }
+            });
+            
+            // Test with a simple read
+            database.ref('master').once('value', (snapshot) => {
+                updateLog('✅ Firebase read test successful', 'success');
+                updateLog('Database URL: ' + firebase.app().options.databaseURL, 'info');
+            }).catch(error => {
+                updateLog('❌ Firebase read test failed: ' + error.message, 'danger');
+            });
+        }
+        
+        // Clear log
+        function clearLog() {
+            document.getElementById('migrationLog').innerHTML = '';
+            updateLog('Log cleared', 'info');
+        }
+        
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             updateLog('Migration tool ready', 'info');
-            checkDataStatus();
+            testFirebaseConnection();
+            setTimeout(() => {
+                checkDataStatus();
+            }, 2000);
         });
     </script>
 </body>
