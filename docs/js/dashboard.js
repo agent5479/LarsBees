@@ -12,12 +12,12 @@ function updateDashboard() {
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
-    const overdueTasks = scheduledTasks.filter(task => {
+    const overdueTasksCount = scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < new Date();
     }).length;
     
-    const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
+    const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount;
     
     // Animate number changes
     animateNumber(document.getElementById('statClusters'), clusters.length);
@@ -225,7 +225,7 @@ function updateCalendarWidget() {
     
     // Add summary information
     const totalTasks = futureTasks.length;
-    const overdueTasks = futureTasks.filter(task => new Date(task.dueDate) < today).length;
+    const overdueTasksInCalendar = futureTasks.filter(task => new Date(task.dueDate) < today).length;
     const thisWeekTasks = futureTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return taskDate <= new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -256,7 +256,7 @@ function updateCalendarWidget() {
                     </div>
                     <div class="col-4">
                         <div class="summary-item">
-                            <strong class="text-danger">${overdueTasks}</strong>
+                            <strong class="text-danger">${overdueTasksInCalendar}</strong>
                             <br><small>Overdue</small>
                         </div>
                     </div>
@@ -302,7 +302,7 @@ function updateQuickStats() {
     const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
     
     // Calculate overdue tasks
-    const overdueTasks = scheduledTasks.filter(task => {
+    const overdueTasksForStats = scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < today;
     }).length;
@@ -316,7 +316,7 @@ function updateQuickStats() {
     if (statThisWeek) animateNumber(statThisWeek, thisWeekTasks);
     if (statCompleted) animateNumber(statCompleted, completedTasks);
     if (statPending) animateNumber(statPending, pendingTasks);
-    if (statOverdue) animateNumber(statOverdue, overdueTasks);
+    if (statOverdue) animateNumber(statOverdue, overdueTasksForStats);
 }
 
 // Check for overdue tasks and automatically flag them as urgent
