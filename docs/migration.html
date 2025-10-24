@@ -118,7 +118,7 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid">
             <a class="navbar-brand" href="beemarshall-full.html">
-                <i class="bi bi-shield-fill"></i> BeeMarshall - Migration Tool
+                <i class="bi bi-hexagon-fill"></i> BeeMarshall - Migration Tool
             </a>
         </div>
     </nav>
@@ -166,14 +166,21 @@
                     
                     <!-- Additional Controls -->
                     <div class="row mt-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <div class="d-grid">
                                 <button class="btn btn-info btn-sm" onclick="testFirebaseConnection()">
                                     <i class="bi bi-wifi"></i> Test Firebase Connection
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <div class="d-grid">
+                                <button class="btn btn-success btn-sm" onclick="testFirebaseConfig()">
+                                    <i class="bi bi-gear"></i> Test Firebase Config
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
                             <div class="d-grid">
                                 <button class="btn btn-secondary btn-sm" onclick="clearLog()">
                                     <i class="bi bi-trash"></i> Clear Log
@@ -260,7 +267,7 @@
     </div>
 
     <script>
-        // Firebase configuration
+        // Firebase configuration - Updated with correct credentials
         const firebaseConfig = {
             apiKey: "AIzaSyALV0NmXT2VIZBrAR6D7rSnphNljhFIeb0",
             authDomain: "beemarshall-378aa.firebaseapp.com",
@@ -298,6 +305,9 @@
                 if (count > 0) {
                     updateLog(`   Sample cluster keys: ${Object.keys(clusters).slice(0, 3).join(', ')}`, 'info');
                 }
+            }).catch(error => {
+                updateLog(`❌ Error reading /clusters: ${error.message}`, 'danger');
+                updateLog(`Error code: ${error.code}`, 'danger');
             });
             
             database.ref('actions').once('value', (snapshot) => {
@@ -310,6 +320,9 @@
                 if (count > 0) {
                     updateLog(`   Sample action keys: ${Object.keys(actions).slice(0, 3).join(', ')}`, 'info');
                 }
+            }).catch(error => {
+                updateLog(`❌ Error reading /actions: ${error.message}`, 'danger');
+                updateLog(`Error code: ${error.code}`, 'danger');
             });
             
             database.ref('scheduledTasks').once('value', (snapshot) => {
@@ -322,6 +335,9 @@
                 if (count > 0) {
                     updateLog(`   Sample task keys: ${Object.keys(tasks).slice(0, 3).join(', ')}`, 'info');
                 }
+            }).catch(error => {
+                updateLog(`❌ Error reading /scheduledTasks: ${error.message}`, 'danger');
+                updateLog(`Error code: ${error.code}`, 'danger');
             });
             
             database.ref('employees').once('value', (snapshot) => {
@@ -334,6 +350,9 @@
                 if (count > 0) {
                     updateLog(`   Sample employee keys: ${Object.keys(employees).slice(0, 3).join(', ')}`, 'info');
                 }
+            }).catch(error => {
+                updateLog(`❌ Error reading /employees: ${error.message}`, 'danger');
+                updateLog(`Error code: ${error.code}`, 'danger');
             });
             
             // Check new structure (tenant paths)
@@ -509,25 +528,99 @@
             log.scrollTop = log.scrollHeight;
         }
         
-        // Test Firebase connection
+        // Test Firebase connection with enhanced diagnostics
         function testFirebaseConnection() {
             updateLog('Testing Firebase connection...', 'info');
+            updateLog('Firebase Config: ' + JSON.stringify(firebaseConfig, null, 2), 'info');
+            
+            // Check if Firebase is initialized
+            if (!firebase.apps.length) {
+                updateLog('❌ Firebase not initialized', 'danger');
+                return;
+            }
+            
+            updateLog('✅ Firebase app initialized', 'success');
+            updateLog('Database URL: ' + firebase.app().options.databaseURL, 'info');
+            
+            // Test connection with timeout
+            let connectionTimeout = setTimeout(() => {
+                updateLog('❌ Firebase connection timeout (10s)', 'danger');
+            }, 10000);
             
             database.ref('.info/connected').on('value', (snapshot) => {
+                clearTimeout(connectionTimeout);
                 if (snapshot.val() === true) {
                     updateLog('✅ Firebase connected successfully', 'success');
+                    
+                    // Test with a simple read
+                    database.ref('master').once('value', (snapshot) => {
+                        updateLog('✅ Firebase read test successful', 'success');
+                        updateLog('Master data exists: ' + (snapshot.exists() ? 'Yes' : 'No'), 'info');
+                    }).catch(error => {
+                        updateLog('❌ Firebase read test failed: ' + error.message, 'danger');
+                        updateLog('Error code: ' + error.code, 'danger');
+                    });
                 } else {
                     updateLog('❌ Firebase connection failed', 'danger');
                 }
             });
             
-            // Test with a simple read
-            database.ref('master').once('value', (snapshot) => {
-                updateLog('✅ Firebase read test successful', 'success');
-                updateLog('Database URL: ' + firebase.app().options.databaseURL, 'info');
+            // Test with a simple write (to test permissions)
+            database.ref('test/connection').set({
+                timestamp: new Date().toISOString(),
+                test: true
+            }).then(() => {
+                updateLog('✅ Firebase write test successful', 'success');
+                // Clean up test data
+                database.ref('test/connection').remove();
             }).catch(error => {
-                updateLog('❌ Firebase read test failed: ' + error.message, 'danger');
+                updateLog('❌ Firebase write test failed: ' + error.message, 'danger');
+                updateLog('Error code: ' + error.code, 'danger');
             });
+        }
+        
+        // Test Firebase configuration
+        function testFirebaseConfig() {
+            updateLog('Testing Firebase configuration...', 'info');
+            
+            // Check if Firebase is available
+            if (typeof firebase === 'undefined') {
+                updateLog('❌ Firebase SDK not loaded', 'danger');
+                return;
+            }
+            
+            updateLog('✅ Firebase SDK loaded', 'success');
+            
+            // Check configuration
+            updateLog('Configuration check:', 'info');
+            updateLog('API Key: ' + (firebaseConfig.apiKey ? 'Set' : 'Missing'), firebaseConfig.apiKey ? 'success' : 'danger');
+            updateLog('Auth Domain: ' + firebaseConfig.authDomain, 'info');
+            updateLog('Database URL: ' + firebaseConfig.databaseURL, 'info');
+            updateLog('Project ID: ' + firebaseConfig.projectId, 'info');
+            
+            // Try to initialize Firebase
+            try {
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
+                    updateLog('✅ Firebase initialized successfully', 'success');
+                } else {
+                    updateLog('✅ Firebase already initialized', 'success');
+                }
+                
+                // Test database reference
+                const testRef = firebase.database().ref('test');
+                updateLog('✅ Database reference created', 'success');
+                
+                // Test a simple operation
+                testRef.once('value', (snapshot) => {
+                    updateLog('✅ Database read operation successful', 'success');
+                }).catch(error => {
+                    updateLog('❌ Database read operation failed: ' + error.message, 'danger');
+                });
+                
+            } catch (error) {
+                updateLog('❌ Firebase initialization failed: ' + error.message, 'danger');
+            }
         }
         
         // Clear log
