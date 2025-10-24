@@ -480,6 +480,32 @@
             height: 400px;
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-md);
+            background: #f8f9fa;
+        }
+        
+        /* Map loading improvements */
+        .leaflet-container {
+            background: #f8f9fa !important;
+        }
+        
+        .leaflet-tile {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
+        }
+        
+        /* Cluster popup styling */
+        .cluster-popup {
+            min-width: 200px;
+        }
+        
+        .cluster-popup h6 {
+            margin-bottom: 0.5rem;
+            color: var(--dark-yellow);
+        }
+        
+        .cluster-popup p {
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
         }
         
         /* Enhanced Calendar Widget */
@@ -2230,30 +2256,44 @@
             
             // Initialize Leaflet map
             if (typeof L !== 'undefined') {
-                window.beeMarshallMap = L.map('map').setView([-40.6781, 172.6886], 13); // Collingwood, NZ
+                window.beeMarshallMap = L.map('map', {
+                    center: [-40.6781, 172.6886], // Collingwood, NZ
+                    zoom: 13,
+                    zoomControl: true,
+                    attributionControl: true
+                });
                 
-                // Add OpenStreetMap tiles
+                // Add OpenStreetMap tiles with better loading
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
+                    attribution: '© OpenStreetMap contributors',
+                    maxZoom: 19,
+                    tileSize: 256,
+                    zoomOffset: 0
                 }).addTo(window.beeMarshallMap);
                 
-                // Add cluster markers
-                if (typeof clusters !== 'undefined' && clusters.length > 0) {
-                    clusters.forEach(cluster => {
-                        if (cluster.lat && cluster.lng) {
-                            const marker = L.marker([cluster.lat, cluster.lng])
-                                .addTo(window.beeMarshallMap)
-                                .bindPopup(`
-                                    <div class="cluster-popup">
-                                        <h6><a href="#" onclick="showClusters(); return false;">${cluster.name}</a></h6>
-                                        <p><strong>Hives:</strong> ${cluster.hiveCount || 0}</p>
-                                        <p><strong>Type:</strong> ${cluster.type || 'Standard'}</p>
-                                        <p><strong>Status:</strong> ${cluster.status || 'Active'}</p>
-                                    </div>
-                                `);
-                        }
-                    });
-                }
+                // Wait for tiles to load before adding markers
+                window.beeMarshallMap.whenReady(() => {
+                    console.log('🗺️ Map tiles loaded, adding cluster markers...');
+                    
+                    // Add cluster markers after tiles are loaded
+                    if (typeof clusters !== 'undefined' && clusters.length > 0) {
+                        clusters.forEach(cluster => {
+                            if (cluster.lat && cluster.lng) {
+                                const marker = L.marker([cluster.lat, cluster.lng])
+                                    .addTo(window.beeMarshallMap)
+                                    .bindPopup(`
+                                        <div class="cluster-popup">
+                                            <h6><a href="#" onclick="showClusters(); return false;">${cluster.name}</a></h6>
+                                            <p><strong>Hives:</strong> ${cluster.hiveCount || 0}</p>
+                                            <p><strong>Type:</strong> ${cluster.type || 'Standard'}</p>
+                                            <p><strong>Status:</strong> ${cluster.status || 'Active'}</p>
+                                        </div>
+                                    `);
+                            }
+                        });
+                        console.log(`📍 Added ${clusters.length} cluster markers`);
+                    }
+                });
                 
                 console.log('✅ Map activated successfully');
             } else {
