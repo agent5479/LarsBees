@@ -89,17 +89,22 @@
 
                         <!-- Migration Controls -->
                         <div class="row mb-4">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <button class="btn btn-primary w-100" onclick="testConnections()">
                                     <i class="bi bi-wifi"></i> Test Connections
                                 </button>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <button class="btn btn-success w-100" onclick="startMigration()" id="migrateButton">
                                     <i class="bi bi-arrow-right"></i> Start Migration
                                 </button>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <button class="btn btn-warning w-100" onclick="skipClusters()" id="skipButton" style="display: none;">
+                                    <i class="bi bi-skip-forward"></i> Skip Clusters
+                                </button>
+                            </div>
+                            <div class="col-md-3">
                                 <button class="btn btn-outline-secondary w-100" onclick="clearLog()">
                                     <i class="bi bi-trash"></i> Clear Log
                                 </button>
@@ -288,6 +293,7 @@
             updateLog('🚀 Starting data migration process...', 'info');
             document.getElementById('migrateButton').disabled = true;
             document.getElementById('migrateButton').innerHTML = '<i class="bi bi-arrow-clockwise"></i> Migrating...';
+            document.getElementById('skipButton').style.display = 'block';
 
             let totalSteps = 4;
             let completedSteps = 0;
@@ -298,27 +304,105 @@
                 document.getElementById('progressText').textContent = message;
             }
 
-            // Migrate clusters
+            // Migrate clusters with timeout and better error handling
             updateLog('📦 Migrating clusters...', 'info');
             updateProgress(1, totalSteps, 'Migrating clusters...');
+            
+            // Add timeout for the operation
+            const clusterTimeout = setTimeout(() => {
+                updateLog('⏰ Clusters migration timeout - continuing with next step', 'warning');
+                completedSteps++;
+                updateProgress(completedSteps, totalSteps, 'Clusters timeout');
+                migrateActions();
+            }, 10000); // 10 second timeout
+            
             sourceDatabase.ref('clusters').once('value', (snapshot) => {
+                clearTimeout(clusterTimeout);
                 const clusters = snapshot.val();
                 if (clusters) {
-                    targetDatabase.ref('tenants/lars/clusters').set(clusters).then(() => {
-                        completedSteps++;
-                        updateLog(`✅ Clusters migrated: ${Object.keys(clusters).length} records`, 'success');
-                        updateProgress(completedSteps, totalSteps, 'Clusters migrated');
-                        migrateActions();
-                    }).catch(error => {
-                        updateLog('❌ Clusters migration failed: ' + error.message, 'danger');
-                        migrateActions();
-                    });
+                    updateLog(`📊 Found ${Object.keys(clusters).length} clusters to migrate`, 'info');
+                    
+                    // Try to migrate in smaller batches
+                    const clusterKeys = Object.keys(clusters);
+                    let migratedCount = 0;
+                    
+                    function migrateClusterBatch(startIndex = 0, batchSize = 5) {
+                        const endIndex = Math.min(startIndex + batchSize, clusterKeys.length);
+                        const batch = {};
+                        
+                        for (let i = startIndex; i < endIndex; i++) {
+                            const key = clusterKeys[i];
+                            batch[key] = clusters[key];
+                        }
+                        
+                        if (Object.keys(batch).length > 0) {
+                            updateLog(`📦 Migrating cluster batch ${startIndex + 1}-${endIndex}...`, 'info');
+                            
+                            targetDatabase.ref(`tenants/lars/clusters`).update(batch).then(() => {
+                                migratedCount += Object.keys(batch).length;
+                                updateLog(`✅ Migrated ${migratedCount}/${clusterKeys.length} clusters`, 'success');
+                                
+                                if (endIndex < clusterKeys.length) {
+                                    // Continue with next batch
+                                    setTimeout(() => migrateClusterBatch(endIndex, batchSize), 500);
+                                } else {
+                                    // All clusters migrated
+                                    completedSteps++;
+                                    updateLog(`✅ All clusters migrated: ${migratedCount} records`, 'success');
+                                    updateProgress(completedSteps, totalSteps, 'Clusters migrated');
+                                    migrateActions();
+                                }
+                            }).catch(error => {
+                                updateLog('❌ Cluster batch migration failed: ' + error.message, 'danger');
+                                updateLog('🔄 Trying individual cluster migration...', 'info');
+                                migrateIndividualClusters(clusters, startIndex);
+                            });
+                        } else {
+                            completedSteps++;
+                            updateLog('📭 No clusters to migrate', 'info');
+                            updateProgress(completedSteps, totalSteps, 'No clusters found');
+                            migrateActions();
+                        }
+                    }
+                    
+                    function migrateIndividualClusters(clusters, startIndex = 0) {
+                        const clusterKeys = Object.keys(clusters);
+                        if (startIndex >= clusterKeys.length) {
+                            completedSteps++;
+                            updateLog(`✅ Individual cluster migration completed: ${migratedCount} records`, 'success');
+                            updateProgress(completedSteps, totalSteps, 'Clusters migrated');
+                            migrateActions();
+                            return;
+                        }
+                        
+                        const key = clusterKeys[startIndex];
+                        const clusterData = clusters[key];
+                        
+                        targetDatabase.ref(`tenants/lars/clusters/${key}`).set(clusterData).then(() => {
+                            migratedCount++;
+                            updateLog(`✅ Migrated cluster ${startIndex + 1}/${clusterKeys.length}: ${key}`, 'success');
+                            setTimeout(() => migrateIndividualClusters(clusters, startIndex + 1), 200);
+                        }).catch(error => {
+                            updateLog(`❌ Failed to migrate cluster ${key}: ${error.message}`, 'danger');
+                            setTimeout(() => migrateIndividualClusters(clusters, startIndex + 1), 200);
+                        });
+                    }
+                    
+                    // Start with batch migration
+                    migrateClusterBatch();
                 } else {
                     updateLog('📭 No clusters to migrate', 'info');
                     completedSteps++;
                     updateProgress(completedSteps, totalSteps, 'No clusters found');
                     migrateActions();
                 }
+            }).catch(error => {
+                clearTimeout(clusterTimeout);
+                updateLog('❌ Failed to read clusters: ' + error.message, 'danger');
+                updateLog('🔄 Skipping clusters and continuing...', 'warning');
+                completedSteps++;
+                updateProgress(completedSteps, totalSteps, 'Clusters skipped');
+                migrateActions();
             });
 
             function migrateActions() {
@@ -419,6 +503,40 @@
         function clearLog() {
             document.getElementById('migrationLog').innerHTML = '<div class="log-entry log-info">Log cleared</div>';
         }
+
+        // Skip clusters and continue with other data
+        function skipClusters() {
+            updateLog('⏭️ Skipping clusters migration...', 'warning');
+            updateLog('🔄 Continuing with actions migration...', 'info');
+            
+            // Hide skip button
+            document.getElementById('skipButton').style.display = 'none';
+            
+            // Continue with actions
+            window.migrateActions();
+        }
+
+        // Make migrateActions globally accessible
+        window.migrateActions = function() {
+            updateLog('📦 Migrating actions...', 'info');
+            updateProgress(2, 4, 'Migrating actions...');
+            sourceDatabase.ref('actions').once('value', (snapshot) => {
+                const actions = snapshot.val();
+                if (actions) {
+                    targetDatabase.ref('tenants/lars/actions').set(actions).then(() => {
+                        updateLog(`✅ Actions migrated: ${Object.keys(actions).length} records`, 'success');
+                        updateProgress(2, 4, 'Actions migrated');
+                        migrateTasks();
+                    }).catch(error => {
+                        updateLog('❌ Actions migration failed: ' + error.message, 'danger');
+                        migrateTasks();
+                    });
+                } else {
+                    updateLog('📭 No actions to migrate', 'info');
+                    migrateTasks();
+                }
+            });
+        };
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
