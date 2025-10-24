@@ -124,13 +124,13 @@ function getTaskDisplayName(taskName, taskId) {
 }
 
 // Task Management Functions
-function showManageTasks() {
+function showTasks() {
     if (!isAdmin) {
         alert('Only administrators can manage tasks.');
         return;
     }
     hideAllViews();
-    document.getElementById('manageTasksView').classList.remove('hidden');
+    document.getElementById('tasksView').classList.remove('hidden');
     renderTasksList();
 }
 
