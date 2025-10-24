@@ -300,6 +300,42 @@ window.migrateLarsData = function() {
     autoMigrateLarsData();
 };
 
+// Force migration function with UI feedback
+window.forceMigrateLarsData = function() {
+    console.log('🔄 Force migrating Lars data...');
+    
+    // Show migration button as loading
+    const migrationButton = document.getElementById('migrationButton');
+    if (migrationButton) {
+        migrationButton.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Migrating...';
+        migrationButton.disabled = true;
+    }
+    
+    // Check if Lars is logged in
+    const currentTenantId = localStorage.getItem('currentTenantId');
+    if (currentTenantId !== 'lars') {
+        alert('❌ Migration only available for Lars account. Please log in as Lars first.');
+        if (migrationButton) {
+            migrationButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Migrate Lars Data';
+            migrationButton.disabled = false;
+        }
+        return;
+    }
+    
+    // Run migration
+    autoMigrateLarsData();
+    
+    // Show success message after a delay
+    setTimeout(() => {
+        alert('✅ Lars data migration completed! Please refresh the page to see your data.');
+        if (migrationButton) {
+            migrationButton.innerHTML = '<i class="bi bi-check-circle"></i> Migration Complete';
+            migrationButton.classList.remove('btn-warning');
+            migrationButton.classList.add('btn-success');
+        }
+    }, 3000);
+};
+
 // Debug function - check Firebase connection
 window.checkFirebaseConnection = function() {
     console.log('🔍 Checking Firebase connection...');
@@ -331,6 +367,20 @@ window.testLogin = function() {
     document.getElementById('loginPassword').value = 'LarsHoney2025!';
     console.log('✅ Test credentials set. Click login button to test.');
 }
+
+// Console command for manual data migration
+window.migrateData = function() {
+    console.log('🔄 Manual data migration initiated...');
+    console.log('Current tenant:', localStorage.getItem('currentTenantId'));
+    
+    if (localStorage.getItem('currentTenantId') === 'lars') {
+        console.log('📦 Migrating Lars data...');
+        autoMigrateLarsData();
+    } else {
+        console.log('❌ Migration only available for Lars account');
+        console.log('Please log in as Lars first, then run: migrateData()');
+    }
+};
 
 // Force login function for debugging
 window.forceLogin = function() {
@@ -816,8 +866,12 @@ function loadDataFromFirebase() {
                 if (oldData) {
                     console.log('📦 Found old data - starting automated migration...');
                     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Auto-migrating data...', 'syncing');
-                    // Automatically migrate data for Lars
+                    // Show migration button for Lars
                     if (currentTenantId === 'lars') {
+                        const migrationButton = document.getElementById('migrationButton');
+                        if (migrationButton) {
+                            migrationButton.style.display = 'inline-block';
+                        }
                         autoMigrateLarsData();
                     }
                 } else {
