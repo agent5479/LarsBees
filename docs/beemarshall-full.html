@@ -1573,6 +1573,21 @@
                                         </div>
                                     </div>
                                     
+                                    <!-- GPS and Map Selection Options -->
+                                    <div class="mb-3">
+                                        <div class="btn-group w-100" role="group">
+                                            <button type="button" class="btn btn-outline-primary" id="useLocationBtn">
+                                                <i class="bi bi-crosshair"></i> Use Current GPS Location
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="showMapPicker()">
+                                                <i class="bi bi-map"></i> Click on Map to Select
+                                            </button>
+                                        </div>
+                                        <div class="form-text text-muted mt-2">
+                                            <i class="bi bi-info-circle"></i> Use GPS to auto-fill your current location, or click the map to pick a location interactively
+                                        </div>
+                                    </div>
+                                    
                                     <!-- Hive Strength Breakdown -->
                                     <div class="card mt-4">
                                         <div class="card-header">
@@ -1774,15 +1789,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        <button type="button" class="btn btn-outline-primary" id="useLocationBtn">
-                                            <i class="bi bi-crosshair"></i> Use Current Location
-                                        </button>
-                                        <button type="button" class="btn btn-outline-secondary ms-2" onclick="showMapPicker()">
-                                            <i class="bi bi-map"></i> Pick on Map
-                                        </button>
                                     </div>
                                     
                                     <!-- Landowner Information -->

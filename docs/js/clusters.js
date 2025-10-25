@@ -767,6 +767,8 @@ function showMapPicker() {
                 pickerMarker.setLatLng(e.latlng);
                 document.getElementById('clusterLat').value = e.latlng.lat.toFixed(6);
                 document.getElementById('clusterLng').value = e.latlng.lng.toFixed(6);
+                // Trigger validation to show success state
+                validateCoordinates();
             });
             
             // Drag marker
@@ -774,6 +776,8 @@ function showMapPicker() {
                 const latlng = e.target.getLatLng();
                 document.getElementById('clusterLat').value = latlng.lat.toFixed(6);
                 document.getElementById('clusterLng').value = latlng.lng.toFixed(6);
+                // Trigger validation to show success state
+                validateCoordinates();
             });
         }, 200);
     }
