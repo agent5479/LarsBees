@@ -60,6 +60,70 @@
             transition: var(--transition);
         }
         
+        /* Sticky navbar for mobile */
+        @media (max-width: 768px) {
+            .navbar {
+                position: sticky;
+                top: 0;
+                z-index: 1040;
+            }
+        }
+        
+        /* Sync Status */
+        .sync-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 8px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            backdrop-filter: blur(8px);
+            opacity: 0.9;
+        }
+        
+        /* Mobile sync indicator positioning */
+        @media (max-width: 768px) {
+            .sync-indicator {
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: auto;
+                right: auto;
+                width: auto;
+                min-width: 200px;
+                text-align: center;
+                z-index: 1030;
+            }
+            
+            /* Ensure sync indicator doesn't overlap with navbar */
+            .sync-indicator.syncing,
+            .sync-indicator.error {
+                top: 90px;
+            }
+        }
+        
+        .sync-indicator.syncing {
+            background: rgba(255, 193, 7, 0.15);
+            border-color: var(--accent);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .sync-indicator.error {
+            background: rgba(220, 53, 69, 0.15);
+            border-color: #DC3545;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.9; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.02); }
+            100% { opacity: 0.9; transform: scale(1); }
+        }
+        
         .navbar-brand {
             font-weight: 700;
             color: var(--brand) !important;
@@ -215,6 +279,27 @@
             border-left: 4px solid var(--primary-accent);
         }
         
+        /* Compact grid layout for mobile */
+        @media (max-width: 768px) {
+            .stat-card {
+                padding: 1rem;
+                padding-bottom: 0.75rem;
+            }
+            
+            .stat-card .me-3 {
+                margin-right: 0.5rem !important;
+            }
+            
+            .stat-card .stat-number {
+                font-size: 1.5rem;
+                font-weight: 700;
+            }
+            
+            .stat-card .text-muted {
+                font-size: 0.8rem;
+            }
+        }
+        
         .stat-number {
             font-size: 2rem;
             font-weight: bold;
@@ -255,6 +340,11 @@
         </div>
     </nav>
 
+    <!-- Sync Status Indicator -->
+    <div id="syncIndicator" class="sync-indicator hidden">
+        <span id="syncText"></span>
+    </div>
+
     <!-- Main Content -->
     <div class="container-fluid py-4">
         <!-- Header -->
@@ -274,9 +364,9 @@
             </div>
         </div>
 
-        <!-- Key Metrics -->
-        <div class="row mb-4">
-            <div class="col-md-3">
+        <!-- Key Metrics - 4 Column Grid -->
+        <div class="row g-2 mb-4">
+            <div class="col-6 col-sm-3 mb-2">
                 <div class="stat-card">
                     <div class="d-flex align-items-center">
                         <div class="me-3">
@@ -289,7 +379,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-sm-3 mb-2">
                 <div class="stat-card">
                     <div class="d-flex align-items-center">
                         <div class="me-3">
@@ -302,7 +392,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-sm-3 mb-2">
                 <div class="stat-card">
                     <div class="d-flex align-items-center">
                         <div class="me-3">
@@ -315,7 +405,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-6 col-sm-3 mb-2">
                 <div class="stat-card">
                     <div class="d-flex align-items-center">
                         <div class="me-3">
@@ -588,6 +678,44 @@
             }, 2000);
         });
         
+        // Sync Status Indicator Functions
+        function showSyncStatus(message, type = 'info') {
+            const syncIndicator = document.getElementById('syncIndicator');
+            const syncText = document.getElementById('syncText');
+            
+            if (syncIndicator && syncText) {
+                syncText.textContent = message;
+                syncIndicator.className = `sync-indicator ${type}`;
+                syncIndicator.classList.remove('hidden');
+                
+                // Auto-hide after 3 seconds for info messages
+                if (type === 'info') {
+                    setTimeout(() => {
+                        hideSyncStatus();
+                    }, 3000);
+                }
+            }
+        }
+        
+        function hideSyncStatus() {
+            const syncIndicator = document.getElementById('syncIndicator');
+            if (syncIndicator) {
+                syncIndicator.classList.add('hidden');
+            }
+        }
+        
+        function showSyncError(message) {
+            showSyncStatus(message, 'error');
+        }
+        
+        function showSyncSuccess(message) {
+            showSyncStatus(message, 'success');
+        }
+        
+        function showSyncProgress(message) {
+            showSyncStatus(message, 'syncing');
+        }
+        
         // Get current tenant ID from localStorage
         function getCurrentTenantId() {
             return localStorage.getItem('currentTenantId') || 'lars'; // Default to Lars for compatibility
@@ -600,8 +728,11 @@
             
             if (!currentTenantId) {
                 console.error('❌ No tenant ID found for reports');
+                showSyncError('No tenant ID found');
                 return;
             }
+            
+            showSyncProgress('Loading reports data...');
             
             // Load tenant-specific data
             database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
@@ -616,6 +747,9 @@
                         generateHivePerformanceReport();
                     }
                 }, 1000);
+            }, (error) => {
+                console.error('❌ Error loading clusters:', error);
+                showSyncError('Failed to load clusters');
             });
             
             database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
@@ -629,6 +763,9 @@
                         generateHealthMortalityReport();
                     }
                 }, 1500);
+            }, (error) => {
+                console.error('❌ Error loading actions:', error);
+                showSyncError('Failed to load actions');
             });
             
             database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
@@ -642,6 +779,9 @@
                         generateOperationsReport();
                     }
                 }, 2000);
+            }, (error) => {
+                console.error('❌ Error loading scheduled tasks:', error);
+                showSyncError('Failed to load scheduled tasks');
             });
             
             // Load additional data types for comprehensive reporting
@@ -670,6 +810,11 @@
             document.getElementById('totalHives').textContent = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
             document.getElementById('totalActions').textContent = actions.length;
             document.getElementById('flaggedIssues').textContent = actions.filter(a => a.flag && a.flag !== 'normal').length;
+            
+            // Show success message when data is loaded
+            if (clusters.length > 0 || actions.length > 0) {
+                showSyncSuccess('Reports data loaded successfully');
+            }
             
             // Auto-generate reports when data is updated
             setTimeout(() => {
@@ -765,6 +910,9 @@
                 return;
             }
             
+            console.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
+            console.log('📊 Using clusters data:', clusters.length, 'clusters');
+            
             // Calculate detailed hive performance metrics using new breakdown data
             const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
             const strongHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.strong || 0), 0);
@@ -783,6 +931,12 @@
             const performanceRate = totalHives > 0 ? ((strongHives + mediumHives) / totalHives * 100).toFixed(1) : 0;
             const mortalityRate = totalHives > 0 ? (deadHives / totalHives * 100).toFixed(1) : 0;
             const stackUtilization = totalHives > 0 ? (((totalDoubles + totalTopSplits + totalSingles + totalNUCStacks) / totalHives) * 100).toFixed(1) : 0;
+            
+            // Destroy existing chart if it exists
+            const existingChart = Chart.getChart('hivePerformanceChart');
+            if (existingChart) {
+                existingChart.destroy();
+            }
             
             // Create performance chart
             const ctx = document.getElementById('hivePerformanceChart').getContext('2d');
@@ -862,6 +1016,9 @@
                 return;
             }
             
+            console.log('📊 Generating health mortality report for tenant:', getCurrentTenantId());
+            console.log('📊 Using actions data:', actions.length, 'actions');
+            
             // Analyze health data from actions
             const diseaseActions = actions.filter(action => 
                 action.diseaseFound === 'Yes' || action.diseaseType || action.treatmentApplied
@@ -884,6 +1041,12 @@
             const totalDead = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
             const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
             const mortalityRate = totalHives > 0 ? (totalDead / totalHives * 100).toFixed(1) : 0;
+            
+            // Destroy existing chart if it exists
+            const existingHealthChart = Chart.getChart('healthMortalityChart');
+            if (existingHealthChart) {
+                existingHealthChart.destroy();
+            }
             
             // Create health chart
             const ctx = document.getElementById('healthMortalityChart').getContext('2d');
@@ -945,6 +1108,10 @@
                 return;
             }
             
+            console.log('📊 Generating operations report for tenant:', getCurrentTenantId());
+            console.log('📊 Using actions data:', actions.length, 'actions');
+            console.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
+            
             // Analyze operational data
             const completedTasks = scheduledTasks.filter(task => task.completed).length;
             const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
@@ -960,6 +1127,12 @@
             // Calculate efficiency metrics
             const taskCompletionRate = scheduledTasks.length > 0 ? (completedTasks / scheduledTasks.length * 100).toFixed(1) : 0;
             const actionsPerCluster = clusters.length > 0 ? (totalActions / clusters.length).toFixed(1) : 0;
+            
+            // Destroy existing chart if it exists
+            const existingOpsChart = Chart.getChart('operationsChart');
+            if (existingOpsChart) {
+                existingOpsChart.destroy();
+            }
             
             // Create operations chart
             const ctx = document.getElementById('operationsChart').getContext('2d');

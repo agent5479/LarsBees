@@ -264,6 +264,15 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
+        /* Sticky navbar for mobile */
+        @media (max-width: 768px) {
+            .navbar {
+                position: sticky;
+                top: 0;
+                z-index: 1040;
+            }
+        }
+        
         .navbar.scrolled {
             background: var(--dark-yellow);
         }
@@ -732,6 +741,27 @@
             font-size: 0.85rem;
             backdrop-filter: blur(8px);
             opacity: 0.9;
+        }
+        
+        /* Mobile sync indicator positioning */
+        @media (max-width: 768px) {
+            .sync-indicator {
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                bottom: auto;
+                right: auto;
+                width: auto;
+                min-width: 200px;
+                text-align: center;
+                z-index: 1030;
+            }
+            
+            /* Ensure sync indicator doesn't overlap with navbar */
+            .sync-indicator.syncing,
+            .sync-indicator.error {
+                top: 90px;
+            }
         }
         
         .sync-indicator.syncing {
