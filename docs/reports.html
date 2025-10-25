@@ -11,6 +11,9 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     
+    <!-- BeeMarshall Branding System -->
+    <link rel="stylesheet" href="css/brand.css" />
+    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
@@ -690,6 +693,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
+    <!-- Environment Management -->
+    <script src="js/utils.js"></script>
+    
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -799,10 +805,10 @@
         // Load data from Firebase with tenant isolation
         function loadDataFromFirebase() {
             const currentTenantId = getCurrentTenantId();
-            console.log('🏢 Loading reports data for tenant:', currentTenantId);
+            Logger.log('🏢 Loading reports data for tenant:', currentTenantId);
             
             if (!currentTenantId) {
-                console.error('❌ No tenant ID found for reports');
+                Logger.error('❌ No tenant ID found for reports');
                 showSyncError('No tenant ID found');
                 return;
             }
@@ -812,57 +818,57 @@
             // Load tenant-specific data
             database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
                 clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
-                console.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
+                Logger.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
                 updateMetrics();
                 updateHiveStrengthBreakdown();
                 
                 // Auto-generate reports when data loads
                 generateAllReports();
             }, (error) => {
-                console.error('❌ Error loading clusters:', error);
+                Logger.error('❌ Error loading clusters:', error);
                 showSyncError('Failed to load clusters');
             });
             
             database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
                 actions = snapshot.val() ? Object.values(snapshot.val()) : [];
-                console.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
+                Logger.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
                 updateMetrics();
                 
                 // Auto-generate health report when actions load
                 generateAllReports();
             }, (error) => {
-                console.error('❌ Error loading actions:', error);
+                Logger.error('❌ Error loading actions:', error);
                 showSyncError('Failed to load actions');
             });
             
             database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
                 scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
-                console.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
+                Logger.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
                 updateMetrics();
                 
                 // Auto-generate operations report when tasks load
                 generateAllReports();
             }, (error) => {
-                console.error('❌ Error loading scheduled tasks:', error);
+                Logger.error('❌ Error loading scheduled tasks:', error);
                 showSyncError('Failed to load scheduled tasks');
             });
             
             // Load additional data types for comprehensive reporting
             database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
                 const individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
-                console.log('📊 Reports individual hives loaded for', currentTenantId + ':', individualHives.length);
+                Logger.log('📊 Reports individual hives loaded for', currentTenantId + ':', individualHives.length);
                 updateMetrics();
             });
             
             database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
                 const employees = snapshot.val() ? Object.values(snapshot.val()) : [];
-                console.log('📊 Reports employees loaded for', currentTenantId + ':', employees.length);
+                Logger.log('📊 Reports employees loaded for', currentTenantId + ':', employees.length);
                 updateMetrics();
             });
             
             database.ref(`tenants/${currentTenantId}/tasks`).on('value', (snapshot) => {
                 const tasks = snapshot.val() ? Object.values(snapshot.val()) : [];
-                console.log('📊 Reports tasks loaded for', currentTenantId + ':', tasks.length);
+                Logger.log('📊 Reports tasks loaded for', currentTenantId + ':', tasks.length);
                 updateMetrics();
             });
         }
@@ -888,7 +894,7 @@
         function initializeCharts() {
             // Charts are now created dynamically by the report generation functions
             // This prevents conflicts between static and dynamic charts
-            console.log('📊 Charts will be initialized dynamically when data loads');
+            Logger.log('📊 Charts will be initialized dynamically when data loads');
         }
         
         // Report generation functions with real data visualization
@@ -898,7 +904,7 @@
         // Consolidated report generation function
         function generateAllReports() {
             if (isGeneratingReports) {
-                console.log('📊 Report generation already in progress, skipping...');
+                Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
             
@@ -908,7 +914,7 @@
             }
             
             reportGenerationTimeout = setTimeout(() => {
-                console.log('📊 Generating all reports...');
+                Logger.log('📊 Generating all reports...');
                 
                 if (clusters && clusters.length > 0) {
                     generateHivePerformanceReport();
@@ -925,7 +931,7 @@
         function generateHivePerformanceReport() {
             // Prevent multiple simultaneous generations
             if (isGeneratingReports) {
-                console.log('📊 Report generation already in progress, skipping...');
+                Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
             isGeneratingReports = true;
@@ -935,8 +941,8 @@
                 return;
             }
             
-            console.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
-            console.log('📊 Using clusters data:', clusters.length, 'clusters');
+            Logger.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
+            Logger.log('📊 Using clusters data:', clusters.length, 'clusters');
             
             // Calculate detailed hive performance metrics using new breakdown data
             const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
@@ -1046,7 +1052,7 @@
         function generateHealthMortalityReport() {
             // Prevent multiple simultaneous generations
             if (isGeneratingReports) {
-                console.log('📊 Report generation already in progress, skipping...');
+                Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
             isGeneratingReports = true;
@@ -1057,8 +1063,8 @@
                 return;
             }
             
-            console.log('📊 Generating health mortality report for tenant:', getCurrentTenantId());
-            console.log('📊 Using actions data:', actions.length, 'actions');
+            Logger.log('📊 Generating health mortality report for tenant:', getCurrentTenantId());
+            Logger.log('📊 Using actions data:', actions.length, 'actions');
             
             // Analyze health data from actions
             const diseaseActions = actions.filter(action => 
@@ -1154,7 +1160,7 @@
         function generateOperationsReport() {
             // Prevent multiple simultaneous generations
             if (isGeneratingReports) {
-                console.log('📊 Report generation already in progress, skipping...');
+                Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
             isGeneratingReports = true;
@@ -1165,9 +1171,9 @@
                 return;
             }
             
-            console.log('📊 Generating operations report for tenant:', getCurrentTenantId());
-            console.log('📊 Using actions data:', actions.length, 'actions');
-            console.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
+            Logger.log('📊 Generating operations report for tenant:', getCurrentTenantId());
+            Logger.log('📊 Using actions data:', actions.length, 'actions');
+            Logger.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
             
             // Analyze operational data
             const completedTasks = scheduledTasks.filter(task => task.completed).length;
@@ -1266,7 +1272,7 @@
         // Interactive Hive Analysis Functions
         function updateHiveStrengthBreakdown() {
             if (!clusters || clusters.length === 0) {
-                console.log('📭 No clusters data for hive strength breakdown');
+                Logger.log('📭 No clusters data for hive strength breakdown');
                 return;
             }
             
@@ -1310,7 +1316,7 @@
             document.getElementById('deadCount').textContent = totalDead;
             document.getElementById('emptyCount').textContent = totalEmpty;
             
-            console.log('📊 Enhanced hive strength breakdown updated:', {
+            Logger.log('📊 Enhanced hive strength breakdown updated:', {
                 hiveStrength: {
                     strong: totalStrong,
                     medium: totalMedium,
