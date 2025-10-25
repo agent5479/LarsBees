@@ -939,6 +939,9 @@ function initMap() {
                             <button class="btn btn-sm btn-primary" onclick="viewClusterDetails(${cluster.id}); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${cluster.id}); return false;">
+                                <i class="bi bi-geo-alt-fill"></i> View on Maps
+                            </button>
                             <button class="btn btn-sm btn-success" onclick="scheduleTaskForCluster(${cluster.id}); return false;">
                                 <i class="bi bi-calendar-plus"></i> Schedule Task
                             </button>
