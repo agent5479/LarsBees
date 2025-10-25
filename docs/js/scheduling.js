@@ -224,10 +224,50 @@ function renderScheduleTimeline() {
         `;
     }).join('');
     
+    // Convert to simple bullet point list
+    const bulletListHtml = Object.keys(tasksByDate).map(date => {
+        const tasks = tasksByDate[date];
+        const dateObj = new Date(date);
+        const isToday = dateObj.toDateString() === new Date().toDateString();
+        const isPast = dateObj < new Date() && !isToday;
+        
+        const dateHeader = `<h6 class="mb-2 ${isToday ? 'text-primary' : isPast ? 'text-muted' : ''}">
+            <i class="bi bi-calendar-date"></i> ${dateObj.toLocaleDateString()}
+            ${isToday ? '<span class="badge bg-primary ms-2">Today</span>' : ''}
+        </h6>`;
+        
+        const taskList = tasks.map(task => {
+            const cluster = clusters.find(c => c.id === task.clusterId);
+            const hive = individualHives.find(h => h.id === task.individualHiveId);
+            const taskObj = tasks.find(tk => tk.id === task.taskId);
+            const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
+            const priorityClass = task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'secondary';
+            const isCompleted = task.completed;
+            
+            return `<li class="mb-1 ${isCompleted ? 'text-muted' : ''}">
+                <strong>${displayTaskName}</strong>
+                <span class="badge bg-${priorityClass} ms-1">${task.priority || 'normal'}</span>
+                ${isCompleted ? '<span class="badge bg-success ms-1">Completed</span>' : ''}
+                <br><small class="text-muted">
+                    <i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}
+                    ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
+                    ${task.scheduledTime ? ` • <i class="bi bi-clock"></i> ${task.scheduledTime}` : ''}
+                </small>
+                ${!isCompleted ? `
+                    <button class="btn btn-success btn-sm ms-2" onclick="completeScheduledTask('${task.id}')">
+                        <i class="bi bi-check"></i>
+                    </button>
+                ` : ''}
+            </li>`;
+        }).join('');
+        
+        return `${dateHeader}<ul class="list-unstyled mb-3">${taskList}</ul>`;
+    }).join('');
+    
     timelineContainer.innerHTML = `
-        <div class="timeline-container">
+        <div>
             <h5><i class="bi bi-timeline"></i> Schedule Timeline</h5>
-            ${timelineHtml}
+            ${bulletListHtml}
         </div>
     `;
 }

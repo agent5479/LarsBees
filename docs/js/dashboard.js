@@ -334,6 +334,14 @@ function viewScheduledTask(taskId) {
 }
 
 function updateQuickStats() {
+    console.log('📊 Updating Quick Stats...');
+    console.log('📊 Scheduled tasks available:', scheduledTasks ? scheduledTasks.length : 'undefined');
+    
+    if (!scheduledTasks || scheduledTasks.length === 0) {
+        console.log('⚠️ No scheduled tasks data available for Quick Stats');
+        return;
+    }
+    
     const today = new Date();
     const thisWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
     
@@ -355,16 +363,55 @@ function updateQuickStats() {
         return !task.completed && taskDate < today;
     }).length;
     
+    console.log('📊 Quick Stats calculated:', {
+        thisWeek: thisWeekTasks,
+        completed: completedTasks,
+        pending: pendingTasks,
+        overdue: overdueTasksForStats
+    });
+    
     // Update quick stats
     const statThisWeek = document.getElementById('statThisWeek');
     const statCompleted = document.getElementById('statCompleted');
     const statPending = document.getElementById('statPending');
     const statOverdue = document.getElementById('statOverdue');
     
-    if (statThisWeek) animateNumber(statThisWeek, thisWeekTasks);
-    if (statCompleted) animateNumber(statCompleted, completedTasks);
-    if (statPending) animateNumber(statPending, pendingTasks);
-    if (statOverdue) animateNumber(statOverdue, overdueTasksForStats);
+    if (statThisWeek) {
+        console.log('📊 Updating statThisWeek:', thisWeekTasks);
+        try {
+            animateNumber(statThisWeek, thisWeekTasks);
+        } catch (error) {
+            console.log('⚠️ Animation failed, setting direct value:', thisWeekTasks);
+            statThisWeek.textContent = thisWeekTasks;
+        }
+    }
+    if (statCompleted) {
+        console.log('📊 Updating statCompleted:', completedTasks);
+        try {
+            animateNumber(statCompleted, completedTasks);
+        } catch (error) {
+            console.log('⚠️ Animation failed, setting direct value:', completedTasks);
+            statCompleted.textContent = completedTasks;
+        }
+    }
+    if (statPending) {
+        console.log('📊 Updating statPending:', pendingTasks);
+        try {
+            animateNumber(statPending, pendingTasks);
+        } catch (error) {
+            console.log('⚠️ Animation failed, setting direct value:', pendingTasks);
+            statPending.textContent = pendingTasks;
+        }
+    }
+    if (statOverdue) {
+        console.log('📊 Updating statOverdue:', overdueTasksForStats);
+        try {
+            animateNumber(statOverdue, overdueTasksForStats);
+        } catch (error) {
+            console.log('⚠️ Animation failed, setting direct value:', overdueTasksForStats);
+            statOverdue.textContent = overdueTasksForStats;
+        }
+    }
 }
 
 // Check for overdue tasks and automatically flag them as urgent

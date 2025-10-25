@@ -989,6 +989,10 @@ function loadDataFromFirebase() {
         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
         console.log('📊 Scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
         updateScheduledTasksPreview();
+        // Update Quick Stats when scheduled tasks are loaded
+        if (typeof updateQuickStats === 'function') {
+            updateQuickStats();
+        }
         checkAllDataLoaded();
     }, (error) => {
         console.log('❌ Tenant tasks access failed:', error.message);

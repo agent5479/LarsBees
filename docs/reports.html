@@ -429,9 +429,9 @@
                         <small class="text-muted">Click on hive categories to see affected clusters and schedule tasks</small>
                     </div>
                     <div class="card-body">
-                        <div class="row">
+                        <div class="row g-2">
                             <!-- Strong Hives -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="strong" onclick="showClustersByCategory('strong')">
                                     <div class="hive-icon strong">
                                         <i class="bi bi-hexagon-fill"></i>
@@ -443,7 +443,7 @@
                             </div>
                             
                             <!-- Medium Hives -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="medium" onclick="showClustersByCategory('medium')">
                                     <div class="hive-icon medium">
                                         <i class="bi bi-hexagon"></i>
@@ -455,7 +455,7 @@
                             </div>
                             
                             <!-- Weak Hives -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="weak" onclick="showClustersByCategory('weak')">
                                     <div class="hive-icon weak">
                                         <i class="bi bi-hexagon"></i>
@@ -467,7 +467,7 @@
                             </div>
                             
                             <!-- NUC Hives -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="nuc" onclick="showClustersByCategory('nuc')">
                                     <div class="hive-icon nuc">
                                         <i class="bi bi-hexagon-half"></i>
@@ -479,7 +479,7 @@
                             </div>
                             
                             <!-- Dead Hives -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="dead" onclick="showClustersByCategory('dead')">
                                     <div class="hive-icon dead">
                                         <i class="bi bi-hexagon"></i>
@@ -491,7 +491,7 @@
                             </div>
                             
                             <!-- Empty Platforms -->
-                            <div class="col-md-2 mb-3">
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="empty" onclick="showClustersByCategory('empty')">
                                     <div class="hive-icon empty">
                                         <i class="bi bi-square"></i>
@@ -534,9 +534,9 @@
         </div>
 
         <!-- Report Categories -->
-        <div class="row">
+        <div class="row g-2">
             <!-- Hive Performance -->
-            <div class="col-lg-4 mb-4">
+            <div class="col-12 col-md-6 col-lg-4 mb-2">
                 <div class="report-card h-100">
                     <div class="card-body text-center">
                         <div class="report-icon hive-performance mx-auto">
@@ -555,7 +555,7 @@
             </div>
 
             <!-- Health & Mortality -->
-            <div class="col-lg-4 mb-4">
+            <div class="col-12 col-md-6 col-lg-4 mb-2">
                 <div class="report-card h-100">
                     <div class="card-body text-center">
                         <div class="report-icon health-mortality mx-auto">
@@ -574,7 +574,7 @@
             </div>
 
             <!-- Operations -->
-            <div class="col-lg-4 mb-4">
+            <div class="col-12 col-md-6 col-lg-4 mb-2">
                 <div class="report-card h-100">
                     <div class="card-body text-center">
                         <div class="report-icon operations mx-auto">
@@ -710,6 +710,10 @@
         
         function showSyncSuccess(message) {
             showSyncStatus(message, 'success');
+            // Auto-hide success messages after 2 seconds
+            setTimeout(() => {
+                hideSyncStatus();
+            }, 2000);
         }
         
         function showSyncProgress(message) {
@@ -811,8 +815,9 @@
             document.getElementById('totalActions').textContent = actions.length;
             document.getElementById('flaggedIssues').textContent = actions.filter(a => a.flag && a.flag !== 'normal').length;
             
-            // Show success message when data is loaded
-            if (clusters.length > 0 || actions.length > 0) {
+            // Show success message when data is loaded (only once)
+            if ((clusters.length > 0 || actions.length > 0) && !window.reportsDataLoaded) {
+                window.reportsDataLoaded = true;
                 showSyncSuccess('Reports data loaded successfully');
             }
             
@@ -830,77 +835,11 @@
             }, 500);
         }
         
-        // Initialize charts
+        // Initialize charts - now handled by dynamic chart generation functions
         function initializeCharts() {
-            // Hive Performance Chart
-            const hiveCtx = document.getElementById('hivePerformanceChart').getContext('2d');
-            new Chart(hiveCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    datasets: [{
-                        label: 'Hive Strength',
-                        data: [12, 19, 3, 5, 2, 3],
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-            
-            // Health & Mortality Chart
-            const healthCtx = document.getElementById('healthMortalityChart').getContext('2d');
-            new Chart(healthCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Healthy', 'Diseased', 'Dead'],
-                    datasets: [{
-                        data: [85, 10, 5],
-                        backgroundColor: ['#28a745', '#ffc107', '#dc3545']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-            
-            // Operations Chart
-            const opsCtx = document.getElementById('operationsChart').getContext('2d');
-            new Chart(opsCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Completed', 'Pending', 'Overdue'],
-                    datasets: [{
-                        label: 'Tasks',
-                        data: [45, 12, 3],
-                        backgroundColor: ['#17a2b8', '#ffc107', '#dc3545']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
+            // Charts are now created dynamically by the report generation functions
+            // This prevents conflicts between static and dynamic charts
+            console.log('📊 Charts will be initialized dynamically when data loads');
         }
         
         // Report generation functions with real data visualization
