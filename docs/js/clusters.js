@@ -23,7 +23,7 @@ function showClusters() {
 function renderClusters() {
     const html = clusters.length > 0
         ? clusters.map(c => {
-            const deleteBtn = isAdmin ? `
+            const deleteBtn = canDeleteCluster() ? `
                 <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteCluster(${c.id})">
                     <i class="bi bi-trash"></i> Delete
                 </button>
@@ -421,6 +421,12 @@ function viewClusterDetails(id) {
                                 <p><strong>Hive Count:</strong> ${cluster.hiveCount}</p>
                                 <p><strong>GPS Coordinates:</strong> ${cluster.latitude.toFixed(6)}, ${cluster.longitude.toFixed(6)}</p>
                                 
+                                <div class="mt-2">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${cluster.id})">
+                                        <i class="bi bi-geo-alt-fill"></i> View on Maps
+                                    </button>
+                                </div>
+                                
                                 <h6 class="mt-3">Landowner Information</h6>
                                 ${cluster.landownerName ? `<p><strong>Name:</strong> ${cluster.landownerName}</p>` : ''}
                                 ${cluster.landownerPhone ? `<p><strong>Phone:</strong> ${cluster.landownerPhone}</p>` : ''}
@@ -483,8 +489,9 @@ function scheduleTaskForCluster(clusterId) {
 }
 
 function deleteCluster(id) {
-    if (!isAdmin) {
-        alert('Only Lars (admin) can delete clusters!');
+    // Check permission
+    if (!canDeleteCluster()) {
+        showPermissionDeniedAlert('delete clusters');
         return;
     }
     
@@ -493,6 +500,59 @@ function deleteCluster(id) {
         const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
         database.ref(`${tenantPath}/${id}`).remove();
     }
+}
+
+/**
+ * Open cluster location in maps application
+ * Detects platform and opens appropriate app (Google Maps or Apple Maps)
+ */
+function openInMaps(clusterId) {
+    const cluster = clusters.find(c => c.id === clusterId);
+    if (!cluster) {
+        beeMarshallAlert('Cluster not found', 'error');
+        return;
+    }
+    
+    const lat = cluster.latitude;
+    const lon = cluster.longitude;
+    const name = encodeURIComponent(cluster.name);
+    
+    // Detect platform
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+    const isAndroid = /android/i.test(userAgent);
+    
+    let mapUrl;
+    
+    if (isIOS) {
+        // Apple Maps URL scheme
+        mapUrl = `maps://maps.apple.com/?ll=${lat},${lon}&q=${lat},${lon}&label=${name}`;
+        
+        // Try to open Apple Maps, fall back to web URL if it fails
+        window.location.href = mapUrl;
+        
+        // Fallback to web-based Apple Maps
+        setTimeout(() => {
+            window.open(`https://maps.apple.com/?ll=${lat},${lon}&q=${lat},${lon}&label=${name}`, '_blank');
+        }, 100);
+    } else if (isAndroid) {
+        // Google Maps URL scheme
+        mapUrl = `google.navigation:q=${lat},${lon}&label=${name}`;
+        
+        // Try to open Google Maps app, fall back to web URL if it fails
+        window.location.href = mapUrl;
+        
+        // Fallback to web-based Google Maps
+        setTimeout(() => {
+            window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lon}&query_place_id=${name}`, '_blank');
+        }, 100);
+    } else {
+        // Desktop/other platforms - open Google Maps in new tab
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}&query_place_id=${name}`;
+        window.open(googleMapsUrl, '_blank');
+    }
+    
+    Logger.log(`🗺️ Opening ${cluster.name} in maps (${isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'})`);
 }
 
 // Update map with new cluster data

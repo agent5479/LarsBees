@@ -1,8 +1,9 @@
 // BeeMarshall - Employee Management Module
 
 function showEmployees() {
-    if (!isAdmin) {
-        alert('Only Lars (admin) can access employee management!');
+    // Check permission
+    if (!canManageEmployees()) {
+        showPermissionDeniedAlert('access employee management');
         return;
     }
     hideAllViews();
@@ -13,8 +14,9 @@ function showEmployees() {
 function handleAddEmployee(e) {
     e.preventDefault();
     
-    if (!isAdmin) {
-        alert('Only Lars (admin) can add employees!');
+    // Check permission
+    if (!canManageEmployees()) {
+        showPermissionDeniedAlert('add employees');
         return;
     }
     
@@ -80,6 +82,12 @@ function renderEmployees() {
 }
 
 function removeEmployee(id) {
+    // Check permission
+    if (!canManageEmployees()) {
+        showPermissionDeniedAlert('remove employees');
+        return;
+    }
+    
     if (confirm('Remove this employee? They will no longer be able to login.')) {
         // Use tenant-specific path for data isolation
         const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';

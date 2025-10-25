@@ -393,6 +393,12 @@ function handleScheduleTask(e) {
 }
 
 function completeScheduledTask(id) {
+    // Check permission - all users can complete tasks
+    if (!hasPermission('TASK_COMPLETE')) {
+        showPermissionDeniedAlert('complete tasks');
+        return;
+    }
+    
     const task = scheduledTasks.find(t => t.id === id);
     if (!task) return;
     

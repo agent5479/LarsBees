@@ -144,7 +144,7 @@ function renderActions() {
             const cluster = clusters.find(c => c.id === a.clusterId);
             const hive = individualHives.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
-            const deleteBtn = isAdmin ? `
+            const deleteBtn = canDeleteAction() ? `
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteAction('${a.id}')">
                     <i class="bi bi-trash"></i>
                 </button>
@@ -181,8 +181,9 @@ function renderActions() {
 }
 
 function deleteAction(id) {
-    if (!isAdmin) {
-        alert('Only Lars (admin) can delete actions!');
+    // Check permission
+    if (!canDeleteAction()) {
+        showPermissionDeniedAlert('delete actions');
         return;
     }
     

@@ -1,0 +1,9 @@
+﻿MAP INTEGRATION COMPLETE
+
+Added 'View on Maps' button to cluster details modal
+Button opens Google Maps or Apple Maps based on device
+Platform detection: iOS (Apple Maps), Android (Google Maps), Desktop (Google Maps web)
+Includes fallback URLs for web-based maps
+
+Location: docs/js/clusters.js
+Function: openInMaps(clusterId)
