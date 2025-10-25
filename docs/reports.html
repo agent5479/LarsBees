@@ -390,6 +390,24 @@
                     <div>
                         <h1 class="h3 mb-1"><i class="bi bi-graph-up"></i> Reports Dashboard</h1>
                         <p class="text-muted mb-0">Analytics and insights for your beekeeping operations</p>
+                        <div class="alert alert-info border-0 mt-2" style="background: rgba(13, 202, 240, 0.1); padding: 0.5rem 0.75rem;">
+                            <small>
+                                <strong>Data-Driven Beekeeping:</strong> Visual analytics for hive performance, health trends, and operational efficiency<br>
+                                <em>Reports integrate with your Dashboard → Clusters → Actions → Schedule workflow</em>
+                            </small>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-primary" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">
+                                <i class="bi bi-tag-fill me-1"></i>v0.96
+                            </span>
+                            <!-- Debug info hidden in production -->
+                            <div id="reportsDebugInfo" style="display: none;" class="mt-2">
+                                <small class="text-muted">
+                                    <strong>Data Status:</strong> <span id="dataStatus">Loading...</span><br>
+                                    <strong>Charts:</strong> <span id="chartStatus">Initializing...</span>
+                                </small>
+                            </div>
+                        </div>
                     </div>
                     <div>
                         <a href="beemarshall-full.html" class="back-button">
@@ -913,7 +931,7 @@
             isGeneratingReports = true;
             
             if (!clusters || clusters.length === 0) {
-                beeMarshallAlert('No cluster data available for hive performance analysis.', 'info');
+                beeMarshallAlert('📊 No cluster data available for hive performance analysis.\n\nGet started by adding your first apiary cluster to see performance insights.', 'info');
                 return;
             }
             
@@ -1034,7 +1052,7 @@
             isGeneratingReports = true;
             
             if (!actions || actions.length === 0) {
-                beeMarshallAlert('No action data available for health analysis.', 'info');
+                beeMarshallAlert('📊 No action data available for health analysis.\n\nStart logging inspections and treatments to see health insights and trends.', 'info');
                 isGeneratingReports = false;
                 return;
             }
@@ -1142,7 +1160,7 @@
             isGeneratingReports = true;
             
             if (!actions || actions.length === 0 && !scheduledTasks || scheduledTasks.length === 0) {
-                beeMarshallAlert('No operational data available for analysis.', 'info');
+                beeMarshallAlert('📊 No operational data available for analysis.\n\nSchedule tasks and log actions to see operational insights and efficiency metrics.', 'info');
                 isGeneratingReports = false;
                 return;
             }
@@ -1313,7 +1331,7 @@
         
         function showClustersByCategory(category) {
             if (!clusters || clusters.length === 0) {
-                beeMarshallAlert('No cluster data available.', 'info');
+                beeMarshallAlert('📊 No cluster data available.\n\nAdd your first apiary cluster to start generating reports and insights.', 'info');
                 return;
             }
             
