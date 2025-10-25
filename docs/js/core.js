@@ -531,24 +531,8 @@ function showWelcomePopup() {
 }
 
 function updateWelcomeStats() {
-    // Calculate totals
-    const clustersCount = clusters.length;
-    const hivesCount = clusters.reduce((total, cluster) => total + (cluster.hiveCount || 0), 0);
-    const tasksCount = scheduledTasks.length;
-    const actionsCount = actions.length;
-    
-    // Update the display
-    const welcomeClustersCount = document.getElementById('welcomeClustersCount');
-    const welcomeHivesCount = document.getElementById('welcomeHivesCount');
-    const welcomeTasksCount = document.getElementById('welcomeTasksCount');
-    const welcomeActionsCount = document.getElementById('welcomeActionsCount');
-    
-    if (welcomeClustersCount) welcomeClustersCount.textContent = clustersCount;
-    if (welcomeHivesCount) welcomeHivesCount.textContent = hivesCount;
-    if (welcomeTasksCount) welcomeTasksCount.textContent = tasksCount;
-    if (welcomeActionsCount) welcomeActionsCount.textContent = actionsCount;
-    
-    console.log(`📊 Welcome stats: ${clustersCount} clusters, ${hivesCount} hives, ${tasksCount} tasks, ${actionsCount} actions`);
+    // Simplified welcome - no stats needed
+    console.log('✅ Welcome popup ready - simplified version');
 }
 
 function dismissWelcomeModal() {
