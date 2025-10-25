@@ -700,21 +700,8 @@
             loadDataFromFirebase();
             initializeCharts();
             
-            // Auto-generate reports after data loads (debounced)
-            if (reportGenerationTimeout) {
-                clearTimeout(reportGenerationTimeout);
-            }
-            reportGenerationTimeout = setTimeout(() => {
-                if (clusters && clusters.length > 0) {
-                    generateHivePerformanceReport();
-                }
-                if (actions && actions.length > 0) {
-                    generateHealthMortalityReport();
-                }
-                if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
-                    generateOperationsReport();
-                }
-            }, 2000);
+            // Auto-generate reports after data loads
+            generateAllReports();
         });
         
         // Sync Status Indicator Functions
@@ -812,11 +799,7 @@
                 updateHiveStrengthBreakdown();
                 
                 // Auto-generate reports when data loads
-                setTimeout(() => {
-                    if (clusters && clusters.length > 0) {
-                        generateHivePerformanceReport();
-                    }
-                }, 1000);
+                generateAllReports();
             }, (error) => {
                 console.error('❌ Error loading clusters:', error);
                 showSyncError('Failed to load clusters');
@@ -828,11 +811,7 @@
                 updateMetrics();
                 
                 // Auto-generate health report when actions load
-                setTimeout(() => {
-                    if (actions && actions.length > 0) {
-                        generateHealthMortalityReport();
-                    }
-                }, 1500);
+                generateAllReports();
             }, (error) => {
                 console.error('❌ Error loading actions:', error);
                 showSyncError('Failed to load actions');
@@ -844,11 +823,7 @@
                 updateMetrics();
                 
                 // Auto-generate operations report when tasks load
-                setTimeout(() => {
-                    if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
-                        generateOperationsReport();
-                    }
-                }, 2000);
+                generateAllReports();
             }, (error) => {
                 console.error('❌ Error loading scheduled tasks:', error);
                 showSyncError('Failed to load scheduled tasks');
@@ -887,11 +862,36 @@
                 showSyncSuccess('Reports data synchronized');
             }
             
-            // Auto-generate reports when data is updated (debounced)
+            // Auto-generate reports when data is updated
+            generateAllReports();
+        }
+        
+        // Initialize charts - now handled by dynamic chart generation functions
+        function initializeCharts() {
+            // Charts are now created dynamically by the report generation functions
+            // This prevents conflicts between static and dynamic charts
+            console.log('📊 Charts will be initialized dynamically when data loads');
+        }
+        
+        // Report generation functions with real data visualization
+        let reportGenerationTimeout = null;
+        let isGeneratingReports = false;
+        
+        // Consolidated report generation function
+        function generateAllReports() {
+            if (isGeneratingReports) {
+                console.log('📊 Report generation already in progress, skipping...');
+                return;
+            }
+            
+            // Clear any pending generation
             if (reportGenerationTimeout) {
                 clearTimeout(reportGenerationTimeout);
             }
+            
             reportGenerationTimeout = setTimeout(() => {
+                console.log('📊 Generating all reports...');
+                
                 if (clusters && clusters.length > 0) {
                     generateHivePerformanceReport();
                 }
@@ -904,21 +904,13 @@
             }, 1000);
         }
         
-        // Initialize charts - now handled by dynamic chart generation functions
-        function initializeCharts() {
-            // Charts are now created dynamically by the report generation functions
-            // This prevents conflicts between static and dynamic charts
-            console.log('📊 Charts will be initialized dynamically when data loads');
-        }
-        
-        // Report generation functions with real data visualization
-        let reportGenerationTimeout = null;
-        
         function generateHivePerformanceReport() {
-            // Clear any pending report generation
-            if (reportGenerationTimeout) {
-                clearTimeout(reportGenerationTimeout);
+            // Prevent multiple simultaneous generations
+            if (isGeneratingReports) {
+                console.log('📊 Report generation already in progress, skipping...');
+                return;
             }
+            isGeneratingReports = true;
             
             if (!clusters || clusters.length === 0) {
                 beeMarshallAlert('No cluster data available for hive performance analysis.', 'info');
@@ -1028,11 +1020,22 @@
             existingSummaries.forEach(summary => summary.remove());
             
             document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
+            
+            // Reset generation flag
+            isGeneratingReports = false;
         }
         
         function generateHealthMortalityReport() {
+            // Prevent multiple simultaneous generations
+            if (isGeneratingReports) {
+                console.log('📊 Report generation already in progress, skipping...');
+                return;
+            }
+            isGeneratingReports = true;
+            
             if (!actions || actions.length === 0) {
                 beeMarshallAlert('No action data available for health analysis.', 'info');
+                isGeneratingReports = false;
                 return;
             }
             
@@ -1125,11 +1128,22 @@
             existingHealthSummaries.forEach(summary => summary.remove());
             
             document.getElementById('healthMortalityChart').parentNode.insertAdjacentHTML('afterend', summary);
+            
+            // Reset generation flag
+            isGeneratingReports = false;
         }
         
         function generateOperationsReport() {
+            // Prevent multiple simultaneous generations
+            if (isGeneratingReports) {
+                console.log('📊 Report generation already in progress, skipping...');
+                return;
+            }
+            isGeneratingReports = true;
+            
             if (!actions || actions.length === 0 && !scheduledTasks || scheduledTasks.length === 0) {
                 beeMarshallAlert('No operational data available for analysis.', 'info');
+                isGeneratingReports = false;
                 return;
             }
             
@@ -1215,6 +1229,9 @@
             existingOpsSummaries.forEach(summary => summary.remove());
             
             document.getElementById('operationsChart').parentNode.insertAdjacentHTML('afterend', summary);
+            
+            // Reset generation flag
+            isGeneratingReports = false;
         }
         
         function generateQuickReport(type) {
