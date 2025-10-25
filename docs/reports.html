@@ -763,10 +763,10 @@
         
         function showSyncSuccess(message) {
             showSyncStatus(message, 'success', true);
-            // Auto-hide success messages after 10 seconds to show timestamp
+            // Auto-hide success messages after 5 seconds to show timestamp
             setTimeout(() => {
                 hideSyncStatus();
-            }, 10000);
+            }, 5000);
         }
         
         function showSyncProgress(message) {
