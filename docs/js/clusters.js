@@ -80,14 +80,17 @@ function renderClusterTypeFilter() {
     
     const filterHtml = `
         <div class="mb-3">
-            <label class="form-label"><strong>Filter by Cluster Type:</strong></label>
+            <label class="form-label"><strong>Filter by Type:</strong></label>
             <select class="form-select" id="clusterTypeFilterSelect" onchange="filterClustersByType(this.value)">
                 <option value="all" selected>All Types</option>
-                ${Object.entries(CLUSTER_TYPES).map(([key, type]) => `
-                    <option value="${key}" style="color: ${type.color};">
-                        ${type.name}
-                    </option>
-                `).join('')}
+                <option value="production" style="color: #28a745;">Production</option>
+                <option value="nucleus" style="color: #17a2b8;">NUC</option>
+                <option value="queen-rearing" style="color: #ffc107;">Queen Rearing</option>
+                <option value="research" style="color: #6f42c1;">Research</option>
+                <option value="education" style="color: #fd7e14;">Education</option>
+                <option value="quarantine" style="color: #dc3545;">Quarantine</option>
+                <option value="backup" style="color: #6c757d;">Backup</option>
+                <option value="custom" style="color: #20c997;">Custom</option>
             </select>
         </div>
     `;
