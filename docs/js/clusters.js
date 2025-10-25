@@ -408,8 +408,11 @@ function editCluster(id) {
     }
 }
 
+// Global variable to track which record is being edited
+let editingHarvestRecordIndex = null;
+
 /**
- * Add a new harvest record to the current cluster form
+ * Add or update a harvest record to the current cluster form
  */
 function addHarvestRecord() {
     const date = document.getElementById('harvestDate').value;
@@ -432,8 +435,7 @@ function addHarvestRecord() {
         }
     }
     
-    // Add new record
-    const newRecord = {
+    const recordToSave = {
         date: date,
         quantity: parseFloat(quantity),
         notes: notes || '',
@@ -441,7 +443,15 @@ function addHarvestRecord() {
         addedAt: new Date().toISOString()
     };
     
-    harvestRecords.push(newRecord);
+    if (editingHarvestRecordIndex !== null && editingHarvestRecordIndex >= 0) {
+        // Update existing record
+        harvestRecords[editingHarvestRecordIndex] = recordToSave;
+        beeMarshallAlert('✅ Harvest record updated', 'success');
+    } else {
+        // Add new record
+        harvestRecords.push(recordToSave);
+        beeMarshallAlert('✅ Harvest record added', 'success');
+    }
     
     // Sort by date (newest first)
     harvestRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -457,12 +467,54 @@ function addHarvestRecord() {
     // Render the updated records
     renderHarvestRecords(harvestRecords);
     
-    // Clear the input fields
+    // Clear the input fields and reset edit state
     document.getElementById('harvestDate').value = '';
     document.getElementById('harvestQuantity').value = '';
     document.getElementById('harvestNotes').value = '';
+    editingHarvestRecordIndex = null;
     
-    beeMarshallAlert('✅ Harvest record added', 'success');
+    // Reset button text
+    const addBtn = document.querySelector('button[onclick="addHarvestRecord()"]');
+    if (addBtn) {
+        addBtn.innerHTML = '<i class="bi bi-plus"></i> Add Harvest Record';
+    }
+}
+
+/**
+ * Edit an existing harvest record
+ */
+function editHarvestRecord(index) {
+    const clusterId = document.getElementById('clusterId').value;
+    if (!clusterId) {
+        beeMarshallAlert('No cluster selected', 'error');
+        return;
+    }
+    
+    const existingCluster = clusters.find(c => c.id === parseInt(clusterId));
+    if (!existingCluster || !existingCluster.harvestRecords || !existingCluster.harvestRecords[index]) {
+        beeMarshallAlert('Record not found', 'error');
+        return;
+    }
+    
+    const record = existingCluster.harvestRecords[index];
+    
+    // Populate the input fields with the record data
+    document.getElementById('harvestDate').value = record.date;
+    document.getElementById('harvestQuantity').value = record.quantity;
+    document.getElementById('harvestNotes').value = record.notes || '';
+    
+    // Set the index being edited
+    editingHarvestRecordIndex = index;
+    
+    // Update button text
+    const addBtn = document.querySelector('button[onclick="addHarvestRecord()"]');
+    if (addBtn) {
+        addBtn.innerHTML = '<i class="bi bi-check"></i> Update Record';
+    }
+    
+    // Scroll to the input fields
+    document.getElementById('harvestDate').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    document.getElementById('harvestDate').focus();
 }
 
 /**
@@ -497,7 +549,10 @@ function renderHarvestRecords(records) {
                             <td>${record.notes || '-'}</td>
                             <td><small class="text-muted">${record.addedBy}</small></td>
                             <td>
-                                <button class="btn btn-sm btn-outline-danger" onclick="removeHarvestRecord(${index})">
+                                <button class="btn btn-sm btn-outline-primary" onclick="editHarvestRecord(${index})" title="Edit this record">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeHarvestRecord(${index})" title="Delete this record">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </td>
@@ -543,6 +598,20 @@ function removeHarvestRecord(index) {
     }
     
     clusters[clusterIndex].harvestRecords.splice(index, 1);
+    
+    // Reset edit state if the deleted record was being edited
+    if (editingHarvestRecordIndex === index) {
+        editingHarvestRecordIndex = null;
+        document.getElementById('harvestDate').value = '';
+        document.getElementById('harvestQuantity').value = '';
+        document.getElementById('harvestNotes').value = '';
+        
+        // Reset button text
+        const addBtn = document.querySelector('button[onclick="addHarvestRecord()"]');
+        if (addBtn) {
+            addBtn.innerHTML = '<i class="bi bi-plus"></i> Add Harvest Record';
+        }
+    }
     
     renderHarvestRecords(clusters[clusterIndex].harvestRecords);
     
