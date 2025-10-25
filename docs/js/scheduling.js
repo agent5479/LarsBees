@@ -32,18 +32,48 @@ function checkAndFlagOverdueTasks() {
 
 // Enhanced scheduling with timeline view and task completion
 function showScheduledTasks() {
+    console.log('🔄 showScheduledTasks() called');
+    console.log('📊 Current data state:', {
+        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+        clusters: clusters ? clusters.length : 'undefined',
+        tasks: tasks ? tasks.length : 'undefined',
+        individualHives: individualHives ? individualHives.length : 'undefined'
+    });
+    
     hideAllViews();
     document.getElementById('scheduledView').classList.remove('hidden');
+    
+    console.log('📊 About to call renderScheduledTasks()');
     renderScheduledTasks();
+    
+    console.log('📊 About to call renderScheduleTimeline()');
     renderScheduleTimeline();
+    
+    console.log('✅ showScheduledTasks() completed');
 }
 
 function renderScheduledTasks() {
+    console.log('🔄 renderScheduledTasks() called');
+    console.log('📊 scheduledTasks available:', scheduledTasks ? scheduledTasks.length : 'undefined');
+    
+    if (!scheduledTasks) {
+        console.error('❌ scheduledTasks is undefined - cannot render');
+        document.getElementById('scheduledTasksList').innerHTML = '<p class="text-danger">Error: Scheduled tasks data not available. Please refresh the page.</p>';
+        return;
+    }
+    
     // Check for overdue tasks first
+    console.log('📊 Checking for overdue tasks...');
     checkAndFlagOverdueTasks();
     
     const pending = scheduledTasks.filter(t => !t.completed);
     const completed = scheduledTasks.filter(t => t.completed);
+    
+    console.log('📊 Task counts:', {
+        total: scheduledTasks.length,
+        pending: pending.length,
+        completed: completed.length
+    });
     
     // Add "Schedule New Task" button at the top
     const scheduleButton = `
@@ -146,15 +176,38 @@ function renderScheduledTasks() {
         `
         : '';
     
-    document.getElementById('scheduledTasksList').innerHTML = scheduleButton + pendingHtml + completedHtml;
+    console.log('📊 About to update DOM with scheduled tasks HTML');
+    console.log('📊 HTML length:', (scheduleButton + pendingHtml + completedHtml).length);
+    
+    try {
+        document.getElementById('scheduledTasksList').innerHTML = scheduleButton + pendingHtml + completedHtml;
+        console.log('✅ renderScheduledTasks() completed successfully');
+    } catch (error) {
+        console.error('❌ Error updating scheduled tasks DOM:', error);
+        document.getElementById('scheduledTasksList').innerHTML = '<p class="text-danger">Error rendering scheduled tasks. Please refresh the page.</p>';
+    }
 }
 
 function renderScheduleTimeline() {
+    console.log('🔄 renderScheduleTimeline() called');
+    
     const timelineContainer = document.getElementById('scheduleTimeline');
-    if (!timelineContainer) return;
+    if (!timelineContainer) {
+        console.error('❌ scheduleTimeline container not found');
+        return;
+    }
+    
+    console.log('📊 scheduledTasks for timeline:', scheduledTasks ? scheduledTasks.length : 'undefined');
+    
+    if (!scheduledTasks) {
+        console.error('❌ scheduledTasks is undefined for timeline');
+        timelineContainer.innerHTML = '<p class="text-danger">Error: Scheduled tasks data not available for timeline.</p>';
+        return;
+    }
     
     // Get all scheduled tasks sorted by date
     const allTasks = [...scheduledTasks].sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    console.log('📊 Timeline tasks count:', allTasks.length);
     
     if (allTasks.length === 0) {
         timelineContainer.innerHTML = '<p class="text-muted">No scheduled tasks to display on timeline.</p>';
@@ -264,12 +317,21 @@ function renderScheduleTimeline() {
         return `${dateHeader}<ul class="list-unstyled mb-3">${taskList}</ul>`;
     }).join('');
     
-    timelineContainer.innerHTML = `
-        <div>
-            <h5><i class="bi bi-timeline"></i> Schedule Timeline</h5>
-            ${bulletListHtml}
-        </div>
-    `;
+    console.log('📊 About to update timeline DOM');
+    console.log('📊 Timeline HTML length:', bulletListHtml.length);
+    
+    try {
+        timelineContainer.innerHTML = `
+            <div>
+                <h5><i class="bi bi-timeline"></i> Schedule Timeline</h5>
+                ${bulletListHtml}
+            </div>
+        `;
+        console.log('✅ renderScheduleTimeline() completed successfully');
+    } catch (error) {
+        console.error('❌ Error updating timeline DOM:', error);
+        timelineContainer.innerHTML = '<p class="text-danger">Error rendering timeline. Please refresh the page.</p>';
+    }
 }
 
 function showScheduleTaskModal() {

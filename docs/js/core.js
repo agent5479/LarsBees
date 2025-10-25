@@ -933,6 +933,13 @@ function loadDataFromFirebase() {
     function checkAllDataLoaded() {
         dataLoadCount++;
         console.log(`📊 Data load progress: ${dataLoadCount}/${totalDataTypes}`);
+        console.log('📊 Current data state in checkAllDataLoaded:', {
+            clusters: clusters ? clusters.length : 'undefined',
+            actions: actions ? actions.length : 'undefined',
+            scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+            individualHives: individualHives ? individualHives.length : 'undefined'
+        });
+        
         if (dataLoadCount >= totalDataTypes) {
             console.log('✅ All data loaded, updating dashboard');
             console.log('🔍 Final data state:', {
@@ -944,6 +951,7 @@ function loadDataFromFirebase() {
             isLoadingData = false;
             // Small delay to ensure data is properly set
             setTimeout(() => {
+                console.log('📊 About to call updateDashboard()');
                 updateDashboard();
             }, 100);
         }
@@ -991,8 +999,14 @@ function loadDataFromFirebase() {
     });
     
     database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
+        console.log('🔄 Scheduled tasks Firebase listener triggered');
+        console.log('📊 Snapshot exists:', !!snapshot.val());
+        console.log('📊 Snapshot keys:', snapshot.val() ? Object.keys(snapshot.val()) : 'null');
+        
         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
         console.log('📊 Scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
+        console.log('📊 Scheduled tasks data:', scheduledTasks);
+        
         updateScheduledTasksPreview();
         // Update Quick Stats when scheduled tasks are loaded
         if (typeof updateQuickStats === 'function') {
@@ -1001,6 +1015,7 @@ function loadDataFromFirebase() {
         checkAllDataLoaded();
     }, (error) => {
         console.log('❌ Tenant tasks access failed:', error.message);
+        console.error('❌ Scheduled tasks loading error:', error);
         checkAllDataLoaded();
     });
     
