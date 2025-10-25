@@ -700,8 +700,11 @@
             loadDataFromFirebase();
             initializeCharts();
             
-            // Auto-generate reports after data loads
-            setTimeout(() => {
+            // Auto-generate reports after data loads (debounced)
+            if (reportGenerationTimeout) {
+                clearTimeout(reportGenerationTimeout);
+            }
+            reportGenerationTimeout = setTimeout(() => {
                 if (clusters && clusters.length > 0) {
                     generateHivePerformanceReport();
                 }
@@ -773,10 +776,10 @@
         
         function showSyncSuccess(message) {
             showSyncStatus(message, 'success', true);
-            // Auto-hide success messages after 4 seconds to show timestamp
+            // Auto-hide success messages after 10 seconds to show timestamp
             setTimeout(() => {
                 hideSyncStatus();
-            }, 4000);
+            }, 10000);
         }
         
         function showSyncProgress(message) {
@@ -884,8 +887,11 @@
                 showSyncSuccess('Reports data synchronized');
             }
             
-            // Auto-generate reports when data is updated
-            setTimeout(() => {
+            // Auto-generate reports when data is updated (debounced)
+            if (reportGenerationTimeout) {
+                clearTimeout(reportGenerationTimeout);
+            }
+            reportGenerationTimeout = setTimeout(() => {
                 if (clusters && clusters.length > 0) {
                     generateHivePerformanceReport();
                 }
@@ -895,7 +901,7 @@
                 if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
                     generateOperationsReport();
                 }
-            }, 500);
+            }, 1000);
         }
         
         // Initialize charts - now handled by dynamic chart generation functions
@@ -906,7 +912,14 @@
         }
         
         // Report generation functions with real data visualization
+        let reportGenerationTimeout = null;
+        
         function generateHivePerformanceReport() {
+            // Clear any pending report generation
+            if (reportGenerationTimeout) {
+                clearTimeout(reportGenerationTimeout);
+            }
+            
             if (!clusters || clusters.length === 0) {
                 beeMarshallAlert('No cluster data available for hive performance analysis.', 'info');
                 return;
@@ -1009,11 +1022,10 @@
                     <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Clusters:</strong> ${clusters.length}</p>
                 </div>
             `;
-            // Remove existing summary if it exists
-            const existingSummary = document.querySelector('#hivePerformanceChart').parentNode.querySelector('.alert.alert-info');
-            if (existingSummary) {
-                existingSummary.remove();
-            }
+            // Remove ALL existing summaries to prevent duplicates
+            const chartParent = document.getElementById('hivePerformanceChart').parentNode;
+            const existingSummaries = chartParent.querySelectorAll('.alert.alert-info');
+            existingSummaries.forEach(summary => summary.remove());
             
             document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
         }
@@ -1107,11 +1119,10 @@
                     <p><strong>Treatments Applied:</strong> ${Object.keys(treatments).length}</p>
                 </div>
             `;
-            // Remove existing summary if it exists
-            const existingHealthSummary = document.querySelector('#healthMortalityChart').parentNode.querySelector('.alert.alert-warning');
-            if (existingHealthSummary) {
-                existingHealthSummary.remove();
-            }
+            // Remove ALL existing summaries to prevent duplicates
+            const healthChartParent = document.getElementById('healthMortalityChart').parentNode;
+            const existingHealthSummaries = healthChartParent.querySelectorAll('.alert.alert-warning');
+            existingHealthSummaries.forEach(summary => summary.remove());
             
             document.getElementById('healthMortalityChart').parentNode.insertAdjacentHTML('afterend', summary);
         }
@@ -1198,11 +1209,10 @@
                     <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
                 </div>
             `;
-            // Remove existing summary if it exists
-            const existingOpsSummary = document.querySelector('#operationsChart').parentNode.querySelector('.alert.alert-success');
-            if (existingOpsSummary) {
-                existingOpsSummary.remove();
-            }
+            // Remove ALL existing summaries to prevent duplicates
+            const opsChartParent = document.getElementById('operationsChart').parentNode;
+            const existingOpsSummaries = opsChartParent.querySelectorAll('.alert.alert-success');
+            existingOpsSummaries.forEach(summary => summary.remove());
             
             document.getElementById('operationsChart').parentNode.insertAdjacentHTML('afterend', summary);
         }

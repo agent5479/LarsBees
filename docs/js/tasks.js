@@ -102,9 +102,7 @@ window.renderTasksList = function(filterCategory = 'All') {
 };
 
 // Add new task
-function handleAddTask(e) {
-    e.preventDefault();
-    
+function handleAddTask() {
     const categorySelect = document.getElementById('newTaskCategory').value;
     const categoryCustom = document.getElementById('newTaskCategoryCustom').value.trim();
     const category = categoryCustom || categorySelect;
@@ -112,12 +110,12 @@ function handleAddTask(e) {
     const common = document.getElementById('newTaskCommon').checked;
     
     if (!category) {
-        alert('Please select or enter a category.');
+        beeMarshallAlert('Please select or enter a category.', 'warning');
         return;
     }
     
     if (!name) {
-        alert('Please enter a task name.');
+        beeMarshallAlert('Please enter a task name.', 'warning');
         return;
     }
     
@@ -129,13 +127,21 @@ function handleAddTask(e) {
         id: newId,
         name: name,
         category: category,
-        common: common
+        common: common,
+        createdAt: new Date().toISOString(),
+        createdBy: currentUser.username
     };
     
     // Save to Firebase
     database.ref(`tasks/${newId}`).set(newTask).then(() => {
         beeMarshallAlert(`✅ Task "${name}" added successfully!`, 'success');
-        document.getElementById('addTaskForm').reset();
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
+        if (modal) {
+            modal.hide();
+        }
+        
         // Tasks will be reloaded automatically from Firebase listener
     }).catch(error => {
         console.error('Error adding task:', error);
@@ -148,17 +154,119 @@ function editTask(taskId) {
     const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
     
-    const newName = prompt(`Edit task name:\n\nCurrent: ${task.name}\n\nEnter new name:`, task.name);
-    if (newName && newName.trim() && newName.trim() !== task.name) {
-        task.name = newName.trim();
-        database.ref(`tasks/${taskId}`).update({ name: task.name }).then(() => {
-            beeMarshallAlert('✅ Task updated successfully!', 'success');
-            // Tasks will be reloaded automatically from Firebase listener
-        }).catch(error => {
-            console.error('Error updating task:', error);
-            beeMarshallAlert('❌ Error updating task. Please try again.', 'error');
-        });
+    // Create a modal for better task editing experience
+    const modalHtml = `
+        <div class="modal fade" id="editTaskModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Task</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editTaskForm">
+                            <input type="hidden" id="editTaskId" value="${taskId}">
+                            <div class="mb-3">
+                                <label for="editTaskName" class="form-label">Task Name *</label>
+                                <input type="text" class="form-control" id="editTaskName" value="${task.name}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTaskCategory" class="form-label">Category *</label>
+                                <select class="form-select" id="editTaskCategory" required>
+                                    <option value="Inspection" ${task.category === 'Inspection' ? 'selected' : ''}>Inspection</option>
+                                    <option value="Health" ${task.category === 'Health' ? 'selected' : ''}>Health</option>
+                                    <option value="Management" ${task.category === 'Management' ? 'selected' : ''}>Management</option>
+                                    <option value="Harvest" ${task.category === 'Harvest' ? 'selected' : ''}>Harvest</option>
+                                    <option value="Maintenance" ${task.category === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                                    <option value="Custom" ${task.category === 'Custom' ? 'selected' : ''}>Custom</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTaskCategoryCustom" class="form-label">Custom Category</label>
+                                <input type="text" class="form-control" id="editTaskCategoryCustom" 
+                                       value="${task.category && !['Inspection', 'Health', 'Management', 'Harvest', 'Maintenance', 'Custom'].includes(task.category) ? task.category : ''}"
+                                       placeholder="Enter custom category (e.g., Regional Practice)">
+                                <div class="form-text">Leave blank if using predefined category</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="editTaskCommon" ${task.common ? 'checked' : ''}>
+                                    <label class="form-check-label" for="editTaskCommon">
+                                        Add to Quick List (commonly used tasks)
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="handleEditTask()">Update Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('editTaskModal');
+    if (existingModal) {
+        existingModal.remove();
     }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
+    modal.show();
+    
+    // Clean up modal when hidden
+    document.getElementById('editTaskModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function handleEditTask() {
+    const taskId = parseInt(document.getElementById('editTaskId').value);
+    const categorySelect = document.getElementById('editTaskCategory').value;
+    const categoryCustom = document.getElementById('editTaskCategoryCustom').value.trim();
+    const category = categoryCustom || categorySelect;
+    const name = document.getElementById('editTaskName').value.trim();
+    const common = document.getElementById('editTaskCommon').checked;
+    
+    if (!category) {
+        beeMarshallAlert('Please select or enter a category.', 'warning');
+        return;
+    }
+    
+    if (!name) {
+        beeMarshallAlert('Please enter a task name.', 'warning');
+        return;
+    }
+    
+    const updates = {
+        name: name,
+        category: category,
+        common: common,
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser.username
+    };
+    
+    // Update in Firebase
+    database.ref(`tasks/${taskId}`).update(updates).then(() => {
+        beeMarshallAlert('✅ Task updated successfully!', 'success');
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('editTaskModal'));
+        if (modal) {
+            modal.hide();
+        }
+        
+        // Tasks will be reloaded automatically from Firebase listener
+    }).catch(error => {
+        console.error('Error updating task:', error);
+        beeMarshallAlert('❌ Error updating task. Please try again.', 'error');
+    });
 }
 
 function deleteTask(taskId) {
@@ -218,25 +326,76 @@ function deleteTask(taskId) {
 
 // Additional task management functions
 function showAddTaskForm() {
-    const taskName = prompt('Enter the name of the new task:');
-    if (taskName && taskName.trim()) {
-        const newTask = {
-            id: Date.now(),
-            name: taskName.trim(),
-            category: 'Custom',
-            common: false,
-            createdAt: new Date().toISOString(),
-            createdBy: currentUser.username
-        };
-        
-        // Use the global tasks array if available, otherwise use COMPREHENSIVE_TASKS
-        const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
-        tasksToUse.push(newTask);
-        localStorage.setItem('tasks', JSON.stringify(tasksToUse));
-        renderTasksList();
-        
-        console.log('New task added:', newTask);
+    // Create a modal for better task creation experience
+    const modalHtml = `
+        <div class="modal fade" id="addTaskModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add New Task</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addTaskForm">
+                            <div class="mb-3">
+                                <label for="newTaskName" class="form-label">Task Name *</label>
+                                <input type="text" class="form-control" id="newTaskName" required 
+                                       placeholder="e.g., Check queen cells, Inspect for mites">
+                            </div>
+                            <div class="mb-3">
+                                <label for="newTaskCategory" class="form-label">Category *</label>
+                                <select class="form-select" id="newTaskCategory" required>
+                                    <option value="">Select category...</option>
+                                    <option value="Inspection">Inspection</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Management">Management</option>
+                                    <option value="Harvest">Harvest</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                    <option value="Custom">Custom</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="newTaskCategoryCustom" class="form-label">Custom Category</label>
+                                <input type="text" class="form-control" id="newTaskCategoryCustom" 
+                                       placeholder="Enter custom category (e.g., Regional Practice)">
+                                <div class="form-text">Leave blank if using predefined category</div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="newTaskCommon">
+                                    <label class="form-check-label" for="newTaskCommon">
+                                        Add to Quick List (commonly used tasks)
+                                    </label>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="handleAddTask()">Add Task</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('addTaskModal');
+    if (existingModal) {
+        existingModal.remove();
     }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+    modal.show();
+    
+    // Clean up modal when hidden
+    document.getElementById('addTaskModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
 }
 
 function filterTasksByCategory(category) {
