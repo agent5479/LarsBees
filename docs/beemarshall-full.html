@@ -1508,45 +1508,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- Quick Stats -->
-                                    <div class="col-12">
-                                        <div class="card h-100">
-                                            <div class="card-header">
-                                                <h5 class="mb-0"><i class="bi bi-speedometer2"></i> Quick Stats</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="quickStats">
-                                                    <div class="row text-center">
-                                                        <div class="col-6 mb-3">
-                                                            <div class="quick-stat">
-                                                                <h6 class="text-primary mb-1" id="statThisWeek">0</h6>
-                                                                <small class="text-muted">This Week</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-6 mb-3">
-                                                            <div class="quick-stat">
-                                                                <h6 class="text-warning mb-1" id="statCompleted">0</h6>
-                                                                <small class="text-muted">Completed</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <div class="quick-stat">
-                                                                <h6 class="text-warning mb-1" id="statPending">0</h6>
-                                                                <small class="text-muted">Pending</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-6">
-                                                            <div class="quick-stat">
-                                                                <h6 class="text-danger mb-1" id="statOverdue">0</h6>
-                                                                <small class="text-muted">Overdue</small>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1555,9 +1516,9 @@
 
                 <!-- Recent Activity Row -->
                 <div class="row">
-                    <!-- Recent Actions -->
+                    <!-- Recent Actions with Quick Stats -->
                     <div class="col-lg-8 mb-4">
-                        <div class="card">
+                        <div class="card h-100">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Actions</h5>
                                 <button class="btn btn-sm btn-outline-primary" onclick="showActions()">
@@ -1565,6 +1526,38 @@
                                 </button>
                             </div>
                             <div class="card-body">
+                                <!-- Quick Stats Section (Nested inside Recent Actions) -->
+                                <div class="card bg-light mb-3">
+                                    <div class="card-body py-2">
+                                        <div class="row text-center g-2">
+                                            <div class="col-3">
+                                                <div class="quick-stat">
+                                                    <h6 class="text-primary mb-0" id="statThisWeek">0</h6>
+                                                    <small class="text-muted">This Week</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="quick-stat">
+                                                    <h6 class="text-success mb-0" id="statCompleted">0</h6>
+                                                    <small class="text-muted">Completed</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="quick-stat">
+                                                    <h6 class="text-warning mb-0" id="statPending">0</h6>
+                                                    <small class="text-muted">Pending</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="quick-stat">
+                                                    <h6 class="text-danger mb-0" id="statOverdue">0</h6>
+                                                    <small class="text-muted">Overdue</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Recent Actions List -->
                                 <div id="recentActions">
                                     <p class="text-muted">Loading actions...</p>
                                 </div>
