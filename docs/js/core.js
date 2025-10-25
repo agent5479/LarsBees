@@ -436,6 +436,46 @@ window.checkFirebaseConnection = function() {
     return true;
 }
 
+// Debug function to check Demo tenant data
+window.checkDemoData = function() {
+    console.log('🔍 Checking Demo tenant data...');
+    if (typeof database === 'undefined') {
+        console.log('❌ Firebase database not initialized');
+        return;
+    }
+    
+    const tenantId = 'demo';
+    console.log('📊 Checking data for tenant:', tenantId);
+    
+    // Check clusters
+    database.ref(`tenants/${tenantId}/clusters`).once('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log('📊 Demo clusters:', data ? Object.keys(data).length : 0, 'items');
+        console.log('📊 Demo clusters data:', data);
+    });
+    
+    // Check actions
+    database.ref(`tenants/${tenantId}/actions`).once('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log('📊 Demo actions:', data ? Object.keys(data).length : 0, 'items');
+        console.log('📊 Demo actions data:', data);
+    });
+    
+    // Check scheduled tasks
+    database.ref(`tenants/${tenantId}/scheduledTasks`).once('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log('📊 Demo scheduled tasks:', data ? Object.keys(data).length : 0, 'items');
+        console.log('📊 Demo scheduled tasks data:', data);
+    });
+    
+    // Check individual hives
+    database.ref(`tenants/${tenantId}/individualHives`).once('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log('📊 Demo individual hives:', data ? Object.keys(data).length : 0, 'items');
+        console.log('📊 Demo individual hives data:', data);
+    });
+};
+
 // Test login function for debugging
 window.testLogin = function() {
     console.log('🧪 Testing login system...');
@@ -943,15 +983,22 @@ function loadDataFromFirebase() {
         if (dataLoadCount >= totalDataTypes) {
             console.log('✅ All data loaded, updating dashboard');
             console.log('🔍 Final data state:', {
-                clusters: clusters.length,
-                actions: actions.length,
-                scheduledTasks: scheduledTasks.length,
-                individualHives: individualHives.length
+                clusters: clusters ? clusters.length : 'undefined',
+                actions: actions ? actions.length : 'undefined',
+                scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+                individualHives: individualHives ? individualHives.length : 'undefined'
             });
             isLoadingData = false;
+            showSyncStatus('', 'success');
             // Small delay to ensure data is properly set
             setTimeout(() => {
                 console.log('📊 About to call updateDashboard()');
+                console.log('📊 Data arrays before updateDashboard:', {
+                    clusters: Array.isArray(clusters) ? clusters.length : typeof clusters,
+                    actions: Array.isArray(actions) ? actions.length : typeof actions,
+                    scheduledTasks: Array.isArray(scheduledTasks) ? scheduledTasks.length : typeof scheduledTasks,
+                    individualHives: Array.isArray(individualHives) ? individualHives.length : typeof individualHives
+                });
                 updateDashboard();
             }, 100);
         }

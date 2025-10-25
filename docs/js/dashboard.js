@@ -30,11 +30,29 @@ function showDashboard() {
 function updateDashboard() {
     console.log('📊 Updating dashboard with data...');
     console.log('🔍 Current data state:', {
-        clusters: clusters.length,
-        actions: actions.length,
-        scheduledTasks: scheduledTasks.length,
-        individualHives: individualHives.length
+        clusters: clusters ? clusters.length : 'undefined',
+        actions: actions ? actions.length : 'undefined',
+        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+        individualHives: individualHives ? individualHives.length : 'undefined'
     });
+    
+    // Check if data arrays are properly initialized
+    if (!clusters) {
+        console.error('❌ Clusters array is undefined!');
+        clusters = [];
+    }
+    if (!actions) {
+        console.error('❌ Actions array is undefined!');
+        actions = [];
+    }
+    if (!scheduledTasks) {
+        console.error('❌ Scheduled tasks array is undefined!');
+        scheduledTasks = [];
+    }
+    if (!individualHives) {
+        console.error('❌ Individual hives array is undefined!');
+        individualHives = [];
+    }
     
     const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
     console.log('📊 Total hives calculated:', totalHives);
@@ -537,6 +555,52 @@ function makeRecentActionsClickable() {
         });
     });
 }
+
+// Debug function to force dashboard refresh
+window.forceDashboardRefresh = function() {
+    console.log('🔄 Force refreshing dashboard...');
+    console.log('📊 Current data state:', {
+        clusters: clusters ? clusters.length : 'undefined',
+        actions: actions ? actions.length : 'undefined',
+        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+        individualHives: individualHives ? individualHives.length : 'undefined'
+    });
+    
+    updateDashboard();
+    console.log('✅ Dashboard refresh completed');
+};
+
+// Debug function to check dashboard elements
+window.checkDashboardElements = function() {
+    console.log('🔍 Checking dashboard elements...');
+    
+    const statClusters = document.getElementById('statClusters');
+    const statHives = document.getElementById('statHives');
+    const statActions = document.getElementById('statActions');
+    const statFlagged = document.getElementById('statFlagged');
+    
+    console.log('📊 Dashboard elements found:', {
+        statClusters: !!statClusters,
+        statHives: !!statHives,
+        statActions: !!statActions,
+        statFlagged: !!statFlagged
+    });
+    
+    if (statClusters) console.log('📊 statClusters current value:', statClusters.textContent);
+    if (statHives) console.log('📊 statHives current value:', statHives.textContent);
+    if (statActions) console.log('📊 statActions current value:', statActions.textContent);
+    if (statFlagged) console.log('📊 statFlagged current value:', statFlagged.textContent);
+    
+    return {
+        elements: { statClusters: !!statClusters, statHives: !!statHives, statActions: !!statActions, statFlagged: !!statFlagged },
+        values: {
+            statClusters: statClusters ? statClusters.textContent : 'not found',
+            statHives: statHives ? statHives.textContent : 'not found',
+            statActions: statActions ? statActions.textContent : 'not found',
+            statFlagged: statFlagged ? statFlagged.textContent : 'not found'
+        }
+    };
+};
 
 // Sync status functions
 function showSyncStatus(message, type = 'success') {
