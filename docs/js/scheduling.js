@@ -1321,3 +1321,28 @@ function exportToGoogleCalendar() {
     // Show instructions
     beeMarshallAlert(`📅 Calendar Export Ready!\n\n✅ ICS file downloaded with ${futureTasks.length} scheduled task(s)\n\n📋 To import into Google Calendar:\n1. Open Google Calendar\n2. Click the "+" button\n3. Select "Import from file"\n4. Choose the downloaded .ics file\n\n📱 For Apple Calendar:\n1. Double-click the .ics file\n2. It will open in Calendar app automatically`, 'success');
 }
+
+// Save scheduled tasks to Firebase
+function saveScheduledTasks() {
+    if (!currentTenantId) {
+        console.error('❌ No tenant ID for saving scheduled tasks');
+        return;
+    }
+    
+    console.log('💾 Saving scheduled tasks to Firebase...');
+    const tasksPath = `tenants/${currentTenantId}/scheduledTasks`;
+    
+    // Convert array to object with task IDs as keys
+    const tasksObject = {};
+    scheduledTasks.forEach(task => {
+        tasksObject[task.id] = task;
+    });
+    
+    database.ref(tasksPath).set(tasksObject)
+        .then(() => {
+            console.log('✅ Scheduled tasks saved successfully');
+        })
+        .catch(error => {
+            console.error('❌ Error saving scheduled tasks:', error);
+        });
+}

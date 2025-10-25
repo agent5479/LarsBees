@@ -451,7 +451,11 @@ function checkAndFlagOverdueTasks() {
     
     // Save updates to Firebase if any changes were made
     if (hasUpdates) {
-        saveScheduledTasks();
+        if (typeof saveScheduledTasks === 'function') {
+            saveScheduledTasks();
+        } else {
+            console.log('⚠️ saveScheduledTasks function not available, skipping save');
+        }
     }
 }
 
