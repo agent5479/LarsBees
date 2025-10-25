@@ -435,20 +435,27 @@ function addHarvestRecord() {
         }
     }
     
-    const recordToSave = {
-        date: date,
-        quantity: parseFloat(quantity),
-        notes: notes || '',
-        addedBy: currentUser.username,
-        addedAt: new Date().toISOString()
-    };
-    
     if (editingHarvestRecordIndex !== null && editingHarvestRecordIndex >= 0) {
-        // Update existing record
-        harvestRecords[editingHarvestRecordIndex] = recordToSave;
+        // Update existing record - preserve original metadata and add modification info
+        const existingRecord = harvestRecords[editingHarvestRecordIndex];
+        harvestRecords[editingHarvestRecordIndex] = {
+            ...existingRecord,
+            date: date,
+            quantity: parseFloat(quantity),
+            notes: notes || '',
+            modifiedBy: currentUser.username,
+            modifiedAt: new Date().toISOString()
+        };
         beeMarshallAlert('✅ Harvest record updated', 'success');
     } else {
         // Add new record
+        const recordToSave = {
+            date: date,
+            quantity: parseFloat(quantity),
+            notes: notes || '',
+            addedBy: currentUser.username,
+            addedAt: new Date().toISOString()
+        };
         harvestRecords.push(recordToSave);
         beeMarshallAlert('✅ Harvest record added', 'success');
     }
@@ -529,6 +536,10 @@ function renderHarvestRecords(records) {
         return;
     }
     
+    // Determine if any record has been modified
+    const hasModifiedRecords = records.some(r => r.modifiedBy);
+    const modifiedColumnHtml = hasModifiedRecords ? '<th>Modified By</th>' : '';
+    
     const recordsHtml = `
         <div class="table-responsive">
             <table class="table table-sm table-hover">
@@ -537,17 +548,25 @@ function renderHarvestRecords(records) {
                         <th>Date</th>
                         <th>Quantity (kg)</th>
                         <th>Notes</th>
-                        <th>Recorded By</th>
+                        <th>Added By</th>
+                        ${modifiedColumnHtml}
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${records.map((record, index) => `
-                        <tr>
+                    ${records.map((record, index) => {
+                        const rowClass = record.modifiedBy ? 'class="table-warning"' : '';
+                        const modifiedCellHtml = hasModifiedRecords 
+                            ? `<td><small class="text-muted">${record.modifiedBy ? `<span class="text-warning"><i class="bi bi-pencil"></i> ${record.modifiedBy}</span>` : '-'}</small></td>`
+                            : '';
+                        
+                        return `
+                        <tr ${rowClass}>
                             <td>${new Date(record.date).toLocaleDateString()}</td>
                             <td><strong>${record.quantity.toFixed(1)}</strong></td>
                             <td>${record.notes || '-'}</td>
                             <td><small class="text-muted">${record.addedBy}</small></td>
+                            ${modifiedCellHtml}
                             <td>
                                 <button class="btn btn-sm btn-outline-primary" onclick="editHarvestRecord(${index})" title="Edit this record">
                                     <i class="bi bi-pencil"></i>
@@ -557,13 +576,14 @@ function renderHarvestRecords(records) {
                                 </button>
                             </td>
                         </tr>
-                    `).join('')}
+                    `;
+                    }).join('')}
                 </tbody>
                 <tfoot>
                     <tr class="table-info">
                         <th>Total</th>
                         <th><strong>${records.reduce((sum, r) => sum + r.quantity, 0).toFixed(1)} kg</strong></th>
-                        <th colspan="3"></th>
+                        <th colspan="${hasModifiedRecords ? '4' : '3'}"></th>
                     </tr>
                 </tfoot>
             </table>
