@@ -81,28 +81,18 @@ function renderClusterTypeFilter() {
     const filterHtml = `
         <div class="mb-3">
             <label class="form-label"><strong>Filter by Cluster Type:</strong></label>
-            <div class="btn-group" role="group">
-                <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterAll" value="all" checked>
-                <label class="btn btn-outline-secondary" for="filterAll">All Types</label>
-                
+            <select class="form-select" id="clusterTypeFilterSelect" onchange="filterClustersByType(this.value)">
+                <option value="all" selected>All Types</option>
                 ${Object.entries(CLUSTER_TYPES).map(([key, type]) => `
-                    <input type="radio" class="btn-check" name="clusterTypeFilter" id="filter${key}" value="${key}">
-                    <label class="btn btn-outline-secondary" for="filter${key}" style="border-color: ${type.color}; color: ${type.color};">
-                        <i class="bi ${type.icon}"></i> ${type.name}
-                    </label>
+                    <option value="${key}" style="color: ${type.color};">
+                        ${type.name}
+                    </option>
                 `).join('')}
-            </div>
+            </select>
         </div>
     `;
     
     filterContainer.innerHTML = filterHtml;
-    
-    // Add event listeners for filtering
-    document.querySelectorAll('input[name="clusterTypeFilter"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            filterClustersByType(this.value);
-        });
-    });
 }
 
 function filterClustersByType(type) {
@@ -115,6 +105,12 @@ function filterClustersByType(type) {
             card.style.display = 'none';
         }
     });
+    
+    // Update the dropdown to show current selection
+    const selectElement = document.getElementById('clusterTypeFilterSelect');
+    if (selectElement) {
+        selectElement.value = type;
+    }
 }
 
 function showAddClusterForm() {

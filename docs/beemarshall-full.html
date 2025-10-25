@@ -1171,11 +1171,6 @@
                                 <i class="bi bi-calendar3"></i> Schedule
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#" onclick="showTaskScheduling()">
-                                <i class="bi bi-calendar-plus"></i> Task Scheduling
-                            </a>
-                        </li>
                         <li class="nav-item admin-only">
                             <a class="nav-link" href="#" onclick="showTasks()">
                                 <i class="bi bi-list-task"></i> Task Management
@@ -2935,18 +2930,6 @@
             console.log(`📊 CSV exported: ${filename} (${data.length} records)`);
         }
         
-        // Task Scheduling function
-        function showTaskScheduling() {
-            hideAllViews();
-            document.getElementById('scheduledView').classList.remove('hidden');
-            // Focus on the task scheduling interface
-            setTimeout(() => {
-                const scheduleButton = document.querySelector('[onclick="showScheduleTaskModal()"]');
-                if (scheduleButton) {
-                    scheduleButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 100);
-        }
         
         // Handle navigation from reports
         function handleReportsNavigation() {
