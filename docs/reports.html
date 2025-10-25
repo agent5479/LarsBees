@@ -78,12 +78,40 @@
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid var(--accent);
             border-radius: 20px;
-            padding: 8px 16px;
+            padding: 12px 16px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             transition: all 0.3s ease;
             font-size: 0.85rem;
             backdrop-filter: blur(8px);
             opacity: 0.9;
+        }
+        
+        .sync-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sync-icon {
+            font-size: 1.1rem;
+            color: var(--accent);
+        }
+        
+        .sync-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .sync-timestamp {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 500;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
         
         /* Mobile sync indicator positioning */
@@ -342,7 +370,15 @@
 
     <!-- Sync Status Indicator -->
     <div id="syncIndicator" class="sync-indicator hidden">
-        <span id="syncText"></span>
+        <div class="sync-content">
+            <div class="sync-icon" id="syncIcon">
+                <i class="bi bi-arrow-clockwise"></i>
+            </div>
+            <div class="sync-text">
+                <div id="syncText">Loading reports data...</div>
+                <div class="sync-timestamp" id="syncTimestamp"></div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -679,14 +715,41 @@
         });
         
         // Sync Status Indicator Functions
-        function showSyncStatus(message, type = 'info') {
+        function showSyncStatus(message, type = 'info', showTimestamp = false) {
             const syncIndicator = document.getElementById('syncIndicator');
             const syncText = document.getElementById('syncText');
+            const syncIcon = document.getElementById('syncIcon');
+            const syncTimestamp = document.getElementById('syncTimestamp');
             
-            if (syncIndicator && syncText) {
+            if (syncIndicator && syncText && syncIcon) {
                 syncText.textContent = message;
                 syncIndicator.className = `sync-indicator ${type}`;
                 syncIndicator.classList.remove('hidden');
+                
+                // Update icon based on type
+                if (type === 'success') {
+                    syncIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+                    syncIcon.style.color = '#28a745';
+                } else if (type === 'error') {
+                    syncIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i>';
+                    syncIcon.style.color = '#dc3545';
+                } else if (type === 'loading') {
+                    syncIcon.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
+                    syncIcon.style.color = '#007bff';
+                    syncIcon.style.animation = 'spin 1s linear infinite';
+                } else {
+                    syncIcon.innerHTML = '<i class="bi bi-info-circle-fill"></i>';
+                    syncIcon.style.color = '#17a2b8';
+                }
+                
+                // Show timestamp if requested
+                if (showTimestamp && syncTimestamp) {
+                    const now = new Date();
+                    syncTimestamp.textContent = `Last updated: ${now.toLocaleTimeString()}`;
+                    syncTimestamp.style.display = 'block';
+                } else if (syncTimestamp) {
+                    syncTimestamp.style.display = 'none';
+                }
                 
                 // Auto-hide after 3 seconds for info messages
                 if (type === 'info') {
@@ -709,15 +772,15 @@
         }
         
         function showSyncSuccess(message) {
-            showSyncStatus(message, 'success');
-            // Auto-hide success messages after 2 seconds
+            showSyncStatus(message, 'success', true);
+            // Auto-hide success messages after 4 seconds to show timestamp
             setTimeout(() => {
                 hideSyncStatus();
-            }, 2000);
+            }, 4000);
         }
         
         function showSyncProgress(message) {
-            showSyncStatus(message, 'syncing');
+            showSyncStatus(message, 'loading');
         }
         
         // Get current tenant ID from localStorage
@@ -818,7 +881,7 @@
             // Show success message when data is loaded (only once)
             if ((clusters.length > 0 || actions.length > 0) && !window.reportsDataLoaded) {
                 window.reportsDataLoaded = true;
-                showSyncSuccess('Reports data loaded successfully');
+                showSyncSuccess('Reports data synchronized');
             }
             
             // Auto-generate reports when data is updated
@@ -946,6 +1009,12 @@
                     <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Clusters:</strong> ${clusters.length}</p>
                 </div>
             `;
+            // Remove existing summary if it exists
+            const existingSummary = document.querySelector('#hivePerformanceChart').parentNode.querySelector('.alert.alert-info');
+            if (existingSummary) {
+                existingSummary.remove();
+            }
+            
             document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
         }
         
@@ -1038,6 +1107,12 @@
                     <p><strong>Treatments Applied:</strong> ${Object.keys(treatments).length}</p>
                 </div>
             `;
+            // Remove existing summary if it exists
+            const existingHealthSummary = document.querySelector('#healthMortalityChart').parentNode.querySelector('.alert.alert-warning');
+            if (existingHealthSummary) {
+                existingHealthSummary.remove();
+            }
+            
             document.getElementById('healthMortalityChart').parentNode.insertAdjacentHTML('afterend', summary);
         }
         
@@ -1123,6 +1198,12 @@
                     <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
                 </div>
             `;
+            // Remove existing summary if it exists
+            const existingOpsSummary = document.querySelector('#operationsChart').parentNode.querySelector('.alert.alert-success');
+            if (existingOpsSummary) {
+                existingOpsSummary.remove();
+            }
+            
             document.getElementById('operationsChart').parentNode.insertAdjacentHTML('afterend', summary);
         }
         

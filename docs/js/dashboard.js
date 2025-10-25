@@ -191,7 +191,6 @@ function updateCalendarWidget() {
     if (futureTasks.length === 0) {
         calendarContainer.innerHTML = `
             <div class="calendar-widget">
-                <h6><i class="bi bi-calendar-week"></i> Upcoming Tasks</h6>
                 <p class="text-muted">No tasks scheduled for the future.</p>
                 <button class="btn btn-sm btn-primary mt-2" onclick="showScheduleTaskModal()">
                     <i class="bi bi-plus"></i> Schedule Task
@@ -281,12 +280,6 @@ function updateCalendarWidget() {
     
     calendarContainer.innerHTML = `
         <div class="calendar-widget">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h6><i class="bi bi-calendar-week"></i> Upcoming Tasks</h6>
-                <button class="btn btn-sm btn-outline-primary" onclick="showScheduledTasks()">
-                    <i class="bi bi-calendar3"></i> View All
-                </button>
-            </div>
             
             <div class="calendar-summary mb-3">
                 <div class="row text-center">

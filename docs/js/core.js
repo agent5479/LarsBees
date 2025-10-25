@@ -574,8 +574,13 @@ function showWelcomePopup() {
 }
 
 function updateWelcomeStats() {
-    // Simplified welcome - no stats needed
-    console.log('✅ Welcome popup ready - simplified version');
+    // Update sync timestamp in welcome modal
+    const syncTimeElement = document.getElementById('syncTime');
+    if (syncTimeElement) {
+        const now = new Date();
+        syncTimeElement.textContent = now.toLocaleTimeString();
+    }
+    console.log('✅ Welcome popup ready - sync timestamp updated');
 }
 
 function dismissWelcomeModal() {
