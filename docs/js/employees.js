@@ -40,7 +40,7 @@ function handleAddEmployee(e) {
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
     database.ref(`${tenantPath}/${employeeId}`).set(employee)
         .then(() => {
-            alert(`✅ Employee "${name}" added successfully!\n\nThey can login with:\nUsername: ${name}\nPassword: [the password you set]`);
+            beeMarshallAlert(`✅ Employee "${name}" added successfully!\n\nThey can login with:\nUsername: ${name}\nPassword: [the password you set]`, 'success');
             document.getElementById('addEmployeeForm').reset();
             loadEmployees();
         });

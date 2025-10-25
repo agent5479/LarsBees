@@ -15,6 +15,49 @@ const VERSION_HISTORY = [
 const MASTER_USERNAME = 'GBTech';
 const MASTER_PASSWORD = '1q2w3e!Q@W#E';
 
+// Custom alert function with BeeMarshall branding
+function beeMarshallAlert(message, type = 'info') {
+    // Create custom modal for BeeMarshall alerts
+    const alertModal = document.createElement('div');
+    alertModal.className = 'modal fade';
+    alertModal.id = 'beeMarshallAlert';
+    alertModal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-hexagon-fill me-2" style="color: var(--accent); font-size: 1.2rem;"></i>
+                        BeeMarshall says
+                    </h5>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : type === 'error' ? 'exclamation-triangle-fill text-danger' : 'info-circle-fill text-primary'}" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <p class="mb-0">${message}</p>
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">
+                        <i class="bi bi-check me-2"></i>OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(alertModal);
+    const modal = new bootstrap.Modal(alertModal);
+    modal.show();
+    
+    // Remove modal from DOM after hiding
+    alertModal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(alertModal);
+    });
+}
+
+// Override default alert function
+window.alert = beeMarshallAlert;
+
 // Multi-tenant admin accounts with GBTech as master
 const ADMIN_ACCOUNTS = {
     'GBTech': {

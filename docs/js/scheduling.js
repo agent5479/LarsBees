@@ -282,7 +282,7 @@ function handleScheduleTask(e) {
     const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
     database.ref(`${tasksPath}/${task.id}`).set(task)
         .then(() => {
-            alert('✅ Task scheduled successfully!');
+            beeMarshallAlert('✅ Task scheduled successfully!', 'success');
             bootstrap.Modal.getInstance(document.getElementById('scheduleTaskModal')).hide();
             document.getElementById('scheduleTaskForm').reset();
             renderScheduledTasks();
@@ -382,7 +382,7 @@ function updateScheduledTask(id) {
     const tasksPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
     database.ref(`${tasksPath}/${id}`).update(updates)
         .then(() => {
-            alert('✅ Task updated successfully!');
+            beeMarshallAlert('✅ Task updated successfully!', 'success');
             bootstrap.Modal.getInstance(document.getElementById('scheduleTaskModal')).hide();
             document.getElementById('scheduleTaskForm').reset();
             renderScheduledTasks();
@@ -609,7 +609,7 @@ function rescheduleOverdueTask(taskId) {
         renderScheduledTasks();
         renderScheduleTimeline();
         
-        alert(`Task rescheduled successfully to ${newDateObj.toLocaleDateString()}!`);
+        beeMarshallAlert(`Task rescheduled successfully to ${newDateObj.toLocaleDateString()}!`, 'success');
     }
 }
 
@@ -710,7 +710,7 @@ function handleEditScheduledTask() {
         refreshCalendar();
     }
     
-    alert('Task updated successfully!');
+    beeMarshallAlert('Task updated successfully!', 'success');
 }
 
 // Calendar Feed Generation

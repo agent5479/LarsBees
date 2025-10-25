@@ -765,21 +765,21 @@
                 height: 300px;
             }
             
-            /* Mobile dashboard cards */
+            /* Mobile dashboard cards - 4 column grid */
             .dashboard-stat-card .card-body {
-                padding: 1.5rem 1rem;
+                padding: 1rem 0.75rem;
             }
             
             .stat-icon-container i {
-                font-size: 2.5rem;
-            }
-            
-            .stat-number {
                 font-size: 2rem;
             }
             
+            .stat-number {
+                font-size: 1.75rem;
+            }
+            
             .stat-label {
-                font-size: 0.85rem;
+                font-size: 0.8rem;
             }
             
             .stat-action-indicator {
@@ -820,15 +820,19 @@
         
         @media (max-width: 576px) {
             .dashboard-stat-card .card-body {
-                padding: 1.25rem 0.75rem;
+                padding: 0.75rem 0.5rem;
             }
             
             .stat-icon-container i {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
             
             .stat-number {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
+            }
+            
+            .stat-label {
+                font-size: 0.7rem;
             }
         }
         
@@ -1162,9 +1166,9 @@
                     </div>
                 </div>
 
-                <!-- Key Metrics Row -->
-                <div class="row mb-4">
-                    <div class="col-lg-3 col-md-6 mb-4">
+                <!-- Key Metrics Row - 4 Column Grid -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6 col-sm-3 mb-2">
                         <div class="card dashboard-stat-card clusters-card" onclick="showClusters()" data-target="clusters">
                             <div class="card-body text-center position-relative">
                                 <div class="stat-icon-container">
@@ -1178,7 +1182,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="col-6 col-sm-3 mb-2">
                         <div class="card dashboard-stat-card hives-card" onclick="showClusters()" data-target="clusters">
                             <div class="card-body text-center position-relative">
                                 <div class="stat-icon-container">
@@ -1192,7 +1196,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="col-6 col-sm-3 mb-2">
                         <div class="card dashboard-stat-card actions-card" onclick="showActions()" data-target="actions">
                             <div class="card-body text-center position-relative">
                                 <div class="stat-icon-container">
@@ -1206,7 +1210,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="col-6 col-sm-3 mb-2">
                         <div class="card dashboard-stat-card flagged-card" onclick="showFlagged()" data-target="flagged">
                             <div class="card-body text-center position-relative">
                                 <div class="stat-icon-container">
@@ -2673,7 +2677,7 @@
         // CSV Export Functions
         function exportClustersCSV() {
             if (!clusters || clusters.length === 0) {
-                alert('No cluster data available to export.');
+                beeMarshallAlert('No cluster data available to export.', 'info');
                 return;
             }
             
@@ -2718,7 +2722,7 @@
         
         function exportActionsCSV() {
             if (!actions || actions.length === 0) {
-                alert('No action data available to export.');
+                beeMarshallAlert('No action data available to export.', 'info');
                 return;
             }
             
@@ -2750,7 +2754,7 @@
         
         function exportScheduledTasksCSV() {
             if (!scheduledTasks || scheduledTasks.length === 0) {
-                alert('No scheduled task data available to export.');
+                beeMarshallAlert('No scheduled task data available to export.', 'info');
                 return;
             }
             
@@ -2866,7 +2870,7 @@
             }
             
             if (allData.length === 0) {
-                alert('No data available to export.');
+                beeMarshallAlert('No data available to export.', 'info');
                 return;
             }
             
@@ -2875,7 +2879,7 @@
         
         function downloadCSV(data, filename) {
             if (!data || data.length === 0) {
-                alert('No data to export.');
+                beeMarshallAlert('No data to export.', 'info');
                 return;
             }
             
@@ -2909,7 +2913,7 @@
         // Task Scheduling function
         function showTaskScheduling() {
             hideAllViews();
-            document.getElementById('scheduledTasksView').classList.remove('hidden');
+            document.getElementById('scheduledView').classList.remove('hidden');
             // Focus on the task scheduling interface
             setTimeout(() => {
                 const scheduleButton = document.querySelector('[onclick="showScheduleTaskModal()"]');

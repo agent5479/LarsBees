@@ -656,7 +656,7 @@ function getCurrentLocation() {
         },
         (error) => {
             showSyncStatus('<i class="bi bi-x"></i> GPS error', 'error');
-            alert('Could not get location: ' + error.message);
+            beeMarshallAlert('Could not get location: ' + error.message, 'error');
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );

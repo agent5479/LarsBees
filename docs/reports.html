@@ -761,7 +761,7 @@
         // Report generation functions with real data visualization
         function generateHivePerformanceReport() {
             if (!clusters || clusters.length === 0) {
-                alert('No cluster data available for hive performance analysis.');
+                beeMarshallAlert('No cluster data available for hive performance analysis.', 'info');
                 return;
             }
             
@@ -858,7 +858,7 @@
         
         function generateHealthMortalityReport() {
             if (!actions || actions.length === 0) {
-                alert('No action data available for health analysis.');
+                beeMarshallAlert('No action data available for health analysis.', 'info');
                 return;
             }
             
@@ -941,7 +941,7 @@
         
         function generateOperationsReport() {
             if (!actions || actions.length === 0 && !scheduledTasks || scheduledTasks.length === 0) {
-                alert('No operational data available for analysis.');
+                beeMarshallAlert('No operational data available for analysis.', 'info');
                 return;
             }
             
@@ -1093,7 +1093,7 @@
         
         function showClustersByCategory(category) {
             if (!clusters || clusters.length === 0) {
-                alert('No cluster data available.');
+                beeMarshallAlert('No cluster data available.', 'info');
                 return;
             }
             

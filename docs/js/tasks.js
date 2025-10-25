@@ -134,12 +134,12 @@ function handleAddTask(e) {
     
     // Save to Firebase
     database.ref(`tasks/${newId}`).set(newTask).then(() => {
-        alert(`✅ Task "${name}" added successfully!`);
+        beeMarshallAlert(`✅ Task "${name}" added successfully!`, 'success');
         document.getElementById('addTaskForm').reset();
         // Tasks will be reloaded automatically from Firebase listener
     }).catch(error => {
         console.error('Error adding task:', error);
-        alert('❌ Error adding task. Please try again.');
+        beeMarshallAlert('❌ Error adding task. Please try again.', 'error');
     });
 }
 
@@ -152,11 +152,11 @@ function editTask(taskId) {
     if (newName && newName.trim() && newName.trim() !== task.name) {
         task.name = newName.trim();
         database.ref(`tasks/${taskId}`).update({ name: task.name }).then(() => {
-            alert('✅ Task updated successfully!');
+            beeMarshallAlert('✅ Task updated successfully!', 'success');
             // Tasks will be reloaded automatically from Firebase listener
         }).catch(error => {
             console.error('Error updating task:', error);
-            alert('❌ Error updating task. Please try again.');
+            beeMarshallAlert('❌ Error updating task. Please try again.', 'error');
         });
     }
 }
@@ -206,12 +206,12 @@ function deleteTask(taskId) {
             if (totalAffected > 0) {
                 alert(`✅ Task deleted.\n\n${totalAffected} historical record(s) will now show as "[Deleted: ${task.name}]"`);
             } else {
-                alert('✅ Task deleted successfully!');
+                beeMarshallAlert('✅ Task deleted successfully!', 'success');
             }
             // Tasks will be reloaded automatically from Firebase listener
         }).catch(error => {
             console.error('Error deleting task:', error);
-            alert('❌ Error deleting task. Please try again.');
+            beeMarshallAlert('❌ Error deleting task. Please try again.', 'error');
         });
     }
 }
