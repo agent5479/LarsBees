@@ -598,6 +598,86 @@
             padding: var(--spacing-sm);
         }
         
+        /* Weather Widget */
+        .weather-content {
+            padding: var(--spacing-sm);
+        }
+        
+        .weather-header h6 {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .weather-days {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        
+        .weather-day {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-md);
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .weather-day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+            font-size: 0.9rem;
+        }
+        
+        .weather-day-content {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+        
+        .weather-icon {
+            flex-shrink: 0;
+        }
+        
+        .weather-details {
+            flex: 1;
+        }
+        
+        .weather-temp {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .weather-desc {
+            text-transform: capitalize;
+        }
+        
+        .weather-extra {
+            display: flex;
+            gap: var(--spacing-sm);
+            opacity: 0.7;
+        }
+        
+        .weather-extra i {
+            margin-right: 0.25rem;
+        }
+        
+        .weather-update-time {
+            font-size: 0.85rem;
+        }
+        
+        .weather-placeholder {
+            text-align: center;
+            padding: var(--spacing-xl) var(--spacing-md);
+            color: var(--text-secondary);
+        }
+        
+        .weather-placeholder i {
+            font-size: 3rem;
+            margin-bottom: var(--spacing-sm);
+        }
+        
         .summary-item strong {
             font-size: 1.5rem;
             display: block;
@@ -1410,6 +1490,20 @@
                                             <div class="card-body">
                                                 <div id="calendarWidget">
                                                     <p class="text-muted">Loading calendar...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Weather Widget -->
+                                    <div class="col-12">
+                                        <div class="card h-100">
+                                            <div class="card-header">
+                                                <h5 class="mb-0"><i class="bi bi-cloud-sun"></i> Weather Forecast</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="weatherWidget">
+                                                    <p class="text-muted">Loading weather...</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -2511,6 +2605,7 @@
     <script src="js/clusters.js"></script>
     <script src="js/actions.js"></script>
     <script src="js/employees.js"></script>
+    <script src="js/weather.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/core.js"></script>
@@ -2862,25 +2957,25 @@
             }
             
             const csvData = actions.map(action => {
+                // Find cluster name from ID
+                const cluster = clusters.find(c => c.id === action.clusterId);
+                const clusterName = cluster ? cluster.name : '';
+                
                 return {
                     'Action ID': action.id,
-                    'Cluster Name': action.clusterName || '',
-                    'Action Type': action.actionType || '',
-                    'Description': action.description || '',
                     'Date': action.date || '',
-                    'Time': action.time || '',
-                    'Performed By': action.performedBy || '',
-                    'Hive Count': action.hiveCount || '',
-                    'Honey Harvested': action.honeyHarvested || '',
-                    'Sugar Fed': action.sugarFed || '',
-                    'Disease Found': action.diseaseFound || '',
-                    'Disease Type': action.diseaseType || '',
-                    'Treatment Applied': action.treatmentApplied || '',
-                    'Weather': action.weather || '',
-                    'Temperature': action.temperature || '',
+                    'Cluster ID': action.clusterId || '',
+                    'Cluster Name': clusterName,
+                    'Task ID': action.taskId || '',
+                    'Task Name': action.taskName || '',
+                    'Task Category': action.taskCategory || '',
+                    'Individual Hive ID': action.individualHiveId || '',
                     'Notes': action.notes || '',
                     'Flag': action.flag || '',
-                    'Created At': action.createdAt || ''
+                    'Logged By': action.loggedBy || '',
+                    'Created At': action.createdAt || '',
+                    'From Scheduled Task': action.fromScheduledTask ? 'Yes' : 'No',
+                    'Original Scheduled Task ID': action.originalScheduledTaskId || ''
                 };
             });
             
@@ -2894,21 +2989,71 @@
             }
             
             const csvData = scheduledTasks.map(task => {
+                // Find cluster name from ID
+                const cluster = clusters.find(c => c.id === task.clusterId);
+                const clusterName = cluster ? cluster.name : '';
+                
+                // Find task name from task ID
+                const taskObj = tasks.find(t => t.id === task.taskId);
+                const taskName = taskObj ? taskObj.name : '';
+                const taskCategory = taskObj ? taskObj.category : '';
+                
                 return {
                     'Task ID': task.id,
-                    'Title': task.title || '',
-                    'Description': task.description || '',
+                    'Task Type ID': task.taskId || '',
+                    'Task Name': taskName,
+                    'Task Category': taskCategory,
+                    'Cluster ID': task.clusterId || '',
+                    'Cluster Name': clusterName,
+                    'Individual Hive ID': task.individualHiveId || '',
                     'Due Date': task.dueDate || '',
+                    'Scheduled Time': task.scheduledTime || '',
                     'Priority': task.priority || '',
-                    'Cluster Name': task.clusterName || '',
-                    'Assigned To': task.assignedTo || '',
                     'Status': task.completed ? 'Completed' : 'Pending',
+                    'Notes': task.notes || '',
+                    'Overdue': task.overdue ? 'Yes' : 'No',
+                    'Overdue Date': task.overdueDate || '',
+                    'Created By': task.createdBy || '',
+                    'Created At': task.createdAt || '',
+                    'Completed By': task.completedBy || '',
                     'Completed At': task.completedAt || '',
-                    'Created At': task.createdAt || ''
+                    'Last Modified By': task.lastModifiedBy || '',
+                    'Last Modified At': task.lastModifiedAt || ''
                 };
             });
             
             downloadCSV(csvData, `scheduled_tasks_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function exportIndividualHivesCSV() {
+            if (!individualHives || individualHives.length === 0) {
+                beeMarshallAlert('No individual hive data available to export.', 'info');
+                return;
+            }
+            
+            const csvData = individualHives.map(hive => {
+                // Find cluster name from ID
+                const cluster = clusters.find(c => c.id === hive.clusterId);
+                const clusterName = cluster ? cluster.name : '';
+                
+                return {
+                    'Hive ID': hive.id,
+                    'Cluster ID': hive.clusterId || '',
+                    'Cluster Name': clusterName,
+                    'Hive Name': hive.hiveName || '',
+                    'Hive Number': hive.hiveNumber || '',
+                    'Status': hive.status || '',
+                    'Queen Status': hive.queenStatus || '',
+                    'Brood Pattern': hive.broodPattern || '',
+                    'Food Stores': hive.foodStores || '',
+                    'Population': hive.population || '',
+                    'Notes': hive.notes || '',
+                    'Created At': hive.createdAt || '',
+                    'Last Modified At': hive.lastModifiedAt || ''
+                };
+            });
+            
+            downloadCSV(csvData, `individual_hives_export_${new Date().toISOString().split('T')[0]}.csv`);
         }
         
         function exportAllDataCSV() {
@@ -3020,7 +3165,19 @@
             
             // Convert data to CSV format
             const headers = Object.keys(data[0]);
+            
+            // Create CSV content with header information
+            const exportInfo = [
+                `BeeMarshall Data Export`,
+                `Exported By: ${currentUser ? currentUser.username : 'Unknown'}`,
+                `Export Date: ${new Date().toISOString()}`,
+                `Tenant: ${currentTenantId || 'N/A'}`,
+                `Total Records: ${data.length}`,
+                ``, // Empty line before data
+            ];
+            
             const csvContent = [
+                exportInfo.join('\n'),
                 headers.join(','),
                 ...data.map(row => 
                     headers.map(header => {
@@ -3043,6 +3200,7 @@
             document.body.removeChild(link);
             
             console.log(`📊 CSV exported: ${filename} (${data.length} records)`);
+            beeMarshallAlert(`CSV exported successfully!\n\nFile: ${filename}\nRecords: ${data.length}\nUser: ${currentUser ? currentUser.username : 'Unknown'}`, 'success');
         }
         
         
