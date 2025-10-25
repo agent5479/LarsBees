@@ -308,6 +308,14 @@ function handleSaveCluster(e) {
         createdAt: id ? (clusters.find(c => c.id === parseInt(id))?.createdAt || new Date().toISOString()) : new Date().toISOString()
     };
     
+    // Preserve harvest records if they exist
+    if (id) {
+        const existingCluster = clusters.find(c => c.id === parseInt(id));
+        if (existingCluster && existingCluster.harvestRecords) {
+            cluster.harvestRecords = existingCluster.harvestRecords;
+        }
+    }
+    
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
     
     // Use tenant-specific path for data isolation
@@ -393,6 +401,152 @@ function editCluster(id) {
             btn.onclick = getCurrentLocation;
         }
     }, 100);
+    
+    // Render harvest records if they exist
+    if (cluster.harvestRecords && cluster.harvestRecords.length > 0) {
+        renderHarvestRecords(cluster.harvestRecords);
+    }
+}
+
+/**
+ * Add a new harvest record to the current cluster form
+ */
+function addHarvestRecord() {
+    const date = document.getElementById('harvestDate').value;
+    const quantity = document.getElementById('harvestQuantity').value;
+    const notes = document.getElementById('harvestNotes').value;
+    
+    if (!date || !quantity) {
+        beeMarshallAlert('Please enter a date and quantity', 'warning');
+        return;
+    }
+    
+    // Get existing records from the current cluster being edited
+    const clusterId = document.getElementById('clusterId').value;
+    let harvestRecords = [];
+    
+    if (clusterId) {
+        const existingCluster = clusters.find(c => c.id === parseInt(clusterId));
+        if (existingCluster && existingCluster.harvestRecords) {
+            harvestRecords = [...existingCluster.harvestRecords];
+        }
+    }
+    
+    // Add new record
+    const newRecord = {
+        date: date,
+        quantity: parseFloat(quantity),
+        notes: notes || '',
+        addedBy: currentUser.username,
+        addedAt: new Date().toISOString()
+    };
+    
+    harvestRecords.push(newRecord);
+    
+    // Sort by date (newest first)
+    harvestRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Update the cluster in the array temporarily (will be saved when form is submitted)
+    if (clusterId) {
+        const clusterIndex = clusters.findIndex(c => c.id === parseInt(clusterId));
+        if (clusterIndex !== -1) {
+            clusters[clusterIndex].harvestRecords = harvestRecords;
+        }
+    }
+    
+    // Render the updated records
+    renderHarvestRecords(harvestRecords);
+    
+    // Clear the input fields
+    document.getElementById('harvestDate').value = '';
+    document.getElementById('harvestQuantity').value = '';
+    document.getElementById('harvestNotes').value = '';
+    
+    beeMarshallAlert('✅ Harvest record added', 'success');
+}
+
+/**
+ * Render harvest records in the container
+ */
+function renderHarvestRecords(records) {
+    const container = document.getElementById('harvestRecordsContainer');
+    if (!container) return;
+    
+    if (!records || records.length === 0) {
+        container.innerHTML = '<p class="text-muted small">No harvest records yet. Add your first harvest below.</p>';
+        return;
+    }
+    
+    const recordsHtml = `
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Quantity (kg)</th>
+                        <th>Notes</th>
+                        <th>Recorded By</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${records.map((record, index) => `
+                        <tr>
+                            <td>${new Date(record.date).toLocaleDateString()}</td>
+                            <td><strong>${record.quantity.toFixed(1)}</strong></td>
+                            <td>${record.notes || '-'}</td>
+                            <td><small class="text-muted">${record.addedBy}</small></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeHarvestRecord(${index})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+                <tfoot>
+                    <tr class="table-info">
+                        <th>Total</th>
+                        <th><strong>${records.reduce((sum, r) => sum + r.quantity, 0).toFixed(1)} kg</strong></th>
+                        <th colspan="3"></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = recordsHtml;
+}
+
+/**
+ * Remove a harvest record by index
+ */
+function removeHarvestRecord(index) {
+    if (!confirm('Are you sure you want to remove this harvest record?')) {
+        return;
+    }
+    
+    const clusterId = document.getElementById('clusterId').value;
+    if (!clusterId) {
+        beeMarshallAlert('No cluster selected', 'error');
+        return;
+    }
+    
+    const clusterIndex = clusters.findIndex(c => c.id === parseInt(clusterId));
+    if (clusterIndex === -1) {
+        beeMarshallAlert('Cluster not found', 'error');
+        return;
+    }
+    
+    if (!clusters[clusterIndex].harvestRecords) {
+        clusters[clusterIndex].harvestRecords = [];
+    }
+    
+    clusters[clusterIndex].harvestRecords.splice(index, 1);
+    
+    renderHarvestRecords(clusters[clusterIndex].harvestRecords);
+    
+    beeMarshallAlert('Harvest record removed', 'info');
 }
 
 function viewClusterDetails(id) {

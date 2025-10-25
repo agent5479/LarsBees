@@ -99,21 +99,49 @@ function updateDashboard() {
         }
     }, 1000);
     
-    // Show flagged alert if any urgent actions or overdue tasks
+    // Show flagged alert if any urgent actions, overdue tasks, or upcoming harvests
     const urgentFlagged = actions.filter(a => a.flag === 'urgent');
     const overdueTasksForAlert = scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < new Date();
     });
     
-    if (urgentFlagged.length > 0 || overdueTasksForAlert.length > 0) {
+    // Check for upcoming harvests (within 30 days)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
+    
+    const upcomingHarvests = clusters.filter(cluster => {
+        if (!cluster.harvestTimeline) return false;
+        try {
+            const harvestDate = new Date(cluster.harvestTimeline);
+            harvestDate.setHours(0, 0, 0, 0);
+            return harvestDate >= today && harvestDate <= thirtyDaysFromNow;
+        } catch (e) {
+            return false;
+        }
+    });
+    
+    if (urgentFlagged.length > 0 || overdueTasksForAlert.length > 0 || upcomingHarvests.length > 0) {
         let flaggedHtml = '';
         
         // Add urgent actions
         if (urgentFlagged.length > 0) {
             flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
                 const cluster = clusters.find(c => c.id === a.clusterId);
-                return `<div class="mb-2"><strong>${cluster?.name || 'Unknown'}:</strong> ${a.taskName} - ${a.notes}</div>`;
+                return `<div class="mb-2">
+                    <strong>${cluster?.name || 'Unknown'}:</strong> ${a.taskName}
+                    <br><small>${a.notes}</small>
+                    <br>
+                    <div class="mt-1">
+                        <button class="btn btn-sm btn-outline-primary" onclick="handleUrgentItemAction('action', '${a.id}')">
+                            <i class="bi bi-calendar-plus"></i> Schedule Follow-up
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="handleUrgentItemAction('complete', '${a.id}')">
+                            <i class="bi bi-check"></i> Mark Addressed
+                        </button>
+                    </div>
+                </div>`;
             }).join('');
         }
         
@@ -126,9 +154,38 @@ function updateDashboard() {
                     <div class="mb-2">
                         <strong>OVERDUE: ${taskName}</strong> - ${cluster?.name || 'Unknown'}
                         <br><small>Due: ${new Date(task.dueDate).toLocaleDateString()}</small>
-                        <br><button class="btn btn-sm btn-outline-warning mt-1" onclick="rescheduleOverdueTask('${task.id}')">
-                            <i class="bi bi-calendar-plus"></i> Reschedule
-                        </button>
+                        <br>
+                        <div class="mt-1">
+                            <button class="btn btn-sm btn-outline-primary" onclick="handleUrgentItemAction('reschedule', '${task.id}')">
+                                <i class="bi bi-calendar-plus"></i> Reschedule
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="handleUrgentItemAction('complete', '${task.id}')">
+                                <i class="bi bi-check"></i> Mark Complete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Add upcoming harvests
+        if (upcomingHarvests.length > 0) {
+            flaggedHtml += upcomingHarvests.slice(0, 3).map(cluster => {
+                const harvestDate = new Date(cluster.harvestTimeline);
+                const daysUntil = Math.ceil((harvestDate - today) / (1000 * 60 * 60 * 24));
+                return `
+                    <div class="mb-2">
+                        <strong>🍯 HARVEST: ${cluster.name}</strong>
+                        <br><small>Expected: ${harvestDate.toLocaleDateString()} (${daysUntil} days)</small>
+                        <br>
+                        <div class="mt-1">
+                            <button class="btn btn-sm btn-outline-primary" onclick="handleHarvestAction('${cluster.id}', '${cluster.harvestTimeline}')">
+                                <i class="bi bi-calendar-plus"></i> Schedule Harvest
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="handleHarvestAction('${cluster.id}', '${cluster.harvestTimeline}', true)">
+                                <i class="bi bi-check"></i> Mark Addressed
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -694,5 +751,84 @@ function updateSyncStatus() {
     const syncStatus = document.getElementById('syncStatus');
     if (syncStatus) {
         syncStatus.innerHTML = `<i class="bi ${icon} ${color}"></i> ${status}`;
+    }
+}
+
+/**
+ * Handle actions on urgent items from the dashboard
+ * @param {string} action - Type of action: 'action', 'reschedule', 'complete'
+ * @param {string} itemId - ID of the action or task
+ */
+function handleUrgentItemAction(action, itemId) {
+    event.stopPropagation();
+    
+    if (action === 'complete' || action === 'reschedule') {
+        // For tasks - complete or reschedule
+        if (typeof completeScheduledTask === 'function') {
+            completeScheduledTask(itemId);
+        } else {
+            beeMarshallAlert('Task management not available', 'error');
+        }
+    } else if (action === 'action') {
+        // For actions - open scheduling for follow-up
+        const actionObj = actions.find(a => a.id === itemId);
+        if (actionObj && typeof showScheduleTaskModal === 'function') {
+            showScheduleTaskModal();
+        } else {
+            beeMarshallAlert('Scheduling not available', 'error');
+        }
+    }
+}
+
+/**
+ * Handle harvest-specific actions
+ * @param {string} clusterId - ID of the cluster
+ * @param {string} harvestDate - Expected harvest date
+ * @param {boolean} markAddressed - Whether to mark as addressed (clears harvest date)
+ */
+function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
+    event.stopPropagation();
+    
+    if (markAddressed) {
+        // Clear the harvest date to mark as addressed
+        const cluster = clusters.find(c => c.id === clusterId);
+        if (cluster) {
+            cluster.harvestTimeline = '';
+            
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+            database.ref(`${tenantPath}/${cluster.id}`).update({ harvestTimeline: '' })
+                .then(() => {
+                    beeMarshallAlert('✅ Harvest marked as addressed', 'success');
+                    updateDashboard();
+                });
+        }
+    } else {
+        // Schedule a harvest task
+        const cluster = clusters.find(c => c.id === clusterId);
+        if (cluster && typeof showScheduleTaskModal === 'function') {
+            // Try to find a harvest task in the tasks list
+            const harvestTask = tasks.find(t => 
+                t.name.toLowerCase().includes('harvest') || 
+                t.category.toLowerCase().includes('harvest')
+            );
+            
+            if (harvestTask) {
+                // Pre-fill with harvest task
+                document.getElementById('scheduleCluster').value = clusterId;
+                document.getElementById('scheduleTask').value = harvestTask.id;
+                document.getElementById('scheduleDueDate').value = harvestDate;
+                
+                const modal = new bootstrap.Modal(document.getElementById('scheduleTaskModal'));
+                modal.show();
+            } else {
+                // Just open the scheduling modal
+                showScheduleTaskModal();
+                document.getElementById('scheduleCluster').value = clusterId;
+                document.getElementById('scheduleDueDate').value = harvestDate;
+                beeMarshallAlert('📅 Please select a harvest task to schedule', 'info');
+            }
+        } else {
+            beeMarshallAlert('Scheduling not available', 'error');
+        }
     }
 }

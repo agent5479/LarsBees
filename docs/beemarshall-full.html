@@ -1962,12 +1962,43 @@
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterHarvest" class="form-label">Harvest Timeline</label>
-                                            <input type="text" class="form-control" id="clusterHarvest" placeholder="e.g., Late January - Early February">
+                                            <label for="clusterHarvest" class="form-label">Expected Harvest Date</label>
+                                            <input type="date" class="form-control" id="clusterHarvest">
+                                            <div class="form-text">Date when honey harvest is expected</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label for="clusterSugar" class="form-label">Sugar Requirements</label>
                                             <input type="text" class="form-control" id="clusterSugar" placeholder="e.g., 20kg for winter">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Historical Harvest Records -->
+                                    <div class="card mb-3">
+                                        <div class="card-header">
+                                            <h6><i class="bi bi-archive"></i> Historical Harvest Records</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="harvestRecordsContainer">
+                                                <p class="text-muted small">No harvest records yet. Add your first harvest below.</p>
+                                            </div>
+                                            <hr>
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <label for="harvestDate" class="form-label">Harvest Date</label>
+                                                    <input type="date" class="form-control" id="harvestDate">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="harvestQuantity" class="form-label">Quantity (kg)</label>
+                                                    <input type="number" step="0.1" class="form-control" id="harvestQuantity" placeholder="e.g., 25.5">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="harvestNotes" class="form-label">Notes</label>
+                                                    <input type="text" class="form-control" id="harvestNotes" placeholder="e.g., Late harvest due to weather">
+                                                </div>
+                                            </div>
+                                            <button type="button" class="btn btn-outline-success btn-sm mt-2" onclick="addHarvestRecord()">
+                                                <i class="bi bi-plus"></i> Add Harvest Record
+                                            </button>
                                         </div>
                                     </div>
                                     

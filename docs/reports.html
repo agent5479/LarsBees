@@ -559,6 +559,23 @@
             </div>
         </div>
 
+        <!-- Historical Harvest Records -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="report-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-archive"></i> Historical Harvest Records</h5>
+                        <small class="text-muted">Year-on-year harvest accumulation and trends</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="harvestHistorySection">
+                            <p class="text-muted text-center">Loading harvest data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Cluster Details Modal -->
         <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -904,6 +921,7 @@
                 
                 if (clusters && clusters.length > 0) {
                     generateHivePerformanceReport();
+                    generateHarvestHistoryReport();
                 }
                 if (actions && actions.length > 0) {
                     generateHealthMortalityReport();
@@ -1242,6 +1260,209 @@
             
             // Reset generation flag
             isGeneratingReports = false;
+        }
+        
+        function generateHarvestHistoryReport() {
+            if (!clusters || clusters.length === 0) {
+                document.getElementById('harvestHistorySection').innerHTML = '<p class="text-muted text-center">No clusters found. Add clusters to start tracking harvests.</p>';
+                return;
+            }
+            
+            // Collect all harvest records from all clusters
+            const allHarvests = [];
+            clusters.forEach(cluster => {
+                if (cluster.harvestRecords && cluster.harvestRecords.length > 0) {
+                    cluster.harvestRecords.forEach(record => {
+                        allHarvests.push({
+                            ...record,
+                            clusterId: cluster.id,
+                            clusterName: cluster.name
+                        });
+                    });
+                }
+            });
+            
+            if (allHarvests.length === 0) {
+                document.getElementById('harvestHistorySection').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No harvest records found yet. 
+                        <br>Edit your clusters and add harvest records to see year-on-year accumulation.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group by year and month
+            const byYear = {};
+            const byCluster = {};
+            
+            allHarvests.forEach(harvest => {
+                const date = new Date(harvest.date);
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                
+                // Group by year
+                if (!byYear[year]) {
+                    byYear[year] = { total: 0, records: [], months: {} };
+                }
+                byYear[year].total += harvest.quantity;
+                byYear[year].records.push(harvest);
+                
+                if (!byYear[year].months[month]) {
+                    byYear[year].months[month] = { total: 0, records: [] };
+                }
+                byYear[year].months[month].total += harvest.quantity;
+                byYear[year].months[month].records.push(harvest);
+                
+                // Group by cluster
+                if (!byCluster[harvest.clusterName]) {
+                    byCluster[harvest.clusterName] = { total: 0, records: [] };
+                }
+                byCluster[harvest.clusterName].total += harvest.quantity;
+                byCluster[harvest.clusterName].records.push(harvest);
+            });
+            
+            // Sort years
+            const years = Object.keys(byYear).sort((a, b) => b - a);
+            
+            // Prepare chart data
+            const chartLabels = years.map(y => y.toString());
+            const chartData = years.map(year => byYear[year].total.toFixed(1));
+            
+            // Render HTML
+            let html = `
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-4">
+                        <h6><i class="bi bi-bar-chart"></i> Total Harvest by Year</h6>
+                        <canvas id="harvestHistoryChart" height="200"></canvas>
+                    </div>
+                    <div class="col-12 col-md-6 mb-4">
+                        <h6><i class="bi bi-trophy"></i> Top Producing Clusters</h6>
+                        <div class="list-group">
+            `;
+            
+            // Sort clusters by total harvest
+            const sortedClusters = Object.entries(byCluster)
+                .sort((a, b) => b[1].total - a[1].total)
+                .slice(0, 5);
+            
+            sortedClusters.forEach(([clusterName, data], index) => {
+                html += `
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${index + 1}. ${clusterName}</strong>
+                                <br><small class="text-muted">${data.records.length} harvest${data.records.length > 1 ? 'es' : ''}</small>
+                            </div>
+                            <span class="badge bg-success" style="font-size: 1rem;">${data.total.toFixed(1)} kg</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <h6><i class="bi bi-calendar"></i> Year-by-Year Breakdown</h6>
+                        <div class="accordion" id="harvestYearsAccordion">
+            `;
+            
+            years.forEach((year, index) => {
+                const isFirst = index === 0;
+                const yearData = byYear[year];
+                const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                
+                html += `
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading${year}">
+                            <button class="accordion-button ${!isFirst ? 'collapsed' : ''}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${year}">
+                                <strong>${year}</strong>
+                                <span class="badge bg-success ms-auto me-2">${yearData.total.toFixed(1)} kg</span>
+                                <span class="text-muted">(${yearData.records.length} harvests)</span>
+                            </button>
+                        </h2>
+                        <div id="collapse${year}" class="accordion-collapse collapse ${isFirst ? 'show' : ''}" data-bs-parent="#harvestYearsAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                `;
+                
+                // Show monthly breakdown
+                const sortedMonths = Object.keys(yearData.months).sort((a, b) => a - b);
+                sortedMonths.forEach(month => {
+                    const monthData = yearData.months[month];
+                    html += `
+                        <div class="col-6 col-md-3 mb-2">
+                            <div class="card">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">${monthNames[month - 1]}</small>
+                                    <div><strong>${monthData.total.toFixed(1)} kg</strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('harvestHistorySection').innerHTML = html;
+            
+            // Create chart
+            const ctx = document.getElementById('harvestHistoryChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Harvest (kg)',
+                        data: chartData,
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' kg';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' kg';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         function generateQuickReport(type) {
