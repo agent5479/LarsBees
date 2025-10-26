@@ -3369,10 +3369,14 @@
             // Create CSV content with header information
             const exportInfo = [
                 `BeeMarshall Data Export`,
-                `Exported By: ${currentUser ? currentUser.username : 'Unknown'}`,
+                `Exported By: ${typeof currentUser !== 'undefined' && currentUser ? currentUser.username : 'Unknown'}`,
                 `Export Date: ${new Date().toISOString()}`,
-                `Tenant: ${currentTenantId || 'N/A'}`,
+                `Tenant: ${typeof currentTenantId !== 'undefined' && currentTenantId ? currentTenantId : 'N/A'}`,
                 `Total Records: ${data.length}`,
+                `Sites (Clusters): ${typeof clusters !== 'undefined' && clusters ? clusters.length : 0}`,
+                `Actions: ${typeof actions !== 'undefined' && actions ? actions.length : 0}`,
+                `Scheduled Tasks: ${typeof scheduledTasks !== 'undefined' && scheduledTasks ? scheduledTasks.length : 0}`,
+                `Individual Hives: ${typeof individualHives !== 'undefined' && individualHives ? individualHives.length : 0}`,
                 ``, // Empty line before data
             ];
             

@@ -17,10 +17,6 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
-    
     <style>
         /* BeeMarshall Enhanced UI - Honey Theme */
         :root {
@@ -700,6 +696,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
     <script>
+        // Declare database globally to avoid scope issues
+        let database;
+        
         // Check if Firebase is already initialized to prevent double-loading
         if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
             Logger.log('🔥 Initializing Firebase...');
@@ -718,12 +717,12 @@
             
             // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
+            database = firebase.database();
             
             Logger.log('✅ Firebase initialized successfully');
         } else {
             Logger.log('⚠️ Firebase already initialized, reusing existing instance');
-            const database = firebase.database();
+            database = firebase.database();
         }
         
         // Global variables
