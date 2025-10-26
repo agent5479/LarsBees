@@ -1297,6 +1297,21 @@
             text-transform: lowercase;
             letter-spacing: 0.5px;
         }
+        
+        /* Clickable Hive State Numbers */
+        .cursor-pointer {
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        
+        .cursor-pointer:hover {
+            transform: scale(1.2);
+            opacity: 0.8;
+        }
+        
+        .cursor-pointer:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -1819,27 +1834,28 @@
                                     <div class="card mt-4" id="hiveStateCard" style="display: none;">
                                         <div class="card-header">
                                             <h6 class="mb-0"><i class="bi bi-heart-pulse"></i> Hive State</h6>
+                                            <small class="text-muted">Click numbers to update counts. Changes are automatically saved.</small>
                                         </div>
                                         <div class="card-body">
                                             <div class="row g-2">
                                                 <div class="col-6 col-md-4 text-center">
-                                                    <h3 class="mb-1 fw-bold text-success" id="hiveStateStrong">0</h3>
+                                                    <h3 class="mb-1 fw-bold text-success cursor-pointer" id="hiveStateStrong" onclick="editHiveStateCount('Strong')">0</h3>
                                                     <small class="text-muted">Strong</small>
                                                 </div>
                                                 <div class="col-6 col-md-4 text-center">
-                                                    <h3 class="mb-1 fw-bold text-warning" id="hiveStateMedium">0</h3>
+                                                    <h3 class="mb-1 fw-bold text-warning cursor-pointer" id="hiveStateMedium" onclick="editHiveStateCount('Medium')">0</h3>
                                                     <small class="text-muted">Medium</small>
                                                 </div>
                                                 <div class="col-6 col-md-4 text-center">
-                                                    <h3 class="mb-1 fw-bold text-danger" id="hiveStateWeak">0</h3>
+                                                    <h3 class="mb-1 fw-bold text-danger cursor-pointer" id="hiveStateWeak" onclick="editHiveStateCount('Weak')">0</h3>
                                                     <small class="text-muted">Weak</small>
                                                 </div>
                                                 <div class="col-6 col-md-4 text-center">
-                                                    <h3 class="mb-1 fw-bold text-info" id="hiveStateNUC">0</h3>
+                                                    <h3 class="mb-1 fw-bold text-info cursor-pointer" id="hiveStateNUC" onclick="editHiveStateCount('NUC')">0</h3>
                                                     <small class="text-muted">NUC</small>
                                                 </div>
                                                 <div class="col-6 col-md-4 text-center">
-                                                    <h3 class="mb-1 fw-bold text-dark" id="hiveStateDead">0</h3>
+                                                    <h3 class="mb-1 fw-bold text-dark cursor-pointer" id="hiveStateDead" onclick="editHiveStateCount('Dead')">0</h3>
                                                     <small class="text-muted">Dead</small>
                                                 </div>
                                             </div>
@@ -1903,51 +1919,7 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Hive Strength Breakdown -->
-                                    <div class="card mt-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0"><i class="bi bi-hexagon-fill"></i> Hive Strength Distribution</h6>
-                                            <small class="text-muted">Break down your hives by strength rating</small>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="hiveStrong" class="form-label">Strong Hives</label>
-                                                    <input type="number" class="form-control" id="hiveStrong" min="0" value="0" onchange="updateHiveStrengthTotals()">
-                                                    <div class="form-text">Healthy, productive hives</div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="hiveMedium" class="form-label">Medium Hives</label>
-                                                    <input type="number" class="form-control" id="hiveMedium" min="0" value="0" onchange="updateHiveStrengthTotals()">
-                                                    <div class="form-text">Average health and production</div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="hiveWeak" class="form-label">Weak Hives</label>
-                                                    <input type="number" class="form-control" id="hiveWeak" min="0" value="0" onchange="updateHiveStrengthTotals()">
-                                                    <div class="form-text">Struggling, need attention</div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="hiveNUC" class="form-label">NUC Hives</label>
-                                                    <input type="number" class="form-control" id="hiveNUC" min="0" value="0" onchange="updateHiveStrengthTotals()">
-                                                    <div class="form-text">Nucleus colonies</div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="hiveDead" class="form-label">Dead Hives</label>
-                                                    <input type="number" class="form-control" id="hiveDead" min="0" value="0" onchange="updateHiveStrengthTotals()">
-                                                    <div class="form-text">Failed or dead colonies</div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="alert alert-info">
-                                                        <strong>Total Breakdown:</strong> <span id="hiveStrengthTotal">0</span> hives
-                                                        <br><small id="hiveStrengthStatus" class="text-muted">Enter hive counts above</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
+
                                             
                                             <!-- Stack Configuration Summary -->
                                             <div class="row mt-3" id="stackBreakdownSummary" style="display: none;">

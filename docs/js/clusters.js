@@ -1451,3 +1451,64 @@ function logSiteVisitAction(clusterId, notes) {
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
     database.ref(`${tenantPath}/${newAction.id}`).set(newAction);
 }
+
+// Edit hive state count (clickable numbers in Hive State card)
+function editHiveStateCount(state) {
+    const clusterId = document.getElementById('clusterId')?.value;
+    if (!clusterId) {
+        beeMarshallAlert('No site selected', 'warning');
+        return;
+    }
+    
+    // Get current value
+    const idMap = {
+        'Strong': 'hiveStateStrong',
+        'Medium': 'hiveStateMedium',
+        'Weak': 'hiveStateWeak',
+        'NUC': 'hiveStateNUC',
+        'Dead': 'hiveStateDead'
+    };
+    
+    const elementId = idMap[state];
+    const currentElement = document.getElementById(elementId);
+    const currentValue = parseInt(currentElement.textContent) || 0;
+    
+    // Prompt for new value
+    const newValueStr = prompt(`Enter new count for ${state} hives:`, currentValue);
+    if (newValueStr === null) return; // User cancelled
+    
+    const newValue = parseInt(newValueStr) || 0;
+    
+    // Update the visual element
+    currentElement.textContent = newValue;
+    
+    // Update cluster data and save to Firebase
+    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    if (cluster) {
+        // Update hive strength data
+        if (!cluster.hiveStrength) cluster.hiveStrength = {};
+        cluster.hiveStrength[state.toLowerCase()] = newValue;
+        
+        // Save to Firebase
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+        database.ref(`${tenantPath}/${cluster.id}`).update({
+            hiveStrength: cluster.hiveStrength,
+            lastModified: new Date().toISOString(),
+            lastModifiedBy: currentUser.username
+        }).then(() => {
+            // Log as action
+            const actionText = `Updated ${state} hives at ${cluster.name}: ${currentValue} → ${newValue}`;
+            logSiteVisitAction(cluster.id, actionText);
+            
+            console.log(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`);
+            
+            // Trigger recalculation of totals
+            if (typeof updateHiveStrengthTotals === 'function') {
+                updateHiveStrengthTotals();
+            }
+        }).catch(error => {
+            console.error('Error updating hive state:', error);
+            beeMarshallAlert(`❌ Error updating ${state} hive count`, 'error');
+        });
+    }
+}
