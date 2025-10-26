@@ -66,24 +66,6 @@ window.getTaskDisplayName = function(taskName, taskId) {
     return '[Unknown Task]';
 };
 
-function showDashboard() {
-    console.log('🔄 Switching to Dashboard view...');
-    hideAllViews();
-    
-    // Small delay to ensure all views are hidden before showing new view
-    setTimeout(() => {
-        const view = document.getElementById('dashboardView');
-        if (view) {
-            view.classList.remove('hidden');
-        }
-        
-        updateActiveNav('dashboard');
-        updateDashboard();
-        
-        console.log('✅ Dashboard view displayed');
-    }, 10);
-}
-
 function updateDashboard() {
     console.log('📊 Updating dashboard with data...');
     console.log('🔍 Current data state:', {

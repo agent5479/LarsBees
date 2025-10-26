@@ -31,37 +31,6 @@ function checkAndFlagOverdueTasks() {
 }
 
 // Enhanced scheduling with timeline view and task completion
-function showScheduledTasks() {
-    console.log('🔄 Switching to Schedule view...');
-    console.log('📊 Current data state:', {
-        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-        clusters: clusters ? clusters.length : 'undefined',
-        tasks: tasks ? tasks.length : 'undefined',
-        individualHives: individualHives ? individualHives.length : 'undefined'
-    });
-    
-    hideAllViews();
-    
-    // Small delay to ensure all views are hidden before showing new view
-    setTimeout(() => {
-        const view = document.getElementById('scheduledView');
-        if (view) {
-            view.classList.remove('hidden');
-        }
-        
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Schedule');
-        }
-        
-        console.log('📊 About to call renderScheduledTasks()');
-        renderScheduledTasks();
-        
-        console.log('📊 About to call renderScheduleTimeline()');
-        renderScheduleTimeline();
-        
-        console.log('✅ Schedule view displayed');
-    }, 10);
-}
 
 function renderScheduledTasks() {
     console.log('🔄 renderScheduledTasks() called');

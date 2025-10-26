@@ -12,29 +12,6 @@ const CLUSTER_TYPES = {
     'custom': { name: 'Custom', color: '#20c997', icon: 'bi-gear' }
 };
 
-// Navigation
-function showClusters() {
-    console.log('🔄 Switching to Clusters view...');
-    hideAllViews();
-    
-    // Small delay to ensure all views are hidden before showing new view
-    setTimeout(() => {
-        const view = document.getElementById('clustersView');
-        if (view) {
-            view.classList.remove('hidden');
-        }
-        
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Clusters');
-        }
-        
-        renderClusters();
-        renderClusterTypeFilter();
-        
-        console.log('✅ Clusters view displayed');
-    }, 10);
-}
-
 function renderClusters() {
     const html = clusters.length > 0
         ? clusters.map(c => {

@@ -34,36 +34,118 @@ function hideAllViews() {
 }
 
 function showDashboard() {
+    console.log('🔄 Switching to Dashboard view...');
     hideAllViews();
-    document.getElementById('dashboardView').classList.remove('hidden');
-    updateDashboard();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('dashboardView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('dashboard');
+        }
+        
+        if (typeof updateDashboard === 'function') {
+            updateDashboard();
+        }
+        
+        console.log('✅ Dashboard view displayed');
+    }, 10);
 }
 
 function showClusters() {
+    console.log('🔄 Switching to Clusters view...');
     hideAllViews();
-    document.getElementById('clustersView').classList.remove('hidden');
-    renderClusters();
-    renderClusterTypeFilter();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('clustersView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Clusters');
+        }
+        
+        renderClusters();
+        renderClusterTypeFilter();
+        
+        console.log('✅ Clusters view displayed');
+    }, 10);
 }
 
 function showActions() {
+    console.log('🔄 Switching to Actions view...');
     hideAllViews();
-    document.getElementById('actionsView').classList.remove('hidden');
-    populateActionFilters();
-    renderActions();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('actionsView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Actions');
+        }
+        
+        populateActionFilters();
+        renderActions();
+        
+        console.log('✅ Actions view displayed');
+    }, 10);
 }
 
 function showLogActionForm() {
     hideAllViews();
-    document.getElementById('logActionView').classList.remove('hidden');
-    populateActionForm();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('logActionView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof populateActionForm === 'function') {
+            populateActionForm();
+        }
+    }, 10);
 }
 
 function showScheduledTasks() {
+    console.log('🔄 Switching to Schedule view...');
+    console.log('📊 Current data state:', {
+        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+        clusters: clusters ? clusters.length : 'undefined',
+        tasks: tasks ? tasks.length : 'undefined',
+        individualHives: individualHives ? individualHives.length : 'undefined'
+    });
+    
     hideAllViews();
-    document.getElementById('scheduledView').classList.remove('hidden');
-    renderScheduledTasks();
-    renderScheduleTimeline();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('scheduledView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Schedule');
+        }
+        
+        console.log('📊 About to call renderScheduledTasks()');
+        renderScheduledTasks();
+        
+        console.log('📊 About to call renderScheduleTimeline()');
+        renderScheduleTimeline();
+        
+        console.log('✅ Schedule view displayed');
+    }, 10);
 }
 
 function showFlagged() {
