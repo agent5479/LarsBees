@@ -1,9 +1,36 @@
 // BeeMarshall - Navigation Module
 
 function hideAllViews() {
-    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'scheduledView', 'scheduleForNextVisitView', 'flaggedView', 'employeesView', 'manageTasksView', 'seasonalRequirementsView', 'suggestedScheduleView'].forEach(id => {
-        document.getElementById(id)?.classList.add('hidden');
+    // List of all view containers
+    const viewIds = [
+        'dashboardView', 
+        'clustersView', 
+        'clusterFormView', 
+        'actionsView', 
+        'logActionView', 
+        'scheduledView', 
+        'calendarView',
+        'scheduleForNextVisitView', 
+        'flaggedView', 
+        'employeesView', 
+        'manageTasksView',
+        'tasksView',
+        'seasonalRequirementsView', 
+        'suggestedScheduleView',
+        'complianceView'
+    ];
+    
+    // Hide all views with forced reflow
+    viewIds.forEach(id => {
+        const view = document.getElementById(id);
+        if (view) {
+            view.classList.add('hidden');
+            // Force browser reflow to ensure the hidden class is applied
+            void view.offsetHeight;
+        }
     });
+    
+    console.log('🔄 All views hidden');
 }
 
 function showDashboard() {

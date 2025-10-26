@@ -1,13 +1,25 @@
 // BeeMarshall - Actions Management Module
 
 function showActions() {
+    console.log('🔄 Switching to Actions view...');
     hideAllViews();
-    document.getElementById('actionsView').classList.remove('hidden');
-    if (typeof updateActiveNav === 'function') {
-        updateActiveNav('Actions');
-    }
-    populateActionFilters();
-    renderActions();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('actionsView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Actions');
+        }
+        
+        populateActionFilters();
+        renderActions();
+        
+        console.log('✅ Actions view displayed');
+    }, 10);
 }
 
 function showLogActionForm() {

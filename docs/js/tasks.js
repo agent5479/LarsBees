@@ -30,12 +30,25 @@ function showTasks() {
         alert('Only administrators can manage tasks.');
         return;
     }
+    
+    console.log('🔄 Switching to Tasks view...');
     hideAllViews();
-    document.getElementById('tasksView').classList.remove('hidden');
-    if (typeof updateActiveNav === 'function') {
-        updateActiveNav('Task');
-    }
-    renderTasksList();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('tasksView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Task');
+        }
+        
+        renderTasksList();
+        
+        console.log('✅ Tasks view displayed');
+    }, 10);
 }
 
 // Make renderTasksList globally accessible

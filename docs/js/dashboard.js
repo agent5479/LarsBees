@@ -2,9 +2,18 @@
 
 // Helper function to update active navigation state
 function updateActiveNav(section) {
-    // Remove active class from all nav links
+    console.log(`🎯 Updating navigation to: ${section}`);
+    
+    // First, remove active class from ALL nav links (including dropdowns)
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
+    });
+    
+    // Also remove active from any other elements
+    document.querySelectorAll('.active').forEach(el => {
+        if (el.classList.contains('nav-link')) {
+            el.classList.remove('active');
+        }
     });
     
     // Map sections to their corresponding function names
@@ -17,7 +26,8 @@ function updateActiveNav(section) {
         'Tasks': 'showTasks',
         'Task': 'showTasks',
         'Compliance': 'showComplianceView',
-        'Team': 'showEmployees'
+        'Team': 'showEmployees',
+        'Employees': 'showEmployees'
     };
     
     const functionName = sectionMap[section] || `show${section}`;
@@ -28,6 +38,7 @@ function updateActiveNav(section) {
         const onclick = link.getAttribute('onclick');
         if (onclick && onclick.includes(functionName)) {
             link.classList.add('active');
+            console.log(`✅ Activated nav link with onclick: ${onclick}`);
         }
     });
     
@@ -56,10 +67,21 @@ window.getTaskDisplayName = function(taskName, taskId) {
 };
 
 function showDashboard() {
+    console.log('🔄 Switching to Dashboard view...');
     hideAllViews();
-    document.getElementById('dashboardView').classList.remove('hidden');
-    updateActiveNav('dashboard');
-    updateDashboard();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('dashboardView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        updateActiveNav('dashboard');
+        updateDashboard();
+        
+        console.log('✅ Dashboard view displayed');
+    }, 10);
 }
 
 function updateDashboard() {

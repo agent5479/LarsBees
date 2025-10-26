@@ -14,13 +14,25 @@ const CLUSTER_TYPES = {
 
 // Navigation
 function showClusters() {
+    console.log('🔄 Switching to Clusters view...');
     hideAllViews();
-    document.getElementById('clustersView').classList.remove('hidden');
-    if (typeof updateActiveNav === 'function') {
-        updateActiveNav('Clusters');
-    }
-    renderClusters();
-    renderClusterTypeFilter();
+    
+    // Small delay to ensure all views are hidden before showing new view
+    setTimeout(() => {
+        const view = document.getElementById('clustersView');
+        if (view) {
+            view.classList.remove('hidden');
+        }
+        
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Clusters');
+        }
+        
+        renderClusters();
+        renderClusterTypeFilter();
+        
+        console.log('✅ Clusters view displayed');
+    }, 10);
 }
 
 function renderClusters() {
