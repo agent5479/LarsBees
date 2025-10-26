@@ -876,7 +876,10 @@ function archiveCluster(id) {
             };
             
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
-            database.ref(`${actionPath}/${action.id}`).set(action);
+            database.ref(`${actionPath}/${action.id}`).set(action).then(() => {
+                // Refresh the clusters list to update the UI
+                renderClusters();
+            });
         }).catch(error => {
             console.error('Error archiving cluster:', error);
             beeMarshallAlert('❌ Error archiving site. Please try again.', 'error');
@@ -919,7 +922,10 @@ function unarchiveCluster(id) {
             };
             
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
-            database.ref(`${actionPath}/${action.id}`).set(action);
+            database.ref(`${actionPath}/${action.id}`).set(action).then(() => {
+                // Refresh the clusters list to update the UI
+                renderClusters();
+            });
         }).catch(error => {
             console.error('Error unarchiving cluster:', error);
             beeMarshallAlert('❌ Error unarchiving site. Please try again.', 'error');
@@ -953,6 +959,8 @@ function deleteCluster(id) {
             const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
             database.ref(`${tenantPath}/${id}`).remove().then(() => {
                 beeMarshallAlert(`🗑️ Site "${cluster.name}" has been permanently deleted`, 'success');
+                // Refresh the clusters list to update the UI
+                renderClusters();
             }).catch(error => {
                 console.error('Error deleting cluster:', error);
                 beeMarshallAlert('❌ Error deleting site. Please try again.', 'error');
@@ -1650,7 +1658,33 @@ function editHiveStateCount(state) {
         return;
     }
     
-    // Get current value
+    // Get the cluster
+    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    // Calculate current total from Hive Box totals (exclude Dead)
+    const currentHiveBoxTotal = (visualHiveData ? 
+        (visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs) :
+        (cluster.hiveStacks?.doubles || 0) + (cluster.hiveStacks?.topSplits || 0) + 
+        (cluster.hiveStacks?.singles || 0) + (cluster.hiveStacks?.nucs || 0)
+    );
+    
+    // Get current hive state values
+    const currentStrong = parseInt(document.getElementById('hiveStateStrong')?.textContent) || 0;
+    const currentMedium = parseInt(document.getElementById('hiveStateMedium')?.textContent) || 0;
+    const currentWeak = parseInt(document.getElementById('hiveStateWeak')?.textContent) || 0;
+    const currentNUC = parseInt(document.getElementById('hiveStateNUC')?.textContent) || 0;
+    
+    // Calculate current state total (excluding Dead)
+    const currentStateTotal = currentStrong + currentMedium + currentWeak + currentNUC;
+    
+    // Show total information
+    const totalInfo = `Current Hive Box Total: ${currentHiveBoxTotal}\nCurrent State Total (Excluding Dead): ${currentStateTotal}`;
+    
+    // Get current value for this state
     const idMap = {
         'Strong': 'hiveStateStrong',
         'Medium': 'hiveStateMedium',
@@ -1664,43 +1698,68 @@ function editHiveStateCount(state) {
     const currentValue = parseInt(currentElement.textContent) || 0;
     
     // Prompt for new value
-    const newValueStr = prompt(`Enter new count for ${state} hives:`, currentValue);
+    const newValueStr = prompt(`${totalInfo}\n\nEnter new count for ${state} hives:`, currentValue);
     if (newValueStr === null) return; // User cancelled
     
     const newValue = parseInt(newValueStr) || 0;
     
+    // If not updating Dead, validate that state total matches hive box total
+    if (state !== 'Dead') {
+        const otherStateTotal = (state === 'Strong' ? 0 : currentStrong) +
+                               (state === 'Medium' ? 0 : currentMedium) +
+                               (state === 'Weak' ? 0 : currentWeak) +
+                               (state === 'NUC' ? 0 : currentNUC);
+        
+        const newStateTotal = otherStateTotal + newValue;
+        
+        if (newStateTotal !== currentHiveBoxTotal) {
+            beeMarshallAlert(`⚠️ Warning: State total (${newStateTotal}) does not match Hive Box total (${currentHiveBoxTotal})\n\nPlease adjust other state counts or update the Hive Box totals first.`, 'warning');
+            return;
+        }
+    }
+    
     // Update the visual element
     currentElement.textContent = newValue;
     
-    // Update cluster data and save to Firebase
-    const cluster = clusters.find(c => c.id === parseInt(clusterId));
-    if (cluster) {
-        // Update hive strength data
-        if (!cluster.hiveStrength) cluster.hiveStrength = {};
-        cluster.hiveStrength[state.toLowerCase()] = newValue;
+    // Update hive strength data
+    if (!cluster.hiveStrength) cluster.hiveStrength = {};
+    cluster.hiveStrength[state.toLowerCase()] = newValue;
+    
+    // Save to Firebase
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    database.ref(`${tenantPath}/${cluster.id}`).update({
+        hiveStrength: cluster.hiveStrength,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser.username
+    }).then(() => {
+        // Log as action (save to Firebase, not just push to array)
+        const actionText = `Updated ${state} hives at ${cluster.name}: ${currentValue} → ${newValue}`;
+        const newAction = {
+            id: Date.now(),
+            clusterId: parseInt(clusterId),
+            task: 'Hive State Update',
+            notes: actionText,
+            completedBy: currentUser.username,
+            completedAt: new Date().toISOString(),
+            date: new Date().toISOString().split('T')[0]
+        };
         
-        // Save to Firebase
-        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
-        database.ref(`${tenantPath}/${cluster.id}`).update({
-            hiveStrength: cluster.hiveStrength,
-            lastModified: new Date().toISOString(),
-            lastModifiedBy: currentUser.username
-        }).then(() => {
-            // Log as action
-            const actionText = `Updated ${state} hives at ${cluster.name}: ${currentValue} → ${newValue}`;
-            logSiteVisitAction(cluster.id, actionText);
-            
-            console.log(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`);
-            
-            // Trigger recalculation of totals
-            if (typeof updateHiveStrengthTotals === 'function') {
-                updateHiveStrengthTotals();
-            }
-        }).catch(error => {
-            console.error('Error updating hive state:', error);
-            beeMarshallAlert(`❌ Error updating ${state} hive count`, 'error');
-        });
-    }
+        actions.push(newAction);
+        
+        const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+        return database.ref(`${actionPath}/${newAction.id}`).set(newAction);
+    }).then(() => {
+        console.log(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`);
+        beeMarshallAlert(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`, 'success');
+        
+        // Trigger recalculation of totals
+        if (typeof updateHiveStrengthTotals === 'function') {
+            updateHiveStrengthTotals();
+        }
+    }).catch(error => {
+        console.error('Error updating hive state:', error);
+        beeMarshallAlert(`❌ Error updating ${state} hive count: ${error.message}`, 'error');
+    });
 }
 
 /**
