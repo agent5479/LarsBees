@@ -392,7 +392,7 @@
                         <div class="alert alert-info border-0 mt-2" style="background: rgba(13, 202, 240, 0.1); padding: 0.5rem 0.75rem;">
                             <small>
                                 <strong>Data-Driven Beekeeping:</strong> Visual analytics for hive performance, health trends, and operational efficiency<br>
-                                <em>Reports integrate with your Dashboard → Clusters → Actions → Schedule workflow</em>
+                                <em>Reports integrate with your Dashboard → Sites → Actions → Schedule workflow</em>
                             </small>
                         </div>
                         <div class="mt-2">
@@ -422,7 +422,7 @@
                         </div>
                         <div>
                             <div class="stat-number" id="totalClusters">0</div>
-                            <div class="text-muted">Total Clusters</div>
+                            <div class="text-muted">Total Sites</div>
                         </div>
                     </div>
                 </div>
@@ -474,13 +474,13 @@
                 <div class="report-card">
                     <div class="card-header">
                         <h5 class="mb-0"><i class="bi bi-hexagon-fill"></i> Interactive Hive Analysis</h5>
-                        <small class="text-muted">Click on hive categories to see affected clusters and schedule tasks</small>
+                        <small class="text-muted">Click on hive categories to see affected sites and schedule tasks</small>
                     </div>
                     <div class="card-body">
                         <div class="row g-2">
                             <!-- Strong Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="strong" onclick="showClustersByCategory('strong')">
+                                <div class="hive-category-card clickable" data-category="strong" onclick="showSitesByCategory('strong')">
                                     <div class="hive-icon strong">
                                         <i class="bi bi-hexagon-fill"></i>
                                     </div>
@@ -492,7 +492,7 @@
                             
                             <!-- Medium Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="medium" onclick="showClustersByCategory('medium')">
+                                <div class="hive-category-card clickable" data-category="medium" onclick="showSitesByCategory('medium')">
                                     <div class="hive-icon medium">
                                         <i class="bi bi-hexagon"></i>
                                     </div>
@@ -504,7 +504,7 @@
                             
                             <!-- Weak Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="weak" onclick="showClustersByCategory('weak')">
+                                <div class="hive-category-card clickable" data-category="weak" onclick="showSitesByCategory('weak')">
                                     <div class="hive-icon weak">
                                         <i class="bi bi-hexagon"></i>
                                     </div>
@@ -516,7 +516,7 @@
                             
                             <!-- NUC Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="nuc" onclick="showClustersByCategory('nuc')">
+                                <div class="hive-category-card clickable" data-category="nuc" onclick="showSitesByCategory('nuc')">
                                     <div class="hive-icon nuc">
                                         <i class="bi bi-hexagon-half"></i>
                                     </div>
@@ -528,7 +528,7 @@
                             
                             <!-- Dead Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="dead" onclick="showClustersByCategory('dead')">
+                                <div class="hive-category-card clickable" data-category="dead" onclick="showSitesByCategory('dead')">
                                     <div class="hive-icon dead">
                                         <i class="bi bi-hexagon"></i>
                                     </div>
@@ -540,7 +540,7 @@
                             
                             <!-- Empty Platforms -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="empty" onclick="showClustersByCategory('empty')">
+                                <div class="hive-category-card clickable" data-category="empty" onclick="showSitesByCategory('empty')">
                                     <div class="hive-icon empty">
                                         <i class="bi bi-square"></i>
                                     </div>
@@ -594,10 +594,10 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" onclick="navigateToCluster()">
+                        <button type="button" class="btn btn-primary" onclick="navigateToSite()">
                             <i class="bi bi-arrow-right"></i> Go to Site
                         </button>
-                        <button type="button" class="btn btn-success" onclick="scheduleTaskForCluster()">
+                        <button type="button" class="btn btn-success" onclick="scheduleTaskForSite()">
                             <i class="bi bi-calendar-plus"></i> Schedule Task
                         </button>
                     </div>
@@ -1054,10 +1054,9 @@
                 if ((clusters && clusters.length > 0 || actions && actions.length > 0) && !window.reportsDataLoaded) {
                     window.reportsDataLoaded = true;
                     // Success message is now handled in loadDataFromFirebase()
+                    // Generate reports only once when data is first loaded
+                    generateAllReports();
                 }
-                
-                // Auto-generate reports when data is updated
-                generateAllReports();
             } catch (error) {
                 Logger.error('❌ Error updating metrics:', error);
             }
@@ -1735,13 +1734,13 @@
             });
         }
         
-        function showClustersByCategory(category) {
+        function showSitesByCategory(category) {
             if (!clusters || clusters.length === 0) {
                 beeMarshallAlert('📊 No site data available.\n\nAdd your first apiary site to start generating reports and insights.', 'info');
                 return;
             }
             
-            const affectedClusters = clusters.filter(cluster => {
+            const affectedSites = clusters.filter(cluster => {
                 if (category === 'empty') {
                     return cluster.hiveStacks && cluster.hiveStacks.empty > 0;
                 } else if (cluster.hiveStrength) {
@@ -1750,24 +1749,24 @@
                 return false;
             });
             
-            if (affectedClusters.length === 0) {
+            if (affectedSites.length === 0) {
                 alert(`No sites found with ${category} hives.`);
                 return;
             }
             
             // Show sites in modal with enhanced details
-            showClusterDetailsModal(affectedClusters, category);
+            showSiteDetailsModal(affectedSites, category);
         }
         
-        function showClusterDetailsModal(clusterList, category) {
+        function showSiteDetailsModal(siteList, category) {
             const modal = document.getElementById('clusterDetailsModal');
             const title = document.getElementById('clusterDetailsTitle');
             const content = document.getElementById('clusterDetailsContent');
             
-            title.textContent = `Sites with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${clusterList.length})`;
+            title.textContent = `Sites with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${siteList.length})`;
             
             let html = '<div class="row">';
-            clusterList.forEach(cluster => {
+            siteList.forEach(cluster => {
                 const count = category === 'empty' 
                     ? (cluster.hiveStacks?.empty || 0)
                     : (cluster.hiveStrength?.[category] || 0);
@@ -1815,10 +1814,10 @@
                                 </div>
                                 
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-primary" onclick="navigateToSpecificCluster(${cluster.id})">
+                                    <button class="btn btn-sm btn-primary" onclick="navigateToSpecificSite(${cluster.id})">
                                         <i class="bi bi-arrow-right"></i> Go to Site
                                     </button>
-                                    <button class="btn btn-sm btn-success" onclick="scheduleTaskForSpecificCluster(${cluster.id}, '${category}')">
+                                    <button class="btn btn-sm btn-success" onclick="scheduleTaskForSpecificSite(${cluster.id}, '${category}')">
                                         <i class="bi bi-calendar-plus"></i> Schedule Task
                                     </button>
                                 </div>
@@ -1836,17 +1835,17 @@
             bsModal.show();
         }
         
-        function navigateToSpecificCluster(clusterId) {
-            // Store cluster ID for navigation
-            localStorage.setItem('navigateToCluster', clusterId);
+        function navigateToSpecificSite(siteId) {
+            // Store site ID for navigation
+            localStorage.setItem('navigateToSite', siteId);
             // Redirect to main app
             window.location.href = 'beemarshall-full.html';
         }
         
-        function scheduleTaskForSpecificCluster(clusterId, category) {
+        function scheduleTaskForSpecificSite(siteId, category) {
             // Store task scheduling info
-            localStorage.setItem('scheduleTaskForCluster', JSON.stringify({
-                clusterId: clusterId,
+            localStorage.setItem('scheduleTaskForSite', JSON.stringify({
+                siteId: siteId,
                 category: category,
                 suggestedTasks: getSuggestedTasksForCategory(category)
             }));
@@ -1868,20 +1867,20 @@
         }
         
         // Navigation functions for modal buttons
-        function navigateToCluster() {
+        function navigateToSite() {
             // This will be called from the modal footer
-            const clusterId = localStorage.getItem('navigateToCluster');
-            if (clusterId) {
-                window.location.href = `beemarshall-full.html#cluster-${clusterId}`;
+            const siteId = localStorage.getItem('navigateToSite');
+            if (siteId) {
+                window.location.href = `beemarshall-full.html#site-${siteId}`;
             }
         }
         
-        function scheduleTaskForCluster() {
+        function scheduleTaskForSite() {
             // This will be called from the modal footer
-            const taskData = localStorage.getItem('scheduleTaskForCluster');
+            const taskData = localStorage.getItem('scheduleTaskForSite');
             if (taskData) {
                 const data = JSON.parse(taskData);
-                window.location.href = `beemarshall-full.html#schedule-task-${data.clusterId}`;
+                window.location.href = `beemarshall-full.html#schedule-task-${data.siteId}`;
             }
         }
     </script>
