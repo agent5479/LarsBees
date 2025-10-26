@@ -1178,7 +1178,7 @@
                             </div>
                             <div class="version-tag">
                                 <span class="badge bg-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
-                                    <i class="bi bi-tag-fill me-1"></i>v0.96
+                                    <i class="bi bi-tag-fill me-1"></i>v0.98
                                 </span>
                             </div>
                         </div>
@@ -1220,7 +1220,7 @@
                                 </small>
                                 <div class="mt-2">
                                     <small class="text-muted">
-                                        <i class="bi bi-tag"></i> Version v0.96
+                                        <i class="bi bi-tag"></i> Version v0.98
                                     </small>
                                 </div>
                             </div>
@@ -1270,7 +1270,7 @@
                                             <strong>Firebase:</strong> <span id="firebaseStatus">Connecting...</span><br>
                                             <strong>Last Error:</strong> <span id="lastError">None</span><br>
                                             <strong>Session:</strong> <span id="sessionInfo">Not logged in</span><br>
-                                            <strong>Version:</strong> <span id="versionInfo">v0.96</span>
+                                            <strong>Version:</strong> <span id="versionInfo">v0.98</span>
                                         </small>
                                     </div>
                                 </div>
@@ -1614,9 +1614,9 @@
                                             <div class="form-text">Give your apiary location a descriptive name</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterType" class="form-label">Cluster Type <span class="text-danger">*</span></label>
+                                            <label for="clusterType" class="form-label">Site Type <span class="text-danger">*</span></label>
                                             <select class="form-select" id="clusterType" required>
-                                                <option value="">Select cluster type...</option>
+                                                <option value="">Select site type...</option>
                                                 <option value="production">Production</option>
                                                 <option value="nucleus">NUC (Nucleus)</option>
                                                 <option value="queen-rearing">Queen Rearing</option>
@@ -1635,6 +1635,32 @@
                                         <textarea class="form-control" id="clusterDescription" rows="3"></textarea>
                                     </div>
                                     
+                                    <!-- Hive Box Site Report -->
+                                    <div class="card mt-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-grid"></i> Hive Box Site Report</h6>
+                                            <small class="text-muted">Click boxes to update site inventory. Changes are automatically saved as actions.</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="renderVisualHiveGrid()">
+                                                        <i class="bi bi-arrow-clockwise"></i> Refresh Grid
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="saveVisualHiveChanges()">
+                                                        <i class="bi bi-check-circle"></i> Save & Log Site Visit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="visualHiveGrid" class="mb-3">
+                                                <p class="text-muted text-center">Loading visual hive grid...</p>
+                                            </div>
+                                            <div class="alert alert-info mt-3">
+                                                <small><i class="bi bi-info-circle"></i> <strong>Site Report:</strong> Click on any hive box to update its status. All changes will be logged as actions automatically when you save.</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <label for="clusterLat" class="form-label">Latitude <span class="text-danger">*</span></label>
@@ -1649,7 +1675,7 @@
                                         <div class="col-md-4 mb-3">
                                             <label for="clusterHiveCount" class="form-label">Total Hive Count *</label>
                                             <input type="number" class="form-control" id="clusterHiveCount" min="1" required onchange="updateHiveStrengthTotals()">
-                                            <div class="form-text">Total number of hives in this cluster</div>
+                                            <div class="form-text">Total number of hives in this site</div>
                                         </div>
                                     </div>
                                     
@@ -1820,79 +1846,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Hive Stack Configuration -->
-                                    <div class="card mt-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0"><i class="bi bi-stack"></i> Hive Stack Configuration</h6>
-                                            <small class="text-muted">Configure your hive stack types and platforms</small>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="stackDoubles" class="form-label">Double Stacks</label>
-                                                    <input type="number" class="form-control" id="stackDoubles" min="0" value="0" onchange="updateStackTotals()">
-                                                    <div class="form-text">Two brood boxes stacked</div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="stackTopSplits" class="form-label">Top-Splits</label>
-                                                    <input type="number" class="form-control" id="stackTopSplits" min="0" value="0" onchange="updateStackTotals()">
-                                                    <div class="form-text">Split colonies with top boxes</div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="stackSingles" class="form-label">Single Stacks</label>
-                                                    <input type="number" class="form-control" id="stackSingles" min="0" value="0" onchange="updateStackTotals()">
-                                                    <div class="form-text">Single brood box hives</div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="stackNUCs" class="form-label">NUC Stacks</label>
-                                                    <input type="number" class="form-control" id="stackNUCs" min="0" value="0" onchange="updateStackTotals()">
-                                                    <div class="form-text">Nucleus colony stacks</div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-md-6 mb-3">
-                                                    <label for="stackEmpty" class="form-label">Empty Platforms</label>
-                                                    <input type="number" class="form-control" id="stackEmpty" min="0" value="0" onchange="updateStackTotals()">
-                                                    <div class="form-text">Unused hive platforms</div>
-                                                </div>
-                                                <div class="col-md-6 mb-3">
-                                                    <div class="alert alert-info">
-                                                        <strong>Stack Total:</strong> <span id="stackTotal">0</span> stacks
-                                                        <br><small id="stackStatus" class="text-muted">Enter stack counts above</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Visual Hive Box Grid for Site Reporting -->
-                                    <div class="card mt-4">
-                                        <div class="card-header">
-                                            <h6 class="mb-0"><i class="bi bi-grid"></i> Visual Hive Box Grid - Site Report</h6>
-                                            <small class="text-muted">Click boxes to update site inventory. Changes are automatically saved as actions.</small>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row mb-3">
-                                                <div class="col-12">
-                                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="renderVisualHiveGrid()">
-                                                        <i class="bi bi-arrow-clockwise"></i> Refresh Grid
-                                                    </button>
-                                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="saveVisualHiveChanges()">
-                                                        <i class="bi bi-check-circle"></i> Save & Log Site Visit
-                                                    </button>
-                                                </div>
-                                            </div>
-                                            <div id="visualHiveGrid" class="mb-3">
-                                                <p class="text-muted text-center">Loading visual hive grid...</p>
-                                            </div>
-                                            <div class="alert alert-info mt-3">
-                                                <small><i class="bi bi-info-circle"></i> <strong>Site Report:</strong> Click on any hive box to update its status. All changes will be logged as actions automatically when you save.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -2644,7 +2597,7 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- BeeMarshall Modules v0.96 -->
+    <!-- BeeMarshall Modules v0.98 -->
     <!-- Environment Management -->
     <script src="js/utils.js"></script>
     <!-- Form Validation System -->
