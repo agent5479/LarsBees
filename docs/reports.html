@@ -565,7 +565,14 @@
                     </div>
                     <div class="card-body">
                         <div id="harvestHistorySection">
-                            <p class="text-muted text-center">Loading harvest data...</p>
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-warning" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted mt-3">Loading harvest data...</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -609,7 +616,15 @@
                         </div>
                         <h5 class="card-title">Hive Performance</h5>
                         <p class="card-text text-muted">Track hive strength, productivity, and growth over time</p>
-                        <div class="chart-container">
+                        <div class="chart-container position-relative">
+                            <div id="hivePerformanceSkeleton" class="d-flex align-items-center justify-content-center" style="height: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-success" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted small mt-2">Loading chart...</p>
+                                </div>
+                            </div>
                             <canvas id="hivePerformanceChart"></canvas>
                         </div>
                     </div>
@@ -625,7 +640,15 @@
                         </div>
                         <h5 class="card-title">Health & Mortality</h5>
                         <p class="card-text text-muted">Monitor disease outbreaks, mortality rates, and health trends</p>
-                        <div class="chart-container">
+                        <div class="chart-container position-relative">
+                            <div id="healthMortalitySkeleton" class="d-flex align-items-center justify-content-center" style="height: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-danger" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted small mt-2">Loading chart...</p>
+                                </div>
+                            </div>
                             <canvas id="healthMortalityChart"></canvas>
                         </div>
                     </div>
@@ -641,7 +664,15 @@
                         </div>
                         <h5 class="card-title">Operations</h5>
                         <p class="card-text text-muted">Analyze task completion, efficiency, and resource usage</p>
-                        <div class="chart-container">
+                        <div class="chart-container position-relative">
+                            <div id="operationsSkeleton" class="d-flex align-items-center justify-content-center" style="height: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted small mt-2">Loading chart...</p>
+                                </div>
+                            </div>
                             <canvas id="operationsChart"></canvas>
                         </div>
                     </div>
@@ -1121,6 +1152,12 @@
                 existingChart.destroy();
             }
             
+            // Hide skeleton loader
+            const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
+            if (hivePerformanceSkeleton) {
+                hivePerformanceSkeleton.style.display = 'none';
+            }
+            
             // Create performance chart
             const ctx = document.getElementById('hivePerformanceChart').getContext('2d');
             new Chart(ctx, {
@@ -1247,6 +1284,12 @@
                 existingHealthChart.destroy();
             }
             
+            // Hide skeleton loader
+            const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
+            if (healthMortalitySkeleton) {
+                healthMortalitySkeleton.style.display = 'none';
+            }
+            
             // Create health chart
             const ctx = document.getElementById('healthMortalityChart').getContext('2d');
             new Chart(ctx, {
@@ -1347,6 +1390,12 @@
             const existingOpsChart = Chart.getChart('operationsChart');
             if (existingOpsChart) {
                 existingOpsChart.destroy();
+            }
+            
+            // Hide skeleton loader
+            const operationsSkeleton = document.getElementById('operationsSkeleton');
+            if (operationsSkeleton) {
+                operationsSkeleton.style.display = 'none';
             }
             
             // Create operations chart
