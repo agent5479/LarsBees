@@ -2777,8 +2777,12 @@
                 console.log(`📍 Rendering ${clusters.length} cluster markers...`);
                 
                 clusters.forEach(cluster => {
-                    if (cluster.lat && cluster.lng) {
-                        const marker = L.marker([cluster.lat, cluster.lng])
+                    // Use latitude/longitude instead of lat/lng
+                    const lat = cluster.latitude || cluster.lat;
+                    const lng = cluster.longitude || cluster.lng;
+                    
+                    if (lat && lng) {
+                        const marker = L.marker([lat, lng])
                             .addTo(window.beeMarshallMap)
                             .bindPopup(`
                                 <div class="cluster-popup">
@@ -2790,6 +2794,9 @@
                             `);
                         
                         window.beeMarshallMarkers.push(marker);
+                        console.log(`✅ Added marker for ${cluster.name} at [${lat}, ${lng}]`);
+                    } else {
+                        console.log(`⚠️ Cluster ${cluster.name} missing coordinates: lat=${cluster.latitude}, lng=${cluster.longitude}`);
                     }
                 });
                 

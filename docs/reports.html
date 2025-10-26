@@ -692,29 +692,39 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Firebase -->
+    <!-- Environment Management (must load first for Logger) -->
+    <script src="js/utils.js"></script>
+    
+    <!-- Firebase (only loaded once) -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
-    <!-- Environment Management -->
-    <script src="js/utils.js"></script>
-    
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLqjik76P7c72rgrMvo1lw86G3MOIIuNA",
-            authDomain: "beemarshall-a311e.firebaseapp.com",
-            databaseURL: "https://beemarshall-a311e-default-rtdb.firebaseio.com",
-            projectId: "beemarshall-a311e",
-            storageBucket: "beemarshall-a311e.firebasestorage.app",
-            messagingSenderId: "502475319497",
-            appId: "1:502475319497:web:36e8120b0ca2c997870518",
-            measurementId: "G-4WMTWPWWFD"
-        };
-        
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // Check if Firebase is already initialized to prevent double-loading
+        if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
+            Logger.log('🔥 Initializing Firebase...');
+            
+            // Firebase Configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyBLqjik76P7c72rgrMvo1lw86G3MOIIuNA",
+                authDomain: "beemarshall-a311e.firebaseapp.com",
+                databaseURL: "https://beemarshall-a311e-default-rtdb.firebaseio.com",
+                projectId: "beemarshall-a311e",
+                storageBucket: "beemarshall-a311e.firebasestorage.app",
+                messagingSenderId: "502475319497",
+                appId: "1:502475319497:web:36e8120b0ca2c997870518",
+                measurementId: "G-4WMTWPWWFD"
+            };
+            
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+            
+            Logger.log('✅ Firebase initialized successfully');
+        } else {
+            Logger.log('⚠️ Firebase already initialized, reusing existing instance');
+            const database = firebase.database();
+        }
         
         // Global variables
         let clusters = [];
@@ -724,11 +734,35 @@
         // Initialize page
         
         document.addEventListener('DOMContentLoaded', function() {
+            Logger.log('📊 Reports page loaded, initializing...');
+            
+            // Comprehensive debug and error reporting
+            window.addEventListener('error', function(event) {
+                Logger.error('❌ Global error caught:', {
+                    message: event.message,
+                    filename: event.filename,
+                    lineno: event.lineno,
+                    colno: event.colno,
+                    error: event.error
+                });
+                
+                // Show user-friendly error message
+                showSyncError('An error occurred. Please refresh the page.');
+            });
+            
+            // Unhandled promise rejection tracking
+            window.addEventListener('unhandledrejection', function(event) {
+                Logger.error('❌ Unhandled promise rejection:', event.reason);
+                showSyncError('A data loading error occurred. Please refresh the page.');
+            });
+            
             loadDataFromFirebase();
             initializeCharts();
             
             // Auto-generate reports after data loads
             generateAllReports();
+            
+            Logger.log('✅ Reports page initialization complete');
         });
         
         // Sync Status Indicator Functions
@@ -816,81 +850,196 @@
                 return;
             }
             
-            showSyncProgress('Loading reports data...');
-            
-            // Load tenant-specific data
-            database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
-                clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
-                Logger.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
-                updateMetrics();
-                updateHiveStrengthBreakdown();
-                
-                // Auto-generate reports when data loads
-                generateAllReports();
-            }, (error) => {
-                Logger.error('❌ Error loading clusters:', error);
-                showSyncError('Failed to load clusters');
-            });
-            
-            database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
-                actions = snapshot.val() ? Object.values(snapshot.val()) : [];
-                Logger.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
-                updateMetrics();
-                
-                // Auto-generate health report when actions load
-                generateAllReports();
-            }, (error) => {
-                Logger.error('❌ Error loading actions:', error);
-                showSyncError('Failed to load actions');
-            });
-            
-            database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
-                scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
-                Logger.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
-                updateMetrics();
-                
-                // Auto-generate operations report when tasks load
-                generateAllReports();
-            }, (error) => {
-                Logger.error('❌ Error loading scheduled tasks:', error);
-                showSyncError('Failed to load scheduled tasks');
-            });
-            
-            // Load additional data types for comprehensive reporting
-            database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
-                const individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
-                Logger.log('📊 Reports individual hives loaded for', currentTenantId + ':', individualHives.length);
-                updateMetrics();
-            });
-            
-            database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
-                const employees = snapshot.val() ? Object.values(snapshot.val()) : [];
-                Logger.log('📊 Reports employees loaded for', currentTenantId + ':', employees.length);
-                updateMetrics();
-            });
-            
-            database.ref(`tenants/${currentTenantId}/tasks`).on('value', (snapshot) => {
-                const tasks = snapshot.val() ? Object.values(snapshot.val()) : [];
-                Logger.log('📊 Reports tasks loaded for', currentTenantId + ':', tasks.length);
-                updateMetrics();
-            });
-        }
-        
-        // Update key metrics
-        function updateMetrics() {
-            document.getElementById('totalClusters').textContent = clusters.length;
-            document.getElementById('totalHives').textContent = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
-            document.getElementById('totalActions').textContent = actions.length;
-            document.getElementById('flaggedIssues').textContent = actions.filter(a => a.flag && a.flag !== 'normal').length;
-            
-            // Show success message when data is loaded (only once)
-            if ((clusters.length > 0 || actions.length > 0) && !window.reportsDataLoaded) {
-                window.reportsDataLoaded = true;
-                showSyncSuccess('Reports data synchronized');
+            // Check if database is available
+            if (!database) {
+                Logger.error('❌ Firebase database not initialized');
+                showSyncError('Database connection failed');
+                return;
             }
             
-            // Auto-generate reports when data is updated
-            generateAllReports();
+            showSyncProgress('Loading reports data...');
+            
+            // Track data loading progress
+            let dataLoadCount = 0;
+            const totalDataTypes = 6;
+            
+            function checkAllDataLoaded() {
+                dataLoadCount++;
+                Logger.log(`📊 Data loading progress: ${dataLoadCount}/${totalDataTypes} data types loaded`);
+                
+                if (dataLoadCount >= totalDataTypes) {
+                    Logger.log('✅ All reports data loaded successfully');
+                    showSyncSuccess('Reports data synchronized');
+                    updateMetrics();
+                }
+            }
+            
+            // Load tenant-specific data with comprehensive error handling
+            try {
+                database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
+                    try {
+                        clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
+                        Logger.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
+                        updateHiveStrengthBreakdown();
+                        checkAllDataLoaded();
+                        
+                        // Auto-generate reports when data loads
+                        generateAllReports();
+                    } catch (error) {
+                        Logger.error('❌ Error processing clusters data:', error);
+                    }
+                }, (error) => {
+                    Logger.error('❌ Error loading clusters:', error);
+                    showSyncError('Failed to load clusters');
+                    checkAllDataLoaded();
+                });
+            } catch (error) {
+                Logger.error('❌ Error setting up clusters listener:', error);
+                checkAllDataLoaded();
+            }
+            
+            try {
+                database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
+                    try {
+                        actions = snapshot.val() ? Object.values(snapshot.val()) : [];
+                        Logger.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
+                        checkAllDataLoaded();
+                        
+                        // Auto-generate health report when actions load
+                        generateAllReports();
+                    } catch (error) {
+                        Logger.error('❌ Error processing actions data:', error);
+                    }
+                }, (error) => {
+                    Logger.error('❌ Error loading actions:', error);
+                    showSyncError('Failed to load actions');
+                    checkAllDataLoaded();
+                });
+            } catch (error) {
+                Logger.error('❌ Error setting up actions listener:', error);
+                checkAllDataLoaded();
+            }
+            
+            try {
+                database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
+                    try {
+                        scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+                        Logger.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
+                        checkAllDataLoaded();
+                        
+                        // Auto-generate operations report when tasks load
+                        generateAllReports();
+                    } catch (error) {
+                        Logger.error('❌ Error processing scheduled tasks data:', error);
+                    }
+                }, (error) => {
+                    Logger.error('❌ Error loading scheduled tasks:', error);
+                    showSyncError('Failed to load scheduled tasks');
+                    checkAllDataLoaded();
+                });
+            } catch (error) {
+                Logger.error('❌ Error setting up scheduled tasks listener:', error);
+                checkAllDataLoaded();
+            }
+            
+            // Load additional data types for comprehensive reporting
+            try {
+                database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
+                    try {
+                        const individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
+                        Logger.log('📊 Reports individual hives loaded for', currentTenantId + ':', individualHives.length);
+                        checkAllDataLoaded();
+                    } catch (error) {
+                        Logger.error('❌ Error processing individual hives data:', error);
+                    }
+                }, (error) => {
+                    Logger.error('❌ Error loading individual hives:', error);
+                    checkAllDataLoaded();
+                });
+            } catch (error) {
+                Logger.error('❌ Error setting up individual hives listener:', error);
+                checkAllDataLoaded();
+            }
+            
+            try {
+                database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
+                    try {
+                        const employees = snapshot.val() ? Object.values(snapshot.val()) : [];
+                        Logger.log('📊 Reports employees loaded for', currentTenantId + ':', employees.length);
+                        checkAllDataLoaded();
+                    } catch (error) {
+                        Logger.error('❌ Error processing employees data:', error);
+                    }
+                }, (error) => {
+                    Logger.error('❌ Error loading employees:', error);
+                    checkAllDataLoaded();
+                });
+            } catch (error) {
+                Logger.error('❌ Error setting up employees listener:', error);
+                checkAllDataLoaded();
+            }
+            
+            try {
+                database.ref(`tenants/${currentTenantId}/tasks`).on('value', (snapshot) => {
+                    try {
+                        const tasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+                        Logger.log('📊 Reports tasks loaded for', currentTenantId + ':', tasks.length);
+                        checkAllDataLoaded();
+                    } catch (error) {
+                        Logger.error('❌ Error processing tasks data:', error);
+                    }
+                }, (error) => {
+                    Logger.error('❌ Error loading tasks:', error);
+                    checkAllDataLoaded();
+                });
+            } catch (error) {
+                Logger.error('❌ Error setting up tasks listener:', error);
+                checkAllDataLoaded();
+            }
+        }
+        
+        // Update key metrics with error handling
+        function updateMetrics() {
+            try {
+                // Safely update metrics with fallback values
+                const totalClustersEl = document.getElementById('totalClusters');
+                const totalHivesEl = document.getElementById('totalHives');
+                const totalActionsEl = document.getElementById('totalActions');
+                const flaggedIssuesEl = document.getElementById('flaggedIssues');
+                
+                if (totalClustersEl) {
+                    totalClustersEl.textContent = clusters ? clusters.length : 0;
+                }
+                
+                if (totalHivesEl) {
+                    totalHivesEl.textContent = clusters ? clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0) : 0;
+                }
+                
+                if (totalActionsEl) {
+                    totalActionsEl.textContent = actions ? actions.length : 0;
+                }
+                
+                if (flaggedIssuesEl) {
+                    flaggedIssuesEl.textContent = actions ? actions.filter(a => a.flag && a.flag !== 'normal').length : 0;
+                }
+                
+                Logger.log('📊 Metrics updated:', {
+                    clusters: clusters ? clusters.length : 0,
+                    actions: actions ? actions.length : 0,
+                    scheduledTasks: scheduledTasks ? scheduledTasks.length : 0
+                });
+                
+                // Show success message when data is loaded (only once)
+                if ((clusters && clusters.length > 0 || actions && actions.length > 0) && !window.reportsDataLoaded) {
+                    window.reportsDataLoaded = true;
+                    // Success message is now handled in loadDataFromFirebase()
+                }
+                
+                // Auto-generate reports when data is updated
+                generateAllReports();
+            } catch (error) {
+                Logger.error('❌ Error updating metrics:', error);
+            }
         }
         
         // Initialize charts - now handled by dynamic chart generation functions
