@@ -903,6 +903,119 @@ function logout() {
     }
 }
 
+// Show Help Modal
+function showHelpModal() {
+    beeMarshallAlert('Welcome to BeeMarshall Help!\n\n📖 Getting Started:\n- Dashboard: Overview of your apiary\n- Sites: Manage your apiary locations\n- Actions: Track completed tasks\n- Schedule: Plan upcoming tasks\n- Reports: View detailed analytics\n\n💡 Tips:\n- Click on site markers on the map to view details\n- Schedule tasks from the dashboard or schedule view\n- Use the search feature to quickly find sites or actions\n\nNeed more help? Contact support.', 'info');
+}
+
+// Show Settings Modal
+function showSettingsModal() {
+    const settingsModal = document.createElement('div');
+    settingsModal.className = 'modal fade';
+    settingsModal.id = 'settingsModal';
+    settingsModal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-gear me-2" style="color: var(--accent); font-size: 1.2rem;"></i>
+                        Settings
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Notifications</label>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="enableNotifications" checked>
+                            <label class="form-check-label" for="enableNotifications">
+                                Enable email notifications
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Data & Privacy</label>
+                        <button class="btn btn-outline-primary w-100" onclick="exportAllData()">
+                            <i class="bi bi-download"></i> Export All Data
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">About</label>
+                        <p class="text-muted mb-0">
+                            <strong>BeeMarshall v${APP_VERSION}</strong><br>
+                            Professional Apiary Management System<br>
+                            © 2024 GBTech
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(settingsModal);
+    const modal = new bootstrap.Modal(settingsModal);
+    modal.show();
+    
+    settingsModal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(settingsModal);
+    });
+}
+
+// Show Profile Modal
+function showProfileModal() {
+    const profileModal = document.createElement('div');
+    profileModal.className = 'modal fade';
+    profileModal.id = 'profileModal';
+    profileModal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-person me-2" style="color: var(--accent); font-size: 1.2rem;"></i>
+                        User Profile
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div class="mb-3">
+                            <i class="bi bi-person-circle" style="font-size: 4rem; color: var(--dark-yellow);"></i>
+                        </div>
+                        <h5>${currentUser ? currentUser.username : 'User'}</h5>
+                        ${isAdmin ? '<span class="badge admin-badge">ADMIN</span>' : '<span class="badge bg-secondary">Employee</span>'}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Email</label>
+                        <input type="email" class="form-control" value="${currentUser ? (currentUser.email || 'Not set') : 'Not set'}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Role</label>
+                        <input type="text" class="form-control" value="${isAdmin ? 'Administrator' : 'Employee'}" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tenant</label>
+                        <input type="text" class="form-control" value="${currentTenantId || 'Default'}" disabled>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(profileModal);
+    const modal = new bootstrap.Modal(profileModal);
+    modal.show();
+    
+    profileModal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(profileModal);
+    });
+}
+
 function showMainApp() {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.remove('hidden');

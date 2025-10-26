@@ -381,6 +381,38 @@
             transform: scale(1.1);
         }
         
+        /* Dropdown styling */
+        .dropdown-menu {
+            background: var(--white);
+            border: 2px solid var(--dark-yellow);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-lg);
+            padding: 0.5rem 0;
+        }
+        
+        .dropdown-item {
+            color: var(--black);
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, var(--light-yellow) 0%, rgba(255,193,7,0.2) 100%);
+            color: var(--black);
+            transform: translateX(4px);
+        }
+        
+        .dropdown-item i {
+            margin-right: 0.5rem;
+        }
+        
+        .dropdown-divider {
+            border-color: var(--dark-yellow);
+            opacity: 0.3;
+            margin: 0.5rem 0;
+        }
+        
         /* Cards */
         .card {
             border: none;
@@ -1314,8 +1346,9 @@
     <!-- Main App -->
     <div id="mainApp" class="hidden">
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
             <div class="container-fluid">
+                <!-- Logo/Brand -->
                 <a class="navbar-brand" href="#" onclick="showDashboard()">
                     <i class="bi bi-hexagon-fill"></i> BeeMarshall
                 </a>
@@ -1325,6 +1358,7 @@
                 </button>
                 
                 <div class="collapse navbar-collapse" id="navbarNav">
+                    <!-- Primary Navigation -->
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showDashboard()">
@@ -1333,7 +1367,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showClusters()">
-                                <i class="bi bi-geo-alt"></i> Clusters
+                                <i class="bi bi-geo-alt"></i> Sites
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1348,7 +1382,7 @@
                         </li>
                         <li class="nav-item admin-only">
                             <a class="nav-link" href="#" onclick="showTasks()">
-                                <i class="bi bi-list-task"></i> Task Management
+                                <i class="bi bi-list-task"></i> Tasks
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1368,23 +1402,50 @@
                         </li>
                     </ul>
                     
-                    <ul class="navbar-nav">
+                    <!-- Right Side Navigation -->
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <!-- Help/Documentation -->
                         <li class="nav-item">
-                            <span class="navbar-text me-3">
-                                <i class="bi bi-person-circle"></i> 
-                                <span id="currentUserDisplay"></span>
-                                <span id="adminBadge" class="badge admin-badge ms-2 hidden">ADMIN</span>
-                            </span>
+                            <a class="nav-link" href="#" onclick="showHelpModal()" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Help & Documentation">
+                                <i class="bi bi-question-circle"></i>
+                                <span class="d-none d-md-inline ms-1">Help</span>
+                            </a>
                         </li>
+                        
+                        <!-- User Profile Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i>
+                                <span class="d-none d-md-inline ms-1">
+                                    <span id="currentUserDisplay"></span>
+                                    <span id="adminBadge" class="badge admin-badge ms-2 hidden">ADMIN</span>
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="showSettingsModal()">
+                                        <i class="bi bi-gear"></i> Settings
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="showProfileModal()">
+                                        <i class="bi bi-person"></i> Profile
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="bi bi-box-arrow-right"></i> Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <!-- Sync Status -->
                         <li class="nav-item">
                             <span id="syncStatus" class="navbar-text me-3">
                                 <i class="bi bi-wifi text-warning"></i> Online
                             </span>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn btn-outline-light" onclick="logout()">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </button>
                         </li>
                     </ul>
                 </div>
