@@ -15,7 +15,7 @@ function showLogActionForm() {
 
 function populateActionForm() {
     const clusterSelect = document.getElementById('actionCluster');
-    clusterSelect.innerHTML = '<option value="">Select cluster...</option>' +
+    clusterSelect.innerHTML = '<option value="">Select site...</option>' +
         clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     
     const tasksByCategory = {};
@@ -55,7 +55,7 @@ function loadClusterHives() {
     
     if (hives.length > 0) {
         const select = document.getElementById('actionHive');
-        select.innerHTML = '<option value="">All hives in cluster</option>' +
+        select.innerHTML = '<option value="">All hives in site</option>' +
             hives.map(h => `<option value="${h.id}">${h.hiveName} (${h.status})</option>`).join('');
         document.getElementById('individualHiveSelect').classList.remove('hidden');
     } else {
@@ -73,7 +73,7 @@ function handleLogAction(e) {
     const individualHiveId = document.getElementById('actionHive')?.value || null;
     
     if (!clusterId) {
-        alert('Please select a cluster');
+        alert('Please select a site');
         return;
     }
     
@@ -117,7 +117,7 @@ function handleLogAction(e) {
 
 function populateActionFilters() {
     const clusterFilter = document.getElementById('filterCluster');
-    clusterFilter.innerHTML = '<option value="">All Clusters</option>' +
+    clusterFilter.innerHTML = '<option value="">All Sites</option>' +
         clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     
     const categories = [...new Set(tasks.map(t => t.category))].sort();

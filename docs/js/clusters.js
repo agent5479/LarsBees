@@ -242,7 +242,7 @@ function populateClusterTypeDropdown() {
         </option>`
     ).join('');
     
-    typeSelect.innerHTML = `<option value="production">Select cluster type...</option>${options}`;
+                typeSelect.innerHTML = `<option value="production">Select site type...</option>${options}`;
 }
 
 function handleSaveCluster(e) {
@@ -406,6 +406,12 @@ function editCluster(id) {
     if (cluster.harvestRecords && cluster.harvestRecords.length > 0) {
         renderHarvestRecords(cluster.harvestRecords);
     }
+    
+    // Initialize and render visual hive grid
+    visualHiveData = null; // Reset visual data
+    setTimeout(() => {
+        renderVisualHiveGrid();
+    }, 200);
 }
 
 // Global variable to track which record is being edited
@@ -1087,4 +1093,251 @@ function showMapPicker() {
             });
         }, 200);
     }
+}
+
+// Visual Hive Box Grid for Site Reporting
+let visualHiveData = null; // Track changes in visual grid
+
+function renderVisualHiveGrid() {
+    const container = document.getElementById('visualHiveGrid');
+    if (!container) return;
+    
+    const clusterId = document.getElementById('clusterId')?.value;
+    if (!clusterId) {
+        container.innerHTML = '<p class="text-muted">Please select a site first to render the grid.</p>';
+        return;
+    }
+    
+    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    if (!cluster) {
+        container.innerHTML = '<p class="text-muted">Site not found.</p>';
+        return;
+    }
+    
+    // Initialize visual hive data if not exists
+    if (!visualHiveData) {
+        visualHiveData = {
+            doubles: cluster.hiveStacks?.doubles || 0,
+            topSplits: cluster.hiveStacks?.topSplits || 0,
+            singles: cluster.hiveStacks?.singles || 0,
+            nucs: cluster.hiveStacks?.nucs || 0,
+            empty: cluster.hiveStacks?.empty || 0
+        };
+    }
+    
+    const totalHives = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
+    
+    let html = `
+        <div class="row mb-3">
+            <div class="col-md-3 text-center">
+                <div class="card border-primary" style="cursor: pointer;" onclick="toggleHiveBox('doubles')">
+                    <div class="card-body">
+                        <h3 id="doublesCount" class="text-primary">${visualHiveData.doubles}</h3>
+                        <small class="text-muted">Double Stacks</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="card border-success" style="cursor: pointer;" onclick="toggleHiveBox('topSplits')">
+                    <div class="card-body">
+                        <h3 id="topSplitsCount" class="text-success">${visualHiveData.topSplits}</h3>
+                        <small class="text-muted">Top-Splits</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="card border-warning" style="cursor: pointer;" onclick="toggleHiveBox('singles')">
+                    <div class="card-body">
+                        <h3 id="singlesCount" class="text-warning">${visualHiveData.singles}</h3>
+                        <small class="text-muted">Single Stacks</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="card border-info" style="cursor: pointer;" onclick="toggleHiveBox('nucs')">
+                    <div class="card-body">
+                        <h3 id="nucsCount" class="text-info">${visualHiveData.nucs}</h3>
+                        <small class="text-muted">NUC Stacks</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3 text-center">
+                <div class="card border-secondary" style="cursor: pointer;" onclick="toggleHiveBox('empty')">
+                    <div class="card-body">
+                        <h3 id="emptyCount" class="text-secondary">${visualHiveData.empty}</h3>
+                        <small class="text-muted">Empty Platforms</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="alert alert-light">
+                    <strong>Total Active Hives:</strong> <span id="totalActiveHives">${totalHives}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function toggleHiveBox(type) {
+    if (!visualHiveData) return;
+    
+    // Show modal to increment or decrement
+    const modalHtml = `
+        <div class="modal fade" id="hiveBoxModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Update ${type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group mb-3">
+                            <button class="btn btn-outline-danger" onclick="adjustHiveCount('${type}', -1)">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number" class="form-control text-center" id="hiveCountInput" value="${visualHiveData[type]}" min="0">
+                            <button class="btn btn-outline-success" onclick="adjustHiveCount('${type}', 1)">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                        <div class="d-grid">
+                            <button class="btn btn-primary" onclick="updateHiveCount('${type}')">
+                                Update Count
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal
+    const existingModal = document.getElementById('hiveBoxModal');
+    if (existingModal) existingModal.remove();
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('hiveBoxModal'));
+    modal.show();
+    
+    // Clean up on close
+    document.getElementById('hiveBoxModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+function adjustHiveCount(type, delta) {
+    const input = document.getElementById('hiveCountInput');
+    const newValue = Math.max(0, parseInt(input.value) + delta);
+    input.value = newValue;
+}
+
+function updateHiveCount(type) {
+    const input = document.getElementById('hiveCountInput');
+    visualHiveData[type] = parseInt(input.value) || 0;
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('hiveBoxModal'));
+    if (modal) modal.hide();
+    
+    // Re-render grid
+    renderVisualHiveGrid();
+    
+    // Update form inputs to match
+    document.getElementById(`stack${type.charAt(0).toUpperCase() + type.slice(1)}`).value = visualHiveData[type];
+    updateStackTotals();
+}
+
+function saveVisualHiveChanges() {
+    const clusterId = document.getElementById('clusterId')?.value;
+    if (!clusterId) {
+        beeMarshallAlert('No site selected', 'warning');
+        return;
+    }
+    
+    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    // Detect changes
+    const oldValues = {
+        doubles: cluster.hiveStacks?.doubles || 0,
+        topSplits: cluster.hiveStacks?.topSplits || 0,
+        singles: cluster.hiveStacks?.singles || 0,
+        nucs: cluster.hiveStacks?.nucs || 0,
+        empty: cluster.hiveStacks?.empty || 0
+    };
+    
+    const changes = [];
+    if (oldValues.doubles !== visualHiveData.doubles) {
+        changes.push(`Doubles: ${oldValues.doubles} → ${visualHiveData.doubles}`);
+    }
+    if (oldValues.topSplits !== visualHiveData.topSplits) {
+        changes.push(`Top-Splits: ${oldValues.topSplits} → ${visualHiveData.topSplits}`);
+    }
+    if (oldValues.singles !== visualHiveData.singles) {
+        changes.push(`Singles: ${oldValues.singles} → ${visualHiveData.singles}`);
+    }
+    if (oldValues.nucs !== visualHiveData.nucs) {
+        changes.push(`NUCs: ${oldValues.nucs} → ${visualHiveData.nucs}`);
+    }
+    if (oldValues.empty !== visualHiveData.empty) {
+        changes.push(`Empty: ${oldValues.empty} → ${visualHiveData.empty}`);
+    }
+    
+    if (changes.length === 0) {
+        beeMarshallAlert('No changes detected', 'info');
+        return;
+    }
+    
+    // Update cluster data
+    cluster.hiveStacks = {
+        doubles: visualHiveData.doubles,
+        topSplits: visualHiveData.topSplits,
+        singles: visualHiveData.singles,
+        nucs: visualHiveData.nucs,
+        empty: visualHiveData.empty
+    };
+    
+    cluster.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
+    
+    // Save to Firebase
+    const clusterRef = database.ref(`clusters/${cluster.id}`);
+    clusterRef.update({
+        hiveStacks: cluster.hiveStacks,
+        hiveCount: cluster.hiveCount,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser.username
+    }).then(() => {
+        // Log as action
+        const actionText = `Site visit and inventory update at ${cluster.name}. Changes: ${changes.join('; ')}`;
+        logSiteVisitAction(cluster.id, actionText);
+        
+        beeMarshallAlert('✅ Site inventory updated and logged as action!', 'success');
+    }).catch(error => {
+        console.error('Error saving visual hive changes:', error);
+        beeMarshallAlert('❌ Error saving changes', 'error');
+    });
+}
+
+function logSiteVisitAction(clusterId, notes) {
+    const newAction = {
+        id: Date.now(),
+        clusterId: parseInt(clusterId),
+        task: 'Site Visit & Inventory',
+        notes: notes,
+        completedBy: currentUser.username,
+        completedAt: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    actions.push(newAction);
+    
+    // Save to Firebase
+    database.ref(`actions/${newAction.id}`).set(newAction);
 }

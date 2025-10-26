@@ -336,7 +336,7 @@ function renderScheduleTimeline() {
 
 function showScheduleTaskModal() {
     const clusterSelect = document.getElementById('scheduleCluster');
-    clusterSelect.innerHTML = '<option value="">Select cluster...</option>' +
+    clusterSelect.innerHTML = '<option value="">Select site...</option>' +
         clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     
     const taskSelect = document.getElementById('scheduleTask');
@@ -362,7 +362,7 @@ function handleScheduleTask(e) {
     const individualHiveId = document.getElementById('scheduleHive')?.value || null;
     
     if (!clusterId || !taskId) {
-        alert('Please select both cluster and task.');
+        alert('Please select both site and task.');
         return;
     }
     
@@ -747,7 +747,7 @@ function editScheduledTask(taskId) {
 function populateEditTaskDropdowns() {
     // Populate cluster dropdown
     const clusterSelect = document.getElementById('editTaskCluster');
-    clusterSelect.innerHTML = '<option value="">Select cluster...</option>' + 
+    clusterSelect.innerHTML = '<option value="">Select site...</option>' + 
         clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     
     // Populate task dropdown

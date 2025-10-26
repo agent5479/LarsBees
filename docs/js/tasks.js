@@ -178,13 +178,18 @@ function editTask(taskId) {
                                     <option value="Management" ${task.category === 'Management' ? 'selected' : ''}>Management</option>
                                     <option value="Harvest" ${task.category === 'Harvest' ? 'selected' : ''}>Harvest</option>
                                     <option value="Maintenance" ${task.category === 'Maintenance' ? 'selected' : ''}>Maintenance</option>
+                                    <option value="Feeding" ${task.category === 'Feeding' ? 'selected' : ''}>Feeding</option>
+                                    <option value="Problems" ${task.category === 'Problems' ? 'selected' : ''}>Problems</option>
+                                    <option value="Administration" ${task.category === 'Administration' ? 'selected' : ''}>Administration</option>
+                                    <option value="Seasonal" ${task.category === 'Seasonal' ? 'selected' : ''}>Seasonal</option>
+                                    <option value="Emergency" ${task.category === 'Emergency' ? 'selected' : ''}>Emergency</option>
                                     <option value="Custom" ${task.category === 'Custom' ? 'selected' : ''}>Custom</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label for="editTaskCategoryCustom" class="form-label">Custom Category</label>
                                 <input type="text" class="form-control" id="editTaskCategoryCustom" 
-                                       value="${task.category && !['Inspection', 'Health', 'Management', 'Harvest', 'Maintenance', 'Custom'].includes(task.category) ? task.category : ''}"
+                                       value="${task.category && !['Inspection', 'Health', 'Management', 'Harvest', 'Maintenance', 'Feeding', 'Problems', 'Administration', 'Seasonal', 'Emergency', 'Custom'].includes(task.category) ? task.category : ''}"
                                        placeholder="Enter custom category (e.g., Regional Practice)">
                                 <div class="form-text">Leave blank if using predefined category</div>
                             </div>
@@ -351,6 +356,11 @@ function showAddTaskForm() {
                                     <option value="Management">Management</option>
                                     <option value="Harvest">Harvest</option>
                                     <option value="Maintenance">Maintenance</option>
+                                    <option value="Feeding">Feeding</option>
+                                    <option value="Problems">Problems</option>
+                                    <option value="Administration">Administration</option>
+                                    <option value="Seasonal">Seasonal</option>
+                                    <option value="Emergency">Emergency</option>
                                     <option value="Custom">Custom</option>
                                 </select>
                             </div>

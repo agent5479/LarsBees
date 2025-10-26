@@ -1327,6 +1327,11 @@
                                 <i class="bi bi-graph-up"></i> Reports
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showComplianceView()">
+                                <i class="bi bi-shield-check"></i> Compliance
+                            </a>
+                        </li>
                         <li class="nav-item admin-only">
                             <a class="nav-link" href="#" onclick="showEmployees()">
                                 <i class="bi bi-people"></i> Team
@@ -1470,7 +1475,7 @@
                                             </div>
                                         </div>
                                         <!-- Actual Map (Hidden Initially) -->
-                                        <div id="map" style="height: 100%; min-height: 450px; display: none;"></div>
+                                        <div id="map" style="height: 100%; min-height: 350px; display: none;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -1495,19 +1500,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Weather Widget -->
-                                    <div class="col-12">
-                                        <div class="card h-100">
-                                            <div class="card-header">
-                                                <h5 class="mb-0"><i class="bi bi-cloud-sun"></i> Weather Forecast</h5>
-                                            </div>
-                                            <div class="card-body">
-                                                <div id="weatherWidget">
-                                                    <p class="text-muted">Loading weather...</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
                                 </div>
                             </div>
                         </div>
@@ -1874,6 +1867,32 @@
                                                         <br><small id="stackStatus" class="text-muted">Enter stack counts above</small>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Visual Hive Box Grid for Site Reporting -->
+                                    <div class="card mt-4">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-grid"></i> Visual Hive Box Grid - Site Report</h6>
+                                            <small class="text-muted">Click boxes to update site inventory. Changes are automatically saved as actions.</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" onclick="renderVisualHiveGrid()">
+                                                        <i class="bi bi-arrow-clockwise"></i> Refresh Grid
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-success btn-sm" onclick="saveVisualHiveChanges()">
+                                                        <i class="bi bi-check-circle"></i> Save & Log Site Visit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="visualHiveGrid" class="mb-3">
+                                                <p class="text-muted text-center">Loading visual hive grid...</p>
+                                            </div>
+                                            <div class="alert alert-info mt-3">
+                                                <small><i class="bi bi-info-circle"></i> <strong>Site Report:</strong> Click on any hive box to update its status. All changes will be logged as actions automatically when you save.</small>
                                             </div>
                                         </div>
                                     </div>
@@ -2443,6 +2462,13 @@
                 </div>
             </div>
 
+            <!-- Compliance Management View -->
+            <div id="complianceView" class="hidden">
+                <div id="complianceDashboard">
+                    <!-- Compliance content will be rendered here -->
+                </div>
+            </div>
+
         </div>
 
         <!-- Schedule Task Modal -->
@@ -2626,11 +2652,12 @@
     <!-- BeeMarshall JavaScript Modules -->
     <script src="js/permissions.js"></script>
     <script src="js/scheduling.js"></script>
+    <script src="js/compliance.js"></script>
     <script src="js/calendar-feed.js"></script>
     <script src="js/clusters.js"></script>
     <script src="js/actions.js"></script>
     <script src="js/employees.js"></script>
-    <script src="js/weather.js"></script>
+
     <script src="js/navigation.js"></script>
     <script src="js/dashboard.js"></script>
     <script src="js/core.js"></script>
@@ -3282,6 +3309,38 @@
             
             // Handle reports navigation
             handleReportsNavigation();
+            
+            // Auto-collapse mobile navbar menu after 5 seconds
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.getElementById('navbarNav');
+            
+            if (navbarToggler && navbarCollapse) {
+                let collapseTimeout = null;
+                
+                // Listen for the navbar being shown
+                navbarCollapse.addEventListener('shown.bs.collapse', function() {
+                    // Clear any existing timeout
+                    if (collapseTimeout) {
+                        clearTimeout(collapseTimeout);
+                    }
+                    
+                    // Set new timeout to collapse after 5 seconds
+                    collapseTimeout = setTimeout(function() {
+                        const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                        if (bsCollapse) {
+                            bsCollapse.hide();
+                        }
+                    }, 5000);
+                });
+                
+                // Clear timeout when user manually closes the menu
+                navbarCollapse.addEventListener('hidden.bs.collapse', function() {
+                    if (collapseTimeout) {
+                        clearTimeout(collapseTimeout);
+                        collapseTimeout = null;
+                    }
+                });
+            }
         });
     </script>
 </body>

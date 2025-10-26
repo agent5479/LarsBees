@@ -86,11 +86,6 @@ function updateDashboard() {
     // Update quick stats
     updateQuickStats();
     
-    // Update weather widget
-    if (typeof updateWeatherWidget === 'function') {
-        updateWeatherWidget();
-    }
-    
     // Auto-load map after data is confirmed
     console.log('📊 Dashboard updated - auto-loading map with data');
     setTimeout(() => {

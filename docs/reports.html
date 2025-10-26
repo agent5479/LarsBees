@@ -576,23 +576,23 @@
             </div>
         </div>
 
-        <!-- Cluster Details Modal -->
+        <!-- Site Details Modal -->
         <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="clusterDetailsTitle">Cluster Details</h5>
+                                                    <h5 class="modal-title" id="clusterDetailsTitle">Site Details</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div id="clusterDetailsContent">
-                            <!-- Cluster details will be populated here -->
+                            <!-- Site details will be populated here -->
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" onclick="navigateToCluster()">
-                            <i class="bi bi-arrow-right"></i> Go to Cluster
+                            <i class="bi bi-arrow-right"></i> Go to Site
                         </button>
                         <button type="button" class="btn btn-success" onclick="scheduleTaskForCluster()">
                             <i class="bi bi-calendar-plus"></i> Schedule Task
@@ -674,7 +674,7 @@
                             </div>
                             <div class="col-md-3 mb-3">
                                 <button class="btn btn-outline-warning w-100" onclick="generateQuickReport('cluster')">
-                                    <i class="bi bi-houses"></i> Cluster Performance
+                                    <i class="bi bi-houses"></i> Site Performance
                                 </button>
                             </div>
                             <div class="col-md-3 mb-3">
@@ -941,7 +941,7 @@
             isGeneratingReports = true;
             
             if (!clusters || clusters.length === 0) {
-                beeMarshallAlert('📊 No cluster data available for hive performance analysis.\n\nGet started by adding your first apiary cluster to see performance insights.', 'info');
+                beeMarshallAlert('📊 No site data available for hive performance analysis.\n\nGet started by adding your first apiary site to see performance insights.', 'info');
                 return;
             }
             
@@ -1039,7 +1039,7 @@
                         </div>
                     </div>
                     <hr>
-                    <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Clusters:</strong> ${clusters.length}</p>
+                    <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Sites:</strong> ${clusters.length}</p>
                 </div>
             `;
             // Remove ALL existing summaries to prevent duplicates
@@ -1246,7 +1246,7 @@
                 <div class="alert alert-success mt-3">
                     <h6><i class="bi bi-gear"></i> Operations Summary</h6>
                     <p><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
-                    <p><strong>Actions per Cluster:</strong> ${actionsPerCluster}</p>
+                    <p><strong>Actions per Site:</strong> ${actionsPerCluster}</p>
                     <p><strong>Total Actions Logged:</strong> ${totalActions}</p>
                     <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
                 </div>
@@ -1314,12 +1314,12 @@
                 byYear[year].months[month].total += harvest.quantity;
                 byYear[year].months[month].records.push(harvest);
                 
-                // Group by cluster
-                if (!byCluster[harvest.clusterName]) {
-                    byCluster[harvest.clusterName] = { total: 0, records: [] };
-                }
-                byCluster[harvest.clusterName].total += harvest.quantity;
-                byCluster[harvest.clusterName].records.push(harvest);
+                            // Group by site
+            if (!byCluster[harvest.clusterName]) {
+                byCluster[harvest.clusterName] = { total: 0, records: [] };
+            }
+            byCluster[harvest.clusterName].total += harvest.quantity;
+            byCluster[harvest.clusterName].records.push(harvest);
             });
             
             // Sort years
@@ -1336,8 +1336,8 @@
                         <h6><i class="bi bi-bar-chart"></i> Total Harvest by Year</h6>
                         <canvas id="harvestHistoryChart" height="200"></canvas>
                     </div>
-                    <div class="col-12 col-md-6 mb-4">
-                        <h6><i class="bi bi-trophy"></i> Top Producing Clusters</h6>
+                                                <div class="col-12 col-md-6 mb-4">
+                        <h6><i class="bi bi-trophy"></i> Top Producing Sites</h6>
                         <div class="list-group">
             `;
             
@@ -1469,7 +1469,7 @@
             const reports = {
                 'monthly': 'Monthly Summary Report',
                 'seasonal': 'Seasonal Analysis Report',
-                'cluster': 'Cluster Performance Report',
+                'cluster': 'Site Performance Report',
                 'health': 'Health Dashboard Report'
             };
             
@@ -1544,7 +1544,7 @@
         
         function showClustersByCategory(category) {
             if (!clusters || clusters.length === 0) {
-                beeMarshallAlert('📊 No cluster data available.\n\nAdd your first apiary cluster to start generating reports and insights.', 'info');
+                beeMarshallAlert('📊 No site data available.\n\nAdd your first apiary site to start generating reports and insights.', 'info');
                 return;
             }
             
@@ -1558,11 +1558,11 @@
             });
             
             if (affectedClusters.length === 0) {
-                alert(`No clusters found with ${category} hives.`);
+                alert(`No sites found with ${category} hives.`);
                 return;
             }
             
-            // Show clusters in modal with enhanced details
+            // Show sites in modal with enhanced details
             showClusterDetailsModal(affectedClusters, category);
         }
         
@@ -1571,7 +1571,7 @@
             const title = document.getElementById('clusterDetailsTitle');
             const content = document.getElementById('clusterDetailsContent');
             
-            title.textContent = `Clusters with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${clusterList.length})`;
+            title.textContent = `Sites with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${clusterList.length})`;
             
             let html = '<div class="row">';
             clusterList.forEach(cluster => {
@@ -1579,7 +1579,7 @@
                     ? (cluster.hiveStacks?.empty || 0)
                     : (cluster.hiveStrength?.[category] || 0);
                 
-                // Enhanced cluster details with full breakdown
+                // Enhanced site details with full breakdown
                 const hiveStrength = cluster.hiveStrength || {};
                 const hiveStacks = cluster.hiveStacks || {};
                 
@@ -1623,7 +1623,7 @@
                                 
                                 <div class="d-flex gap-2">
                                     <button class="btn btn-sm btn-primary" onclick="navigateToSpecificCluster(${cluster.id})">
-                                        <i class="bi bi-arrow-right"></i> Go to Cluster
+                                        <i class="bi bi-arrow-right"></i> Go to Site
                                     </button>
                                     <button class="btn btn-sm btn-success" onclick="scheduleTaskForSpecificCluster(${cluster.id}, '${category}')">
                                         <i class="bi bi-calendar-plus"></i> Schedule Task

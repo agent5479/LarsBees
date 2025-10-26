@@ -86,7 +86,7 @@ function generateICSCalendarFeed() {
         const endUTC = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         
         const summary = displayTaskName;
-        const description = `BeeMarshall Task\n\nCluster: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `\nNotes: ${task.notes}` : ''}\n\nView in BeeMarshall: ${window.location.origin}`;
+        const description = `BeeMarshall Task\n\nSite: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `\nNotes: ${task.notes}` : ''}\n\nView in BeeMarshall: ${window.location.origin}`;
         const location = cluster?.name || 'Apiary Location';
         
         icsContent.push(
