@@ -60,8 +60,8 @@ function renderClusters() {
                             ${c.lastModifiedBy ? `<small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small>` : ''}
                         </div>
                         <div class="card-footer bg-light">
-                            <button class="btn btn-sm btn-outline-warning" onclick="editCluster(${c.id})">
-                                <i class="bi bi-pencil"></i> Edit
+                            <button class="btn btn-primary" onclick="editCluster(${c.id})">
+                                <i class="bi bi-pencil"></i> Update
                             </button>
                             <button class="btn btn-sm btn-outline-info" onclick="viewClusterDetails(${c.id})">
                                 <i class="bi bi-eye"></i> View
@@ -429,11 +429,9 @@ function editCluster(id) {
         renderHarvestRecords(cluster.harvestRecords);
     }
     
-    // Initialize and render visual hive grid
+    // Initialize and render visual hive grid - auto-populate on page load
     visualHiveData = null; // Reset visual data
-    setTimeout(() => {
-        renderVisualHiveGrid();
-    }, 200);
+    renderVisualHiveGrid(); // Render immediately on page load
 }
 
 // Global variable to track which record is being edited

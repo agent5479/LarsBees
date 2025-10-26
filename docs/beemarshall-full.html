@@ -1828,24 +1828,6 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="row">
-                                        <div class="col-md-4 mb-3">
-                                            <label for="clusterLat" class="form-label">Latitude <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="clusterLat" step="0.000001" min="-90" max="90" placeholder="-40.6764" required>
-                                            <div class="form-text">Enter latitude (e.g., -40.6764 for Collingwood, NZ)</div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="clusterLng" class="form-label">Longitude <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="clusterLng" step="0.000001" min="-180" max="180" placeholder="172.6856" required>
-                                            <div class="form-text">Enter longitude (e.g., 172.6856 for Collingwood, NZ)</div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label for="clusterHiveCount" class="form-label">Total Hive Count *</label>
-                                            <input type="number" class="form-control" id="clusterHiveCount" min="1" required onchange="updateHiveStrengthTotals()">
-                                            <div class="form-text">Total number of hives in this site</div>
-                                        </div>
-                                    </div>
-                                    
                                     <!-- GPS and Map Selection Options -->
                                     <div class="mb-3">
                                         <div class="btn-group w-100" role="group">
@@ -1858,6 +1840,35 @@
                                         </div>
                                         <div class="form-text text-muted mt-2">
                                             <i class="bi bi-info-circle"></i> Use GPS to auto-fill your current location, or click the map to pick a location interactively
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Map Picker Container (hidden by default) -->
+                                    <div id="mapPickerContainer" class="mb-3 hidden">
+                                        <div id="mapPicker" style="height: 300px; border-radius: 8px;"></div>
+                                        <div class="form-text text-muted mt-2">
+                                            <i class="bi bi-info-circle"></i> Click on the map or drag the marker to set GPS coordinates
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="clusterLat" class="form-label">Latitude <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="clusterLat" step="0.000001" min="-90" max="90" placeholder="-40.6764" required>
+                                            <div class="form-text">Enter latitude (e.g., -40.6764 for Collingwood, NZ)</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="clusterLng" class="form-label">Longitude <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="clusterLng" step="0.000001" min="-180" max="180" placeholder="172.6856" required>
+                                            <div class="form-text">Enter longitude (e.g., 172.6856 for Collingwood, NZ)</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="clusterHiveCount" class="form-label">Total Hive Count *</label>
+                                            <input type="number" class="form-control" id="clusterHiveCount" min="1" required onchange="updateHiveStrengthTotals()">
+                                            <div class="form-text">Total number of hives in this site</div>
                                         </div>
                                     </div>
                                     
@@ -2149,18 +2160,6 @@
                                     </div>
                                 </form>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Map Picker -->
-                <div id="mapPickerContainer" class="hidden mt-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <h6><i class="bi bi-map"></i> Pick Location on Map</h6>
-                        </div>
-                        <div class="card-body p-0">
-                            <div id="mapPicker" style="height: 400px;"></div>
                         </div>
                     </div>
                 </div>
@@ -3137,27 +3136,8 @@
         }
         
         function updateStackBreakdownSummary() {
-            const doubles = parseInt(document.getElementById('stackDoubles').value) || 0;
-            const topSplits = parseInt(document.getElementById('stackTopSplits').value) || 0;
-            const singles = parseInt(document.getElementById('stackSingles').value) || 0;
-            const nucs = parseInt(document.getElementById('stackNUCs').value) || 0;
-            const empty = parseInt(document.getElementById('stackEmpty').value) || 0;
-            
-            const stackSummary = document.getElementById('stackBreakdownSummary');
-            
-            // Show stack summary if there are any stacks
-            if (doubles + topSplits + singles + nucs + empty > 0) {
-                stackSummary.style.display = 'block';
-                
-                // Update stack counts
-                document.getElementById('doublesCount').textContent = doubles;
-                document.getElementById('topSplitsCount').textContent = topSplits;
-                document.getElementById('singlesCount').textContent = singles;
-                document.getElementById('nucsCount').textContent = nucs;
-                document.getElementById('emptyStacksCount').textContent = empty;
-            } else {
-                stackSummary.style.display = 'none';
-            }
+            // This function is no longer needed - visual hive grid replaces it
+            // Removed to prevent errors with non-existent DOM elements
         }
         
         // Auto-distribute stacks when total count changes
