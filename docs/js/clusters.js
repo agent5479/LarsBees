@@ -1314,7 +1314,11 @@ function adjustHiveCount(type, delta) {
 
 function updateHiveCount(type) {
     const input = document.getElementById('hiveCountInput');
-    visualHiveData[type] = parseInt(input.value) || 0;
+    const newValue = parseInt(input.value) || 0;
+    const oldValue = visualHiveData[type];
+    
+    // Update visual data
+    visualHiveData[type] = newValue;
     
     // Close modal
     const modal = bootstrap.Modal.getInstance(document.getElementById('hiveBoxModal'));
@@ -1326,6 +1330,36 @@ function updateHiveCount(type) {
     // Update form inputs to match
     document.getElementById(`stack${type.charAt(0).toUpperCase() + type.slice(1)}`).value = visualHiveData[type];
     updateStackTotals();
+    
+    // Auto-save to Firebase and log as action
+    const clusterId = document.getElementById('clusterId')?.value;
+    if (clusterId && oldValue !== newValue) {
+        const cluster = clusters.find(c => c.id === parseInt(clusterId));
+        if (cluster) {
+            // Update cluster data
+            if (!cluster.hiveStacks) cluster.hiveStacks = {};
+            cluster.hiveStacks[type] = newValue;
+            cluster.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
+            
+            // Save to Firebase
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+            database.ref(`${tenantPath}/${cluster.id}`).update({
+                hiveStacks: cluster.hiveStacks,
+                hiveCount: cluster.hiveCount,
+                lastModified: new Date().toISOString(),
+                lastModifiedBy: currentUser.username
+            }).then(() => {
+                // Log as action
+                const typeLabel = type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                const actionText = `Hive inventory updated at ${cluster.name}: ${typeLabel} changed from ${oldValue} to ${newValue}`;
+                logSiteVisitAction(cluster.id, actionText);
+                
+                console.log('✅ Hive inventory auto-saved:', typeLabel, oldValue, '→', newValue);
+            }).catch(error => {
+                console.error('Error auto-saving hive changes:', error);
+            });
+        }
+    }
 }
 
 function saveVisualHiveChanges() {
@@ -1415,6 +1449,7 @@ function logSiteVisitAction(clusterId, notes) {
     
     actions.push(newAction);
     
-    // Save to Firebase
-    database.ref(`actions/${newAction.id}`).set(newAction);
+    // Save to Firebase with tenant isolation
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+    database.ref(`${tenantPath}/${newAction.id}`).set(newAction);
 }
