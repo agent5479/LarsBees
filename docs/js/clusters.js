@@ -286,14 +286,20 @@ function handleSaveCluster(e) {
             nuc: parseInt(document.getElementById('hiveNUC').value) || 0,
             dead: parseInt(document.getElementById('hiveDead').value) || 0
         },
-        // Hive stack configuration
-        hiveStacks: {
-            doubles: parseInt(document.getElementById('stackDoubles').value) || 0,
-            topSplits: parseInt(document.getElementById('stackTopSplits').value) || 0,
-            singles: parseInt(document.getElementById('stackSingles').value) || 0,
-            nucs: parseInt(document.getElementById('stackNUCs').value) || 0,
-            empty: parseInt(document.getElementById('stackEmpty').value) || 0
-        },
+        // Hive stack configuration - get from visual grid data if available, otherwise from cluster data
+        hiveStacks: visualHiveData ? {
+            doubles: visualHiveData.doubles || 0,
+            topSplits: visualHiveData.topSplits || 0,
+            singles: visualHiveData.singles || 0,
+            nucs: visualHiveData.nucs || 0,
+            empty: visualHiveData.empty || 0
+        } : (clusters.find(c => c.id === parseInt(id))?.hiveStacks || {
+            doubles: 0,
+            topSplits: 0,
+            singles: 0,
+            nucs: 0,
+            empty: 0
+        }),
         harvestTimeline: document.getElementById('clusterHarvest').value,
         sugarRequirements: document.getElementById('clusterSugar').value,
         notes: document.getElementById('clusterNotes').value,
@@ -392,18 +398,13 @@ function editCluster(id) {
         document.getElementById('hiveDead').value = cluster.hiveStrength.dead || 0;
     }
     
-    // Populate stack configuration
-    if (cluster.hiveStacks) {
-        document.getElementById('stackDoubles').value = cluster.hiveStacks.doubles || 0;
-        document.getElementById('stackTopSplits').value = cluster.hiveStacks.topSplits || 0;
-        document.getElementById('stackSingles').value = cluster.hiveStacks.singles || 0;
-        document.getElementById('stackNUCs').value = cluster.hiveStacks.nucs || 0;
-        document.getElementById('stackEmpty').value = cluster.hiveStacks.empty || 0;
-    }
+    // Populate stack configuration - these elements are no longer in the HTML
+    // The visual hive grid now replaces these inputs
+    // Stack configuration data is now stored in visualHiveData and rendered via the grid
     
     // Update the breakdown summaries
     updateHiveStrengthTotals();
-    updateStackTotals();
+    // updateStackTotals(); // Removed - no longer needed with visual hive grid
     
     document.getElementById('anomalySection')?.classList.remove('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
@@ -1327,9 +1328,8 @@ function updateHiveCount(type) {
     // Re-render grid
     renderVisualHiveGrid();
     
-    // Update form inputs to match
-    document.getElementById(`stack${type.charAt(0).toUpperCase() + type.slice(1)}`).value = visualHiveData[type];
-    updateStackTotals();
+    // Form inputs no longer exist - visual grid replaces them
+    // updateStackTotals(); // Removed - no longer needed with visual hive grid
     
     // Auto-save to Firebase and log as action
     const clusterId = document.getElementById('clusterId')?.value;
