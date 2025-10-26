@@ -1815,6 +1815,47 @@
                                         <textarea class="form-control" id="clusterDescription" rows="3"></textarea>
                                     </div>
                                     
+                                    <!-- Hive State Summary -->
+                                    <div class="card mt-4" id="hiveStateCard" style="display: none;">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-heart-pulse"></i> Hive State</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row g-3">
+                                                <div class="col-6 col-md-4 text-center">
+                                                    <div class="p-3 rounded" style="background-color: #d4edda;">
+                                                        <h3 class="mb-0 text-success" id="hiveStateStrong">0</h3>
+                                                        <small class="text-muted">Strong</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-4 text-center">
+                                                    <div class="p-3 rounded" style="background-color: #fff3cd;">
+                                                        <h3 class="mb-0 text-warning" id="hiveStateMedium">0</h3>
+                                                        <small class="text-muted">Medium</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-4 text-center">
+                                                    <div class="p-3 rounded" style="background-color: #f8d7da;">
+                                                        <h3 class="mb-0 text-danger" id="hiveStateWeak">0</h3>
+                                                        <small class="text-muted">Weak</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-4 text-center">
+                                                    <div class="p-3 rounded" style="background-color: #cfe2ff;">
+                                                        <h3 class="mb-0 text-info" id="hiveStateNUC">0</h3>
+                                                        <small class="text-muted">NUC</small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6 col-md-4 text-center">
+                                                    <div class="p-3 rounded" style="background-color: #e2e3e5;">
+                                                        <h3 class="mb-0 text-dark" id="hiveStateDead">0</h3>
+                                                        <small class="text-muted">Dead</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                     <!-- Hive Boxes -->
                                     <div class="card mt-4">
                                         <div class="card-header">
@@ -1917,66 +1958,6 @@
                                                 </div>
                                             </div>
                                             
-                                            <!-- Detailed Hive Breakdown Summary -->
-                                            <div class="row mt-3" id="hiveBreakdownSummary" style="display: none;">
-                                                <div class="col-12">
-                                                    <div class="card">
-                                                        <div class="card-header">
-                                                            <h6 class="mb-0"><i class="bi bi-pie-chart"></i> Detailed Hive Breakdown</h6>
-                                                        </div>
-                                                        <div class="card-body">
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <h6 class="text-success">Strong Hives</h6>
-                                                                    <div class="progress mb-2" style="height: 20px;">
-                                                                        <div class="progress-bar bg-success" role="progressbar" id="strongProgress" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <small class="text-muted">Healthy, productive colonies</small>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <h6 class="text-warning">Medium Hives</h6>
-                                                                    <div class="progress mb-2" style="height: 20px;">
-                                                                        <div class="progress-bar bg-warning" role="progressbar" id="mediumProgress" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <small class="text-muted">Average health and production</small>
-                                                                </div>
-                                                            </div>
-                                                            <div class="row mt-3">
-                                                                <div class="col-md-6">
-                                                                    <h6 class="text-danger">Weak Hives</h6>
-                                                                    <div class="progress mb-2" style="height: 20px;">
-                                                                        <div class="progress-bar bg-danger" role="progressbar" id="weakProgress" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <small class="text-muted">Struggling, need attention</small>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <h6 class="text-info">NUC Hives</h6>
-                                                                    <div class="progress mb-2" style="height: 20px;">
-                                                                        <div class="progress-bar bg-info" role="progressbar" id="nucProgress" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <small class="text-muted">Nucleus colonies</small>
-                                                                </div>
-                                                            </div>
-                                                            <div class="row mt-3">
-                                                                <div class="col-md-6">
-                                                                    <h6 class="text-dark">Dead Hives</h6>
-                                                                    <div class="progress mb-2" style="height: 20px;">
-                                                                        <div class="progress-bar bg-dark" role="progressbar" id="deadProgress" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <small class="text-muted">Failed or dead colonies</small>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <h6 class="text-secondary">Empty Platforms</h6>
-                                                                    <div class="progress mb-2" style="height: 20px;">
-                                                                        <div class="progress-bar bg-secondary" role="progressbar" id="emptyProgress" style="width: 0%"></div>
-                                                                    </div>
-                                                                    <small class="text-muted">Unused hive platforms</small>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                             
                                             <!-- Stack Configuration Summary -->
                                             <div class="row mt-3" id="stackBreakdownSummary" style="display: none;">
@@ -3061,23 +3042,20 @@
         }
         
         function updateDetailedBreakdown(strong, medium, weak, nuc, dead, totalHives) {
-            const breakdownSummary = document.getElementById('hiveBreakdownSummary');
-            const stackSummary = document.getElementById('stackBreakdownSummary');
+            const hiveStateCard = document.getElementById('hiveStateCard');
             
-            // Show breakdown summary if there are any hives
+            // Show hive state card if there are any hives
             if (strong + medium + weak + nuc + dead > 0) {
-                breakdownSummary.style.display = 'block';
+                hiveStateCard.style.display = 'block';
                 
-                // Update progress bars
-                const maxValue = Math.max(strong, medium, weak, nuc, dead, 1);
-                document.getElementById('strongProgress').style.width = `${(strong / maxValue) * 100}%`;
-                document.getElementById('mediumProgress').style.width = `${(medium / maxValue) * 100}%`;
-                document.getElementById('weakProgress').style.width = `${(weak / maxValue) * 100}%`;
-                document.getElementById('nucProgress').style.width = `${(nuc / maxValue) * 100}%`;
-                document.getElementById('deadProgress').style.width = `${(dead / maxValue) * 100}%`;
-                document.getElementById('emptyProgress').style.width = `0%`; // Empty platforms handled separately
+                // Update color-coded numbers
+                document.getElementById('hiveStateStrong').textContent = strong;
+                document.getElementById('hiveStateMedium').textContent = medium;
+                document.getElementById('hiveStateWeak').textContent = weak;
+                document.getElementById('hiveStateNUC').textContent = nuc;
+                document.getElementById('hiveStateDead').textContent = dead;
             } else {
-                breakdownSummary.style.display = 'none';
+                hiveStateCard.style.display = 'none';
             }
             
             // Update stack configuration summary
