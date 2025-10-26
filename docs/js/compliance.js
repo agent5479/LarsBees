@@ -56,6 +56,9 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
 function showComplianceView() {
     hideAllViews();
     document.getElementById('complianceView').classList.remove('hidden');
+    if (typeof updateActiveNav === 'function') {
+        updateActiveNav('Compliance');
+    }
     renderComplianceDashboard();
 }
 

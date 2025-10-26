@@ -16,6 +16,9 @@ const CLUSTER_TYPES = {
 function showClusters() {
     hideAllViews();
     document.getElementById('clustersView').classList.remove('hidden');
+    if (typeof updateActiveNav === 'function') {
+        updateActiveNav('Clusters');
+    }
     renderClusters();
     renderClusterTypeFilter();
 }

@@ -345,11 +345,40 @@
         .nav-link {
             color: var(--black) !important;
             font-weight: 600;
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            padding: 0.5rem 1rem !important;
         }
         
         .nav-link:hover {
             color: var(--white) !important;
             background: rgba(255,255,255,0.3);
+        }
+        
+        /* Active navigation state */
+        .nav-link.active {
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.5) 100%) !important;
+            color: var(--black) !important;
+            font-weight: 700 !important;
+            border: 2px solid rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, var(--dark-yellow) 50%, transparent 100%);
+            border-radius: 2px 2px 0 0;
+        }
+        
+        .nav-link.active i {
+            transform: scale(1.1);
         }
         
         /* Cards */

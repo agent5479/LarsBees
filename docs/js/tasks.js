@@ -32,6 +32,9 @@ function showTasks() {
     }
     hideAllViews();
     document.getElementById('tasksView').classList.remove('hidden');
+    if (typeof updateActiveNav === 'function') {
+        updateActiveNav('Task');
+    }
     renderTasksList();
 }
 

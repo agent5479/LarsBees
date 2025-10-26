@@ -1,5 +1,19 @@
 // BeeMarshall - Dashboard Module with Calendar Widget
 
+// Helper function to update active navigation state
+function updateActiveNav(section) {
+    // Remove active class from all nav links
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Add active class to current section
+    const activeLink = document.querySelector(`[onclick*="${section}"]`);
+    if (activeLink) {
+        activeLink.classList.add('active');
+    }
+}
+
 // Helper function to safely get task name (handles deleted tasks) - make globally accessible
 window.getTaskDisplayName = function(taskName, taskId) {
     // If task exists in current tasks, use it
@@ -24,6 +38,7 @@ window.getTaskDisplayName = function(taskName, taskId) {
 function showDashboard() {
     hideAllViews();
     document.getElementById('dashboardView').classList.remove('hidden');
+    updateActiveNav('dashboard');
     updateDashboard();
 }
 

@@ -3,6 +3,9 @@
 function showActions() {
     hideAllViews();
     document.getElementById('actionsView').classList.remove('hidden');
+    if (typeof updateActiveNav === 'function') {
+        updateActiveNav('Actions');
+    }
     populateActionFilters();
     renderActions();
 }

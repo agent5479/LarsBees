@@ -43,6 +43,10 @@ function showScheduledTasks() {
     hideAllViews();
     document.getElementById('scheduledView').classList.remove('hidden');
     
+    if (typeof updateActiveNav === 'function') {
+        updateActiveNav('Schedule');
+    }
+    
     console.log('📊 About to call renderScheduledTasks()');
     renderScheduledTasks();
     
