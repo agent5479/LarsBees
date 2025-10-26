@@ -349,7 +349,25 @@ function editCluster(id) {
     document.getElementById('clusterLat').value = isNaN(lat) ? '' : lat.toFixed(6);
     document.getElementById('clusterLng').value = isNaN(lng) ? '' : lng.toFixed(6);
     document.getElementById('clusterHiveCount').value = cluster.hiveCount;
-    document.getElementById('clusterHarvest').value = cluster.harvestTimeline || '';
+    
+    // Handle harvest timeline date - ensure it's a valid date string for date input
+    const harvestDateInput = document.getElementById('clusterHarvest');
+    if (harvestDateInput && cluster.harvestTimeline) {
+        // Try to parse the date - if it's not in the correct format, leave it empty
+        const parsedDate = new Date(cluster.harvestTimeline);
+        if (!isNaN(parsedDate.getTime())) {
+            // Valid date - format as YYYY-MM-DD for date input
+            const year = parsedDate.getFullYear();
+            const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(parsedDate.getDate()).padStart(2, '0');
+            harvestDateInput.value = `${year}-${month}-${day}`;
+        } else {
+            harvestDateInput.value = '';
+        }
+    } else if (harvestDateInput) {
+        harvestDateInput.value = '';
+    }
+    
     document.getElementById('clusterSugar').value = cluster.sugarRequirements || '';
     document.getElementById('clusterNotes').value = cluster.notes || '';
     document.getElementById('clusterType').value = cluster.clusterType || 'production';
