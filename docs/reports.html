@@ -912,9 +912,6 @@
                         Logger.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
                         updateHiveStrengthBreakdown();
                         checkAllDataLoaded();
-                        
-                        // Auto-generate reports when data loads
-                        generateAllReports();
                     } catch (error) {
                         Logger.error('❌ Error processing clusters data:', error);
                     }
@@ -934,9 +931,6 @@
                         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
                         checkAllDataLoaded();
-                        
-                        // Auto-generate health report when actions load
-                        generateAllReports();
                     } catch (error) {
                         Logger.error('❌ Error processing actions data:', error);
                     }
@@ -956,9 +950,6 @@
                         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
                         checkAllDataLoaded();
-                        
-                        // Auto-generate operations report when tasks load
-                        generateAllReports();
                     } catch (error) {
                         Logger.error('❌ Error processing scheduled tasks data:', error);
                     }
@@ -1082,11 +1073,12 @@
         // Report generation functions with real data visualization
         let reportGenerationTimeout = null;
         let isGeneratingReports = false;
+        let reportsGenerated = false; // Track if reports have been generated
         
         // Consolidated report generation function
         function generateAllReports() {
-            if (isGeneratingReports) {
-                Logger.log('📊 Report generation already in progress, skipping...');
+            if (isGeneratingReports || reportsGenerated) {
+                Logger.log('📊 Report generation already in progress or completed, skipping...');
                 return;
             }
             
@@ -1108,6 +1100,10 @@
                 if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
                     generateOperationsReport();
                 }
+                
+                // Mark reports as generated
+                reportsGenerated = true;
+                Logger.log('✅ All reports generated successfully');
             }, 1000);
         }
         

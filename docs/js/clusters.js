@@ -1,5 +1,8 @@
 // BeeMarshall - Cluster Management Module with Custom Grouping
 
+// Global variable to track whether to show archived sites
+let showArchivedSites = false;
+
 // Cluster types and their associated colors
 const CLUSTER_TYPES = {
     'production': { name: 'Production', color: '#28a745', icon: 'bi-hexagon-fill' },
@@ -13,25 +16,53 @@ const CLUSTER_TYPES = {
 };
 
 function renderClusters() {
-    const html = clusters.length > 0
-        ? clusters.map(c => {
-            const deleteBtn = canDeleteCluster() ? `
+    // Filter clusters based on archive status
+    const visibleClusters = clusters.filter(c => {
+        if (showArchivedSites) {
+            return c.archived === true;
+        } else {
+            return !c.archived; // Show non-archived by default
+        }
+    });
+    
+    const html = visibleClusters.length > 0
+        ? visibleClusters.map(c => {
+            // Archive button for all users (shown on active sites)
+            const archiveBtn = !c.archived ? `
+                <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveCluster(${c.id})">
+                    <i class="bi bi-archive"></i> Archive
+                </button>
+            ` : '';
+            
+            // Delete button only for admins on archived sites
+            const deleteBtn = (isAdmin && c.archived) ? `
                 <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteCluster(${c.id})">
                     <i class="bi bi-trash"></i> Delete
+                </button>
+            ` : '';
+            
+            // Unarchive button for admins on archived sites
+            const unarchiveBtn = (isAdmin && c.archived) ? `
+                <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); unarchiveCluster(${c.id})">
+                    <i class="bi bi-arrow-counterclockwise"></i> Unarchive
                 </button>
             ` : '';
             
             const clusterType = c.clusterType || 'production';
             const typeInfo = CLUSTER_TYPES[clusterType] || CLUSTER_TYPES['custom'];
             
+            // Add archived indicator
+            const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
+            
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card cluster-card h-100" data-cluster-type="${clusterType}">
+                    <div class="card cluster-card h-100" data-cluster-type="${clusterType}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">
                                     <i class="bi ${typeInfo.icon}" style="color: ${typeInfo.color}"></i> 
                                     ${c.name}
+                                    ${archivedBadge}
                                 </h5>
                                 <span class="badge" style="background-color: ${typeInfo.color}; color: white;">
                                     ${typeInfo.name}
@@ -55,15 +86,20 @@ function renderClusters() {
                             <button class="btn btn-sm btn-outline-info" onclick="viewClusterDetails(${c.id})">
                                 <i class="bi bi-eye"></i> View
                             </button>
+                            ${archiveBtn}
+                            ${unarchiveBtn}
                             ${deleteBtn}
                         </div>
                     </div>
                 </div>
             `;
         }).join('')
-        : '<div class="col-12"><p class="text-center text-muted my-5">No clusters yet. Add your first cluster!</p></div>';
+        : '<div class="col-12"><p class="text-center text-muted my-5">' + (showArchivedSites ? 'No archived sites.' : 'No sites found.') + '</p></div>';
     
     document.getElementById('clustersList').innerHTML = html;
+    
+    // Update the show archived button text
+    updateArchivedButtonText();
 }
 
 function renderClusterTypeFilter() {
@@ -240,26 +276,61 @@ function populateClusterTypeDropdown() {
 function handleSaveCluster(e) {
     e.preventDefault();
     
+    // Validate required fields and focus on first invalid field
+    const nameField = document.getElementById('clusterName');
+    const nameValue = nameField.value.trim();
+    if (!nameValue) {
+        beeMarshallAlert('⚠️ Site name is required', 'warning');
+        nameField.focus();
+        nameField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+    
+    const hiveCountField = document.getElementById('clusterHiveCount');
+    const hiveCount = parseInt(hiveCountField.value);
+    if (!hiveCount || hiveCount <= 0) {
+        beeMarshallAlert('⚠️ Please enter a valid hive count (must be greater than 0)', 'warning');
+        hiveCountField.focus();
+        hiveCountField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+    }
+    
     // Validate coordinates
-    const lat = parseFloat(document.getElementById('clusterLat').value);
-    const lng = parseFloat(document.getElementById('clusterLng').value);
+    const latField = document.getElementById('clusterLat');
+    const lngField = document.getElementById('clusterLng');
+    const lat = parseFloat(latField.value);
+    const lng = parseFloat(lngField.value);
     
     if (isNaN(lat) || isNaN(lng)) {
-        alert('Please enter valid GPS coordinates.');
+        beeMarshallAlert('⚠️ Please enter valid GPS coordinates', 'warning');
+        latField.focus();
+        latField.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
     
     if (lat < -90 || lat > 90) {
-        alert('Latitude must be between -90 and 90 degrees.');
+        beeMarshallAlert('⚠️ Latitude must be between -90 and 90 degrees', 'warning');
+        latField.focus();
+        latField.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
     
     if (lng < -180 || lng > 180) {
-        alert('Longitude must be between -180 and 180 degrees.');
+        beeMarshallAlert('⚠️ Longitude must be between -180 and 180 degrees', 'warning');
+        lngField.focus();
+        lngField.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
     }
     
     const id = document.getElementById('clusterId').value;
+    
+    // Get hive strength from display elements (not input fields)
+    const strongElement = document.getElementById('hiveStateStrong');
+    const mediumElement = document.getElementById('hiveStateMedium');
+    const weakElement = document.getElementById('hiveStateWeak');
+    const nucElement = document.getElementById('hiveStateNUC');
+    const deadElement = document.getElementById('hiveStateDead');
+    
     const cluster = {
         id: id ? parseInt(id) : Date.now(),
         name: document.getElementById('clusterName').value,
@@ -267,13 +338,13 @@ function handleSaveCluster(e) {
         latitude: parseFloat(document.getElementById('clusterLat').value) || 0,
         longitude: parseFloat(document.getElementById('clusterLng').value) || 0,
         hiveCount: parseInt(document.getElementById('clusterHiveCount').value),
-        // Hive strength breakdown
+        // Hive strength breakdown from display elements
         hiveStrength: {
-            strong: parseInt(document.getElementById('hiveStrong').value) || 0,
-            medium: parseInt(document.getElementById('hiveMedium').value) || 0,
-            weak: parseInt(document.getElementById('hiveWeak').value) || 0,
-            nuc: parseInt(document.getElementById('hiveNUC').value) || 0,
-            dead: parseInt(document.getElementById('hiveDead').value) || 0
+            strong: strongElement ? parseInt(strongElement.textContent) || 0 : 0,
+            medium: mediumElement ? parseInt(mediumElement.textContent) || 0 : 0,
+            weak: weakElement ? parseInt(weakElement.textContent) || 0 : 0,
+            nuc: nucElement ? parseInt(nucElement.textContent) || 0 : 0,
+            dead: deadElement ? parseInt(deadElement.textContent) || 0 : 0
         },
         // Hive stack configuration - get from visual grid data if available, otherwise from cluster data
         hiveStacks: visualHiveData ? {
@@ -320,8 +391,17 @@ function handleSaveCluster(e) {
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
     database.ref(`${tenantPath}/${cluster.id}`).set(cluster)
         .then(() => {
+            beeMarshallAlert(`✅ Site "${cluster.name}" has been saved successfully!`, 'success');
             showSyncStatus('<i class="bi bi-check"></i> Saved by ' + currentUser.username);
-            showClusters();
+            // Close the form and return to clusters view
+            setTimeout(() => {
+                showClusters();
+            }, 500);
+        })
+        .catch(error => {
+            console.error('Error saving cluster:', error);
+            beeMarshallAlert('❌ Error saving site. Please try again.', 'error');
+            showSyncStatus('Error saving');
         });
 }
 
@@ -380,19 +460,39 @@ function editCluster(id) {
     
     // Populate hive strength breakdown
     if (cluster.hiveStrength) {
-        document.getElementById('hiveStrong').value = cluster.hiveStrength.strong || 0;
-        document.getElementById('hiveMedium').value = cluster.hiveStrength.medium || 0;
-        document.getElementById('hiveWeak').value = cluster.hiveStrength.weak || 0;
-        document.getElementById('hiveNUC').value = cluster.hiveStrength.nuc || 0;
-        document.getElementById('hiveDead').value = cluster.hiveStrength.dead || 0;
+        // Update the Hive State display elements (not input fields)
+        const strongElement = document.getElementById('hiveStateStrong');
+        const mediumElement = document.getElementById('hiveStateMedium');
+        const weakElement = document.getElementById('hiveStateWeak');
+        const nucElement = document.getElementById('hiveStateNUC');
+        const deadElement = document.getElementById('hiveStateDead');
+        
+        if (strongElement) strongElement.textContent = cluster.hiveStrength.strong || 0;
+        if (mediumElement) mediumElement.textContent = cluster.hiveStrength.medium || 0;
+        if (weakElement) weakElement.textContent = cluster.hiveStrength.weak || 0;
+        if (nucElement) nucElement.textContent = cluster.hiveStrength.nuc || 0;
+        if (deadElement) deadElement.textContent = cluster.hiveStrength.dead || 0;
+        
+        // Show the Hive State card if there are any hives
+        const hiveStateCard = document.getElementById('hiveStateCard');
+        if (hiveStateCard) {
+            const totalHives = (cluster.hiveStrength.strong || 0) + (cluster.hiveStrength.medium || 0) + 
+                              (cluster.hiveStrength.weak || 0) + (cluster.hiveStrength.nuc || 0) + 
+                              (cluster.hiveStrength.dead || 0);
+            if (totalHives > 0) {
+                hiveStateCard.style.display = 'block';
+            }
+        }
     }
     
     // Populate stack configuration - these elements are no longer in the HTML
     // The visual hive grid now replaces these inputs
     // Stack configuration data is now stored in visualHiveData and rendered via the grid
     
-    // Update the breakdown summaries
-    updateHiveStrengthTotals();
+    // Update the visual hive grid with existing data
+    if (typeof initializeVisualHiveGrid === 'function') {
+        initializeVisualHiveGrid(cluster);
+    }
     // updateStackTotals(); // Removed - no longer needed with visual hive grid
     
     document.getElementById('anomalySection')?.classList.remove('hidden');
@@ -746,17 +846,118 @@ function scheduleTaskForCluster(clusterId) {
     modal.show();
 }
 
-function deleteCluster(id) {
-    // Check permission
-    if (!canDeleteCluster()) {
-        showPermissionDeniedAlert('delete clusters');
+function archiveCluster(id) {
+    const cluster = clusters.find(c => c.id === id);
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    if (confirm('Delete this cluster? This cannot be undone!')) {
-        // Use tenant-specific path for data isolation
+    if (confirm(`Archive "${cluster.name}"? This will:\n\n• Stop the site from appearing in hive/site counts\n• Keep historical harvest data\n• Make the site accessible only from "Show Archived Sites"\n\nYou can unarchive it later if needed.`)) {
         const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
-        database.ref(`${tenantPath}/${id}`).remove();
+        database.ref(`${tenantPath}/${id}`).update({
+            archived: true,
+            archivedDate: new Date().toISOString(),
+            archivedBy: currentUser.username,
+            lastModified: new Date().toISOString(),
+            lastModifiedBy: currentUser.username
+        }).then(() => {
+            beeMarshallAlert(`✅ "${cluster.name}" has been archived`, 'success');
+            
+            // Log as action
+            const actionText = `Archived site: ${cluster.name}`;
+            const action = {
+                id: Date.now(),
+                clusterId: id,
+                task: 'Archive Site',
+                date: new Date().toISOString(),
+                employee: currentUser.username,
+                notes: actionText
+            };
+            
+            const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+            database.ref(`${actionPath}/${action.id}`).set(action);
+        }).catch(error => {
+            console.error('Error archiving cluster:', error);
+            beeMarshallAlert('❌ Error archiving site. Please try again.', 'error');
+        });
+    }
+}
+
+function unarchiveCluster(id) {
+    if (!isAdmin) {
+        beeMarshallAlert('Only administrators can unarchive sites', 'error');
+        return;
+    }
+    
+    const cluster = clusters.find(c => c.id === id);
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    if (confirm(`Unarchive "${cluster.name}"? This will restore it to active status and include it in hive/site counts.`)) {
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+        database.ref(`${tenantPath}/${id}`).update({
+            archived: false,
+            unarchivedDate: new Date().toISOString(),
+            unarchivedBy: currentUser.username,
+            lastModified: new Date().toISOString(),
+            lastModifiedBy: currentUser.username
+        }).then(() => {
+            beeMarshallAlert(`✅ "${cluster.name}" has been unarchived`, 'success');
+            
+            // Log as action
+            const actionText = `Unarchived site: ${cluster.name}`;
+            const action = {
+                id: Date.now(),
+                clusterId: id,
+                task: 'Unarchive Site',
+                date: new Date().toISOString(),
+                employee: currentUser.username,
+                notes: actionText
+            };
+            
+            const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+            database.ref(`${actionPath}/${action.id}`).set(action);
+        }).catch(error => {
+            console.error('Error unarchiving cluster:', error);
+            beeMarshallAlert('❌ Error unarchiving site. Please try again.', 'error');
+        });
+    }
+}
+
+function deleteCluster(id) {
+    // Only admins can delete, and only from archived state
+    if (!isAdmin) {
+        beeMarshallAlert('Only administrators can delete sites', 'error');
+        return;
+    }
+    
+    const cluster = clusters.find(c => c.id === id);
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    if (!cluster.archived) {
+        beeMarshallAlert('⚠️ Sites must be archived before they can be permanently deleted.\n\nPlease archive the site first, then use the "Show Archived Sites" button to delete it.', 'warning');
+        return;
+    }
+    
+    const confirmMessage = `⚠️ PERMANENT DELETION\n\nSite: ${cluster.name}\n\n⚠️ WARNING: This will permanently delete:\n• The site and all its data\n• Historical harvest records for this site\n• All associated actions and history\n\n⚠️ This action CANNOT be undone!\n\nAre you absolutely sure you want to permanently delete this site?`;
+    
+    if (confirm(confirmMessage)) {
+        // Double confirmation
+        if (confirm('This is your last chance. Permanently delete this site? This action CANNOT be undone.')) {
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+            database.ref(`${tenantPath}/${id}`).remove().then(() => {
+                beeMarshallAlert(`🗑️ Site "${cluster.name}" has been permanently deleted`, 'success');
+            }).catch(error => {
+                console.error('Error deleting cluster:', error);
+                beeMarshallAlert('❌ Error deleting site. Please try again.', 'error');
+            });
+        }
     }
 }
 
@@ -1499,5 +1700,34 @@ function editHiveStateCount(state) {
             console.error('Error updating hive state:', error);
             beeMarshallAlert(`❌ Error updating ${state} hive count`, 'error');
         });
+    }
+}
+
+/**
+ * Toggle between showing active and archived sites
+ */
+function toggleArchivedSites() {
+    showArchivedSites = !showArchivedSites;
+    renderClusters();
+}
+
+/**
+ * Update the archived button text based on current state
+ */
+function updateArchivedButtonText() {
+    const button = document.getElementById('toggleArchivedButton');
+    if (!button) return;
+    
+    const archivedCount = clusters.filter(c => c.archived === true).length;
+    const activeCount = clusters.filter(c => !c.archived).length;
+    
+    if (showArchivedSites) {
+        button.innerHTML = '<i class="bi bi-arrow-left"></i> Show Active Sites';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-outline-primary');
+    } else {
+        button.innerHTML = `<i class="bi bi-archive"></i> Show Archived Sites${archivedCount > 0 ? ` (${archivedCount})` : ''}`;
+        button.classList.remove('btn-outline-primary');
+        button.classList.add('btn-outline-secondary');
     }
 }

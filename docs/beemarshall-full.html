@@ -1797,6 +1797,13 @@
                         </button>
                     </div>
                 </div>
+                
+                <!-- Show Archived Sites Button -->
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-secondary" id="toggleArchivedButton" onclick="toggleArchivedSites()">
+                        <i class="bi bi-archive"></i> Show Archived Sites
+                    </button>
+                </div>
             </div>
 
             <!-- Cluster Form View -->
@@ -3029,8 +3036,7 @@
                 hiveStateCard.style.display = 'none';
             }
             
-            // Update stack configuration summary
-            updateStackBreakdownSummary();
+            // Note: Stack configuration summary is handled by the visual hive grid
         }
         
         // Auto-distribute hives when total count changes
@@ -3079,9 +3085,6 @@
                     statusElement.className = 'text-info';
                 }
             }
-            
-            // Update stack breakdown summary
-            updateStackBreakdownSummary();
         }
         
         function updateStackBreakdownSummary() {

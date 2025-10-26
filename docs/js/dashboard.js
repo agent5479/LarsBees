@@ -31,14 +31,18 @@ function updateActiveNav(section) {
     };
     
     const functionName = sectionMap[section] || `show${section}`;
+    console.log(`🔍 Looking for function: ${functionName}`);
     
     // Add active class to current section (check onclick attributes)
     const allNavLinks = document.querySelectorAll('.nav-link');
     allNavLinks.forEach(link => {
         const onclick = link.getAttribute('onclick');
-        if (onclick && onclick.includes(functionName)) {
+        // Use exact match with parentheses to avoid partial matches
+        if (onclick && onclick.trim() === `${functionName}()`) {
             link.classList.add('active');
             console.log(`✅ Activated nav link with onclick: ${onclick}`);
+        } else if (onclick) {
+            console.log(`⏭️ Skipped nav link with onclick: ${onclick}`);
         }
     });
     
@@ -93,7 +97,10 @@ function updateDashboard() {
         individualHives = [];
     }
     
-    const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    // Filter out archived clusters for statistics
+    const activeClusters = clusters.filter(c => !c.archived);
+    
+    const totalHives = activeClusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
     console.log('📊 Total hives calculated:', totalHives);
     
     // Check for overdue tasks and update flagged count
@@ -109,8 +116,8 @@ function updateDashboard() {
     // Make flaggedCount globally accessible
     window.flaggedCount = flaggedCount;
     
-    // Set numbers directly without animation
-    document.getElementById('statClusters').textContent = clusters.length;
+    // Set numbers directly without animation (active sites only)
+    document.getElementById('statClusters').textContent = activeClusters.length;
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = actions.length;
     document.getElementById('statFlagged').textContent = flaggedCount;
