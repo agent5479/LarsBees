@@ -1455,10 +1455,10 @@
                             <div class="col-lg-7">
                                 <div class="card h-100">
                                     <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-0"><i class="bi bi-map"></i> Cluster Locations</h5>
+                                        <h5 class="mb-0"><i class="bi bi-map"></i> Site Locations</h5>
                                         <div>
                                             <button class="btn btn-sm btn-outline-primary" onclick="showClusters()">
-                                                <i class="bi bi-geo-alt"></i> Manage Clusters
+                                                <i class="bi bi-geo-alt"></i> Manage Sites
                                             </button>
                                         </div>
                                     </div>
@@ -1570,13 +1570,13 @@
             <!-- Clusters View -->
             <div id="clustersView" class="hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="bi bi-geo-alt"></i> Hive Clusters</h2>
+                    <h2><i class="bi bi-geo-alt"></i> Apiary Sites</h2>
                     <div>
                         <button class="btn btn-outline-success me-2" onclick="exportClustersCSV()">
                             <i class="bi bi-download"></i> Export CSV
                         </button>
                         <button class="btn btn-primary" onclick="showAddClusterForm()">
-                            <i class="bi bi-plus"></i> Add Cluster
+                            <i class="bi bi-plus"></i> Add Site
                         </button>
                     </div>
                 </div>
@@ -1586,10 +1586,10 @@
                 <div class="row" id="clustersList">
                     <div class="text-center my-5">
                         <i class="bi bi-geo-alt" style="font-size: 3rem; color: #ccc;"></i>
-                        <h5 class="mt-3 text-muted">No clusters yet</h5>
+                        <h5 class="mt-3 text-muted">No sites yet</h5>
                         <p class="text-muted">Get started by adding your first apiary location</p>
                         <button class="btn btn-primary" onclick="showAddClusterForm()">
-                            <i class="bi bi-plus"></i> Add Your First Cluster
+                            <i class="bi bi-plus"></i> Add Your First Site
                         </button>
                     </div>
                 </div>
@@ -2482,9 +2482,9 @@
                     <div class="modal-body">
                         <form id="scheduleTaskForm">
                             <div class="mb-3">
-                                <label for="scheduleCluster" class="form-label">Cluster *</label>
+                                <label for="scheduleCluster" class="form-label">Site *</label>
                                 <select class="form-select" id="scheduleCluster" required>
-                                    <option value="">Select cluster...</option>
+                                    <option value="">Select site...</option>
                                 </select>
                             </div>
                             
@@ -2537,13 +2537,13 @@
                     <h5 class="modal-title">Edit Scheduled Task</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                                    <div class="modal-body">
                     <form id="editScheduledTaskForm">
                         <input type="hidden" id="editTaskId">
                         <div class="mb-3">
-                            <label for="editTaskCluster" class="form-label">Cluster *</label>
+                            <label for="editTaskCluster" class="form-label">Site *</label>
                             <select class="form-select" id="editTaskCluster" required>
-                                <option value="">Select cluster...</option>
+                                <option value="">Select site...</option>
                             </select>
                         </div>
                         
@@ -2959,13 +2959,13 @@
         // CSV Export Functions
         function exportClustersCSV() {
             if (!clusters || clusters.length === 0) {
-                beeMarshallAlert('No cluster data available to export.', 'info');
+                beeMarshallAlert('No site data available to export.', 'info');
                 return;
             }
             
             const csvData = clusters.map(cluster => {
                 return {
-                    'Cluster ID': cluster.id,
+                    'Site ID': cluster.id,
                     'Name': cluster.name,
                     'Description': cluster.description || '',
                     'Latitude': cluster.latitude,
@@ -2981,7 +2981,7 @@
                     'Single Stacks': cluster.hiveStacks?.singles || 0,
                     'NUC Stacks': cluster.hiveStacks?.nucs || 0,
                     'Empty Platforms': cluster.hiveStacks?.empty || 0,
-                    'Cluster Type': cluster.clusterType || '',
+                    'Site Type': cluster.clusterType || '',
                     'Landowner Name': cluster.landownerName || '',
                     'Landowner Phone': cluster.landownerPhone || '',
                     'Landowner Email': cluster.landownerEmail || '',
@@ -3009,15 +3009,15 @@
             }
             
             const csvData = actions.map(action => {
-                // Find cluster name from ID
+                // Find site name from ID
                 const cluster = clusters.find(c => c.id === action.clusterId);
                 const clusterName = cluster ? cluster.name : '';
                 
                 return {
                     'Action ID': action.id,
                     'Date': action.date || '',
-                    'Cluster ID': action.clusterId || '',
-                    'Cluster Name': clusterName,
+                    'Site ID': action.clusterId || '',
+                    'Site Name': clusterName,
                     'Task ID': action.taskId || '',
                     'Task Name': action.taskName || '',
                     'Task Category': action.taskCategory || '',
@@ -3041,7 +3041,7 @@
             }
             
             const csvData = scheduledTasks.map(task => {
-                // Find cluster name from ID
+                // Find site name from ID
                 const cluster = clusters.find(c => c.id === task.clusterId);
                 const clusterName = cluster ? cluster.name : '';
                 
@@ -3055,8 +3055,8 @@
                     'Task Type ID': task.taskId || '',
                     'Task Name': taskName,
                     'Task Category': taskCategory,
-                    'Cluster ID': task.clusterId || '',
-                    'Cluster Name': clusterName,
+                    'Site ID': task.clusterId || '',
+                    'Site Name': clusterName,
                     'Individual Hive ID': task.individualHiveId || '',
                     'Due Date': task.dueDate || '',
                     'Scheduled Time': task.scheduledTime || '',
@@ -3084,14 +3084,14 @@
             }
             
             const csvData = individualHives.map(hive => {
-                // Find cluster name from ID
+                // Find site name from ID
                 const cluster = clusters.find(c => c.id === hive.clusterId);
                 const clusterName = cluster ? cluster.name : '';
                 
                 return {
                     'Hive ID': hive.id,
-                    'Cluster ID': hive.clusterId || '',
-                    'Cluster Name': clusterName,
+                    'Site ID': hive.clusterId || '',
+                    'Site Name': clusterName,
                     'Hive Name': hive.hiveName || '',
                     'Hive Number': hive.hiveNumber || '',
                     'Status': hive.status || '',
@@ -3111,11 +3111,11 @@
         function exportAllDataCSV() {
             const allData = [];
             
-            // Add clusters data
+            // Add sites data
             if (clusters && clusters.length > 0) {
                 clusters.forEach(cluster => {
                     allData.push({
-                        'Data Type': 'Cluster',
+                        'Data Type': 'Site',
                         'ID': cluster.id,
                         'Name': cluster.name,
                         'Description': cluster.description || '',
@@ -3132,7 +3132,7 @@
                         'Single Stacks': cluster.hiveStacks?.singles || 0,
                         'NUC Stacks': cluster.hiveStacks?.nucs || 0,
                         'Empty Platforms': cluster.hiveStacks?.empty || 0,
-                        'Cluster Type': cluster.clusterType || '',
+                        'Site Type': cluster.clusterType || '',
                         'Landowner Name': cluster.landownerName || '',
                         'Landowner Phone': cluster.landownerPhone || '',
                         'Landowner Email': cluster.landownerEmail || '',
@@ -3190,7 +3190,7 @@
                         'Description': task.description || '',
                         'Due Date': task.dueDate || '',
                         'Priority': task.priority || '',
-                        'Cluster Name': task.clusterName || '',
+                        'Site Name': task.clusterName || '',
                         'Assigned To': task.assignedTo || '',
                         'Status': task.completed ? 'Completed' : 'Pending',
                         'Completed At': task.completedAt || '',
