@@ -1564,6 +1564,15 @@
                                 <p class="text-muted mb-0">Monitor your apiary operations and key metrics</p>
                             </div>
                             <div>
+                                <!-- GBTech Test Service Buttons (only visible for GBTech) -->
+                                <span id="gbtechTestButtons" style="display: none;">
+                                    <button class="btn btn-success me-2" onclick="createGBTechTestData()">
+                                        <i class="bi bi-flask"></i> Create Test Data
+                                    </button>
+                                    <button class="btn btn-danger me-2" onclick="undoGBTechTestData()">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Undo Test Data
+                                    </button>
+                                </span>
                                 <button class="btn btn-warning me-2" onclick="forceMigrateLarsData()" id="migrationButton" style="display: none;">
                                     <i class="bi bi-arrow-repeat"></i> Migrate Lars Data
                                 </button>

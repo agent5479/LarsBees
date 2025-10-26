@@ -1029,6 +1029,16 @@ function showMainApp() {
         document.querySelectorAll('.admin-only').forEach(el => el.classList.add('employee-hidden'));
     }
     
+    // Show GBTech test buttons only for GBTech login
+    const gbtechButtons = document.getElementById('gbtechTestButtons');
+    if (gbtechButtons) {
+        if (currentTenantId === 'gbtech' && currentUser.username === 'GBTech') {
+            gbtechButtons.style.display = 'inline';
+        } else {
+            gbtechButtons.style.display = 'none';
+        }
+    }
+    
     // Initialize dashboard
     showDashboard();
     
@@ -1239,4 +1249,313 @@ function loadEmployees() {
         employees = snapshot.val() ? Object.values(snapshot.val()) : [];
         renderEmployees();
     });
+}
+
+// Export all data to CSV
+function exportAllData() {
+    downloadCSV();
+}
+
+// Debug utility
+function debugBeeMarshall() {
+    console.log('=== BeeMarshall Debug Information ===');
+    console.log('Version:', APP_VERSION);
+    console.log('Current User:', currentUser);
+    console.log('Current Tenant ID:', currentTenantId);
+    console.log('Is Admin:', isAdmin);
+    console.log('Firebase App:', typeof firebase !== 'undefined' ? 'Initialized' : 'Not initialized');
+    console.log('Total Clusters:', clusters.length);
+    console.log('Total Actions:', actions.length);
+    console.log('Total Scheduled Tasks:', scheduledTasks.length);
+    console.log('Total Individual Hives:', individualHives.length);
+    console.log('Clusters:', clusters);
+    console.log('Actions:', actions);
+    console.log('Scheduled Tasks:', scheduledTasks);
+    console.log('====================================');
+}
+
+// GBTech Test Service - Comprehensive Test Data Generator
+let gbtechTestDataBackup = null;
+let gbtechTestDataAdded = false;
+
+function createGBTechTestData() {
+    // Only allow if logged in as GBTech
+    if (currentTenantId !== 'gbtech' || currentUser.username !== 'GBTech') {
+        beeMarshallAlert('This feature is only available for GBTech login.', 'error');
+        return;
+    }
+    
+    // Check if test data already exists
+    if (gbtechTestDataAdded) {
+        const confirm = window.confirm('Test data already exists. Do you want to regenerate it? This will replace existing test data.');
+        if (!confirm) return;
+    }
+    
+    // Backup current data
+    gbtechTestDataBackup = {
+        clusters: JSON.parse(JSON.stringify(clusters)),
+        actions: JSON.parse(JSON.stringify(actions)),
+        scheduledTasks: JSON.parse(JSON.stringify(scheduledTasks))
+    };
+    
+    console.log('🧪 Creating GBTech test data...');
+    
+    // Create diverse test sites
+    const testSites = [
+        {
+            id: 1001,
+            name: 'Main Apiary - Strong Hives',
+            location: 'Main Farm',
+            lat: -36.8485,
+            lng: 174.7633,
+            siteType: 'Commercial',
+            seasonality: 'Year-round',
+            accessType: 'Drive',
+            hiveCount: 15,
+            hiveStrength: { strong: 10, medium: 3, weak: 2, nuc: 0, dead: 0 },
+            stackBreakdown: { doubles: 8, topSplits: 5, singles: 2, nucs: 0, emptyPlatforms: 0 },
+            notes: 'Primary commercial operation with high honey yield'
+        },
+        {
+            id: 1002,
+            name: 'Winter Storage Site',
+            location: 'Cold Storage Area',
+            lat: -36.8585,
+            lng: 174.7733,
+            siteType: 'Winter Hibernation',
+            seasonality: 'Winter',
+            accessType: 'Walk',
+            hiveCount: 8,
+            hiveStrength: { strong: 0, medium: 2, weak: 5, nuc: 1, dead: 0 },
+            stackBreakdown: { doubles: 2, topSplits: 0, singles: 6, nucs: 0, emptyPlatforms: 0 },
+            notes: 'Winter consolidation site'
+        },
+        {
+            id: 1003,
+            name: 'NUC Breeding Site',
+            location: 'Breeding Grounds',
+            lat: -36.8685,
+            lng: 174.7833,
+            siteType: 'Breeding',
+            seasonality: 'Spring/Summer',
+            accessType: 'Drive',
+            hiveCount: 20,
+            hiveStrength: { strong: 5, medium: 8, weak: 0, nuc: 7, dead: 0 },
+            stackBreakdown: { doubles: 2, topSplits: 0, singles: 0, nucs: 18, emptyPlatforms: 0 },
+            notes: 'NUC production and queen breeding'
+        },
+        {
+            id: 1004,
+            name: 'Remote Mountain Apiary',
+            location: 'Mountain Top',
+            lat: -36.8785,
+            lng: 174.7933,
+            siteType: 'Remote',
+            seasonality: 'Summer',
+            accessType: 'Helicopter',
+            hiveCount: 6,
+            hiveStrength: { strong: 4, medium: 2, weak: 0, nuc: 0, dead: 0 },
+            stackBreakdown: { doubles: 4, topSplits: 0, singles: 2, nucs: 0, emptyPlatforms: 0 },
+            notes: 'High altitude honey production - difficult access'
+        },
+        {
+            id: 1005,
+            name: 'Urban Rooftop Apiary',
+            location: 'City Center',
+            lat: -36.8885,
+            lng: 174.8033,
+            siteType: 'Urban',
+            seasonality: 'Year-round',
+            accessType: 'Elevator',
+            hiveCount: 10,
+            hiveStrength: { strong: 6, medium: 3, weak: 1, nuc: 0, dead: 0 },
+            stackBreakdown: { doubles: 0, topSplits: 8, singles: 2, nucs: 0, emptyPlatforms: 0 },
+            notes: 'Urban honey production for local markets'
+        },
+        {
+            id: 1006,
+            name: 'Orchard Pollination Site',
+            location: 'Apple Orchard',
+            lat: -36.8985,
+            lng: 174.8133,
+            siteType: 'Pollination',
+            seasonality: 'Spring',
+            accessType: 'Drive',
+            hiveCount: 50,
+            hiveStrength: { strong: 45, medium: 5, weak: 0, nuc: 0, dead: 0 },
+            stackBreakdown: { doubles: 45, topSplits: 5, singles: 0, nucs: 0, emptyPlatforms: 0 },
+            notes: 'Commercial pollination contract - temporary placement'
+        },
+        {
+            id: 1007,
+            name: 'Isolation Yard',
+            location: 'Quarantine Area',
+            lat: -36.9085,
+            lng: 174.8233,
+            siteType: 'Quarantine',
+            seasonality: 'Year-round',
+            accessType: 'Walk',
+            hiveCount: 5,
+            hiveStrength: { strong: 0, medium: 1, weak: 2, nuc: 0, dead: 2 },
+            stackBreakdown: { doubles: 0, topSplits: 0, singles: 3, nucs: 0, emptyPlatforms: 2 },
+            notes: 'Disease isolation and treatment area'
+        },
+        {
+            id: 1008,
+            name: 'Research Apiary',
+            location: 'University Grounds',
+            lat: -36.9185,
+            lng: 174.8333,
+            siteType: 'Research',
+            seasonality: 'Year-round',
+            accessType: 'Drive',
+            hiveCount: 12,
+            hiveStrength: { strong: 4, medium: 5, weak: 2, nuc: 1, dead: 0 },
+            stackBreakdown: { doubles: 3, topSplits: 4, singles: 4, nucs: 1, emptyPlatforms: 0 },
+            notes: 'Bee behavior and genetics research project'
+        }
+    ];
+    
+    // Create diverse test actions
+    const testActions = [
+        { id: 2001, clusterId: 1001, task: 'General Inspection', date: getDateDaysAgo(2), employee: 'GBTech', notes: 'All hives strong, queen laying well' },
+        { id: 2002, clusterId: 1001, task: 'Honey Harvest', date: getDateDaysAgo(15), employee: 'GBTech', notes: 'Harvested 45kg premium honey', harvestQuantity: 45 },
+        { id: 2003, clusterId: 1002, task: 'Varroa Treatment', date: getDateDaysAgo(5), employee: 'GBTech', notes: 'Applied Apivar strips', flag: 'urgent' },
+        { id: 2004, clusterId: 1003, task: 'Queen Replacement', date: getDateDaysAgo(10), employee: 'GBTech', notes: 'Replaced 3 failing queens' },
+        { id: 2005, clusterId: 1004, task: 'Emergency Feeding', date: getDateDaysAgo(3), employee: 'GBTech', notes: 'Provided sugar syrup due to weather', flag: 'warning' },
+        { id: 2006, clusterId: 1005, task: 'Swarm Prevention', date: getDateDaysAgo(7), employee: 'GBTech', notes: 'Added supers to prevent swarming' },
+        { id: 2007, clusterId: 1006, task: 'Equipment Sanitization', date: getDateDaysAgo(1), employee: 'GBTech', notes: 'Cleaned all equipment after pollination' },
+        { id: 2008, clusterId: 1007, task: 'Disease Check', date: getDateDaysAgo(0), employee: 'GBTech', notes: 'AFB detected in 2 hives - quarantine active', flag: 'urgent' },
+        { id: 2009, clusterId: 1008, task: 'Record Keeping', date: getDateDaysAgo(4), employee: 'GBTech', notes: 'Data collection for research project' },
+        { id: 2010, clusterId: 1001, task: 'Feed Dry Sugar', date: getDateDaysAgo(20), employee: 'GBTech', notes: 'Winter feed preparation' }
+    ];
+    
+    // Create diverse test scheduled tasks
+    const testScheduledTasks = [
+        { id: 3001, clusterId: 1001, task: 'General Inspection', dueDate: getDateDaysFromNow(3), priority: 'normal', completed: false },
+        { id: 3002, clusterId: 1002, task: 'Remove Varroa Treatment', dueDate: getDateDaysFromNow(7), priority: 'high', completed: false },
+        { id: 3003, clusterId: 1003, task: 'Mark New Queens', dueDate: getDateDaysFromNow(14), priority: 'normal', completed: false },
+        { id: 3004, clusterId: 1004, task: 'Aerial Check-up', dueDate: getDateDaysFromNow(21), priority: 'normal', completed: false },
+        { id: 3005, clusterId: 1007, task: 'Re-inspect Quarantine', dueDate: getDateDaysFromNow(2), priority: 'urgent', completed: false },
+        { id: 3006, clusterId: 1006, task: 'Contract Completion', dueDate: getDateDaysFromNow(30), priority: 'normal', completed: false },
+        { id: 3007, clusterId: 1001, task: 'Harvest Honey', dueDate: getDateDaysFromNow(45), priority: 'high', completed: false }
+    ];
+    
+    // Helper functions for date calculation
+    function getDateDaysAgo(days) {
+        const date = new Date();
+        date.setDate(date.getDate() - days);
+        return date.toISOString();
+    }
+    
+    function getDateDaysFromNow(days) {
+        const date = new Date();
+        date.setDate(date.getDate() + days);
+        return date.toISOString();
+    }
+    
+    // Save to Firebase
+    const tenantPath = `tenants/${currentTenantId}`;
+    const batch = {};
+    
+    // Add clusters
+    testSites.forEach(site => {
+        batch[`${tenantPath}/clusters/${site.id}`] = {
+            ...site,
+            createdDate: new Date().toISOString(),
+            lastModified: new Date().toISOString(),
+            lastModifiedBy: currentUser.username
+        };
+    });
+    
+    // Add actions
+    testActions.forEach(action => {
+        batch[`${tenantPath}/actions/${action.id}`] = {
+            ...action,
+            createdDate: action.date,
+            lastModified: action.date,
+            lastModifiedBy: action.employee
+        };
+    });
+    
+    // Add scheduled tasks
+    testScheduledTasks.forEach(task => {
+        batch[`${tenantPath}/scheduledTasks/${task.id}`] = {
+            ...task,
+            createdDate: new Date().toISOString(),
+            lastModified: new Date().toISOString(),
+            createdBy: currentUser.username
+        };
+    });
+    
+    // Execute batch write
+    database.ref().update(batch)
+        .then(() => {
+            console.log('✅ GBTech test data created successfully');
+            gbtechTestDataAdded = true;
+            beeMarshallAlert('Test data created successfully! You now have 8 diverse sites, 10 actions, and 7 scheduled tasks.', 'success');
+            
+            // Refresh data
+            setTimeout(() => {
+                loadDataFromFirebase();
+            }, 500);
+        })
+        .catch(error => {
+            console.error('❌ Error creating test data:', error);
+            beeMarshallAlert('Error creating test data: ' + error.message, 'error');
+        });
+}
+
+function undoGBTechTestData() {
+    // Only allow if logged in as GBTech
+    if (currentTenantId !== 'gbtech' || currentUser.username !== 'GBTech') {
+        beeMarshallAlert('This feature is only available for GBTech login.', 'error');
+        return;
+    }
+    
+    if (!gbtechTestDataBackup) {
+        beeMarshallAlert('No backup data found. Cannot undo test data.', 'warning');
+        return;
+    }
+    
+    const confirm = window.confirm('Are you sure you want to undo the test data? This will restore your original data.');
+    if (!confirm) return;
+    
+    console.log('↩️ Undoing GBTech test data...');
+    
+    const tenantPath = `tenants/${currentTenantId}`;
+    const batch = {};
+    
+    // Remove test clusters (IDs 1001-1008)
+    for (let i = 1001; i <= 1008; i++) {
+        batch[`${tenantPath}/clusters/${i}`] = null;
+    }
+    
+    // Remove test actions (IDs 2001-2010)
+    for (let i = 2001; i <= 2010; i++) {
+        batch[`${tenantPath}/actions/${i}`] = null;
+    }
+    
+    // Remove test scheduled tasks (IDs 3001-3007)
+    for (let i = 3001; i <= 3007; i++) {
+        batch[`${tenantPath}/scheduledTasks/${i}`] = null;
+    }
+    
+    // Execute batch delete
+    database.ref().update(batch)
+        .then(() => {
+            console.log('✅ GBTech test data removed successfully');
+            gbtechTestDataAdded = false;
+            gbtechTestDataBackup = null;
+            beeMarshallAlert('Test data removed successfully! Your original data has been restored.', 'success');
+            
+            // Refresh data
+            setTimeout(() => {
+                loadDataFromFirebase();
+            }, 500);
+        })
+        .catch(error => {
+            console.error('❌ Error removing test data:', error);
+            beeMarshallAlert('Error removing test data: ' + error.message, 'error');
+        });
 }

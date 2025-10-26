@@ -7,11 +7,31 @@ function updateActiveNav(section) {
         link.classList.remove('active');
     });
     
-    // Add active class to current section
-    const activeLink = document.querySelector(`[onclick*="${section}"]`);
-    if (activeLink) {
-        activeLink.classList.add('active');
-    }
+    // Map sections to their corresponding function names
+    const sectionMap = {
+        'dashboard': 'showDashboard',
+        'Clusters': 'showClusters',
+        'Sites': 'showClusters',
+        'Actions': 'showActions',
+        'Schedule': 'showScheduledTasks',
+        'Tasks': 'showTasks',
+        'Task': 'showTasks',
+        'Compliance': 'showComplianceView',
+        'Team': 'showEmployees'
+    };
+    
+    const functionName = sectionMap[section] || `show${section}`;
+    
+    // Add active class to current section (check onclick attributes)
+    const allNavLinks = document.querySelectorAll('.nav-link');
+    allNavLinks.forEach(link => {
+        const onclick = link.getAttribute('onclick');
+        if (onclick && onclick.includes(functionName)) {
+            link.classList.add('active');
+        }
+    });
+    
+    console.log(`🎯 Navigation updated to: ${section} (function: ${functionName})`);
 }
 
 // Helper function to safely get task name (handles deleted tasks) - make globally accessible

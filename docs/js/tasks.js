@@ -153,6 +153,15 @@ function handleAddTask() {
 }
 
 function editTask(taskId) {
+    // Only allow this function when in the task management view
+    const tasksView = document.getElementById('tasksView');
+    if (!tasksView || tasksView.classList.contains('hidden')) {
+        beeMarshallAlert('Please navigate to Task Management to edit tasks.', 'info');
+        // Switch to task management view
+        showTasks();
+        return;
+    }
+    
     const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
     const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
@@ -278,6 +287,15 @@ function handleEditTask() {
 }
 
 function deleteTask(taskId) {
+    // Only allow this function when in the task management view
+    const tasksView = document.getElementById('tasksView');
+    if (!tasksView || tasksView.classList.contains('hidden')) {
+        beeMarshallAlert('Please navigate to Task Management to delete tasks.', 'info');
+        // Switch to task management view
+        showTasks();
+        return;
+    }
+    
     const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
     const task = tasksToUse.find(t => t.id === taskId);
     if (!task) return;
@@ -334,6 +352,15 @@ function deleteTask(taskId) {
 
 // Additional task management functions
 function showAddTaskForm() {
+    // Only allow this function when in the task management view
+    const tasksView = document.getElementById('tasksView');
+    if (!tasksView || tasksView.classList.contains('hidden')) {
+        beeMarshallAlert('Please navigate to Task Management to add tasks.', 'info');
+        // Switch to task management view
+        showTasks();
+        return;
+    }
+    
     // Create a modal for better task creation experience
     const modalHtml = `
         <div class="modal fade" id="addTaskModal" tabindex="-1">
