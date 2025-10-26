@@ -1128,52 +1128,108 @@ function renderVisualHiveGrid() {
     const totalHives = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
     
     let html = `
-        <div class="row mb-3">
-            <div class="col-md-3 text-center">
-                <div class="card border-primary" style="cursor: pointer;" onclick="toggleHiveBox('doubles')">
-                    <div class="card-body">
-                        <h3 id="doublesCount" class="text-primary">${visualHiveData.doubles}</h3>
-                        <small class="text-muted">Double Stacks</small>
+        <style>
+            .hive-box {
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border: 3px solid;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                position: relative;
+                overflow: hidden;
+            }
+            .hive-box::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+                pointer-events: none;
+            }
+            .hive-box:hover {
+                transform: translateY(-5px) scale(1.05);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            }
+            .hive-box:active {
+                transform: translateY(-2px) scale(1.02);
+            }
+            .hive-box i {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+                display: block;
+            }
+            .hive-count-display {
+                font-size: 3rem;
+                font-weight: 700;
+                line-height: 1;
+                margin: 0.5rem 0;
+            }
+            .hive-label-text {
+                font-size: 0.9rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+        </style>
+        
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-lg-2-4">
+                <div class="hive-box" style="border-color: #0d6efd; background: linear-gradient(135deg, #cfe2ff 0%, #b6d4fe 100%);" onclick="toggleHiveBox('doubles')" title="Click to update Double Stacks">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-stack text-primary"></i>
+                        <div id="doublesCount" class="hive-count-display text-primary">${visualHiveData.doubles}</div>
+                        <div class="hive-label-text text-primary">Double Stacks</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 text-center">
-                <div class="card border-success" style="cursor: pointer;" onclick="toggleHiveBox('topSplits')">
-                    <div class="card-body">
-                        <h3 id="topSplitsCount" class="text-success">${visualHiveData.topSplits}</h3>
-                        <small class="text-muted">Top-Splits</small>
+            <div class="col-6 col-md-4 col-lg-2-4">
+                <div class="hive-box" style="border-color: #198754; background: linear-gradient(135deg, #d1e7dd 0%, #badbcc 100%);" onclick="toggleHiveBox('topSplits')" title="Click to update Top-Splits">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-layers-half text-success"></i>
+                        <div id="topSplitsCount" class="hive-count-display text-success">${visualHiveData.topSplits}</div>
+                        <div class="hive-label-text text-success">Top-Splits</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 text-center">
-                <div class="card border-warning" style="cursor: pointer;" onclick="toggleHiveBox('singles')">
-                    <div class="card-body">
-                        <h3 id="singlesCount" class="text-warning">${visualHiveData.singles}</h3>
-                        <small class="text-muted">Single Stacks</small>
+            <div class="col-6 col-md-4 col-lg-2-4">
+                <div class="hive-box" style="border-color: #ffc107; background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%);" onclick="toggleHiveBox('singles')" title="Click to update Single Stacks">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-square text-warning"></i>
+                        <div id="singlesCount" class="hive-count-display text-warning">${visualHiveData.singles}</div>
+                        <div class="hive-label-text text-warning">Single Stacks</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-3 text-center">
-                <div class="card border-info" style="cursor: pointer;" onclick="toggleHiveBox('nucs')">
-                    <div class="card-body">
-                        <h3 id="nucsCount" class="text-info">${visualHiveData.nucs}</h3>
-                        <small class="text-muted">NUC Stacks</small>
+            <div class="col-6 col-md-4 col-lg-2-4">
+                <div class="hive-box" style="border-color: #0dcaf0; background: linear-gradient(135deg, #cff4fc 0%, #b6effb 100%);" onclick="toggleHiveBox('nucs')" title="Click to update NUC Stacks">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-circle text-info"></i>
+                        <div id="nucsCount" class="hive-count-display text-info">${visualHiveData.nucs}</div>
+                        <div class="hive-label-text text-info">NUC Stacks</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-lg-2-4">
+                <div class="hive-box" style="border-color: #6c757d; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);" onclick="toggleHiveBox('empty')" title="Click to update Empty Platforms">
+                    <div class="card-body text-center p-4">
+                        <i class="bi bi-square text-secondary"></i>
+                        <div id="emptyCount" class="hive-count-display text-secondary">${visualHiveData.empty}</div>
+                        <div class="hive-label-text text-secondary">Empty Platforms</div>
                     </div>
                 </div>
             </div>
         </div>
+        
         <div class="row">
-            <div class="col-md-3 text-center">
-                <div class="card border-secondary" style="cursor: pointer;" onclick="toggleHiveBox('empty')">
-                    <div class="card-body">
-                        <h3 id="emptyCount" class="text-secondary">${visualHiveData.empty}</h3>
-                        <small class="text-muted">Empty Platforms</small>
+            <div class="col-12">
+                <div class="alert alert-success d-flex align-items-center justify-content-between">
+                    <div>
+                        <i class="bi bi-hexagon-fill me-2"></i>
+                        <strong>Total Active Hives:</strong> <span id="totalActiveHives" class="badge bg-success ms-2" style="font-size: 1.2rem;">${totalHives}</span>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-9">
-                <div class="alert alert-light">
-                    <strong>Total Active Hives:</strong> <span id="totalActiveHives">${totalHives}</span>
+                    <small class="text-muted">Click any box above to update counts</small>
                 </div>
             </div>
         </div>
