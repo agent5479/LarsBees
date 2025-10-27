@@ -192,10 +192,10 @@
                     <div class="col-md-6">
                         <h6>Site Classifications:</h6>
                         <ul class="list-unstyled">
-                            <li><strong>Summer Sites:</strong> {{ clusters|selectattr('site_type', 'equalto', 'summer')|list|length }}</li>
-                            <li><strong>Winter Sites:</strong> {{ clusters|selectattr('site_type', 'equalto', 'winter')|list|length }}</li>
-                            <li><strong>All Weather Access:</strong> {{ clusters|selectattr('access_type', 'equalto', 'all_weather')|list|length }}</li>
-                            <li><strong>Dry Only Access:</strong> {{ clusters|selectattr('access_type', 'equalto', 'dry_only')|list|length }}</li>
+                            <li><strong>Summer Sites:</strong> {{ sites|selectattr('site_type', 'equalto', 'summer')|list|length }}</li>
+                            <li><strong>Winter Sites:</strong> {{ sites|selectattr('site_type', 'equalto', 'winter')|list|length }}</li>
+                            <li><strong>All Weather Access:</strong> {{ sites|selectattr('access_type', 'equalto', 'all_weather')|list|length }}</li>
+                            <li><strong>Dry Only Access:</strong> {{ sites|selectattr('access_type', 'equalto', 'dry_only')|list|length }}</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
@@ -204,7 +204,7 @@
                             <li><strong>Quarantine Sites:</strong> {{ key_metrics.quarantine_sites }}</li>
                             <li><strong>Total Actions:</strong> {{ key_metrics.total_actions }}</li>
                             <li><strong>Disease Reports:</strong> {{ key_metrics.total_disease_reports }}</li>
-                            <li><strong>Contact Required Sites:</strong> {{ clusters|selectattr('contact_before_visit', 'equalto', true)|list|length }}</li>
+                            <li><strong>Contact Required Sites:</strong> {{ sites|selectattr('contact_before_visit', 'equalto', true)|list|length }}</li>
                         </ul>
                     </div>
                 </div>

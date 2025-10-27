@@ -26,9 +26,9 @@ class RegistrationForm(FlaskForm):
         if user:
             raise ValidationError('Email already registered. Please use a different one.')
 
-class HiveClusterForm(FlaskForm):
-    """Form for adding/editing hive clusters"""
-    name = StringField('Cluster Name', validators=[DataRequired(), Length(max=100)])
+class HiveSiteForm(FlaskForm):
+    """Form for adding/editing hive sites"""
+    name = StringField('Site Name', validators=[DataRequired(), Length(max=100)])
     description = TextAreaField('Description', validators=[Optional()])
     latitude = FloatField('Latitude', validators=[DataRequired(), NumberRange(min=-90, max=90)])
     longitude = FloatField('Longitude', validators=[DataRequired(), NumberRange(min=-180, max=180)])
@@ -67,8 +67,8 @@ class HiveClusterForm(FlaskForm):
     medium_hives = IntegerField('Medium Hives', validators=[Optional(), NumberRange(min=0)], default=0)
     weak_hives = IntegerField('Weak Hives', validators=[Optional(), NumberRange(min=0)], default=0)
     
-    # Overall cluster strength categorization
-    cluster_strength = SelectField('Cluster Strength', choices=[
+    # Overall site strength categorization
+    site_strength = SelectField('Site Strength', choices=[
         ('strong', 'Strong'),
         ('medium', 'Medium'),
         ('weak', 'Weak'),
@@ -99,7 +99,7 @@ class IndividualHiveForm(FlaskForm):
 
 class HiveActionForm(FlaskForm):
     """Form for logging hive actions"""
-    cluster_id = SelectField('Hive Cluster', coerce=int, validators=[DataRequired()])
+    site_id = SelectField('Hive Site', coerce=int, validators=[DataRequired()])
     individual_hive_id = SelectField('Individual Hive (Optional)', coerce=int, validators=[Optional()])
     task_type_id = SelectField('Task Type', coerce=int, validators=[Optional()])
     custom_task_name = StringField('Custom Task Name', validators=[Optional(), Length(max=100)])
@@ -109,7 +109,7 @@ class HiveActionForm(FlaskForm):
 
 class DiseaseReportForm(FlaskForm):
     """Form for disease reporting"""
-    cluster_id = SelectField('Hive Cluster', coerce=int, validators=[DataRequired()])
+    site_id = SelectField('Hive Site', coerce=int, validators=[DataRequired()])
     afb_count = IntegerField('AFB (American Foulbrood)', validators=[Optional(), NumberRange(min=0)], default=0)
     varroa_count = IntegerField('Varroa Mites', validators=[Optional(), NumberRange(min=0)], default=0)
     chalkbrood_count = IntegerField('Chalkbrood', validators=[Optional(), NumberRange(min=0)], default=0)
@@ -121,7 +121,7 @@ class DiseaseReportForm(FlaskForm):
 
 class FieldReportForm(FlaskForm):
     """Form for quick field reporting with checkboxes and numbers"""
-    cluster_id = SelectField('Site', coerce=int, validators=[DataRequired()])
+    site_id = SelectField('Site', coerce=int, validators=[DataRequired()])
     
     # Quick action checkboxes
     inspection = BooleanField('Inspection')
@@ -167,7 +167,7 @@ class ScheduledTaskForm(FlaskForm):
     ], default='medium')
     
     # Assignment
-    assigned_to_cluster_id = SelectField('Assign to Cluster (Optional)', coerce=int, validators=[Optional()])
+    assigned_to_site_id = SelectField('Assign to Site (Optional)', coerce=int, validators=[Optional()])
     assigned_to_hive_id = SelectField('Assign to Individual Hive (Optional)', coerce=int, validators=[Optional()])
     
     # Recurrence
@@ -237,8 +237,8 @@ class QuickScheduleForm(FlaskForm):
     task_template_id = SelectField('Task Type', coerce=int, validators=[DataRequired()])
     
     # Assignment options
-    assign_to_all_clusters = BooleanField('Assign to all clusters')
-    selected_clusters = SelectField('Select Clusters', choices=[], validators=[Optional()], multiple=True)
+    assign_to_all_sites = BooleanField('Assign to all sites')
+    selected_sites = SelectField('Select Sites', choices=[], validators=[Optional()], multiple=True)
     selected_hives = SelectField('Select Individual Hives', choices=[], validators=[Optional()], multiple=True)
     
     # Scheduling options
@@ -274,7 +274,7 @@ class TaskAssignmentForm(FlaskForm):
     """Form for managing task assignments"""
     scheduled_task_id = SelectField('Scheduled Task', coerce=int, validators=[DataRequired()])
     target_type = SelectField('Target Type', choices=[
-        ('cluster', 'Cluster'),
+        ('site', 'Site'),
         ('individual_hive', 'Individual Hive')
     ], validators=[DataRequired()])
     target_id = SelectField('Target', coerce=int, validators=[DataRequired()])
@@ -388,7 +388,7 @@ class OrganizationForm(FlaskForm):
     
     # Organization settings
     max_users = IntegerField('Maximum Users', validators=[Optional(), NumberRange(min=1, max=1000)], default=10)
-    max_clusters = IntegerField('Maximum Clusters', validators=[Optional(), NumberRange(min=1, max=10000)], default=50)
+    max_sites = IntegerField('Maximum Sites', validators=[Optional(), NumberRange(min=1, max=10000)], default=50)
     subscription_tier = SelectField('Subscription Tier', choices=[
         ('basic', 'Basic'),
         ('pro', 'Professional'),

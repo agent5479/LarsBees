@@ -343,16 +343,16 @@
             box-shadow: 0 0 0 0.2rem rgba(218, 165, 32, 0.25);
         }
         
-        /* Collapsible cluster filter */
-        #clusterFilterOptions {
+        /* Collapsible site filter */
+        #siteFilterOptions {
             transition: all 0.3s ease;
         }
         
-        #clusterFilterOptions .btn-group-vertical {
+        #siteFilterOptions .btn-group-vertical {
             gap: 0.25rem;
         }
         
-        #clusterFilterOptions .btn {
+        #siteFilterOptions .btn {
             font-size: 0.85rem;
             padding: 0.4rem 0.8rem;
             text-align: left;
@@ -360,7 +360,7 @@
             transition: all 0.2s ease;
         }
         
-        #clusterFilterOptions .btn:hover {
+        #siteFilterOptions .btn:hover {
             transform: translateX(2px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
@@ -380,16 +380,16 @@
         
         /* Mobile responsive adjustments */
         @media (max-width: 768px) {
-            #clusterTypeFilter {
+            #siteTypeFilter {
                 margin-bottom: 1rem;
             }
             
-            #clusterTypeFilter .form-label {
+            #siteTypeFilter .form-label {
                 font-size: 0.9rem;
                 margin-bottom: 0.5rem;
             }
             
-            #clusterFilterOptions .btn {
+            #siteFilterOptions .btn {
                 font-size: 0.8rem;
                 padding: 0.35rem 0.7rem;
             }
@@ -707,17 +707,17 @@
             image-rendering: crisp-edges;
         }
         
-        /* Cluster popup styling */
-        .cluster-popup {
+        /* Site popup styling */
+        .site-popup {
             min-width: 200px;
         }
         
-        .cluster-popup h6 {
+        .site-popup h6 {
             margin-bottom: 0.5rem;
             color: var(--dark-yellow);
         }
         
-        .cluster-popup p {
+        .site-popup p {
             margin-bottom: 0.25rem;
             font-size: 0.9rem;
         }
@@ -965,18 +965,18 @@
             text-decoration: line-through;
         }
         
-        /* Cluster Cards */
-        .cluster-card {
+        /* Site Cards */
+        .site-card {
             transition: all 0.3s ease;
         }
         
-        .cluster-card:hover {
+        .site-card:hover {
             transform: translateY(-3px);
             box-shadow: var(--shadow-lg);
         }
         
-        /* Custom Cluster Markers */
-        .custom-cluster-marker {
+        /* Custom Site Markers */
+        .custom-site-marker {
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -986,26 +986,26 @@
         }
         
         /* Map Popup Styling */
-        .cluster-popup .leaflet-popup-content {
+        .site-popup .leaflet-popup-content {
             margin: 0;
             padding: 0;
         }
         
-        .cluster-popup .leaflet-popup-content-wrapper {
+        .site-popup .leaflet-popup-content-wrapper {
             border-radius: var(--border-radius-md);
             box-shadow: var(--shadow-lg);
         }
         
-        .cluster-popup a {
+        .site-popup a {
             transition: all 0.3s ease;
         }
         
-        .cluster-popup a:hover {
+        .site-popup a:hover {
             text-decoration: underline !important;
             transform: scale(1.05);
         }
         
-        .cluster-popup .btn {
+        .site-popup .btn {
             font-size: 0.75rem;
             padding: 0.25rem 0.5rem;
             border-radius: var(--border-radius-sm);
@@ -1332,7 +1332,7 @@
                             <p class="text-muted">Professional Apiary Management System</p>
                             <div class="alert alert-info border-0" style="background: rgba(13, 202, 240, 0.1); margin-top: 1rem;">
                                 <small>
-                                    <strong>Beekeeper Workflow:</strong> Dashboard → Clusters → Actions → Schedule → Team<br>
+                                    <strong>Beekeeper Workflow:</strong> Dashboard → Sites → Actions → Schedule → Team<br>
                                     <em>Each section supports your complete apiary management workflow</em>
                                 </small>
                             </div>
@@ -1592,7 +1592,7 @@
                                 <div class="stat-icon-container">
                                     <i class="bi bi-geo-alt-fill text-primary"></i>
                                 </div>
-                                <h3 id="statClusters" class="stat-number">0</h3>
+                                <h3 id="statSites" class="stat-number">0</h3>
                                 <p class="stat-label">Total Sites</p>
                                 <div class="stat-action-indicator">
                                     <i class="bi bi-arrow-right-circle"></i>
@@ -1771,15 +1771,15 @@
                 </div>
             </div>
 
-            <!-- Clusters View -->
+            <!-- Sites View -->
             <div id="sitesView" class="hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="bi bi-geo-alt"></i> Apiary Sites</h2>
                     <div>
-                        <button class="btn btn-outline-success me-2" onclick="exportClustersCSV()">
+                        <button class="btn btn-outline-success me-2" onclick="exportSitesCSV()">
                             <i class="bi bi-download"></i> Export CSV
                         </button>
-                        <button class="btn btn-primary" onclick="showAddClusterForm()">
+                        <button class="btn btn-primary" onclick="showAddSiteForm()">
                             <i class="bi bi-plus"></i> Add Site
                         </button>
                     </div>
@@ -1792,7 +1792,7 @@
                         <i class="bi bi-geo-alt" style="font-size: 3rem; color: #ccc;"></i>
                         <h5 class="mt-3 text-muted">No sites yet</h5>
                         <p class="text-muted">Get started by adding your first apiary location</p>
-                        <button class="btn btn-primary" onclick="showAddClusterForm()">
+                        <button class="btn btn-primary" onclick="showAddSiteForm()">
                             <i class="bi bi-plus"></i> Add Your First Site
                         </button>
                     </div>
@@ -1806,27 +1806,27 @@
                 </div>
             </div>
 
-            <!-- Cluster Form View -->
-            <div id="clusterFormView" class="hidden">
+            <!-- Site Form View -->
+            <div id="siteFormView" class="hidden">
                 <div class="row">
                     <div class="col-lg-8 mx-auto">
                         <div class="card">
                             <div class="card-header">
-                                <h5 id="clusterFormTitle">Add New Site</h5>
+                                <h5 id="siteFormTitle">Add New Site</h5>
                             </div>
                             <div class="card-body">
-                                <form id="clusterForm">
-                                    <input type="hidden" id="clusterId">
+                                <form id="siteForm">
+                                    <input type="hidden" id="siteId">
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterName" class="form-label">Cluster Name <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="clusterName" required placeholder="e.g., Main Apiary, North Field">
+                                            <label for="siteName" class="form-label">Site Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="siteName" required placeholder="e.g., Main Apiary, North Field">
                                             <div class="form-text">Give your apiary location a descriptive name</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterType" class="form-label">Site Type <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="clusterType" required>
+                                            <label for="siteType" class="form-label">Site Type <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="siteType" required>
                                                 <option value="">Select site type...</option>
                                                 <option value="production">Production</option>
                                                 <option value="nucleus">NUC (Nucleus)</option>
@@ -1842,8 +1842,8 @@
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label for="clusterDescription" class="form-label">Description</label>
-                                        <textarea class="form-control" id="clusterDescription" rows="3"></textarea>
+                                        <label for="siteDescription" class="form-label">Description</label>
+                                        <textarea class="form-control" id="siteDescription" rows="3"></textarea>
                                     </div>
                                     
                                     <!-- Hive State Summary -->
@@ -1916,21 +1916,21 @@
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterLat" class="form-label">Latitude <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="clusterLat" step="0.000001" min="-90" max="90" placeholder="-40.6764" required>
+                                            <label for="siteLat" class="form-label">Latitude <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="siteLat" step="0.000001" min="-90" max="90" placeholder="-40.6764" required>
                                             <div class="form-text">Enter latitude (e.g., -40.6764 for Collingwood, NZ)</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterLng" class="form-label">Longitude <span class="text-danger">*</span></label>
-                                            <input type="number" class="form-control" id="clusterLng" step="0.000001" min="-180" max="180" placeholder="172.6856" required>
+                                            <label for="siteLng" class="form-label">Longitude <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="siteLng" step="0.000001" min="-180" max="180" placeholder="172.6856" required>
                                             <div class="form-text">Enter longitude (e.g., 172.6856 for Collingwood, NZ)</div>
                                         </div>
                                     </div>
                                     
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
-                                            <label for="clusterHiveCount" class="form-label">Total Hive Count *</label>
-                                            <input type="number" class="form-control" id="clusterHiveCount" min="0" required onchange="updateHiveStrengthTotals()">
+                                            <label for="siteHiveCount" class="form-label">Total Hive Count *</label>
+                                            <input type="number" class="form-control" id="siteHiveCount" min="0" required onchange="updateHiveStrengthTotals()">
                                             <div class="form-text">Total number of hives in this site (0 allowed for Summer Only/Winter Only sites)</div>
                                         </div>
                                     </div>
@@ -2079,13 +2079,13 @@
                                     
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterHarvest" class="form-label">Expected Harvest Date</label>
-                                            <input type="date" class="form-control" id="clusterHarvest">
+                                            <label for="siteHarvest" class="form-label">Expected Harvest Date</label>
+                                            <input type="date" class="form-control" id="siteHarvest">
                                             <div class="form-text">Date when honey harvest is expected</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="clusterSugar" class="form-label">Sugar Requirements</label>
-                                            <input type="text" class="form-control" id="clusterSugar" placeholder="e.g., 20kg for winter">
+                                            <label for="siteSugar" class="form-label">Sugar Requirements</label>
+                                            <input type="text" class="form-control" id="siteSugar" placeholder="e.g., 20kg for winter">
                                         </div>
                                     </div>
                                     
@@ -2120,13 +2120,13 @@
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label for="clusterNotes" class="form-label">Notes</label>
-                                        <textarea class="form-control" id="clusterNotes" rows="3"></textarea>
+                                        <label for="siteNotes" class="form-label">Notes</label>
+                                        <textarea class="form-control" id="siteNotes" rows="3"></textarea>
                                     </div>
                                     
                                     <div class="d-flex gap-2">
                                         <button type="submit" class="btn btn-primary">
-                                            <i class="bi bi-check"></i> Save Cluster
+                                            <i class="bi bi-check"></i> Save Site
                                         </button>
                                         <button type="button" class="btn btn-secondary" onclick="showSites()">
                                             <i class="bi bi-x"></i> Cancel
@@ -2155,8 +2155,8 @@
                 
                 <div class="row mb-4">
                     <div class="col-md-3">
-                        <select class="form-select" id="filterCluster">
-                            <option value="">All Clusters</option>
+                        <select class="form-select" id="filterSite">
+                            <option value="">All Sites</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -2200,9 +2200,9 @@
                                 <form id="actionForm">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <label for="actionCluster" class="form-label">Cluster *</label>
-                                            <select class="form-select" id="actionCluster" required onchange="loadClusterHives()">
-                                                <option value="">Select cluster...</option>
+                                            <label for="actionSite" class="form-label">Site *</label>
+                                            <select class="form-select" id="actionSite" required onchange="loadSiteHives()">
+                                                <option value="">Select site...</option>
                                             </select>
                                         </div>
                                         <div class="col-md-6 mb-3">
@@ -2214,7 +2214,7 @@
                                     <div id="individualHiveSelect" class="mb-3 hidden">
                                         <label for="actionHive" class="form-label">Specific Hive (Optional)</label>
                                         <select class="form-select" id="actionHive">
-                                            <option value="">All hives in cluster</option>
+                                            <option value="">All hives in site</option>
                                         </select>
                                     </div>
                                     
@@ -2348,14 +2348,14 @@
                     <div class="col-lg-8 mx-auto">
                         <div class="card">
                             <div class="card-header">
-                                <h5><i class="bi bi-geo-alt"></i> Add tasks to do on next visit to this cluster:</h5>
+                                <h5><i class="bi bi-geo-alt"></i> Add tasks to do on next visit to this site:</h5>
                             </div>
                             <div class="card-body">
                                 <form id="nextVisitForm">
                                     <div class="mb-3">
-                                        <label for="nextVisitCluster" class="form-label">Select Cluster *</label>
-                                        <select class="form-select" id="nextVisitCluster" required onchange="loadNextVisitTasks()">
-                                            <option value="">Choose cluster...</option>
+                                        <label for="nextVisitSite" class="form-label">Select Site *</label>
+                                        <select class="form-select" id="nextVisitSite" required onchange="loadNextVisitTasks()">
+                                            <option value="">Choose site...</option>
                                         </select>
                                     </div>
                                     
@@ -2604,8 +2604,8 @@
                     <div class="modal-body">
                         <form id="scheduleTaskForm">
                             <div class="mb-3">
-                                <label for="scheduleCluster" class="form-label">Site *</label>
-                                <select class="form-select" id="scheduleCluster" required>
+                                <label for="scheduleSite" class="form-label">Site *</label>
+                                <select class="form-select" id="scheduleSite" required>
                                     <option value="">Select site...</option>
                                 </select>
                             </div>
@@ -2663,8 +2663,8 @@
                     <form id="editScheduledTaskForm">
                         <input type="hidden" id="editTaskId">
                         <div class="mb-3">
-                            <label for="editTaskCluster" class="form-label">Site *</label>
-                            <select class="form-select" id="editTaskCluster" required>
+                            <label for="editTaskSite" class="form-label">Site *</label>
+                            <select class="form-select" id="editTaskSite" required>
                                 <option value="">Select site...</option>
                             </select>
                         </div>
@@ -2776,7 +2776,7 @@
     <script src="js/scheduling.js"></script>
     <script src="js/compliance.js"></script>
     <script src="js/calendar-feed.js"></script>
-    <script src="js/clusters.js"></script>
+    <script src="js/sites.js"></script>
     <script src="js/actions.js"></script>
     <script src="js/employees.js"></script>
 
@@ -2830,7 +2830,7 @@
                     window.beeMarshallMarkers = [];
                 }
                 // Re-render sites
-                renderClustersOnMap();
+                renderSitesOnMap();
                 return;
             }
             
@@ -2859,17 +2859,17 @@
                     
                     // Wait for tiles to load completely
                     tileLayer.on('load', () => {
-                        console.log('🗺️ Map tiles fully loaded, adding cluster markers...');
+                        console.log('🗺️ Map tiles fully loaded, adding site markers...');
                         // Small delay to ensure tiles are rendered
                         setTimeout(() => {
-                            renderClustersOnMap();
+                            renderSitesOnMap();
                         }, 500);
                     });
                     
                     // Fallback timeout in case tiles don't load
                     setTimeout(() => {
                         console.log('🗺️ Fallback: Adding markers after timeout...');
-                        renderClustersOnMap();
+                        renderSitesOnMap();
                     }, 3000);
                 });
                 
@@ -2880,7 +2880,7 @@
         }
         
         // Function to render sites on map with proper marker management
-        function renderClustersOnMap() {
+        function renderSitesOnMap() {
             if (!window.beeMarshallMap) {
                 console.log('🗺️ Map not initialized, skipping marker rendering');
                 return;
@@ -2914,17 +2914,17 @@
                             'custom': { name: 'Custom', color: '#6c757d', icon: 'bi-geo-alt' }
                         };
                         
-                        const typeInfo = SITE_TYPES[site.clusterType] || SITE_TYPES['custom'];
+                        const typeInfo = SITE_TYPES[site.siteType] || SITE_TYPES['custom'];
                         
                         // Get pending tasks for this site
                         const siteTasks = (typeof scheduledTasks !== 'undefined' && scheduledTasks) 
-                            ? scheduledTasks.filter(task => task.clusterId === site.id && !task.completed)
+                            ? scheduledTasks.filter(task => task.siteId === site.id && !task.completed)
                                                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
                             : [];
                         
                         // Create custom icon with site type color
                         const customIcon = L.divIcon({
-                            className: 'custom-cluster-marker',
+                            className: 'custom-site-marker',
                             html: `<div style="
                                 background-color: ${typeInfo.color};
                                 width: 24px;
@@ -2996,10 +2996,10 @@
                                         <button class="btn btn-sm btn-outline-primary" onclick="if(typeof openInMaps === 'function') { openInMaps(${site.id}); } return false;">
                                             <i class="bi bi-geo-alt-fill"></i> View on Maps
                                         </button>
-                                        <button class="btn btn-sm btn-success" onclick="if(typeof scheduleTaskForCluster === 'function') { scheduleTaskForCluster(${site.id}); } return false;">
+                                        <button class="btn btn-sm btn-success" onclick="if(typeof scheduleTaskForSite === 'function') { scheduleTaskForSite(${site.id}); } return false;">
                                             <i class="bi bi-calendar-plus"></i> Schedule Task
                                         </button>
-                                        <button class="btn btn-sm btn-outline-warning" onclick="if(typeof editCluster === 'function') { editCluster(${site.id}); } return false;">
+                                        <button class="btn btn-sm btn-outline-warning" onclick="if(typeof editSite === 'function') { editSite(${site.id}); } return false;">
                                             <i class="bi bi-pencil"></i> Edit Site
                                         </button>
                                         ${siteTasks.length > 0 ? `
@@ -3011,7 +3011,7 @@
                                 </div>
                             `, {
                                 maxWidth: 300,
-                                className: 'cluster-popup'
+                                className: 'site-popup'
                             });
                         
                         window.beeMarshallMarkers.push(marker);
@@ -3029,7 +3029,7 @@
         
         // Hive strength breakdown functions
         function updateHiveStrengthTotals() {
-            const totalHives = parseInt(document.getElementById('clusterHiveCount').value) || 0;
+            const totalHives = parseInt(document.getElementById('siteHiveCount').value) || 0;
             const strong = parseInt(document.getElementById('hiveStrong').value) || 0;
             const medium = parseInt(document.getElementById('hiveMedium').value) || 0;
             const weak = parseInt(document.getElementById('hiveWeak').value) || 0;
@@ -3086,7 +3086,7 @@
         
         // Auto-distribute hives when total count changes
         function autoDistributeHives() {
-            const totalHives = parseInt(document.getElementById('clusterHiveCount').value) || 0;
+            const totalHives = parseInt(document.getElementById('siteHiveCount').value) || 0;
             if (totalHives > 0) {
                 // Suggest a proportional distribution
                 const strong = Math.round(totalHives * 0.4); // 40% strong
@@ -3139,7 +3139,7 @@
         
         // Auto-distribute stacks when total count changes
         function autoDistributeStacks() {
-            const totalHives = parseInt(document.getElementById('clusterHiveCount').value) || 0;
+            const totalHives = parseInt(document.getElementById('siteHiveCount').value) || 0;
             if (totalHives > 0) {
                 // Suggest a proportional stack distribution
                 const doubles = Math.round(totalHives * 0.3); // 30% doubles
@@ -3159,7 +3159,7 @@
         }
         
         // CSV Export Functions
-        function exportClustersCSV() {
+        function exportSitesCSV() {
             if (!sites || sites.length === 0) {
                 beeMarshallAlert('No site data available to export.', 'info');
                 return;
@@ -3183,7 +3183,7 @@
                     'Single Stacks': site.hiveStacks?.singles || 0,
                     'NUC Stacks': site.hiveStacks?.nucs || 0,
                     'Empty Platforms': site.hiveStacks?.empty || 0,
-                    'Site Type': site.clusterType || '',
+                    'Site Type': site.siteType || '',
                     'Landowner Name': site.landownerName || '',
                     'Landowner Phone': site.landownerPhone || '',
                     'Landowner Email': site.landownerEmail || '',
@@ -3212,13 +3212,13 @@
             
             const csvData = actions.map(action => {
                 // Find site name from ID
-                const site = sites.find(s => s.id === action.clusterId);
+                const site = sites.find(s => s.id === action.siteId);
                 const siteName = site ? site.name : '';
                 
                 return {
                     'Action ID': action.id,
                     'Date': action.date || '',
-                    'Site ID': action.clusterId || '',
+                    'Site ID': action.siteId || '',
                     'Site Name': siteName,
                     'Task ID': action.taskId || '',
                     'Task Name': action.taskName || '',
@@ -3244,7 +3244,7 @@
             
             const csvData = scheduledTasks.map(task => {
                 // Find site name from ID
-                const site = sites.find(s => s.id === task.clusterId);
+                const site = sites.find(s => s.id === task.siteId);
                 const siteName = site ? site.name : '';
                 
                 // Find task name from task ID
@@ -3257,7 +3257,7 @@
                     'Task Type ID': task.taskId || '',
                     'Task Name': taskName,
                     'Task Category': taskCategory,
-                    'Site ID': task.clusterId || '',
+                    'Site ID': task.siteId || '',
                     'Site Name': siteName,
                     'Individual Hive ID': task.individualHiveId || '',
                     'Due Date': task.dueDate || '',
@@ -3287,12 +3287,12 @@
             
             const csvData = individualHives.map(hive => {
                 // Find site name from ID
-                const site = sites.find(s => s.id === hive.clusterId);
+                const site = sites.find(s => s.id === hive.siteId);
                 const siteName = site ? site.name : '';
                 
                 return {
                     'Hive ID': hive.id,
-                    'Site ID': hive.clusterId || '',
+                    'Site ID': hive.siteId || '',
                     'Site Name': siteName,
                     'Hive Name': hive.hiveName || '',
                     'Hive Number': hive.hiveNumber || '',
@@ -3334,7 +3334,7 @@
                         'Single Stacks': site.hiveStacks?.singles || 0,
                         'NUC Stacks': site.hiveStacks?.nucs || 0,
                         'Empty Platforms': site.hiveStacks?.empty || 0,
-                        'Site Type': site.clusterType || '',
+                        'Site Type': site.siteType || '',
                         'Landowner Name': site.landownerName || '',
                         'Landowner Phone': site.landownerPhone || '',
                         'Landowner Email': site.landownerEmail || '',
@@ -3357,7 +3357,7 @@
             if (actions && actions.length > 0) {
                 actions.forEach(action => {
                     // Find site name from ID
-                    const site = sites.find(s => s.id === action.clusterId);
+                    const site = sites.find(s => s.id === action.siteId);
                     const siteName = site ? site.name : '';
                     
                     allData.push({
@@ -3390,7 +3390,7 @@
             if (scheduledTasks && scheduledTasks.length > 0) {
                 scheduledTasks.forEach(task => {
                     // Find site name from ID
-                    const site = sites.find(s => s.id === task.clusterId);
+                    const site = sites.find(s => s.id === task.siteId);
                     const siteName = site ? site.name : '';
                     
                     allData.push({
@@ -3472,26 +3472,26 @@
         
         // Handle navigation from reports
         function handleReportsNavigation() {
-            const navigateToCluster = localStorage.getItem('navigateToCluster');
-            const scheduleTaskData = localStorage.getItem('scheduleTaskForCluster');
+            const navigateToSite = localStorage.getItem('navigateToSite');
+            const scheduleTaskData = localStorage.getItem('scheduleTaskForSite');
             
-            if (navigateToCluster) {
-                localStorage.removeItem('navigateToCluster');
+            if (navigateToSite) {
+                localStorage.removeItem('navigateToSite');
                 // Navigate to sites view and highlight specific site
                 showSites();
                 setTimeout(() => {
-                    const clusterElement = document.querySelector(`[data-cluster-id="${navigateToCluster}"]`);
-                    if (clusterElement) {
-                        clusterElement.scrollIntoView({ behavior: 'smooth' });
-                        clusterElement.style.border = '2px solid var(--accent)';
-                        clusterElement.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.5)';
+                    const siteElement = document.querySelector(`[data-site-id="${navigateToSite}"]`);
+                    if (siteElement) {
+                        siteElement.scrollIntoView({ behavior: 'smooth' });
+                        siteElement.style.border = '2px solid var(--accent)';
+                        siteElement.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.5)';
                     }
                 }, 1000);
             }
             
             if (scheduleTaskData) {
                 const data = JSON.parse(scheduleTaskData);
-                localStorage.removeItem('scheduleTaskForCluster');
+                localStorage.removeItem('scheduleTaskForSite');
                 // Navigate to scheduled tasks and pre-fill form
                 showScheduledTasks();
                 setTimeout(() => {
@@ -3501,7 +3501,7 @@
                         const taskTitle = document.getElementById('taskTitle');
                         const taskDescription = document.getElementById('taskDescription');
                         if (taskTitle) taskTitle.value = data.suggestedTasks[0] || 'Scheduled Task';
-                        if (taskDescription) taskDescription.value = `Task for cluster ${data.clusterId} - ${data.category} hives`;
+                        if (taskDescription) taskDescription.value = `Task for site ${data.siteId} - ${data.category} hives`;
                     }
                 }, 1000);
             }
@@ -3516,7 +3516,7 @@
             }, 1000);
             
             // Add auto-distribute button
-            const hiveCountField = document.getElementById('clusterHiveCount');
+            const hiveCountField = document.getElementById('siteHiveCount');
             if (hiveCountField) {
                 hiveCountField.addEventListener('change', autoDistributeHives);
             }

@@ -50,7 +50,7 @@
                 <thead>
                     <tr>
                         <th>Date</th>
-                        <th>Cluster</th>
+                        <th>Site</th>
                         <th>Individual Hive</th>
                         <th>Task</th>
                         <th>Description</th>
@@ -62,19 +62,19 @@
                     <tr {% if action.is_archived %}class="table-secondary"{% endif %}>
                         <td>{{ action.action_date.strftime('%Y-%m-%d %H:%M') }}</td>
                         <td>
-                            <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" 
+                            <a href="{{ url_for('site_detail', site_id=action.site_id) }}" 
                                class="text-decoration-none fw-bold">
-                                <i class="bi bi-geo-alt-fill text-warning"></i> {{ action.cluster.name }}
+                                <i class="bi bi-geo-alt-fill text-warning"></i> {{ action.site.name }}
                             </a>
                         </td>
                         <td>
                             {% if action.individual_hive %}
-                                <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}#hive-{{ action.individual_hive.id }}" 
+                                <a href="{{ url_for('site_detail', site_id=action.site_id) }}#hive-{{ action.individual_hive.id }}" 
                                    class="text-decoration-none">
                                     <i class="bi bi-hexagon-fill text-warning"></i> {{ action.individual_hive.hive_number }}
                                 </a>
                             {% else %}
-                                <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" 
+                                <a href="{{ url_for('site_detail', site_id=action.site_id) }}" 
                                    class="text-decoration-none">
                                     <small class="text-muted"><i class="bi bi-hexagon"></i> All hives</small>
                                 </a>
@@ -86,8 +86,8 @@
                         <td>{{ action.description[:100] if action.description else '-' }}</td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ url_for('log_action') }}?cluster_id={{ action.cluster_id }}{% if action.individual_hive_id %}&hive_id={{ action.individual_hive_id }}{% endif %}" 
-                                   class="btn btn-sm btn-warning" title="Log new action for this cluster">
+                                <a href="{{ url_for('log_action') }}?site_id={{ action.site_id }}{% if action.individual_hive_id %}&hive_id={{ action.individual_hive_id }}{% endif %}" 
+                                   class="btn btn-sm btn-warning" title="Log new action for this site">
                                     <i class="bi bi-plus-circle"></i>
                                 </a>
                                 {% if action.is_archived %}

@@ -21,7 +21,7 @@ docs/
 │   ├── core.js                   # Core functionality & Firebase integration
 │   ├── navigation.js             # View management & routing
 │   ├── dashboard.js              # Dashboard widgets & statistics
-│   ├── clusters.js               # Cluster management & map functionality
+│   ├── sites.js                  # Site management & map functionality
 │   ├── scheduling.js             # Task scheduling & calendar features
 │   ├── actions.js                # Action logging & history
 │   ├── employees.js              # User management & permissions

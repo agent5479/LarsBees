@@ -45,8 +45,8 @@ All tenant data follows the pattern: `tenants/{tenantId}/`
 **Example:** `tenants/lars/clusters/cluster_123`
 
 **Usage:**
-- Created/updated in `docs/js/clusters.js`
-- Deleted in `docs/js/clusters.js`
+- Created/updated in `docs/js/sites.js`
+- Deleted in `docs/js/sites.js`
 - Loaded in `docs/js/core.js`
 - Displayed in dashboard and cluster management
 
@@ -213,7 +213,7 @@ All tenant data follows the pattern: `tenants/{tenantId}/`
 
 ### Creating a New Cluster
 ```
-User Input → clusters.js → database.ref('tenants/lars/sites/123').set(clusterData)
+User Input → sites.js → database.ref('tenants/lars/sites/123').set(siteData)
                               ↓
                          Firebase Realtime DB
                               ↓
@@ -309,7 +309,7 @@ Migration script: `docs/migrate-data.html`
 
 ### JavaScript Files
 - `docs/js/core.js` - Data loading and Firebase listeners
-- `docs/js/clusters.js` - Cluster management
+- `docs/js/sites.js` - Site management
 - `docs/js/actions.js` - Action management
 - `docs/js/scheduling.js` - Task scheduling
 - `docs/js/employees.js` - Employee management

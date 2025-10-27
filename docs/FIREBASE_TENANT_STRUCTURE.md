@@ -50,8 +50,8 @@ Firebase Database:
 - ✅ `setupMasterUser()` - Master user setup (global)
 - ✅ `validateLogin()` - Admin authentication (global)
 
-### **2. clusters.js**
-- ✅ `saveCluster()` - Cluster saving uses tenant paths
+### **2. sites.js**
+- ✅ `saveSite()` - Site saving uses tenant paths
 - ✅ `deleteCluster()` - Cluster deletion uses tenant paths
 
 ### **3. actions.js**

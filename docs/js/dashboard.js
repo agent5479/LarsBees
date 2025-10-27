@@ -19,7 +19,7 @@ function updateActiveNav(section) {
     // Map sections to their corresponding function names
     const sectionMap = {
         'dashboard': 'showDashboard',
-        'Clusters': 'showSites',
+        'Sites': 'showSites',
         'Sites': 'showSites',
         'Actions': 'showActions',
         'Schedule': 'showScheduledTasks',
@@ -125,7 +125,7 @@ function updateDashboard() {
     window.flaggedCount = flaggedCount;
     
     // Set numbers directly without animation (active sites only)
-    document.getElementById('statClusters').textContent = activeSites.length;
+    document.getElementById('statSites').textContent = activeSites.length;
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = actions.length;
     document.getElementById('statFlagged').textContent = flaggedCount;
@@ -177,7 +177,7 @@ function updateDashboard() {
         // Add urgent actions
         if (urgentFlagged.length > 0) {
             flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
-                const site = sites.find(s => s.id === a.clusterId);
+                const site = sites.find(s => s.id === a.siteId);
                 return `<div class="mb-2">
                     <strong>${site?.name || 'Unknown'}:</strong> ${a.taskName}
                     <br><small>${a.notes}</small>
@@ -197,7 +197,7 @@ function updateDashboard() {
         // Add overdue tasks
         if (overdueTasksForAlert.length > 0) {
             flaggedHtml += overdueTasksForAlert.slice(0, 3).map(task => {
-                const site = sites.find(s => s.id === task.clusterId);
+                const site = sites.find(s => s.id === task.siteId);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 return `
                     <div class="mb-2">
@@ -253,7 +253,7 @@ function updateDashboard() {
     const recentActions = [...actions].reverse().slice(0, 10);
     const recentHtml = recentActions.length > 0 
         ? recentActions.map(a => {
-                const site = sites.find(s => s.id === a.clusterId);
+                const site = sites.find(s => s.id === a.siteId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
             return `
@@ -276,7 +276,7 @@ function updateScheduledTasksPreview() {
     const pending = scheduledTasks.filter(t => !t.completed);
     const html = pending.length > 0
         ? pending.slice(0, 5).map(t => {
-                const site = sites.find(s => s.id === t.clusterId);
+                const site = sites.find(s => s.id === t.siteId);
             const task = tasks.find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
             const priorityBadge = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
@@ -364,7 +364,7 @@ function updateCalendarWidget() {
                 </div>
                 <div class="calendar-tasks">
                     ${tasks.map(task => {
-                        const site = sites.find(s => s.id === task.clusterId);
+                        const site = sites.find(s => s.id === task.siteId);
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
                         const priorityClass = task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'secondary';
@@ -662,10 +662,10 @@ function makeRecentActionsClickable() {
         item.style.cursor = 'pointer';
         item.addEventListener('click', function() {
             const actionText = this.querySelector('strong').textContent;
-            const clusterName = actionText.split(' - ')[1];
-            const site = sites.find(s => s.name === clusterName);
+            const siteName = actionText.split(' - ')[1];
+            const site = sites.find(s => s.name === siteName);
             if (site) {
-                viewClusterDetails(site.id);
+                viewSiteDetails(site.id);
             }
         });
     });
@@ -689,27 +689,27 @@ window.forceDashboardRefresh = function() {
 window.checkDashboardElements = function() {
     console.log('🔍 Checking dashboard elements...');
     
-    const statClusters = document.getElementById('statClusters');
+    const statSites = document.getElementById('statSites');
     const statHives = document.getElementById('statHives');
     const statActions = document.getElementById('statActions');
     const statFlagged = document.getElementById('statFlagged');
     
     console.log('📊 Dashboard elements found:', {
-        statClusters: !!statClusters,
+        statSites: !!statSites,
         statHives: !!statHives,
         statActions: !!statActions,
         statFlagged: !!statFlagged
     });
     
-    if (statClusters) console.log('📊 statClusters current value:', statClusters.textContent);
+    if (statSites) console.log('📊 statSites current value:', statSites.textContent);
     if (statHives) console.log('📊 statHives current value:', statHives.textContent);
     if (statActions) console.log('📊 statActions current value:', statActions.textContent);
     if (statFlagged) console.log('📊 statFlagged current value:', statFlagged.textContent);
     
     return {
-        elements: { statClusters: !!statClusters, statHives: !!statHives, statActions: !!statActions, statFlagged: !!statFlagged },
+        elements: { statSites: !!statSites, statHives: !!statHives, statActions: !!statActions, statFlagged: !!statFlagged },
         values: {
-            statClusters: statClusters ? statClusters.textContent : 'not found',
+            statSites: statSites ? statSites.textContent : 'not found',
             statHives: statHives ? statHives.textContent : 'not found',
             statActions: statActions ? statActions.textContent : 'not found',
             statFlagged: statFlagged ? statFlagged.textContent : 'not found'
@@ -831,16 +831,16 @@ function handleUrgentItemAction(action, itemId) {
 
 /**
  * Handle harvest-specific actions
- * @param {string} clusterId - ID of the cluster
+ * @param {string} siteId - ID of the site
  * @param {string} harvestDate - Expected harvest date
  * @param {boolean} markAddressed - Whether to mark as addressed (clears harvest date)
  */
-function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
+function handleHarvestAction(siteId, harvestDate, markAddressed = false) {
     event.stopPropagation();
     
     if (markAddressed) {
         // Clear the harvest date to mark as addressed
-        const site = sites.find(s => s.id === clusterId);
+        const site = sites.find(s => s.id === siteId);
         if (site) {
             site.harvestTimeline = '';
             
@@ -853,7 +853,7 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
         }
     } else {
         // Schedule a harvest task
-        const site = sites.find(s => s.id === clusterId);
+        const site = sites.find(s => s.id === siteId);
         if (site && typeof showScheduleTaskModal === 'function') {
             // Try to find a harvest task in the tasks list
             const harvestTask = tasks.find(t => 
@@ -863,7 +863,7 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
             
             if (harvestTask) {
                 // Pre-fill with harvest task
-                document.getElementById('scheduleCluster').value = clusterId;
+                document.getElementById('scheduleSite').value = siteId;
                 document.getElementById('scheduleTask').value = harvestTask.id;
                 document.getElementById('scheduleDueDate').value = harvestDate;
                 
@@ -872,7 +872,7 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
             } else {
                 // Just open the scheduling modal
                 showScheduleTaskModal();
-                document.getElementById('scheduleCluster').value = clusterId;
+                document.getElementById('scheduleSite').value = siteId;
                 document.getElementById('scheduleDueDate').value = harvestDate;
                 beeMarshallAlert('📅 Please select a harvest task to schedule', 'info');
             }

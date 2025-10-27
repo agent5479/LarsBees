@@ -1,10 +1,10 @@
-// BeeMarshall - Cluster Management Module with Custom Grouping
+// BeeMarshall - Site Management Module with Custom Grouping
 
 // Global variable to track whether to show archived sites
 let showArchivedSites = false;
 
-// Cluster types and their associated colors
-const CLUSTER_TYPES = {
+// Site types and their associated colors
+const SITE_TYPES = {
     'production': { name: 'Production', color: '#28a745', icon: 'bi-hexagon-fill' },
     'nucleus': { name: 'Nucleus', color: '#17a2b8', icon: 'bi-circle-fill' },
     'queen-rearing': { name: 'Queen Rearing', color: '#ffc107', icon: 'bi-star-fill' },
@@ -15,9 +15,9 @@ const CLUSTER_TYPES = {
     'custom': { name: 'Custom', color: '#20c997', icon: 'bi-gear' }
 };
 
-function renderClusters() {
+function renderSites() {
     // Filter sites based on archive status
-    const visibleClusters = sites.filter(c => {
+    const visibleSites = sites.filter(c => {
         if (showArchivedSites) {
             return c.archived === true;
         } else {
@@ -25,31 +25,31 @@ function renderClusters() {
         }
     });
     
-    const html = visibleClusters.length > 0
-        ? visibleClusters.map(c => {
+    const html = visibleSites.length > 0
+        ? visibleSites.map(c => {
             // Archive button for admins only (shown on active sites)
             const archiveBtn = (isAdmin && !c.archived) ? `
-                <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveCluster(${c.id})">
+                <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
                     <i class="bi bi-archive"></i> Archive
                 </button>
             ` : '';
             
             // Delete button only for admins on archived sites
             const deleteBtn = (isAdmin && c.archived) ? `
-                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteCluster(${c.id})">
+                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteSite(${c.id})">
                     <i class="bi bi-trash"></i> Delete
                 </button>
             ` : '';
             
             // Unarchive button for admins on archived sites
             const unarchiveBtn = (isAdmin && c.archived) ? `
-                <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); unarchiveCluster(${c.id})">
+                <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); unarchiveSite(${c.id})">
                     <i class="bi bi-arrow-counterclockwise"></i> Unarchive
                 </button>
             ` : '';
             
-            const clusterType = c.clusterType || 'production';
-            const typeInfo = CLUSTER_TYPES[clusterType] || CLUSTER_TYPES['custom'];
+            const siteType = c.siteType || 'production';
+            const typeInfo = SITE_TYPES[siteType] || SITE_TYPES['custom'];
             
             // Add archived indicator
             const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
@@ -82,7 +82,7 @@ function renderClusters() {
             
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card cluster-card h-100" data-cluster-type="${clusterType}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
+                    <div class="card site-card h-100" data-site-type="${siteType}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">
@@ -193,8 +193,8 @@ function renderClusters() {
                             ${c.lastModifiedBy ? `<small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small>` : ''}
                         </div>
                         <div class="card-footer bg-light">
-                            ${isAdmin ? `<button class="btn btn-primary" onclick="editCluster(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
-                            <button class="btn btn-sm btn-outline-info" onclick="viewClusterDetails(${c.id})">
+                            ${isAdmin ? `<button class="btn btn-primary" onclick="editSite(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
+                            <button class="btn btn-sm btn-outline-info" onclick="viewSiteDetails(${c.id})">
                                 <i class="bi bi-eye"></i> View
                             </button>
                             ${archiveBtn}
@@ -213,60 +213,60 @@ function renderClusters() {
     updateArchivedButtonText();
 }
 
-function renderClusterTypeFilter() {
-    const filterContainer = document.getElementById('clusterTypeFilter');
+function renderSiteTypeFilter() {
+    const filterContainer = document.getElementById('siteTypeFilter');
     if (!filterContainer) return;
     
     const filterHtml = `
         <div class="mb-3">
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label mb-0"><strong>Filter:</strong></label>
-                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleClusterFilter()" id="filterToggleBtn">
+                <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleSiteFilter()" id="filterToggleBtn">
                     <i class="bi bi-chevron-down" id="filterToggleIcon"></i> Types
                 </button>
             </div>
-            <div class="collapse" id="clusterFilterOptions">
+            <div class="collapse" id="siteFilterOptions">
                 <div class="mt-2">
                     <div class="btn-group-vertical w-100" role="group">
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterAll" value="all" checked>
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterAll" value="all" checked>
                         <label class="btn btn-outline-secondary btn-sm" for="filterAll">All Types</label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterProduction" value="production">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterProduction" value="production">
                         <label class="btn btn-outline-secondary btn-sm" for="filterProduction" style="border-color: #28a745; color: #28a745;">
                             <i class="bi bi-hexagon-fill"></i> Production
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterNucleus" value="nucleus">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterNucleus" value="nucleus">
                         <label class="btn btn-outline-secondary btn-sm" for="filterNucleus" style="border-color: #17a2b8; color: #17a2b8;">
                             <i class="bi bi-circle-fill"></i> NUC
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterQueenRearing" value="queen-rearing">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterQueenRearing" value="queen-rearing">
                         <label class="btn btn-outline-secondary btn-sm" for="filterQueenRearing" style="border-color: #ffc107; color: #ffc107;">
                             <i class="bi bi-star-fill"></i> Queen Rearing
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterResearch" value="research">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterResearch" value="research">
                         <label class="btn btn-outline-secondary btn-sm" for="filterResearch" style="border-color: #6f42c1; color: #6f42c1;">
                             <i class="bi bi-flask"></i> Research
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterEducation" value="education">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterEducation" value="education">
                         <label class="btn btn-outline-secondary btn-sm" for="filterEducation" style="border-color: #fd7e14; color: #fd7e14;">
                             <i class="bi bi-book"></i> Education
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterQuarantine" value="quarantine">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterQuarantine" value="quarantine">
                         <label class="btn btn-outline-secondary btn-sm" for="filterQuarantine" style="border-color: #dc3545; color: #dc3545;">
                             <i class="bi bi-shield-exclamation"></i> Quarantine
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterBackup" value="backup">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterBackup" value="backup">
                         <label class="btn btn-outline-secondary btn-sm" for="filterBackup" style="border-color: #6c757d; color: #6c757d;">
                             <i class="bi bi-archive"></i> Backup
                         </label>
                         
-                        <input type="radio" class="btn-check" name="clusterTypeFilter" id="filterCustom" value="custom">
+                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterCustom" value="custom">
                         <label class="btn btn-outline-secondary btn-sm" for="filterCustom" style="border-color: #20c997; color: #20c997;">
                             <i class="bi bi-gear"></i> Custom
                         </label>
@@ -279,18 +279,18 @@ function renderClusterTypeFilter() {
     filterContainer.innerHTML = filterHtml;
     
     // Add event listeners for filtering
-    document.querySelectorAll('input[name="clusterTypeFilter"]').forEach(radio => {
+    document.querySelectorAll('input[name="siteTypeFilter"]').forEach(radio => {
         radio.addEventListener('change', function() {
-            filterClustersByType(this.value);
+            filterSitesByType(this.value);
         });
     });
 }
 
-function filterClustersByType(type) {
-    const clusterCards = document.querySelectorAll('.cluster-card');
+function filterSitesByType(type) {
+    const siteCards = document.querySelectorAll('.site-card');
     
-    clusterCards.forEach(card => {
-        if (type === 'all' || card.dataset.clusterType === type) {
+    siteCards.forEach(card => {
+        if (type === 'all' || card.dataset.siteType === type) {
             card.style.display = 'block';
         } else {
             card.style.display = 'none';
@@ -298,14 +298,14 @@ function filterClustersByType(type) {
     });
     
     // Update the radio button selection
-    const radioButton = document.querySelector(`input[name="clusterTypeFilter"][value="${type}"]`);
+    const radioButton = document.querySelector(`input[name="siteTypeFilter"][value="${type}"]`);
     if (radioButton) {
         radioButton.checked = true;
     }
 }
 
-function toggleClusterFilter() {
-    const filterOptions = document.getElementById('clusterFilterOptions');
+function toggleSiteFilter() {
+    const filterOptions = document.getElementById('siteFilterOptions');
     const toggleIcon = document.getElementById('filterToggleIcon');
     const toggleBtn = document.getElementById('filterToggleBtn');
     
@@ -324,25 +324,25 @@ function toggleClusterFilter() {
     }
 }
 
-function showAddClusterForm() {
+function showAddSiteForm() {
     hideAllViews();
-    document.getElementById('clusterFormView').classList.remove('hidden');
-    document.getElementById('clusterFormTitle').textContent = 'Add New Site';
-    document.getElementById('clusterForm').reset();
-    document.getElementById('clusterId').value = '';
+    document.getElementById('siteFormView').classList.remove('hidden');
+    document.getElementById('siteFormTitle').textContent = 'Add New Site';
+    document.getElementById('siteForm').reset();
+    document.getElementById('siteId').value = '';
     document.getElementById('anomalySection')?.classList.add('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
     
-    // Populate cluster type dropdown
-    populateClusterTypeDropdown();
+    // Populate site type dropdown
+    populateSiteTypeDropdown();
     
     // Render honey potentials checkboxes (empty for new site)
     renderHoneyPotentials([]);
     
     // Add event listener for site type changes
     const siteTypeSelect = document.getElementById('siteType');
-    const hiveCountField = document.getElementById('clusterHiveCount');
-    const formText = document.querySelector('#clusterHiveCount + .form-text');
+    const hiveCountField = document.getElementById('siteHiveCount');
+    const formText = document.querySelector('#siteHiveCount + .form-text');
     
     if (siteTypeSelect && hiveCountField && formText) {
         siteTypeSelect.addEventListener('change', function() {
@@ -368,11 +368,11 @@ function showAddClusterForm() {
 }
 
 function validateCoordinates() {
-    const lat = parseFloat(document.getElementById('clusterLat').value);
-    const lng = parseFloat(document.getElementById('clusterLng').value);
+    const lat = parseFloat(document.getElementById('siteLat').value);
+    const lng = parseFloat(document.getElementById('siteLng').value);
     
-    const latField = document.getElementById('clusterLat');
-    const lngField = document.getElementById('clusterLng');
+    const latField = document.getElementById('siteLat');
+    const lngField = document.getElementById('siteLng');
     
     // Reset validation classes
     latField.classList.remove('is-valid', 'is-invalid');
@@ -393,11 +393,11 @@ function validateCoordinates() {
     }
 }
 
-function populateClusterTypeDropdown() {
-    const typeSelect = document.getElementById('clusterType');
+function populateSiteTypeDropdown() {
+    const typeSelect = document.getElementById('siteType');
     if (!typeSelect) return;
     
-    const options = Object.entries(CLUSTER_TYPES).map(([key, type]) => 
+    const options = Object.entries(SITE_TYPES).map(([key, type]) => 
         `<option value="${key}" style="color: ${type.color}">
             <i class="bi ${type.icon}"></i> ${type.name}
         </option>`
@@ -406,11 +406,11 @@ function populateClusterTypeDropdown() {
                 typeSelect.innerHTML = `<option value="production">Select site type...</option>${options}`;
 }
 
-function handleSaveCluster(e) {
+function handleSaveSite(e) {
     e.preventDefault();
     
     // Validate required fields and focus on first invalid field
-    const nameField = document.getElementById('clusterName');
+    const nameField = document.getElementById('siteName');
     const nameValue = nameField.value.trim();
     if (!nameValue) {
         beeMarshallAlert('⚠️ Site name is required', 'warning');
@@ -419,7 +419,7 @@ function handleSaveCluster(e) {
         return;
     }
     
-    const hiveCountField = document.getElementById('clusterHiveCount');
+    const hiveCountField = document.getElementById('siteHiveCount');
     const hiveCount = parseInt(hiveCountField.value);
     const siteType = document.getElementById('siteType').value;
     
@@ -437,8 +437,8 @@ function handleSaveCluster(e) {
     }
     
     // Validate coordinates
-    const latField = document.getElementById('clusterLat');
-    const lngField = document.getElementById('clusterLng');
+    const latField = document.getElementById('siteLat');
+    const lngField = document.getElementById('siteLng');
     const lat = parseFloat(latField.value);
     const lng = parseFloat(lngField.value);
     
@@ -463,7 +463,7 @@ function handleSaveCluster(e) {
         return;
     }
     
-    const id = document.getElementById('clusterId').value;
+    const id = document.getElementById('siteId').value;
     
     // Get hive strength from display elements (not input fields)
     const strongElement = document.getElementById('hiveStateStrong');
@@ -472,13 +472,13 @@ function handleSaveCluster(e) {
     const nucElement = document.getElementById('hiveStateNUC');
     const deadElement = document.getElementById('hiveStateDead');
     
-    const cluster = {
+    const site = {
         id: id ? parseInt(id) : Date.now(),
-        name: document.getElementById('clusterName').value,
-        description: document.getElementById('clusterDescription').value,
-        latitude: parseFloat(document.getElementById('clusterLat').value) || 0,
-        longitude: parseFloat(document.getElementById('clusterLng').value) || 0,
-        hiveCount: parseInt(document.getElementById('clusterHiveCount').value),
+        name: document.getElementById('siteName').value,
+        description: document.getElementById('siteDescription').value,
+        latitude: parseFloat(document.getElementById('siteLat').value) || 0,
+        longitude: parseFloat(document.getElementById('siteLng').value) || 0,
+        hiveCount: parseInt(document.getElementById('siteHiveCount').value),
         // Hive strength breakdown from display elements
         hiveStrength: {
             strong: strongElement ? parseInt(strongElement.textContent) || 0 : 0,
@@ -487,7 +487,7 @@ function handleSaveCluster(e) {
             nuc: nucElement ? parseInt(nucElement.textContent) || 0 : 0,
             dead: deadElement ? parseInt(deadElement.textContent) || 0 : 0
         },
-        // Hive stack configuration - get from visual grid data if available, otherwise from cluster data
+        // Hive stack configuration - get from visual grid data if available, otherwise from site data
         hiveStacks: visualHiveData ? {
             doubles: visualHiveData.doubles || 0,
             topSplits: visualHiveData.topSplits || 0,
@@ -501,10 +501,10 @@ function handleSaveCluster(e) {
             nucs: 0,
             empty: 0
         }),
-        harvestTimeline: document.getElementById('clusterHarvest').value,
-        sugarRequirements: document.getElementById('clusterSugar').value,
-        notes: document.getElementById('clusterNotes').value,
-        clusterType: document.getElementById('clusterType').value || 'production',
+        harvestTimeline: document.getElementById('siteHarvest').value,
+        sugarRequirements: document.getElementById('siteSugar').value,
+        notes: document.getElementById('siteNotes').value,
+        siteType: document.getElementById('siteType').value || 'production',
         landownerName: document.getElementById('landownerName').value,
         landownerPhone: document.getElementById('landownerPhone').value,
         landownerEmail: document.getElementById('landownerEmail').value,
@@ -522,9 +522,9 @@ function handleSaveCluster(e) {
     
     // Preserve harvest records if they exist
     if (id) {
-        const existingCluster = sites.find(c => c.id === parseInt(id));
-        if (existingCluster && existingCluster.harvestRecords) {
-            cluster.harvestRecords = existingCluster.harvestRecords;
+        const existingSite = sites.find(c => c.id === parseInt(id));
+        if (existingSite && existingSite.harvestRecords) {
+            site.harvestRecords = existingSite.harvestRecords;
         }
     }
     
@@ -532,9 +532,9 @@ function handleSaveCluster(e) {
     
     // Use tenant-specific path for data isolation
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${cluster.id}`).set(cluster)
+    database.ref(`${tenantPath}/${site.id}`).set(site)
         .then(() => {
-            beeMarshallAlert(`✅ Site "${cluster.name}" has been saved successfully!`, 'success');
+            beeMarshallAlert(`✅ Site "${site.name}" has been saved successfully!`, 'success');
             showSyncStatus('<i class="bi bi-check"></i> Saved by ' + currentUser.username);
             // Close the form and return to sites view
             setTimeout(() => {
@@ -542,40 +542,40 @@ function handleSaveCluster(e) {
             }, 500);
         })
         .catch(error => {
-            console.error('Error saving cluster:', error);
+            console.error('Error saving site:', error);
             beeMarshallAlert('❌ Error saving site. Please try again.', 'error');
             showSyncStatus('Error saving');
         });
 }
 
-function editCluster(id) {
-    const cluster = sites.find(c => c.id === id);
-    if (!cluster) return;
+function editSite(id) {
+    const site = sites.find(c => c.id === id);
+    if (!site) return;
     
     hideAllViews();
-    document.getElementById('clusterFormView').classList.remove('hidden');
-    document.getElementById('clusterFormTitle').textContent = 'Edit: ' + cluster.name;
-    document.getElementById('clusterId').value = cluster.id;
-    document.getElementById('clusterName').value = cluster.name;
-    document.getElementById('clusterDescription').value = cluster.description || '';
+    document.getElementById('siteFormView').classList.remove('hidden');
+    document.getElementById('siteFormTitle').textContent = 'Edit: ' + site.name;
+    document.getElementById('siteId').value = site.id;
+    document.getElementById('siteName').value = site.name;
+    document.getElementById('siteDescription').value = site.description || '';
     // Ensure coordinates are properly formatted as numbers
-    const lat = parseFloat(cluster.latitude);
-    const lng = parseFloat(cluster.longitude);
+    const lat = parseFloat(site.latitude);
+    const lng = parseFloat(site.longitude);
     
-    console.log('Editing cluster coordinates:', { 
-        original: { lat: cluster.latitude, lng: cluster.longitude },
+    console.log('Editing site coordinates:', { 
+        original: { lat: site.latitude, lng: site.longitude },
         parsed: { lat, lng }
     });
     
-    document.getElementById('clusterLat').value = isNaN(lat) ? '' : lat.toFixed(6);
-    document.getElementById('clusterLng').value = isNaN(lng) ? '' : lng.toFixed(6);
-    document.getElementById('clusterHiveCount').value = cluster.hiveCount;
+    document.getElementById('siteLat').value = isNaN(lat) ? '' : lat.toFixed(6);
+    document.getElementById('siteLng').value = isNaN(lng) ? '' : lng.toFixed(6);
+    document.getElementById('siteHiveCount').value = site.hiveCount;
     
     // Handle harvest timeline date - ensure it's a valid date string for date input
-    const harvestDateInput = document.getElementById('clusterHarvest');
-    if (harvestDateInput && cluster.harvestTimeline) {
+    const harvestDateInput = document.getElementById('siteHarvest');
+    if (harvestDateInput && site.harvestTimeline) {
         // Try to parse the date - if it's not in the correct format, leave it empty
-        const parsedDate = new Date(cluster.harvestTimeline);
+        const parsedDate = new Date(site.harvestTimeline);
         if (!isNaN(parsedDate.getTime())) {
             // Valid date - format as YYYY-MM-DD for date input
             const year = parsedDate.getFullYear();
@@ -589,20 +589,20 @@ function editCluster(id) {
         harvestDateInput.value = '';
     }
     
-    document.getElementById('clusterSugar').value = cluster.sugarRequirements || '';
-    document.getElementById('clusterNotes').value = cluster.notes || '';
-    document.getElementById('clusterType').value = cluster.clusterType || 'production';
-    document.getElementById('landownerName').value = cluster.landownerName || '';
-    document.getElementById('landownerPhone').value = cluster.landownerPhone || '';
-    document.getElementById('landownerEmail').value = cluster.landownerEmail || '';
-    document.getElementById('landownerAddress').value = cluster.landownerAddress || '';
-    document.getElementById('siteType').value = cluster.siteType || '';
-    document.getElementById('accessType').value = cluster.accessType || '';
-    document.getElementById('contactBeforeVisit').checked = cluster.contactBeforeVisit || false;
-    document.getElementById('isQuarantine').checked = cluster.isQuarantine || false;
+    document.getElementById('siteSugar').value = site.sugarRequirements || '';
+    document.getElementById('siteNotes').value = site.notes || '';
+    document.getElementById('siteType').value = site.siteType || 'production';
+    document.getElementById('landownerName').value = site.landownerName || '';
+    document.getElementById('landownerPhone').value = site.landownerPhone || '';
+    document.getElementById('landownerEmail').value = site.landownerEmail || '';
+    document.getElementById('landownerAddress').value = site.landownerAddress || '';
+    document.getElementById('siteType').value = site.siteType || '';
+    document.getElementById('accessType').value = site.accessType || '';
+    document.getElementById('contactBeforeVisit').checked = site.contactBeforeVisit || false;
+    document.getElementById('isQuarantine').checked = site.isQuarantine || false;
     
     // Populate hive strength breakdown
-    if (cluster.hiveStrength) {
+    if (site.hiveStrength) {
         // Update the Hive State display elements (not input fields)
         const strongElement = document.getElementById('hiveStateStrong');
         const mediumElement = document.getElementById('hiveStateMedium');
@@ -610,18 +610,18 @@ function editCluster(id) {
         const nucElement = document.getElementById('hiveStateNUC');
         const deadElement = document.getElementById('hiveStateDead');
         
-        if (strongElement) strongElement.textContent = cluster.hiveStrength.strong || 0;
-        if (mediumElement) mediumElement.textContent = cluster.hiveStrength.medium || 0;
-        if (weakElement) weakElement.textContent = cluster.hiveStrength.weak || 0;
-        if (nucElement) nucElement.textContent = cluster.hiveStrength.nuc || 0;
-        if (deadElement) deadElement.textContent = cluster.hiveStrength.dead || 0;
+        if (strongElement) strongElement.textContent = site.hiveStrength.strong || 0;
+        if (mediumElement) mediumElement.textContent = site.hiveStrength.medium || 0;
+        if (weakElement) weakElement.textContent = site.hiveStrength.weak || 0;
+        if (nucElement) nucElement.textContent = site.hiveStrength.nuc || 0;
+        if (deadElement) deadElement.textContent = site.hiveStrength.dead || 0;
         
         // Show the Hive State card if there are any hives
         const hiveStateCard = document.getElementById('hiveStateCard');
         if (hiveStateCard) {
-            const totalHives = (cluster.hiveStrength.strong || 0) + (cluster.hiveStrength.medium || 0) + 
-                              (cluster.hiveStrength.weak || 0) + (cluster.hiveStrength.nuc || 0) + 
-                              (cluster.hiveStrength.dead || 0);
+            const totalHives = (site.hiveStrength.strong || 0) + (site.hiveStrength.medium || 0) + 
+                              (site.hiveStrength.weak || 0) + (site.hiveStrength.nuc || 0) + 
+                              (site.hiveStrength.dead || 0);
             if (totalHives > 0) {
                 hiveStateCard.style.display = 'block';
             }
@@ -634,19 +634,19 @@ function editCluster(id) {
     
     // Update the visual hive grid with existing data
     if (typeof initializeVisualHiveGrid === 'function') {
-        initializeVisualHiveGrid(cluster);
+        initializeVisualHiveGrid(site);
     }
     // updateStackTotals(); // Removed - no longer needed with visual hive grid
     
     document.getElementById('anomalySection')?.classList.remove('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
     
-    // Populate cluster type dropdown
-    populateClusterTypeDropdown();
+    // Populate site type dropdown
+    populateSiteTypeDropdown();
     
     // Add event listeners for coordinate validation
-    document.getElementById('clusterLat').addEventListener('blur', validateCoordinates);
-    document.getElementById('clusterLng').addEventListener('blur', validateCoordinates);
+    document.getElementById('siteLat').addEventListener('blur', validateCoordinates);
+    document.getElementById('siteLng').addEventListener('blur', validateCoordinates);
     
     // Setup GPS button
     setTimeout(() => {
@@ -657,8 +657,8 @@ function editCluster(id) {
     }, 100);
     
     // Render harvest records if they exist
-    if (cluster.harvestRecords && cluster.harvestRecords.length > 0) {
-        renderHarvestRecords(cluster.harvestRecords);
+    if (site.harvestRecords && site.harvestRecords.length > 0) {
+        renderHarvestRecords(site.harvestRecords);
     }
     
     // Initialize and render visual hive grid - auto-populate on page load
@@ -666,12 +666,12 @@ function editCluster(id) {
     renderVisualHiveGrid(); // Render immediately on page load
     
     // Render honey potentials checkboxes
-    renderHoneyPotentials(cluster.honeyPotentials || []);
+    renderHoneyPotentials(site.honeyPotentials || []);
     
     // Add event listener for site type changes
     const siteTypeSelect = document.getElementById('siteType');
-    const hiveCountField = document.getElementById('clusterHiveCount');
-    const formText = document.querySelector('#clusterHiveCount + .form-text');
+    const hiveCountField = document.getElementById('siteHiveCount');
+    const formText = document.querySelector('#siteHiveCount + .form-text');
     
     if (siteTypeSelect && hiveCountField && formText) {
         siteTypeSelect.addEventListener('change', function() {
@@ -728,7 +728,7 @@ function getSelectedHoneyPotentials() {
 let editingHarvestRecordIndex = null;
 
 /**
- * Add or update a harvest record to the current cluster form
+ * Add or update a harvest record to the current site form
  */
 function addHarvestRecord() {
     const date = document.getElementById('harvestDate').value;
@@ -740,14 +740,14 @@ function addHarvestRecord() {
         return;
     }
     
-    // Get existing records from the current cluster being edited
-    const clusterId = document.getElementById('clusterId').value;
+    // Get existing records from the current site being edited
+    const siteId = document.getElementById('siteId').value;
     let harvestRecords = [];
     
-    if (clusterId) {
-        const existingCluster = sites.find(c => c.id === parseInt(clusterId));
-        if (existingCluster && existingCluster.harvestRecords) {
-            harvestRecords = [...existingCluster.harvestRecords];
+    if (siteId) {
+        const existingSite = sites.find(c => c.id === parseInt(siteId));
+        if (existingSite && existingSite.harvestRecords) {
+            harvestRecords = [...existingSite.harvestRecords];
         }
     }
     
@@ -779,11 +779,11 @@ function addHarvestRecord() {
     // Sort by date (newest first)
     harvestRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    // Update the cluster in the array temporarily (will be saved when form is submitted)
-    if (clusterId) {
-        const clusterIndex = sites.findIndex(c => c.id === parseInt(clusterId));
-        if (clusterIndex !== -1) {
-            sites[clusterIndex].harvestRecords = harvestRecords;
+    // Update the site in the array temporarily (will be saved when form is submitted)
+    if (siteId) {
+        const siteIndex = sites.findIndex(c => c.id === parseInt(siteId));
+        if (siteIndex !== -1) {
+            sites[siteIndex].harvestRecords = harvestRecords;
         }
     }
     
@@ -807,19 +807,19 @@ function addHarvestRecord() {
  * Edit an existing harvest record
  */
 function editHarvestRecord(index) {
-    const clusterId = document.getElementById('clusterId').value;
-    if (!clusterId) {
-        beeMarshallAlert('No cluster selected', 'error');
+    const siteId = document.getElementById('siteId').value;
+    if (!siteId) {
+        beeMarshallAlert('No site selected', 'error');
         return;
     }
     
-    const existingCluster = sites.find(c => c.id === parseInt(clusterId));
-    if (!existingCluster || !existingCluster.harvestRecords || !existingCluster.harvestRecords[index]) {
+    const existingSite = sites.find(c => c.id === parseInt(siteId));
+    if (!existingSite || !existingSite.harvestRecords || !existingSite.harvestRecords[index]) {
         beeMarshallAlert('Record not found', 'error');
         return;
     }
     
-    const record = existingCluster.harvestRecords[index];
+    const record = existingSite.harvestRecords[index];
     
     // Populate the input fields with the record data
     document.getElementById('harvestDate').value = record.date;
@@ -917,23 +917,23 @@ function removeHarvestRecord(index) {
         return;
     }
     
-    const clusterId = document.getElementById('clusterId').value;
-    if (!clusterId) {
-        beeMarshallAlert('No cluster selected', 'error');
+    const siteId = document.getElementById('siteId').value;
+    if (!siteId) {
+        beeMarshallAlert('No site selected', 'error');
         return;
     }
     
-    const clusterIndex = sites.findIndex(c => c.id === parseInt(clusterId));
-    if (clusterIndex === -1) {
-        beeMarshallAlert('Cluster not found', 'error');
+    const siteIndex = sites.findIndex(c => c.id === parseInt(siteId));
+    if (siteIndex === -1) {
+        beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    if (!sites[clusterIndex].harvestRecords) {
-        sites[clusterIndex].harvestRecords = [];
+    if (!sites[siteIndex].harvestRecords) {
+        sites[siteIndex].harvestRecords = [];
     }
     
-    sites[clusterIndex].harvestRecords.splice(index, 1);
+    sites[siteIndex].harvestRecords.splice(index, 1);
     
     // Reset edit state if the deleted record was being edited
     if (editingHarvestRecordIndex === index) {
@@ -949,25 +949,25 @@ function removeHarvestRecord(index) {
         }
     }
     
-    renderHarvestRecords(sites[clusterIndex].harvestRecords);
+    renderHarvestRecords(sites[siteIndex].harvestRecords);
     
     beeMarshallAlert('Harvest record removed', 'info');
 }
 
-function viewClusterDetails(id) {
-    const cluster = sites.find(c => c.id === id);
-    if (!cluster) return;
+function viewSiteDetails(id) {
+    const site = sites.find(c => c.id === id);
+    if (!site) return;
     
-    const typeInfo = CLUSTER_TYPES[cluster.clusterType] || CLUSTER_TYPES['custom'];
+    const typeInfo = SITE_TYPES[site.siteType] || SITE_TYPES['custom'];
     
     const detailsHtml = `
-        <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
+        <div class="modal fade" id="siteDetailsModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">
                             <i class="bi ${typeInfo.icon}" style="color: ${typeInfo.color}"></i>
-                            ${cluster.name}
+                            ${site.name}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
@@ -976,45 +976,45 @@ function viewClusterDetails(id) {
                             <div class="col-md-6">
                                 <h6>Basic Information</h6>
                                 <p><strong>Type:</strong> <span class="badge" style="background-color: ${typeInfo.color}; color: white;">${typeInfo.name}</span></p>
-                                <p><strong>Description:</strong> ${cluster.description || 'No description'}</p>
-                                <p><strong>Hive Count:</strong> ${cluster.hiveCount}</p>
-                                <p><strong>GPS Coordinates:</strong> ${cluster.latitude.toFixed(6)}, ${cluster.longitude.toFixed(6)}</p>
+                                <p><strong>Description:</strong> ${site.description || 'No description'}</p>
+                                <p><strong>Hive Count:</strong> ${site.hiveCount}</p>
+                                <p><strong>GPS Coordinates:</strong> ${site.latitude.toFixed(6)}, ${site.longitude.toFixed(6)}</p>
                                 
                                 <div class="mt-2">
-                                    <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${cluster.id})">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${site.id})">
                                         <i class="bi bi-geo-alt-fill"></i> View on Maps
                                     </button>
                                 </div>
                                 
                                 <h6 class="mt-3">Landowner Information</h6>
-                                ${cluster.landownerName ? `<p><strong>Name:</strong> ${cluster.landownerName}</p>` : ''}
-                                ${cluster.landownerPhone ? `<p><strong>Phone:</strong> ${cluster.landownerPhone}</p>` : ''}
-                                ${cluster.landownerEmail ? `<p><strong>Email:</strong> ${cluster.landownerEmail}</p>` : ''}
-                                ${cluster.landownerAddress ? `<p><strong>Address:</strong> ${cluster.landownerAddress}</p>` : ''}
+                                ${site.landownerName ? `<p><strong>Name:</strong> ${site.landownerName}</p>` : ''}
+                                ${site.landownerPhone ? `<p><strong>Phone:</strong> ${site.landownerPhone}</p>` : ''}
+                                ${site.landownerEmail ? `<p><strong>Email:</strong> ${site.landownerEmail}</p>` : ''}
+                                ${site.landownerAddress ? `<p><strong>Address:</strong> ${site.landownerAddress}</p>` : ''}
                             </div>
                             <div class="col-md-6">
                                 <h6>Site Details</h6>
-                                <p><strong>Site Type:</strong> ${cluster.siteType || 'Not specified'}</p>
-                                <p><strong>Access Type:</strong> ${cluster.accessType || 'Not specified'}</p>
-                                <p><strong>Contact Before Visit:</strong> ${cluster.contactBeforeVisit ? 'Yes' : 'No'}</p>
-                                <p><strong>Quarantine Status:</strong> ${cluster.isQuarantine ? 'Yes' : 'No'}</p>
+                                <p><strong>Site Type:</strong> ${site.siteType || 'Not specified'}</p>
+                                <p><strong>Access Type:</strong> ${site.accessType || 'Not specified'}</p>
+                                <p><strong>Contact Before Visit:</strong> ${site.contactBeforeVisit ? 'Yes' : 'No'}</p>
+                                <p><strong>Quarantine Status:</strong> ${site.isQuarantine ? 'Yes' : 'No'}</p>
                                 
                                 <h6 class="mt-3">Timeline & Requirements</h6>
-                                ${cluster.harvestTimeline ? `<p><strong>Harvest Timeline:</strong> ${cluster.harvestTimeline}</p>` : ''}
-                                ${cluster.sugarRequirements ? `<p><strong>Sugar Requirements:</strong> ${cluster.sugarRequirements}</p>` : ''}
+                                ${site.harvestTimeline ? `<p><strong>Harvest Timeline:</strong> ${site.harvestTimeline}</p>` : ''}
+                                ${site.sugarRequirements ? `<p><strong>Sugar Requirements:</strong> ${site.sugarRequirements}</p>` : ''}
                                 
-                                ${cluster.notes ? `
+                                ${site.notes ? `
                                     <h6 class="mt-3">Notes</h6>
-                                    <p>${cluster.notes}</p>
+                                    <p>${site.notes}</p>
                                 ` : ''}
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" onclick="editCluster(${cluster.id}); bootstrap.Modal.getInstance(document.getElementById('clusterDetailsModal')).hide();">
-                            <i class="bi bi-pencil"></i> Edit Cluster
+                        <button type="button" class="btn btn-primary" onclick="editSite(${site.id}); bootstrap.Modal.getInstance(document.getElementById('siteDetailsModal')).hide();">
+                            <i class="bi bi-pencil"></i> Edit Site
                         </button>
-                        <button type="button" class="btn btn-success" onclick="scheduleTaskForCluster(${cluster.id}); bootstrap.Modal.getInstance(document.getElementById('clusterDetailsModal')).hide();">
+                        <button type="button" class="btn btn-success" onclick="scheduleTaskForSite(${site.id}); bootstrap.Modal.getInstance(document.getElementById('siteDetailsModal')).hide();">
                             <i class="bi bi-calendar-plus"></i> Schedule Task
                         </button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1025,7 +1025,7 @@ function viewClusterDetails(id) {
     `;
     
     // Remove existing modal if any
-    const existingModal = document.getElementById('clusterDetailsModal');
+    const existingModal = document.getElementById('siteDetailsModal');
     if (existingModal) {
         existingModal.remove();
     }
@@ -1034,27 +1034,27 @@ function viewClusterDetails(id) {
     document.body.insertAdjacentHTML('beforeend', detailsHtml);
     
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('clusterDetailsModal'));
+    const modal = new bootstrap.Modal(document.getElementById('siteDetailsModal'));
     modal.show();
 }
 
-function scheduleTaskForCluster(clusterId) {
-    // Pre-fill the schedule form with the selected cluster
-    document.getElementById('scheduleCluster').value = clusterId;
+function scheduleTaskForSite(siteId) {
+    // Pre-fill the schedule form with the selected site
+    document.getElementById('scheduleSite').value = siteId;
     
     // Show the schedule modal
     const modal = new bootstrap.Modal(document.getElementById('scheduleTaskModal'));
     modal.show();
 }
 
-function archiveCluster(id) {
-    const cluster = sites.find(c => c.id === id);
-    if (!cluster) {
+function archiveSite(id) {
+    const site = sites.find(c => c.id === id);
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    if (confirm(`Archive "${cluster.name}"? This will:\n\n• Stop the site from appearing in hive/site counts\n• Keep historical harvest data\n• Make the site accessible only from "Show Archived Sites"\n\nYou can unarchive it later if needed.`)) {
+    if (confirm(`Archive "${site.name}"? This will:\n\n• Stop the site from appearing in hive/site counts\n• Keep historical harvest data\n• Make the site accessible only from "Show Archived Sites"\n\nYou can unarchive it later if needed.`)) {
         const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
         database.ref(`${tenantPath}/${id}`).update({
             archived: true,
@@ -1063,13 +1063,13 @@ function archiveCluster(id) {
             lastModified: new Date().toISOString(),
             lastModifiedBy: currentUser.username
         }).then(() => {
-            beeMarshallAlert(`✅ "${cluster.name}" has been archived`, 'success');
+            beeMarshallAlert(`✅ "${site.name}" has been archived`, 'success');
             
             // Log as action
-            const actionText = `Archived site: ${cluster.name}`;
+            const actionText = `Archived site: ${site.name}`;
             const action = {
                 id: Date.now(),
-                clusterId: id,
+                siteId: id,
                 task: 'Archive Site',
                 date: new Date().toISOString(),
                 employee: currentUser.username,
@@ -1079,28 +1079,28 @@ function archiveCluster(id) {
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
             database.ref(`${actionPath}/${action.id}`).set(action).then(() => {
                 // Refresh the sites list to update the UI
-                renderClusters();
+                renderSites();
             });
         }).catch(error => {
-            console.error('Error archiving cluster:', error);
+            console.error('Error archiving site:', error);
             beeMarshallAlert('❌ Error archiving site. Please try again.', 'error');
         });
     }
 }
 
-function unarchiveCluster(id) {
+function unarchiveSite(id) {
     if (!isAdmin) {
         beeMarshallAlert('Only administrators can unarchive sites', 'error');
         return;
     }
     
-    const cluster = sites.find(c => c.id === id);
-    if (!cluster) {
+    const site = sites.find(c => c.id === id);
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    if (confirm(`Unarchive "${cluster.name}"? This will restore it to active status and include it in hive/site counts.`)) {
+    if (confirm(`Unarchive "${site.name}"? This will restore it to active status and include it in hive/site counts.`)) {
         const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
         database.ref(`${tenantPath}/${id}`).update({
             archived: false,
@@ -1109,13 +1109,13 @@ function unarchiveCluster(id) {
             lastModified: new Date().toISOString(),
             lastModifiedBy: currentUser.username
         }).then(() => {
-            beeMarshallAlert(`✅ "${cluster.name}" has been unarchived`, 'success');
+            beeMarshallAlert(`✅ "${site.name}" has been unarchived`, 'success');
             
             // Log as action
-            const actionText = `Unarchived site: ${cluster.name}`;
+            const actionText = `Unarchived site: ${site.name}`;
             const action = {
                 id: Date.now(),
-                clusterId: id,
+                siteId: id,
                 task: 'Unarchive Site',
                 date: new Date().toISOString(),
                 employee: currentUser.username,
@@ -1125,45 +1125,45 @@ function unarchiveCluster(id) {
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
             database.ref(`${actionPath}/${action.id}`).set(action).then(() => {
                 // Refresh the sites list to update the UI
-                renderClusters();
+                renderSites();
             });
         }).catch(error => {
-            console.error('Error unarchiving cluster:', error);
+            console.error('Error unarchiving site:', error);
             beeMarshallAlert('❌ Error unarchiving site. Please try again.', 'error');
         });
     }
 }
 
-function deleteCluster(id) {
+function deleteSite(id) {
     // Only admins can delete, and only from archived state
     if (!isAdmin) {
         beeMarshallAlert('Only administrators can delete sites', 'error');
         return;
     }
     
-    const cluster = sites.find(c => c.id === id);
-    if (!cluster) {
+    const site = sites.find(c => c.id === id);
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    if (!cluster.archived) {
+    if (!site.archived) {
         beeMarshallAlert('⚠️ Sites must be archived before they can be permanently deleted.\n\nPlease archive the site first, then use the "Show Archived Sites" button to delete it.', 'warning');
         return;
     }
     
-    const confirmMessage = `⚠️ PERMANENT DELETION\n\nSite: ${cluster.name}\n\n⚠️ WARNING: This will permanently delete:\n• The site and all its data\n• Historical harvest records for this site\n• All associated actions and history\n\n⚠️ This action CANNOT be undone!\n\nAre you absolutely sure you want to permanently delete this site?`;
+    const confirmMessage = `⚠️ PERMANENT DELETION\n\nSite: ${site.name}\n\n⚠️ WARNING: This will permanently delete:\n• The site and all its data\n• Historical harvest records for this site\n• All associated actions and history\n\n⚠️ This action CANNOT be undone!\n\nAre you absolutely sure you want to permanently delete this site?`;
     
     if (confirm(confirmMessage)) {
         // Double confirmation
         if (confirm('This is your last chance. Permanently delete this site? This action CANNOT be undone.')) {
             const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
             database.ref(`${tenantPath}/${id}`).remove().then(() => {
-                beeMarshallAlert(`🗑️ Site "${cluster.name}" has been permanently deleted`, 'success');
+                beeMarshallAlert(`🗑️ Site "${site.name}" has been permanently deleted`, 'success');
                 // Refresh the sites list to update the UI
-                renderClusters();
+                renderSites();
             }).catch(error => {
-                console.error('Error deleting cluster:', error);
+                console.error('Error deleting site:', error);
                 beeMarshallAlert('❌ Error deleting site. Please try again.', 'error');
             });
         }
@@ -1171,19 +1171,19 @@ function deleteCluster(id) {
 }
 
 /**
- * Open cluster location in maps application
+ * Open site location in maps application
  * Detects platform and opens appropriate app (Google Maps or Apple Maps)
  */
-function openInMaps(clusterId) {
-    const cluster = sites.find(c => c.id === clusterId);
-    if (!cluster) {
-        beeMarshallAlert('Cluster not found', 'error');
+function openInMaps(siteId) {
+    const site = sites.find(c => c.id === siteId);
+    if (!site) {
+        beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    const lat = cluster.latitude;
-    const lon = cluster.longitude;
-    const name = encodeURIComponent(cluster.name);
+    const lat = site.latitude;
+    const lon = site.longitude;
+    const name = encodeURIComponent(site.name);
     
     // Detect platform
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -1220,14 +1220,14 @@ function openInMaps(clusterId) {
         window.open(googleMapsUrl, '_blank');
     }
     
-    Logger.log(`🗺️ Opening ${cluster.name} in maps (${isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'})`);
+    Logger.log(`🗺️ Opening ${site.name} in maps (${isIOS ? 'iOS' : isAndroid ? 'Android' : 'Desktop'})`);
 }
 
-// Update map with new cluster data
-function updateMapWithClusters() {
-    console.log('🔄 Updating map with cluster data...');
+// Update map with new site data
+function updateMapWithSites() {
+    console.log('🔄 Updating map with site data...');
     if (map && sites && sites.length > 0) {
-        renderClusters();
+        renderSites();
     } else if (map) {
         console.log('📍 Map exists but no sites to render');
     } else {
@@ -1256,7 +1256,7 @@ function activateMap() {
     }
 }
 
-// Enhanced map with cluster type colors
+// Enhanced map with site type colors
 function initMap() {
     console.log('🗺️ Initializing map...');
     const mapElement = document.getElementById('map');
@@ -1278,7 +1278,7 @@ function initMap() {
     
     // Use global map if it exists, otherwise skip
     if (!window.beeMarshallMap) {
-        console.log('🗺️ Global map not initialized, skipping cluster rendering');
+        console.log('🗺️ Global map not initialized, skipping site rendering');
         return;
     }
     
@@ -1304,13 +1304,13 @@ function initMap() {
     console.log(`📍 Rendering ${sites.length} sites on map`);
     
     // Add marker for each site with type-specific colors
-    sites.forEach(cluster => {
+    sites.forEach(site => {
         try {
-            const typeInfo = CLUSTER_TYPES[cluster.clusterType] || CLUSTER_TYPES['custom'];
+            const typeInfo = SITE_TYPES[site.siteType] || SITE_TYPES['custom'];
             
-            // Create custom icon with cluster type color
+            // Create custom icon with site type color
             const customIcon = L.divIcon({
-                className: 'custom-cluster-marker',
+                className: 'custom-site-marker',
                 html: `<div style="
                     background-color: ${typeInfo.color};
                     width: 20px;
@@ -1328,31 +1328,31 @@ function initMap() {
                 iconAnchor: [10, 10]
             });
             
-            // Get pending tasks for this cluster
-            const clusterTasks = scheduledTasks.filter(task => 
-                task.clusterId === cluster.id && !task.completed
+            // Get pending tasks for this site
+            const siteTasks = scheduledTasks.filter(task => 
+                task.siteId === site.id && !task.completed
             ).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
             
-            const marker = L.marker([cluster.latitude, cluster.longitude], { icon: customIcon })
+            const marker = L.marker([site.latitude, site.longitude], { icon: customIcon })
                 .bindPopup(`
                     <div style="padding:10px; min-width:250px;">
                         <h6>
-                            <a href="#" onclick="viewClusterDetails(${cluster.id}); return false;" style="color: ${typeInfo.color}; text-decoration: none; font-weight: bold; cursor: pointer;">
-                                <i class="bi ${typeInfo.icon}"></i> ${cluster.name}
+                            <a href="#" onclick="viewSiteDetails(${site.id}); return false;" style="color: ${typeInfo.color}; text-decoration: none; font-weight: bold; cursor: pointer;">
+                                <i class="bi ${typeInfo.icon}"></i> ${site.name}
                             </a>
                         </h6>
-                        <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
+                        <p class="mb-1"><small>${site.description || 'No description'}</small></p>
                         <p class="mb-1"><strong>Type:</strong> <span style="color: ${typeInfo.color};">${typeInfo.name}</span></p>
-                        <p class="mb-1"><strong>Hives:</strong> ${cluster.hiveCount}</p>
-                        ${cluster.harvestTimeline ? `<p class="mb-1"><strong>Harvest:</strong> ${cluster.harvestTimeline}</p>` : ''}
-                        ${cluster.sugarRequirements ? `<p class="mb-1"><strong>Sugar:</strong> ${cluster.sugarRequirements}</p>` : ''}
-                        ${cluster.landownerName ? `<p class="mb-1"><strong>Landowner:</strong> ${cluster.landownerName}</p>` : ''}
+                        <p class="mb-1"><strong>Hives:</strong> ${site.hiveCount}</p>
+                        ${site.harvestTimeline ? `<p class="mb-1"><strong>Harvest:</strong> ${site.harvestTimeline}</p>` : ''}
+                        ${site.sugarRequirements ? `<p class="mb-1"><strong>Sugar:</strong> ${site.sugarRequirements}</p>` : ''}
+                        ${site.landownerName ? `<p class="mb-1"><strong>Landowner:</strong> ${site.landownerName}</p>` : ''}
                         
-                        ${clusterTasks.length > 0 ? `
+                        ${siteTasks.length > 0 ? `
                             <div class="mt-3">
-                                <h6 class="mb-2"><i class="bi bi-list-check"></i> Pending Tasks (${clusterTasks.length})</h6>
+                                <h6 class="mb-2"><i class="bi bi-list-check"></i> Pending Tasks (${siteTasks.length})</h6>
                                 <div class="pending-tasks-list" style="max-height: 150px; overflow-y: auto;">
-                                    ${clusterTasks.slice(0, 5).map(task => {
+                                    ${siteTasks.slice(0, 5).map(task => {
                                         const taskName = getTaskDisplayName(null, task.taskId);
                                         const dueDate = new Date(task.dueDate);
                                         const isOverdue = dueDate < new Date();
@@ -1371,7 +1371,7 @@ function initMap() {
                                             </div>
                                         `;
                                     }).join('')}
-                                    ${clusterTasks.length > 5 ? `<small class="text-muted">... and ${clusterTasks.length - 5} more tasks</small>` : ''}
+                                    ${siteTasks.length > 5 ? `<small class="text-muted">... and ${siteTasks.length - 5} more tasks</small>` : ''}
                                 </div>
                             </div>
                         ` : `
@@ -1381,19 +1381,19 @@ function initMap() {
                         `}
                         
                         <div class="mt-3 d-grid gap-1">
-                            <button class="btn btn-sm btn-primary" onclick="viewClusterDetails(${cluster.id}); return false;">
+                            <button class="btn btn-sm btn-primary" onclick="viewSiteDetails(${site.id}); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${cluster.id}); return false;">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${site.id}); return false;">
                                 <i class="bi bi-geo-alt-fill"></i> View on Maps
                             </button>
-                            <button class="btn btn-sm btn-success" onclick="scheduleTaskForCluster(${cluster.id}); return false;">
+                            <button class="btn btn-sm btn-success" onclick="scheduleTaskForSite(${site.id}); return false;">
                                 <i class="bi bi-calendar-plus"></i> Schedule Task
                             </button>
-                            <button class="btn btn-sm btn-outline-warning" onclick="editCluster(${cluster.id}); return false;">
-                                <i class="bi bi-pencil"></i> Edit Cluster
+                            <button class="btn btn-sm btn-outline-warning" onclick="editSite(${site.id}); return false;">
+                                <i class="bi bi-pencil"></i> Edit Site
                             </button>
-                            ${clusterTasks.length > 0 ? `
+                            ${siteTasks.length > 0 ? `
                                 <button class="btn btn-sm btn-outline-info" onclick="showScheduledTasks(); return false;">
                                     <i class="bi bi-list-check"></i> View All Tasks
                                 </button>
@@ -1402,7 +1402,7 @@ function initMap() {
                     </div>
                 `, {
                     maxWidth: 300,
-                    className: 'cluster-popup'
+                    className: 'site-popup'
                 })
                 .on('popupopen', function() {
                     // Ensure popup events work correctly
@@ -1416,7 +1416,7 @@ function initMap() {
             
             markers.push(marker);
         } catch (error) {
-            console.error('Error adding marker for cluster:', cluster.name, error);
+            console.error('Error adding marker for site:', site.name, error);
         }
     });
     
@@ -1445,8 +1445,8 @@ function getCurrentLocation() {
             const lat = position.coords.latitude.toFixed(6);
             const lng = position.coords.longitude.toFixed(6);
             
-            document.getElementById('clusterLat').value = lat;
-            document.getElementById('clusterLng').value = lng;
+            document.getElementById('siteLat').value = lat;
+            document.getElementById('siteLng').value = lng;
             
             // Trigger validation to show success state
             validateCoordinates();
@@ -1474,8 +1474,8 @@ function showMapPicker() {
     
     if (!container.classList.contains('hidden')) {
         setTimeout(() => {
-            const lat = parseFloat(document.getElementById('clusterLat').value) || -40.6764; // Collingwood, NZ
-            const lng = parseFloat(document.getElementById('clusterLng').value) || 172.6856;
+            const lat = parseFloat(document.getElementById('siteLat').value) || -40.6764; // Collingwood, NZ
+            const lng = parseFloat(document.getElementById('siteLng').value) || 172.6856;
             
             // Clear existing map if any
             if (mapPicker) {
@@ -1496,8 +1496,8 @@ function showMapPicker() {
             // Click map to move marker
             mapPicker.on('click', (e) => {
                 pickerMarker.setLatLng(e.latlng);
-                document.getElementById('clusterLat').value = e.latlng.lat.toFixed(6);
-                document.getElementById('clusterLng').value = e.latlng.lng.toFixed(6);
+                document.getElementById('siteLat').value = e.latlng.lat.toFixed(6);
+                document.getElementById('siteLng').value = e.latlng.lng.toFixed(6);
                 // Trigger validation to show success state
                 validateCoordinates();
             });
@@ -1505,8 +1505,8 @@ function showMapPicker() {
             // Drag marker
             pickerMarker.on('dragend', (e) => {
                 const latlng = e.target.getLatLng();
-                document.getElementById('clusterLat').value = latlng.lat.toFixed(6);
-                document.getElementById('clusterLng').value = latlng.lng.toFixed(6);
+                document.getElementById('siteLat').value = latlng.lat.toFixed(6);
+                document.getElementById('siteLng').value = latlng.lng.toFixed(6);
                 // Trigger validation to show success state
                 validateCoordinates();
             });
@@ -1521,14 +1521,14 @@ function renderVisualHiveGrid() {
     const container = document.getElementById('visualHiveGrid');
     if (!container) return;
     
-    const clusterId = document.getElementById('clusterId')?.value;
-    if (!clusterId) {
+    const siteId = document.getElementById('siteId')?.value;
+    if (!siteId) {
         container.innerHTML = '<p class="text-muted">Please select a site first to render the grid.</p>';
         return;
     }
     
-    const cluster = sites.find(c => c.id === parseInt(clusterId));
-    if (!cluster) {
+    const site = sites.find(c => c.id === parseInt(siteId));
+    if (!site) {
         container.innerHTML = '<p class="text-muted">Site not found.</p>';
         return;
     }
@@ -1536,11 +1536,11 @@ function renderVisualHiveGrid() {
     // Initialize visual hive data if not exists
     if (!visualHiveData) {
         visualHiveData = {
-            doubles: cluster.hiveStacks?.doubles || 0,
-            topSplits: cluster.hiveStacks?.topSplits || 0,
-            singles: cluster.hiveStacks?.singles || 0,
-            nucs: cluster.hiveStacks?.nucs || 0,
-            empty: cluster.hiveStacks?.empty || 0
+            doubles: site.hiveStacks?.doubles || 0,
+            topSplits: site.hiveStacks?.topSplits || 0,
+            singles: site.hiveStacks?.singles || 0,
+            nucs: site.hiveStacks?.nucs || 0,
+            empty: site.hiveStacks?.empty || 0
         };
     }
     
@@ -1729,27 +1729,27 @@ function updateHiveCount(type) {
     // updateStackTotals(); // Removed - no longer needed with visual hive grid
     
     // Auto-save to Firebase and log as action
-    const clusterId = document.getElementById('clusterId')?.value;
-    if (clusterId && oldValue !== newValue) {
-        const cluster = sites.find(c => c.id === parseInt(clusterId));
-        if (cluster) {
-            // Update cluster data
-            if (!cluster.hiveStacks) cluster.hiveStacks = {};
-            cluster.hiveStacks[type] = newValue;
-            cluster.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
+    const siteId = document.getElementById('siteId')?.value;
+    if (siteId && oldValue !== newValue) {
+        const site = sites.find(c => c.id === parseInt(siteId));
+        if (site) {
+            // Update site data
+            if (!site.hiveStacks) site.hiveStacks = {};
+            site.hiveStacks[type] = newValue;
+            site.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
             
             // Save to Firebase
             const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-            database.ref(`${tenantPath}/${cluster.id}`).update({
-                hiveStacks: cluster.hiveStacks,
-                hiveCount: cluster.hiveCount,
+            database.ref(`${tenantPath}/${site.id}`).update({
+                hiveStacks: site.hiveStacks,
+                hiveCount: site.hiveCount,
                 lastModified: new Date().toISOString(),
                 lastModifiedBy: currentUser.username
             }).then(() => {
                 // Log as action
                 const typeLabel = type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                const actionText = `Hive inventory updated at ${cluster.name}: ${typeLabel} changed from ${oldValue} to ${newValue}`;
-                logSiteVisitAction(cluster.id, actionText);
+                const actionText = `Hive inventory updated at ${site.name}: ${typeLabel} changed from ${oldValue} to ${newValue}`;
+                logSiteVisitAction(site.id, actionText);
                 
                 console.log('✅ Hive inventory auto-saved:', typeLabel, oldValue, '→', newValue);
             }).catch(error => {
@@ -1760,25 +1760,25 @@ function updateHiveCount(type) {
 }
 
 function saveVisualHiveChanges() {
-    const clusterId = document.getElementById('clusterId')?.value;
-    if (!clusterId) {
+    const siteId = document.getElementById('siteId')?.value;
+    if (!siteId) {
         beeMarshallAlert('No site selected', 'warning');
         return;
     }
     
-    const cluster = sites.find(c => c.id === parseInt(clusterId));
-    if (!cluster) {
+    const site = sites.find(c => c.id === parseInt(siteId));
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
     
     // Detect changes
     const oldValues = {
-        doubles: cluster.hiveStacks?.doubles || 0,
-        topSplits: cluster.hiveStacks?.topSplits || 0,
-        singles: cluster.hiveStacks?.singles || 0,
-        nucs: cluster.hiveStacks?.nucs || 0,
-        empty: cluster.hiveStacks?.empty || 0
+        doubles: site.hiveStacks?.doubles || 0,
+        topSplits: site.hiveStacks?.topSplits || 0,
+        singles: site.hiveStacks?.singles || 0,
+        nucs: site.hiveStacks?.nucs || 0,
+        empty: site.hiveStacks?.empty || 0
     };
     
     const changes = [];
@@ -1803,8 +1803,8 @@ function saveVisualHiveChanges() {
         return;
     }
     
-    // Update cluster data
-    cluster.hiveStacks = {
+    // Update site data
+    site.hiveStacks = {
         doubles: visualHiveData.doubles,
         topSplits: visualHiveData.topSplits,
         singles: visualHiveData.singles,
@@ -1812,19 +1812,19 @@ function saveVisualHiveChanges() {
         empty: visualHiveData.empty
     };
     
-    cluster.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
+    site.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
     
     // Save to Firebase
-    const clusterRef = database.ref(`sites/${cluster.id}`);
-    clusterRef.update({
-        hiveStacks: cluster.hiveStacks,
-        hiveCount: cluster.hiveCount,
+    const siteRef = database.ref(`sites/${site.id}`);
+    siteRef.update({
+        hiveStacks: site.hiveStacks,
+        hiveCount: site.hiveCount,
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser.username
     }).then(() => {
         // Log as action
-        const actionText = `Site visit and inventory update at ${cluster.name}. Changes: ${changes.join('; ')}`;
-        logSiteVisitAction(cluster.id, actionText);
+        const actionText = `Site visit and inventory update at ${site.name}. Changes: ${changes.join('; ')}`;
+        logSiteVisitAction(site.id, actionText);
         
         beeMarshallAlert('✅ Site inventory updated and logged as action!', 'success');
     }).catch(error => {
@@ -1833,10 +1833,10 @@ function saveVisualHiveChanges() {
     });
 }
 
-function logSiteVisitAction(clusterId, notes) {
+function logSiteVisitAction(siteId, notes) {
     const newAction = {
         id: Date.now(),
-        clusterId: parseInt(clusterId),
+        siteId: parseInt(siteId),
         task: 'Site Visit & Inventory',
         notes: notes,
         completedBy: currentUser.username,
@@ -1853,15 +1853,15 @@ function logSiteVisitAction(clusterId, notes) {
 
 // Edit hive state count (clickable numbers in Hive State card)
 function editHiveStateCount(state) {
-    const clusterId = document.getElementById('clusterId')?.value;
-    if (!clusterId) {
+    const siteId = document.getElementById('siteId')?.value;
+    if (!siteId) {
         beeMarshallAlert('No site selected', 'warning');
         return;
     }
     
-    // Get the cluster
-    const cluster = sites.find(c => c.id === parseInt(clusterId));
-    if (!cluster) {
+    // Get the site
+    const site = sites.find(c => c.id === parseInt(siteId));
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
@@ -1869,8 +1869,8 @@ function editHiveStateCount(state) {
     // Calculate current total from Hive Box totals (exclude Dead)
     const currentHiveBoxTotal = (visualHiveData ? 
         (visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs) :
-        (cluster.hiveStacks?.doubles || 0) + (cluster.hiveStacks?.topSplits || 0) + 
-        (cluster.hiveStacks?.singles || 0) + (cluster.hiveStacks?.nucs || 0)
+        (site.hiveStacks?.doubles || 0) + (site.hiveStacks?.topSplits || 0) + 
+        (site.hiveStacks?.singles || 0) + (site.hiveStacks?.nucs || 0)
     );
     
     // Get current hive state values
@@ -1923,21 +1923,21 @@ function editHiveStateCount(state) {
     currentElement.textContent = newValue;
     
     // Update hive strength data
-    if (!cluster.hiveStrength) cluster.hiveStrength = {};
-    cluster.hiveStrength[state.toLowerCase()] = newValue;
+    if (!site.hiveStrength) site.hiveStrength = {};
+    site.hiveStrength[state.toLowerCase()] = newValue;
     
     // Save to Firebase
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${cluster.id}`).update({
-        hiveStrength: cluster.hiveStrength,
+    database.ref(`${tenantPath}/${site.id}`).update({
+        hiveStrength: site.hiveStrength,
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser.username
     }).then(() => {
         // Log as action (save to Firebase, not just push to array)
-        const actionText = `Updated ${state} hives at ${cluster.name}: ${currentValue} → ${newValue}`;
+        const actionText = `Updated ${state} hives at ${site.name}: ${currentValue} → ${newValue}`;
         const newAction = {
             id: Date.now(),
-            clusterId: parseInt(clusterId),
+            siteId: parseInt(siteId),
             task: 'Hive State Update',
             notes: actionText,
             completedBy: currentUser.username,
@@ -1968,7 +1968,7 @@ function editHiveStateCount(state) {
  */
 function toggleArchivedSites() {
     showArchivedSites = !showArchivedSites;
-    renderClusters();
+    renderSites();
 }
 
 /**
@@ -1996,15 +1996,15 @@ function updateArchivedButtonText() {
  * Quick edit hive strength from summary card
  * Opens a prompt for entering new count and updates Firebase
  */
-function quickEditHiveStrength(clusterId, state, currentValue) {
-    const cluster = sites.find(c => c.id === clusterId);
-    if (!cluster) {
+function quickEditHiveStrength(siteId, state, currentValue) {
+    const site = sites.find(c => c.id === siteId);
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
     
     // Prompt for new value
-    const newValueStr = prompt(`Update ${state} hives for ${cluster.name}:\n\nCurrent: ${currentValue}\n\nEnter new count:`, currentValue);
+    const newValueStr = prompt(`Update ${state} hives for ${site.name}:\n\nCurrent: ${currentValue}\n\nEnter new count:`, currentValue);
     if (newValueStr === null) return; // User cancelled
     
     const newValue = parseInt(newValueStr) || 0;
@@ -2014,29 +2014,29 @@ function quickEditHiveStrength(clusterId, state, currentValue) {
         return;
     }
     
-    // Update cluster data
-    if (!cluster.hiveStrength) cluster.hiveStrength = {};
-    cluster.hiveStrength[state.toLowerCase()] = newValue;
+    // Update site data
+    if (!site.hiveStrength) site.hiveStrength = {};
+    site.hiveStrength[state.toLowerCase()] = newValue;
     
     // Save to Firebase
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${clusterId}`).update({
-        hiveStrength: cluster.hiveStrength,
+    database.ref(`${tenantPath}/${siteId}`).update({
+        hiveStrength: site.hiveStrength,
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser.username
     }).then(() => {
         // Update the display immediately
-        const elementId = state === 'NUC' ? `hiveNUC_${clusterId}` : `hive${state}_${clusterId}`;
+        const elementId = state === 'NUC' ? `hiveNUC_${siteId}` : `hive${state}_${siteId}`;
         const element = document.getElementById(elementId);
         if (element) {
             element.textContent = newValue;
         }
         
         // Log as action
-        const actionText = `Updated ${state} hives at ${cluster.name}: ${currentValue} → ${newValue}`;
+        const actionText = `Updated ${state} hives at ${site.name}: ${currentValue} → ${newValue}`;
         const newAction = {
             id: Date.now(),
-            clusterId: clusterId,
+            siteId: siteId,
             task: 'Hive State Update',
             notes: actionText,
             completedBy: currentUser.username,
@@ -2060,9 +2060,9 @@ function quickEditHiveStrength(clusterId, state, currentValue) {
  * Quick edit hive box count from summary card
  * Opens a prompt for entering new count and updates Firebase
  */
-function quickEditHiveBox(clusterId, boxType, currentValue) {
-    const cluster = sites.find(c => c.id === clusterId);
-    if (!cluster) {
+function quickEditHiveBox(siteId, boxType, currentValue) {
+    const site = sites.find(c => c.id === siteId);
+    if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
@@ -2071,7 +2071,7 @@ function quickEditHiveBox(clusterId, boxType, currentValue) {
     const boxTypeLabel = boxType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
     
     // Prompt for new value
-    const newValueStr = prompt(`Update ${boxTypeLabel} for ${cluster.name}:\n\nCurrent: ${currentValue}\n\nEnter new count:`, currentValue);
+    const newValueStr = prompt(`Update ${boxTypeLabel} for ${site.name}:\n\nCurrent: ${currentValue}\n\nEnter new count:`, currentValue);
     if (newValueStr === null) return; // User cancelled
     
     const newValue = parseInt(newValueStr) || 0;
@@ -2081,36 +2081,36 @@ function quickEditHiveBox(clusterId, boxType, currentValue) {
         return;
     }
     
-    // Update cluster data
-    if (!cluster.hiveStacks) cluster.hiveStacks = {};
-    cluster.hiveStacks[boxType] = newValue;
+    // Update site data
+    if (!site.hiveStacks) site.hiveStacks = {};
+    site.hiveStacks[boxType] = newValue;
     
     // Recalculate total hive count (excluding empty)
-    cluster.hiveCount = (cluster.hiveStacks.doubles || 0) + 
-                       (cluster.hiveStacks.topSplits || 0) + 
-                       (cluster.hiveStacks.singles || 0) + 
-                       (cluster.hiveStacks.nucs || 0);
+    site.hiveCount = (site.hiveStacks.doubles || 0) + 
+                       (site.hiveStacks.topSplits || 0) + 
+                       (site.hiveStacks.singles || 0) + 
+                       (site.hiveStacks.nucs || 0);
     
     // Save to Firebase
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${clusterId}`).update({
-        hiveStacks: cluster.hiveStacks,
-        hiveCount: cluster.hiveCount,
+    database.ref(`${tenantPath}/${siteId}`).update({
+        hiveStacks: site.hiveStacks,
+        hiveCount: site.hiveCount,
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser.username
     }).then(() => {
         // Update the display immediately
-        const elementId = `box${boxType.charAt(0).toUpperCase() + boxType.slice(1)}_${clusterId}`;
+        const elementId = `box${boxType.charAt(0).toUpperCase() + boxType.slice(1)}_${siteId}`;
         const element = document.getElementById(elementId);
         if (element) {
             element.textContent = newValue;
         }
         
         // Log as action
-        const actionText = `Updated ${boxTypeLabel} at ${cluster.name}: ${currentValue} → ${newValue}`;
+        const actionText = `Updated ${boxTypeLabel} at ${site.name}: ${currentValue} → ${newValue}`;
         const newAction = {
             id: Date.now(),
-            clusterId: clusterId,
+            siteId: siteId,
             task: 'Hive Box Update',
             notes: actionText,
             completedBy: currentUser.username,

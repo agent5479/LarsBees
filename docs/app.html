@@ -49,12 +49,12 @@
             border-radius: 10px;
         }
 
-        .cluster-card {
+        .site-card {
             cursor: pointer;
             transition: transform 0.2s;
         }
 
-        .cluster-card:hover {
+        .site-card:hover {
             transform: translateY(-5px);
         }
 
@@ -146,8 +146,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showClusters()">
-                                <i class="bi bi-geo-alt"></i> Hive Clusters
+                            <a class="nav-link text-dark" href="#" onclick="showSites()">
+                                <i class="bi bi-geo-alt"></i> Hive Sites
                             </a>
                         </li>
                         <li class="nav-item">
@@ -176,8 +176,8 @@
                 <div class="col-md-4">
                     <div class="card bg-warning">
                         <div class="card-body stat-card">
-                            <h6>Total Clusters</h6>
-                            <h2 id="statClusters">0</h2>
+                            <h6>Total Sites</h6>
+                            <h2 id="statSites">0</h2>
                         </div>
                     </div>
                 </div>
@@ -202,7 +202,7 @@
             <!-- Map -->
             <div class="card">
                 <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="bi bi-map"></i> Hive Cluster Locations</h5>
+                    <h5 class="mb-0"><i class="bi bi-map"></i> Hive Site Locations</h5>
                 </div>
                 <div class="card-body p-0">
                     <div id="map"></div>
@@ -220,14 +220,14 @@
             </div>
         </div>
 
-        <!-- Clusters View -->
+        <!-- Sites View -->
         <div id="sitesView" class="container mt-4 hidden">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="bi bi-geo-alt"></i> Hive Clusters</h1>
+                <h1><i class="bi bi-geo-alt"></i> Hive Sites</h1>
                 <button class="btn btn-warning btn-lg me-2" onclick="migrateUserDataToTenant()" id="migrationButton">
                     <i class="bi bi-arrow-repeat"></i> Migrate Data
                 </button>
-                <button class="btn btn-primary btn-lg" onclick="showAddClusterForm()">
+                <button class="btn btn-primary btn-lg" onclick="showAddSiteForm()">
                     <i class="bi bi-plus-circle"></i> Add Site
                 </button>
             </div>
@@ -235,54 +235,54 @@
             <div id="sitesList" class="row"></div>
         </div>
 
-        <!-- Add/Edit Cluster Form -->
-        <div id="clusterFormView" class="container mt-4 hidden">
+        <!-- Add/Edit Site Form -->
+        <div id="siteFormView" class="container mt-4 hidden">
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header bg-warning">
-                            <h4 class="mb-0" id="clusterFormTitle">Add Hive Cluster</h4>
+                            <h4 class="mb-0" id="siteFormTitle">Add Hive Site</h4>
                         </div>
                         <div class="card-body">
-                            <form id="clusterForm">
-                                <input type="hidden" id="clusterId">
+                            <form id="siteForm">
+                                <input type="hidden" id="siteId">
                                 <div class="mb-3">
-                                    <label class="form-label">Cluster Name</label>
-                                    <input type="text" id="clusterName" class="form-control" required>
+                                    <label class="form-label">Site Name</label>
+                                    <input type="text" id="siteName" class="form-control" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Description</label>
-                                    <textarea id="clusterDescription" class="form-control" rows="3"></textarea>
+                                    <textarea id="siteDescription" class="form-control" rows="3"></textarea>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Latitude</label>
-                                        <input type="number" step="any" id="clusterLat" class="form-control" required>
+                                        <input type="number" step="any" id="siteLat" class="form-control" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Longitude</label>
-                                        <input type="number" step="any" id="clusterLng" class="form-control" required>
+                                        <input type="number" step="any" id="siteLng" class="form-control" required>
                                     </div>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Number of Hives</label>
-                                    <input type="number" id="clusterHiveCount" class="form-control" value="1" required>
+                                    <input type="number" id="siteHiveCount" class="form-control" value="1" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Harvest Timeline</label>
-                                    <input type="text" id="clusterHarvest" class="form-control" placeholder="e.g., Spring 2025">
+                                    <input type="text" id="siteHarvest" class="form-control" placeholder="e.g., Spring 2025">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Sugar Requirements</label>
-                                    <input type="text" id="clusterSugar" class="form-control" placeholder="e.g., 10kg per month">
+                                    <input type="text" id="siteSugar" class="form-control" placeholder="e.g., 10kg per month">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Notes</label>
-                                    <textarea id="clusterNotes" class="form-control" rows="4"></textarea>
+                                    <textarea id="siteNotes" class="form-control" rows="4"></textarea>
                                 </div>
                                 <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-secondary" onclick="showClusters()">Cancel</button>
-                                    <button type="submit" class="btn btn-warning btn-lg">Save Cluster</button>
+                                    <button type="button" class="btn btn-secondary" onclick="showSites()">Cancel</button>
+                                    <button type="submit" class="btn btn-warning btn-lg">Save Site</button>
                                 </div>
                             </form>
                         </div>
@@ -314,8 +314,8 @@
                         <div class="card-body">
                             <form id="actionForm">
                                 <div class="mb-3">
-                                    <label class="form-label">Select Cluster</label>
-                                    <select id="actionCluster" class="form-select" required></select>
+                                    <label class="form-label">Select Site</label>
+                                    <select id="actionSite" class="form-select" required></select>
                                 </div>
                                 
                                 <div class="mb-3">

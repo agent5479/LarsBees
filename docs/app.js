@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Setup login form
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
-    document.getElementById('clusterForm').addEventListener('submit', handleSaveCluster);
+    document.getElementById('siteForm').addEventListener('submit', handleSaveSite);
     document.getElementById('actionForm').addEventListener('submit', handleLogAction);
     
     // Set today's date as default
@@ -84,7 +84,7 @@ function showMainApp() {
 function hideAllViews() {
     document.getElementById('dashboardView').classList.add('hidden');
     document.getElementById('sitesView').classList.add('hidden');
-    document.getElementById('clusterFormView').classList.add('hidden');
+    document.getElementById('siteFormView').classList.add('hidden');
     document.getElementById('actionsView').classList.add('hidden');
     document.getElementById('logActionView').classList.add('hidden');
 }
@@ -95,10 +95,10 @@ function showDashboard() {
     updateDashboard();
 }
 
-function showClusters() {
+function showSites() {
     hideAllViews();
     document.getElementById('sitesView').classList.remove('hidden');
-    renderClusters();
+    renderSites();
 }
 
 function showActions() {
@@ -107,12 +107,12 @@ function showActions() {
     renderActions();
 }
 
-function showAddClusterForm() {
+function showAddSiteForm() {
     hideAllViews();
-    document.getElementById('clusterFormView').classList.remove('hidden');
-    document.getElementById('clusterFormTitle').textContent = 'Add Hive Cluster';
-    document.getElementById('clusterForm').reset();
-    document.getElementById('clusterId').value = '';
+    document.getElementById('siteFormView').classList.remove('hidden');
+    document.getElementById('siteFormTitle').textContent = 'Add Hive Site';
+    document.getElementById('siteForm').reset();
+    document.getElementById('siteId').value = '';
 }
 
 function showLogActionForm() {
@@ -122,13 +122,13 @@ function showLogActionForm() {
 }
 
 // Data Management
-function getClusters() {
-    const clusters = localStorage.getItem('clusters');
-    return clusters ? JSON.parse(clusters) : [];
+function getSites() {
+    const sites = localStorage.getItem('sites');
+    return sites ? JSON.parse(sites) : [];
 }
 
-function saveClusters(clusters) {
-    localStorage.setItem('clusters', JSON.stringify(clusters));
+function saveSites(sites) {
+    localStorage.setItem('sites', JSON.stringify(sites));
 }
 
 function getActions() {
@@ -142,12 +142,12 @@ function saveActions(actions) {
 
 // Dashboard
 function updateDashboard() {
-    const clusters = getClusters();
+    const sites = getSites();
     const actions = getActions();
     
     // Update stats
-    const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
-    document.getElementById('statClusters').textContent = clusters.length;
+    const totalHives = sites.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    document.getElementById('statSites').textContent = sites.length;
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = actions.length;
     
@@ -160,13 +160,13 @@ function updateDashboard() {
     const recentActions = actions.slice(-10).reverse();
     const recentActionsHtml = recentActions.length > 0 
         ? recentActions.map(action => {
-            const cluster = clusters.find(c => c.id === action.clusterId);
-            const clusterName = cluster ? cluster.name : 'Unknown';
+            const site = sites.find(c => c.id === action.siteId);
+            const siteName = site ? site.name : 'Unknown';
             return `
                 <div class="action-item">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <strong>${action.taskName}</strong> - ${clusterName}
+                            <strong>${action.taskName}</strong> - ${siteName}
                             <br><small class="text-muted">${action.date}</small>
                         </div>
                     </div>
@@ -184,12 +184,12 @@ let map;
 let markers = [];
 
 function initMap() {
-    const clusters = getClusters();
+    const sites = getSites();
     
     const mapOptions = {
         zoom: 10,
-        center: clusters.length > 0 
-            ? { lat: clusters[0].latitude, lng: clusters[0].longitude }
+        center: sites.length > 0 
+            ? { lat: sites[0].latitude, lng: sites[0].longitude }
             : { lat: 40.7128, lng: -74.0060 },
         mapTypeId: 'terrain'
     };
@@ -200,12 +200,12 @@ function initMap() {
     markers.forEach(marker => marker.setMap(null));
     markers = [];
     
-    // Add markers for each cluster
-    clusters.forEach(cluster => {
+    // Add markers for each site
+    sites.forEach(site => {
         const marker = new google.maps.Marker({
-            position: { lat: cluster.latitude, lng: cluster.longitude },
+            position: { lat: site.latitude, lng: site.longitude },
             map: map,
-            title: cluster.name,
+            title: site.name,
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: 10,
@@ -219,9 +219,9 @@ function initMap() {
         const infoWindow = new google.maps.InfoWindow({
             content: `
                 <div style="padding: 10px;">
-                    <h6><strong>${cluster.name}</strong></h6>
-                    <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
-                    <p class="mb-0"><strong>Hives:</strong> ${cluster.hiveCount}</p>
+                    <h6><strong>${site.name}</strong></h6>
+                    <p class="mb-1"><small>${site.description || 'No description'}</small></p>
+                    <p class="mb-0"><strong>Hives:</strong> ${site.hiveCount}</p>
                 </div>
             `
         });
@@ -234,120 +234,120 @@ function initMap() {
     });
     
     // Fit bounds if multiple markers
-    if (clusters.length > 1) {
+    if (sites.length > 1) {
         const bounds = new google.maps.LatLngBounds();
-        clusters.forEach(cluster => {
-            bounds.extend(new google.maps.LatLng(cluster.latitude, cluster.longitude));
+        sites.forEach(site => {
+            bounds.extend(new google.maps.LatLng(site.latitude, site.longitude));
         });
         map.fitBounds(bounds);
     }
 }
 
-// Clusters
-function renderClusters() {
-    const clusters = getClusters();
-    const clustersHtml = clusters.length > 0
-        ? clusters.map(cluster => `
+// Sites
+function renderSites() {
+    const sites = getSites();
+    const sitesHtml = sites.length > 0
+        ? sites.map(site => `
             <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card cluster-card h-100" onclick="editCluster(${cluster.id})">
+                <div class="card site-card h-100" onclick="editSite(${site.id})">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <i class="bi bi-geo-alt-fill text-warning"></i> ${cluster.name}
+                            <i class="bi bi-geo-alt-fill text-warning"></i> ${site.name}
                         </h5>
-                        <p class="card-text text-muted">${cluster.description || 'No description'}</p>
+                        <p class="card-text text-muted">${site.description || 'No description'}</p>
                         <ul class="list-unstyled">
-                            <li><strong>Hives:</strong> ${cluster.hiveCount}</li>
-                            ${cluster.harvestTimeline ? `<li><strong>Harvest:</strong> ${cluster.harvestTimeline}</li>` : ''}
-                            ${cluster.sugarRequirements ? `<li><strong>Sugar:</strong> ${cluster.sugarRequirements}</li>` : ''}
+                            <li><strong>Hives:</strong> ${site.hiveCount}</li>
+                            ${site.harvestTimeline ? `<li><strong>Harvest:</strong> ${site.harvestTimeline}</li>` : ''}
+                            ${site.sugarRequirements ? `<li><strong>Sugar:</strong> ${site.sugarRequirements}</li>` : ''}
                         </ul>
                     </div>
                     <div class="card-footer bg-light">
-                        <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); editCluster(${cluster.id})">
+                        <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); editSite(${site.id})">
                             <i class="bi bi-pencil"></i> Edit
                         </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteCluster(${cluster.id})">
+                        <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteSite(${site.id})">
                             <i class="bi bi-trash"></i> Delete
                         </button>
                     </div>
                 </div>
             </div>
         `).join('')
-        : '<div class="col-12"><p class="text-center text-muted">No clusters yet. Add your first cluster!</p></div>';
+        : '<div class="col-12"><p class="text-center text-muted">No sites yet. Add your first site!</p></div>';
     
-    document.getElementById('sitesList').innerHTML = clustersHtml;
+    document.getElementById('sitesList').innerHTML = sitesHtml;
 }
 
-function handleSaveCluster(e) {
+function handleSaveSite(e) {
     e.preventDefault();
     
-    const clusters = getClusters();
-    const id = document.getElementById('clusterId').value;
+    const sites = getSites();
+    const id = document.getElementById('siteId').value;
     
-    const cluster = {
+    const site = {
         id: id ? parseInt(id) : Date.now(),
-        name: document.getElementById('clusterName').value,
-        description: document.getElementById('clusterDescription').value,
-        latitude: parseFloat(document.getElementById('clusterLat').value),
-        longitude: parseFloat(document.getElementById('clusterLng').value),
-        hiveCount: parseInt(document.getElementById('clusterHiveCount').value),
-        harvestTimeline: document.getElementById('clusterHarvest').value,
-        sugarRequirements: document.getElementById('clusterSugar').value,
-        notes: document.getElementById('clusterNotes').value,
+        name: document.getElementById('siteName').value,
+        description: document.getElementById('siteDescription').value,
+        latitude: parseFloat(document.getElementById('siteLat').value),
+        longitude: parseFloat(document.getElementById('siteLng').value),
+        hiveCount: parseInt(document.getElementById('siteHiveCount').value),
+        harvestTimeline: document.getElementById('siteHarvest').value,
+        sugarRequirements: document.getElementById('siteSugar').value,
+        notes: document.getElementById('siteNotes').value,
         createdAt: new Date().toISOString()
     };
     
     if (id) {
         // Update existing
-        const index = clusters.findIndex(c => c.id === parseInt(id));
-        clusters[index] = cluster;
+        const index = sites.findIndex(c => c.id === parseInt(id));
+        sites[index] = site;
     } else {
         // Add new
-        clusters.push(cluster);
+        sites.push(site);
     }
     
-    saveClusters(clusters);
-    showClusters();
+    saveSites(sites);
+    showSites();
 }
 
-function editCluster(id) {
-    const clusters = getClusters();
-    const cluster = clusters.find(c => c.id === id);
+function editSite(id) {
+    const sites = getSites();
+    const site = sites.find(c => c.id === id);
     
-    if (cluster) {
+    if (site) {
         hideAllViews();
-        document.getElementById('clusterFormView').classList.remove('hidden');
-        document.getElementById('clusterFormTitle').textContent = 'Edit Hive Cluster';
+        document.getElementById('siteFormView').classList.remove('hidden');
+        document.getElementById('siteFormTitle').textContent = 'Edit Hive Site';
         
-        document.getElementById('clusterId').value = cluster.id;
-        document.getElementById('clusterName').value = cluster.name;
-        document.getElementById('clusterDescription').value = cluster.description || '';
-        document.getElementById('clusterLat').value = cluster.latitude;
-        document.getElementById('clusterLng').value = cluster.longitude;
-        document.getElementById('clusterHiveCount').value = cluster.hiveCount;
-        document.getElementById('clusterHarvest').value = cluster.harvestTimeline || '';
-        document.getElementById('clusterSugar').value = cluster.sugarRequirements || '';
-        document.getElementById('clusterNotes').value = cluster.notes || '';
+        document.getElementById('siteId').value = site.id;
+        document.getElementById('siteName').value = site.name;
+        document.getElementById('siteDescription').value = site.description || '';
+        document.getElementById('siteLat').value = site.latitude;
+        document.getElementById('siteLng').value = site.longitude;
+        document.getElementById('siteHiveCount').value = site.hiveCount;
+        document.getElementById('siteHarvest').value = site.harvestTimeline || '';
+        document.getElementById('siteSugar').value = site.sugarRequirements || '';
+        document.getElementById('siteNotes').value = site.notes || '';
     }
 }
 
-function deleteCluster(id) {
-    if (confirm('Are you sure you want to delete this cluster?')) {
-        let clusters = getClusters();
-        clusters = clusters.filter(c => c.id !== id);
-        saveClusters(clusters);
-        renderClusters();
+function deleteSite(id) {
+    if (confirm('Are you sure you want to delete this site?')) {
+        let sites = getSites();
+        sites = sites.filter(c => c.id !== id);
+        saveSites(sites);
+        renderSites();
     }
 }
 
 // Actions
 function populateActionForm() {
-    const clusters = getClusters();
+    const sites = getSites();
     const tasks = JSON.parse(localStorage.getItem('tasks'));
     
-    // Populate cluster dropdown
-    const clusterSelect = document.getElementById('actionCluster');
-    clusterSelect.innerHTML = '<option value="">Select a cluster...</option>' +
-        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    // Populate site dropdown
+    const siteSelect = document.getElementById('actionSite');
+    siteSelect.innerHTML = '<option value="">Select a site...</option>' +
+        sites.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
     
     // Populate task checkboxes
     const tasksByCategory = {};
@@ -376,12 +376,12 @@ function populateActionForm() {
 function handleLogAction(e) {
     e.preventDefault();
     
-    const clusterId = parseInt(document.getElementById('actionCluster').value);
+    const siteId = parseInt(document.getElementById('actionSite').value);
     const date = document.getElementById('actionDate').value;
     const notes = document.getElementById('actionNotes').value;
     
-    if (!clusterId) {
-        alert('Please select a cluster');
+    if (!siteId) {
+        alert('Please select a site');
         return;
     }
     
@@ -402,7 +402,7 @@ function handleLogAction(e) {
         const task = tasks.find(t => t.id === taskId);
         actions.push({
             id: Date.now() + Math.random(),
-            clusterId: clusterId,
+            siteId: siteId,
             taskId: taskId,
             taskName: task.name,
             date: date,
@@ -418,19 +418,19 @@ function handleLogAction(e) {
 
 function renderActions() {
     const actions = getActions().reverse();
-    const clusters = getClusters();
+    const sites = getSites();
     
     const actionsHtml = actions.length > 0
         ? actions.map(action => {
-            const cluster = clusters.find(c => c.id === action.clusterId);
-            const clusterName = cluster ? cluster.name : 'Unknown';
+            const site = sites.find(c => c.id === action.siteId);
+            const siteName = site ? site.name : 'Unknown';
             return `
                 <div class="action-item">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="d-flex align-items-center mb-1">
                                 <span class="badge bg-secondary me-2">${action.taskName}</span>
-                                <strong>${clusterName}</strong>
+                                <strong>${siteName}</strong>
                             </div>
                             <small class="text-muted">
                                 <i class="bi bi-calendar"></i> ${action.date}
@@ -462,7 +462,7 @@ function deleteAction(id) {
 // Export/Import Data
 function exportData() {
     const data = {
-        clusters: getClusters(),
+        sites: getSites(),
         actions: getActions(),
         tasks: JSON.parse(localStorage.getItem('tasks')),
         exportDate: new Date().toISOString()
@@ -483,7 +483,7 @@ function importData(file) {
         try {
             const data = JSON.parse(e.target.result);
             if (confirm('This will replace all current data. Continue?')) {
-                localStorage.setItem('clusters', JSON.stringify(data.clusters));
+                localStorage.setItem('sites', JSON.stringify(data.sites));
                 localStorage.setItem('actions', JSON.stringify(data.actions));
                 localStorage.setItem('tasks', JSON.stringify(data.tasks));
                 alert('Data imported successfully!');

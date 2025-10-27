@@ -4,12 +4,12 @@
 const FormValidator = {
     // Validation rules for different field types
     rules: {
-        clusterName: {
+        siteName: {
             required: true,
             minLength: 3,
             maxLength: 50,
             pattern: /^[a-zA-Z0-9\s\-_]+$/,
-            message: 'Cluster name must be 3-50 characters (letters, numbers, spaces, hyphens, underscores)'
+            message: 'Site name must be 3-50 characters (letters, numbers, spaces, hyphens, underscores)'
         },
         latitude: {
             required: true,

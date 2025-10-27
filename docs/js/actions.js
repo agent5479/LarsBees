@@ -7,8 +7,8 @@ function showLogActionForm() {
 }
 
 function populateActionForm() {
-    const clusterSelect = document.getElementById('actionCluster');
-    clusterSelect.innerHTML = '<option value="">Select site...</option>' +
+    const siteSelect = document.getElementById('actionSite');
+    siteSelect.innerHTML = '<option value="">Select site...</option>' +
         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     const tasksByCategory = {};
@@ -42,9 +42,9 @@ function filterTaskCheckboxes(filter) {
     });
 }
 
-function loadClusterHives() {
-    const clusterId = parseInt(document.getElementById('actionCluster').value);
-    const hives = individualHives.filter(h => h.clusterId === clusterId);
+function loadSiteHives() {
+    const siteId = parseInt(document.getElementById('actionSite').value);
+    const hives = individualHives.filter(h => h.siteId === siteId);
     
     if (hives.length > 0) {
         const select = document.getElementById('actionHive');
@@ -59,13 +59,13 @@ function loadClusterHives() {
 function handleLogAction(e) {
     e.preventDefault();
     
-    const clusterId = parseInt(document.getElementById('actionCluster').value);
+    const siteId = parseInt(document.getElementById('actionSite').value);
     const date = document.getElementById('actionDate').value;
     const notes = document.getElementById('actionNotes').value;
     const flag = document.getElementById('actionFlag').value;
     const individualHiveId = document.getElementById('actionHive')?.value || null;
     
-    if (!clusterId) {
+    if (!siteId) {
         alert('Please select a site');
         return;
     }
@@ -84,7 +84,7 @@ function handleLogAction(e) {
         const task = tasks.find(t => t.id === taskId);
         const action = {
             id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            clusterId,
+            siteId,
             individualHiveId,
             taskId,
             taskName: task.name,
@@ -109,8 +109,8 @@ function handleLogAction(e) {
 }
 
 function populateActionFilters() {
-    const clusterFilter = document.getElementById('filterCluster');
-    clusterFilter.innerHTML = '<option value="">All Sites</option>' +
+    const siteFilter = document.getElementById('filterSite');
+    siteFilter.innerHTML = '<option value="">All Sites</option>' +
         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     const categories = [...new Set(tasks.map(t => t.category))].sort();
@@ -123,18 +123,18 @@ function populateActionFilters() {
 }
 
 function renderActions() {
-    const clusterFilter = document.getElementById('filterCluster')?.value;
+    const siteFilter = document.getElementById('filterSite')?.value;
     const categoryFilter = document.getElementById('filterCategory')?.value;
     const employeeFilter = document.getElementById('filterEmployee')?.value;
     
     let filtered = [...actions];
-    if (clusterFilter) filtered = filtered.filter(a => a.clusterId == clusterFilter);
+    if (siteFilter) filtered = filtered.filter(a => a.siteId == siteFilter);
     if (categoryFilter) filtered = filtered.filter(a => a.taskCategory === categoryFilter);
     if (employeeFilter) filtered = filtered.filter(a => a.loggedBy === employeeFilter);
     
     const html = filtered.reverse().length > 0
         ? filtered.map(a => {
-            const site = sites.find(s => s.id === a.clusterId);
+            const site = sites.find(s => s.id === a.siteId);
             const hive = individualHives.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const deleteBtn = canDeleteAction() ? `
@@ -197,7 +197,7 @@ function renderFlaggedItems() {
     const flagged = actions.filter(a => a.flag && a.flag !== '');
     const html = flagged.reverse().length > 0
         ? flagged.map(a => {
-            const site = sites.find(s => s.id === a.clusterId);
+            const site = sites.find(s => s.id === a.siteId);
             const flagClass = a.flag === 'urgent' ? 'danger' : a.flag === 'warning' ? 'warning' : 'info';
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : 'ℹ️';
             

@@ -7,7 +7,7 @@
 - ✅ `core.js` - Main application logic and authentication
 - ✅ `tasks.js` - Task management and comprehensive task list
 - ✅ `scheduling.js` - Enhanced scheduling with timeline and task completion
-- ✅ `clusters.js` - Cluster management with custom grouping and map colors
+- ✅ `sites.js` - Site management with custom grouping and map colors
 - ✅ `actions.js` - Action logging and management
 - ✅ `employees.js` - Employee/team management
 - ✅ `navigation.js` - View switching and navigation

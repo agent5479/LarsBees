@@ -5,7 +5,7 @@ function hideAllViews() {
     const viewIds = [
         'dashboardView', 
         'sitesView', 
-        'clusterFormView', 
+        'siteFormView', 
         'actionsView', 
         'logActionView', 
         'scheduledView', 
@@ -68,13 +68,13 @@ function showSites() {
         }
         
         if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Clusters');
+            updateActiveNav('Sites');
         }
         
-        renderClusters();
-        renderClusterTypeFilter();
+        renderSites();
+        renderSiteTypeFilter();
         
-        console.log('✅ Clusters view displayed');
+        console.log('✅ Sites view displayed');
     }, 10);
 }
 
@@ -181,7 +181,7 @@ function showSeasonalRequirements() {
     }
     hideAllViews();
     document.getElementById('seasonalRequirementsView').classList.remove('hidden');
-    populateClusterCheckboxes();
+    populateSiteCheckboxes();
     renderSeasonalRequirements();
     renderComplianceStatus();
 }

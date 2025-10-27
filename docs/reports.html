@@ -348,7 +348,7 @@
                             <i class="bi bi-houses text-primary" style="font-size: 2rem;"></i>
                         </div>
                         <div>
-                            <div class="stat-number" id="totalClusters">0</div>
+                            <div class="stat-number" id="totalSites">0</div>
                             <div class="text-muted">Total Sites</div>
                         </div>
                     </div>
@@ -531,15 +531,15 @@
         </div>
 
         <!-- Site Details Modal -->
-        <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
+        <div class="modal fade" id="siteDetailsModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                                                    <h5 class="modal-title" id="clusterDetailsTitle">Site Details</h5>
+                                                    <h5 class="modal-title" id="siteDetailsTitle">Site Details</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
-                        <div id="clusterDetailsContent">
+                        <div id="siteDetailsContent">
                             <!-- Site details will be populated here -->
                         </div>
                     </div>
@@ -1024,13 +1024,13 @@
         function updateMetrics() {
             try {
                 // Safely update metrics with fallback values
-                const totalClustersEl = document.getElementById('totalClusters');
+                const totalSitesEl = document.getElementById('totalSites');
                 const totalHivesEl = document.getElementById('totalHives');
                 const totalActionsEl = document.getElementById('totalActions');
                 const flaggedIssuesEl = document.getElementById('flaggedIssues');
                 
-                if (totalClustersEl) {
-                    totalClustersEl.textContent = sites ? sites.length : 0;
+                if (totalSitesEl) {
+                    totalSitesEl.textContent = sites ? sites.length : 0;
                 }
                 
                 if (totalHivesEl) {
@@ -2056,9 +2056,9 @@
         }
         
         function showSiteDetailsModal(siteList, category) {
-            const modal = document.getElementById('clusterDetailsModal');
-            const title = document.getElementById('clusterDetailsTitle');
-            const content = document.getElementById('clusterDetailsContent');
+            const modal = document.getElementById('siteDetailsModal');
+            const title = document.getElementById('siteDetailsTitle');
+            const content = document.getElementById('siteDetailsContent');
             
             title.textContent = `Sites with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${siteList.length})`;
             

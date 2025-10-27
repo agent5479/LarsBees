@@ -69,7 +69,7 @@ function renderScheduledTasks() {
     
     const pendingHtml = pending.length > 0
         ? pending.map(t => {
-            const site = sites.find(s => s.id === t.clusterId);
+            const site = sites.find(s => s.id === t.siteId);
             const hive = individualHives.find(h => h.id === t.individualHiveId);
             const task = tasks.find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
@@ -124,7 +124,7 @@ function renderScheduledTasks() {
                 <h6><i class="bi bi-check-circle-fill text-success"></i> Recently Completed</h6>
                 <div class="accordion" id="completedTasksAccordion">
                     ${completed.slice(0, 10).map(t => {
-                        const site = sites.find(s => s.id === t.clusterId);
+                        const site = sites.find(s => s.id === t.siteId);
                         const hive = individualHives.find(h => h.id === t.individualHiveId);
                         const task = tasks.find(tk => tk.id === t.taskId);
                         const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
@@ -218,7 +218,7 @@ function renderScheduleTimeline() {
                 </h6>
                 <div class="timeline-tasks">
                     ${tasks.map(task => {
-                        const site = sites.find(s => s.id === task.clusterId);
+                        const site = sites.find(s => s.id === task.siteId);
                         const hive = individualHives.find(h => h.id === task.individualHiveId);
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
@@ -270,7 +270,7 @@ function renderScheduleTimeline() {
         </h6>`;
         
         const taskList = tasks.map(task => {
-            const site = sites.find(s => s.id === task.clusterId);
+            const site = sites.find(s => s.id === task.siteId);
             const hive = individualHives.find(h => h.id === task.individualHiveId);
             const taskObj = tasks.find(tk => tk.id === task.taskId);
             const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
@@ -315,8 +315,8 @@ function renderScheduleTimeline() {
 }
 
 function showScheduleTaskModal() {
-    const clusterSelect = document.getElementById('scheduleCluster');
-    clusterSelect.innerHTML = '<option value="">Select site...</option>' +
+    const siteSelect = document.getElementById('scheduleSite');
+    siteSelect.innerHTML = '<option value="">Select site...</option>' +
         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     const taskSelect = document.getElementById('scheduleTask');
@@ -333,7 +333,7 @@ function showScheduleTaskModal() {
 function handleScheduleTask(e) {
     e.preventDefault();
     
-    const clusterId = parseInt(document.getElementById('scheduleCluster').value);
+    const siteId = parseInt(document.getElementById('scheduleSite').value);
     const taskId = parseInt(document.getElementById('scheduleTask').value);
     const dueDate = document.getElementById('scheduleDueDate').value;
     const scheduledTime = document.getElementById('scheduleTime').value;
@@ -341,14 +341,14 @@ function handleScheduleTask(e) {
     const notes = document.getElementById('scheduleNotes').value;
     const individualHiveId = document.getElementById('scheduleHive')?.value || null;
     
-    if (!clusterId || !taskId) {
+    if (!siteId || !taskId) {
         alert('Please select both site and task.');
         return;
     }
     
     const task = {
         id: Date.now().toString(),
-        clusterId: clusterId,
+        siteId: siteId,
         individualHiveId: individualHiveId,
         taskId: taskId,
         dueDate: dueDate,
@@ -390,7 +390,7 @@ function completeScheduledTask(id) {
     // Convert scheduled task to completed action
     const action = {
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        clusterId: task.clusterId,
+        siteId: task.siteId,
         individualHiveId: task.individualHiveId,
         taskId: task.taskId,
         taskName: taskName,
@@ -434,7 +434,7 @@ function editScheduledTask(id) {
     if (!task) return;
     
     // Pre-fill the schedule form with existing data
-    document.getElementById('scheduleCluster').value = task.clusterId;
+    document.getElementById('scheduleSite').value = task.siteId;
     document.getElementById('scheduleTask').value = task.taskId;
     document.getElementById('scheduleDueDate').value = task.dueDate;
     document.getElementById('scheduleTime').value = task.scheduledTime || '';
@@ -453,7 +453,7 @@ function editScheduledTask(id) {
 }
 
 function updateScheduledTask(id) {
-    const clusterId = parseInt(document.getElementById('scheduleCluster').value);
+    const siteId = parseInt(document.getElementById('scheduleSite').value);
     const taskId = parseInt(document.getElementById('scheduleTask').value);
     const dueDate = document.getElementById('scheduleDueDate').value;
     const scheduledTime = document.getElementById('scheduleTime').value;
@@ -461,7 +461,7 @@ function updateScheduledTask(id) {
     const notes = document.getElementById('scheduleNotes').value;
     
     const updates = {
-        clusterId: clusterId,
+        siteId: siteId,
         taskId: taskId,
         dueDate: dueDate,
         scheduledTime: scheduledTime,
@@ -518,7 +518,7 @@ function renderSuggestedSchedule() {
                         </h5>
                         <p class="mb-2">${suggestion.description}</p>
                         <p class="mb-1">
-                            <strong>Recommended for:</strong> ${suggestion.recommendedClusters.join(', ')}
+                            <strong>Recommended for:</strong> ${suggestion.recommendedSites.join(', ')}
                         </p>
                         <p class="mb-1">
                             <strong>Suggested timing:</strong> ${suggestion.timing}
@@ -713,7 +713,7 @@ function editScheduledTask(taskId) {
     
     // Populate the edit modal
     document.getElementById('editTaskId').value = task.id;
-    document.getElementById('editTaskCluster').value = task.clusterId;
+    document.getElementById('editTaskSite').value = task.siteId;
     document.getElementById('editTaskType').value = task.taskId;
     document.getElementById('editTaskDate').value = new Date(task.dueDate).toISOString().split('T')[0];
     document.getElementById('editTaskTime').value = task.scheduledTime || '';
@@ -731,8 +731,8 @@ function editScheduledTask(taskId) {
 // Populate edit task dropdowns
 function populateEditTaskDropdowns() {
     // Populate site dropdown
-    const clusterSelect = document.getElementById('editTaskCluster');
-    clusterSelect.innerHTML = '<option value="">Select site...</option>' + 
+    const siteSelect = document.getElementById('editTaskSite');
+    siteSelect.innerHTML = '<option value="">Select site...</option>' + 
         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     // Populate task dropdown
@@ -750,7 +750,7 @@ function handleEditScheduledTask() {
     if (!task) return;
     
     // Get form values
-    const clusterId = document.getElementById('editTaskCluster').value;
+    const siteId = document.getElementById('editTaskSite').value;
     const taskType = document.getElementById('editTaskType').value;
     const dueDate = document.getElementById('editTaskDate').value;
     const scheduledTime = document.getElementById('editTaskTime').value;
@@ -758,7 +758,7 @@ function handleEditScheduledTask() {
     const notes = document.getElementById('editTaskNotes').value;
     
     // Validate
-    if (!clusterId || !taskType || !dueDate) {
+    if (!siteId || !taskType || !dueDate) {
         alert('Please fill in all required fields.');
         return;
     }
@@ -770,7 +770,7 @@ function handleEditScheduledTask() {
     }
     
     // Update the task
-    task.clusterId = clusterId;
+    task.siteId = siteId;
     task.taskId = taskType;
     task.dueDate = dueDate;
     task.scheduledTime = scheduledTime || null;
@@ -841,7 +841,7 @@ function generateEnhancedICS(tasks) {
     ];
     
     tasks.forEach(task => {
-        const site = sites.find(s => s.id === task.clusterId);
+        const site = sites.find(s => s.id === task.siteId);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         
@@ -902,7 +902,7 @@ function generateICS(tasks) {
     ];
     
     tasks.forEach(task => {
-        const site = sites.find(s => s.id === task.clusterId);
+        const site = sites.find(s => s.id === task.siteId);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         
@@ -999,8 +999,8 @@ function showScheduleForNextVisit() {
 }
 
 function populateNextVisitForm() {
-    const clusterSelect = document.getElementById('nextVisitCluster');
-    clusterSelect.innerHTML = '<option value="">Choose site...</option>' +
+    const siteSelect = document.getElementById('nextVisitSite');
+    siteSelect.innerHTML = '<option value="">Choose site...</option>' +
         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     // Set default date to tomorrow
@@ -1050,13 +1050,13 @@ function filterNextVisitTasks(filter) {
 function handleNextVisitForm(e) {
     e.preventDefault();
     
-    const clusterId = parseInt(document.getElementById('nextVisitCluster').value);
+    const siteId = parseInt(document.getElementById('nextVisitSite').value);
     const date = document.getElementById('nextVisitDate').value;
     const time = document.getElementById('nextVisitTime').value;
     const priority = document.getElementById('nextVisitPriority').value;
     const notes = document.getElementById('nextVisitNotes').value;
     
-    if (!clusterId) {
+    if (!siteId) {
         alert('Please select a site.');
         return;
     }
@@ -1075,7 +1075,7 @@ function handleNextVisitForm(e) {
         const task = tasks.find(t => t.id === taskId);
         const scheduledTask = {
             id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            clusterId: clusterId,
+            siteId: siteId,
             taskId: taskId,
             dueDate: date,
             scheduledTime: time,
@@ -1106,16 +1106,16 @@ function handleNextVisitForm(e) {
 }
 
 // Schedule task for specific site (called from map popup)
-function scheduleTaskForCluster(clusterId) {
+function scheduleTaskForSite(siteId) {
     // Show the schedule task modal
     const modal = new bootstrap.Modal(document.getElementById('scheduleTaskModal'));
     modal.show();
     
     // Pre-populate the site dropdown
     setTimeout(() => {
-        const clusterSelect = document.getElementById('scheduleCluster');
-        if (clusterSelect) {
-            clusterSelect.value = clusterId;
+        const siteSelect = document.getElementById('scheduleSite');
+        if (siteSelect) {
+            siteSelect.value = siteId;
         }
     }, 100);
 }
@@ -1166,7 +1166,7 @@ function initializeCalendar() {
         events: function(fetchInfo, successCallback, failureCallback) {
             // Convert scheduled tasks to FullCalendar events
             const events = scheduledTasks.map(task => {
-                const site = sites.find(s => s.id === task.clusterId);
+                const site = sites.find(s => s.id === task.siteId);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 const dueDate = new Date(task.dueDate);
                 const isOverdue = dueDate < new Date() && !task.completed;
@@ -1220,7 +1220,7 @@ function refreshCalendar() {
 }
 
 function showTaskDetails(task) {
-        const site = sites.find(s => s.id === task.clusterId);
+        const site = sites.find(s => s.id === task.siteId);
     const taskName = getTaskDisplayName(null, task.taskId);
     
     const modal = new bootstrap.Modal(document.createElement('div'));

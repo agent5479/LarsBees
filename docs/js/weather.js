@@ -13,7 +13,7 @@ let weatherCache = {
 };
 
 /**
- * Calculate average GPS coordinates from all clusters
+ * Calculate average GPS coordinates from all sites
  */
 function calculateAverageSiteCoordinates() {
     if (!sites || sites.length === 0) {
@@ -127,7 +127,7 @@ async function updateWeatherWidget() {
         }
         
         // Calculate average coordinates
-        const coords = calculateAverageClusterCoordinates();
+        const coords = calculateAverageSiteCoordinates();
         
         if (!coords) {
             widget.innerHTML = `

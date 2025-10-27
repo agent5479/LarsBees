@@ -18,10 +18,10 @@
                     <div class="card-body">
                         <form id="quickLogForm">
                             <div class="mb-3">
-                                <label for="quickCluster" class="form-label">Select Cluster</label>
-                                <select class="form-select" id="quickCluster" required>
-                                    <option value="">Choose cluster...</option>
-                                    {% for choice in form.cluster_id.choices %}
+                                <label for="quickSite" class="form-label">Select Site</label>
+                                <select class="form-select" id="quickSite" required>
+                                    <option value="">Choose site...</option>
+                                    {% for choice in form.site_id.choices %}
                                     <option value="{{ choice[0] }}">{{ choice[1] }}</option>
                                     {% endfor %}
                                 </select>
@@ -82,12 +82,12 @@
                             {{ form.hidden_tag() }}
                             
                             <div class="mb-3">
-                                {{ form.cluster_id.label(class="form-label") }}
-                                {{ form.cluster_id(class="form-select" + (" is-invalid" if form.cluster_id.errors else ""), 
+                                {{ form.site_id.label(class="form-label") }}
+                                {{ form.site_id(class="form-select" + (" is-invalid" if form.site_id.errors else ""), 
                                    onchange="loadIndividualHives()") }}
-                                {% if form.cluster_id.errors %}
+                                {% if form.site_id.errors %}
                                     <div class="invalid-feedback">
-                                        {% for error in form.cluster_id.errors %}{{ error }}{% endfor %}
+                                        {% for error in form.site_id.errors %}{{ error }}{% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
@@ -95,7 +95,7 @@
                             <div class="mb-3" id="individualHiveContainer" style="display: none;">
                                 {{ form.individual_hive_id.label(class="form-label") }}
                                 {{ form.individual_hive_id(class="form-select") }}
-                                <small class="form-text text-muted">Leave empty to apply to all hives in cluster</small>
+                                <small class="form-text text-muted">Leave empty to apply to all hives in site</small>
                             </div>
                             
                             <div class="mb-3">
@@ -164,13 +164,13 @@
 document.getElementById('quickLogForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const clusterId = document.getElementById('quickCluster').value;
+    const siteId = document.getElementById('quickSite').value;
     const actionDate = document.getElementById('quickDate').value;
     const checkboxes = document.querySelectorAll('.quick-task-checkbox:checked');
     const taskIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
     
-    if (!clusterId) {
-        alert('Please select a cluster');
+    if (!siteId) {
+        alert('Please select a site');
         return;
     }
     
@@ -180,7 +180,7 @@ document.getElementById('quickLogForm').addEventListener('submit', function(e) {
     }
     
     const data = {
-        cluster_id: parseInt(clusterId),
+        site_id: parseInt(siteId),
         task_ids: taskIds,
         action_date: actionDate || new Date().toISOString()
     };
@@ -219,18 +219,18 @@ function toggleCustomTask() {
     }
 }
 
-// Load individual hives for selected cluster
+// Load individual hives for selected site
 function loadIndividualHives() {
-    const clusterSelect = document.getElementById('cluster_id');
-    const clusterId = clusterSelect.value;
+    const siteSelect = document.getElementById('site_id');
+    const siteId = siteSelect.value;
     const hiveContainer = document.getElementById('individualHiveContainer');
     const hiveSelect = document.getElementById('individual_hive_id');
     
-    if (clusterId) {
-        fetch(`/api/cluster/${clusterId}/hives`)
+    if (siteId) {
+        fetch(`/api/site/${siteId}/hives`)
             .then(response => response.json())
             .then(hives => {
-                hiveSelect.innerHTML = '<option value="">All hives in cluster</option>';
+                hiveSelect.innerHTML = '<option value="">All hives in site</option>';
                 hives.forEach(hive => {
                     const option = document.createElement('option');
                     option.value = hive.id;
@@ -255,12 +255,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('quickDate').value = today;
     
-    // Check if cluster is pre-selected from URL
+    // Check if site is pre-selected from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const preSelectedCluster = urlParams.get('cluster');
-    if (preSelectedCluster) {
-        document.getElementById('cluster_id').value = preSelectedCluster;
-        document.getElementById('quickCluster').value = preSelectedCluster;
+    const preSelectedSite = urlParams.get('site');
+    if (preSelectedSite) {
+        document.getElementById('site_id').value = preSelectedSite;
+        document.getElementById('quickSite').value = preSelectedSite;
         loadIndividualHives();
     }
 });

@@ -6,10 +6,10 @@ from flask import Flask, render_template, redirect, url_for, flash, request, jso
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
 from config import config
-from models import db, User, HiveCluster, IndividualHive, TaskType, HiveAction, DiseaseReport, ScheduledTask, TaskTemplate, TaskAssignment, init_default_tasks, init_default_task_templates
-from forms import LoginForm, RegistrationForm, HiveClusterForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm, ScheduledTaskForm, TaskTemplateForm, QuickScheduleForm, TaskAssignmentForm, UserManagementForm, UserEditForm, UserCreateForm
+from models import db, User, HiveSite, IndividualHive, TaskType, HiveAction, DiseaseReport, ScheduledTask, TaskTemplate, TaskAssignment, init_default_tasks, init_default_task_templates
+from forms import LoginForm, RegistrationForm, HiveSiteForm, IndividualHiveForm, HiveActionForm, DiseaseReportForm, FieldReportForm, ScheduledTaskForm, TaskTemplateForm, QuickScheduleForm, TaskAssignmentForm, UserManagementForm, UserEditForm, UserCreateForm
 
-def calculate_time_series_data(clusters, start_date, end_date, group_by):
+def calculate_time_series_data(sites, start_date, end_date, group_by):
     """Calculate time series data for analytics dashboard"""
     data = {
         'hive_strength': [],
@@ -25,25 +25,25 @@ def calculate_time_series_data(clusters, start_date, end_date, group_by):
             next_month = current.replace(month=current.month + 1) if current.month < 12 else current.replace(year=current.year + 1, month=1)
             
             # Calculate metrics for this month
-            total_strong = sum(c.strong_hives or 0 for c in clusters)
-            total_medium = sum(c.medium_hives or 0 for c in clusters)
-            total_weak = sum(c.weak_hives or 0 for c in clusters)
+            total_strong = sum(c.strong_hives or 0 for c in sites)
+            total_medium = sum(c.medium_hives or 0 for c in sites)
+            total_weak = sum(c.weak_hives or 0 for c in sites)
             hive_strength = total_strong + (total_medium * 0.5) + (total_weak * 0.25)
             
             # Count supers added (approximated from actions)
             supers_added = HiveAction.query.filter(
-                HiveAction.cluster_id.in_([c.id for c in clusters]),
+                HiveAction.site_id.in_([c.id for c in sites]),
                 HiveAction.task_name.like('%super%'),
                 HiveAction.action_date >= current,
                 HiveAction.action_date < next_month
             ).count()
             
             # Count hive deaths
-            hive_deaths = sum(c.dead_hives or 0 for c in clusters)
+            hive_deaths = sum(c.dead_hives or 0 for c in sites)
             
             # Count disease observations
             disease_obs = DiseaseReport.query.filter(
-                DiseaseReport.cluster_id.in_([c.id for c in clusters]),
+                DiseaseReport.site_id.in_([c.id for c in sites]),
                 DiseaseReport.report_date >= current,
                 DiseaseReport.report_date < next_month
             ).count()
@@ -57,14 +57,14 @@ def calculate_time_series_data(clusters, start_date, end_date, group_by):
     
     return data
 
-def calculate_categorical_breakdowns(clusters, start_date, end_date):
+def calculate_categorical_breakdowns(sites, start_date, end_date):
     """Calculate categorical breakdowns for analytics dashboard"""
-    cluster_ids = [c.id for c in clusters]
+    site_ids = [c.id for c in sites]
     
     # Death reasons (from actions with death-related tasks)
     death_reasons = defaultdict(int)
     death_actions = HiveAction.query.filter(
-        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.site_id.in_(site_ids),
         HiveAction.action_date >= start_date,
         HiveAction.action_date <= end_date,
         HiveAction.task_name.like('%death%')
@@ -76,7 +76,7 @@ def calculate_categorical_breakdowns(clusters, start_date, end_date):
     # Disease observations
     diseases = defaultdict(int)
     disease_reports = DiseaseReport.query.filter(
-        DiseaseReport.cluster_id.in_(cluster_ids),
+        DiseaseReport.site_id.in_(site_ids),
         DiseaseReport.report_date >= start_date,
         DiseaseReport.report_date <= end_date
     ).all()
@@ -96,7 +96,7 @@ def calculate_categorical_breakdowns(clusters, start_date, end_date):
     # Requeening reasons
     requeening_reasons = defaultdict(int)
     requeen_actions = HiveAction.query.filter(
-        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.site_id.in_(site_ids),
         HiveAction.action_date >= start_date,
         HiveAction.action_date <= end_date,
         HiveAction.task_name.like('%queen%')
@@ -108,7 +108,7 @@ def calculate_categorical_breakdowns(clusters, start_date, end_date):
     # Consumables used
     consumables = defaultdict(int)
     consumable_actions = HiveAction.query.filter(
-        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.site_id.in_(site_ids),
         HiveAction.action_date >= start_date,
         HiveAction.action_date <= end_date,
         HiveAction.task_name.in_(['Varroa Treatment', 'Sugar Syrup Feeding', 'Pollen Patty'])
@@ -124,33 +124,33 @@ def calculate_categorical_breakdowns(clusters, start_date, end_date):
         'consumables': dict(consumables)
     }
 
-def calculate_key_metrics(clusters, start_date, end_date):
+def calculate_key_metrics(sites, start_date, end_date):
     """Calculate key performance metrics"""
-    cluster_ids = [c.id for c in clusters]
+    site_ids = [c.id for c in sites]
     
     # Total hive counts
-    total_hives = sum(c.hive_count for c in clusters)
-    total_strong = sum(c.strong_hives or 0 for c in clusters)
-    total_medium = sum(c.medium_hives or 0 for c in clusters)
-    total_weak = sum(c.weak_hives or 0 for c in clusters)
-    total_dead = sum(c.dead_hives or 0 for c in clusters)
+    total_hives = sum(c.hive_count for c in sites)
+    total_strong = sum(c.strong_hives or 0 for c in sites)
+    total_medium = sum(c.medium_hives or 0 for c in sites)
+    total_weak = sum(c.weak_hives or 0 for c in sites)
+    total_dead = sum(c.dead_hives or 0 for c in sites)
     
     # Actions in period
     total_actions = HiveAction.query.filter(
-        HiveAction.cluster_id.in_(cluster_ids),
+        HiveAction.site_id.in_(site_ids),
         HiveAction.action_date >= start_date,
         HiveAction.action_date <= end_date
     ).count()
     
     # Disease reports
     total_disease_reports = DiseaseReport.query.filter(
-        DiseaseReport.cluster_id.in_(cluster_ids),
+        DiseaseReport.site_id.in_(site_ids),
         DiseaseReport.report_date >= start_date,
         DiseaseReport.report_date <= end_date
     ).count()
     
     # Quarantine sites
-    quarantine_sites = sum(1 for c in clusters if c.is_quarantine)
+    quarantine_sites = sum(1 for c in sites if c.is_quarantine)
     
     return {
         'total_hives': total_hives,
@@ -253,39 +253,39 @@ def create_app(config_name='default'):
     @login_required
     def dashboard():
         """Main dashboard"""
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         recent_actions = HiveAction.query.filter_by(user_id=current_user.id, is_archived=False)\
             .order_by(HiveAction.action_date.desc()).limit(10).all()
         
         stats = {
-            'total_clusters': len(clusters),
-            'total_hives': sum(c.hive_count for c in clusters),
+            'total_sites': len(sites),
+            'total_hives': sum(c.hive_count for c in sites),
             'recent_actions_count': len(recent_actions)
         }
         
         return render_template('dashboard.html', 
-                             clusters=clusters, 
+                             sites=sites, 
                              recent_actions=recent_actions,
                              stats=stats,
                              google_maps_key=app.config['GOOGLE_MAPS_API_KEY'])
     
-    @app.route('/clusters')
+    @app.route('/sites')
     @login_required
-    def clusters():
-        """View all hive clusters"""
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True)\
-            .order_by(HiveCluster.created_at.desc()).all()
-        return render_template('clusters.html', 
-                             clusters=clusters,
+    def sites():
+        """View all hive sites"""
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True)\
+            .order_by(HiveSite.created_at.desc()).all()
+        return render_template('sites.html', 
+                             sites=sites,
                              google_maps_key=app.config['GOOGLE_MAPS_API_KEY'])
     
-    @app.route('/cluster/add', methods=['GET', 'POST'])
+    @app.route('/site/add', methods=['GET', 'POST'])
     @login_required
-    def add_cluster():
-        """Add new hive cluster"""
-        form = HiveClusterForm()
+    def add_site():
+        """Add new hive site"""
+        form = HiveSiteForm()
         if form.validate_on_submit():
-            cluster = HiveCluster(
+            site = HiveSite(
                 user_id=current_user.id,
                 name=form.name.data,
                 description=form.description.data,
@@ -315,97 +315,97 @@ def create_app(config_name='default'):
                 strong_hives=form.strong_hives.data,
                 medium_hives=form.medium_hives.data,
                 weak_hives=form.weak_hives.data,
-                cluster_strength=form.cluster_strength.data
+                site_strength=form.site_strength.data
             )
-            db.session.add(cluster)
+            db.session.add(site)
             db.session.commit()
-            flash(f'Hive cluster "{cluster.name}" added successfully!', 'success')
-            return redirect(url_for('clusters'))
+            flash(f'Hive site "{site.name}" added successfully!', 'success')
+            return redirect(url_for('sites'))
         
-        return render_template('cluster_form.html', form=form, title='Add Hive Cluster')
+        return render_template('site_form.html', form=form, title='Add Hive Site')
     
-    @app.route('/cluster/<int:cluster_id>/edit', methods=['GET', 'POST'])
+    @app.route('/site/<int:site_id>/edit', methods=['GET', 'POST'])
     @login_required
-    def edit_cluster(cluster_id):
-        """Edit hive cluster"""
-        cluster = HiveCluster.query.filter_by(id=cluster_id, user_id=current_user.id).first_or_404()
-        form = HiveClusterForm(obj=cluster)
+    def edit_site(site_id):
+        """Edit hive site"""
+        site = HiveSite.query.filter_by(id=site_id, user_id=current_user.id).first_or_404()
+        form = HiveSiteForm(obj=site)
         
         if form.validate_on_submit():
-            cluster.name = form.name.data
-            cluster.description = form.description.data
-            cluster.latitude = form.latitude.data
-            cluster.longitude = form.longitude.data
-            cluster.hive_count = form.hive_count.data
-            cluster.harvest_timeline = form.harvest_timeline.data
-            cluster.sugar_requirements = form.sugar_requirements.data
-            cluster.notes = form.notes.data
+            site.name = form.name.data
+            site.description = form.description.data
+            site.latitude = form.latitude.data
+            site.longitude = form.longitude.data
+            site.hive_count = form.hive_count.data
+            site.harvest_timeline = form.harvest_timeline.data
+            site.sugar_requirements = form.sugar_requirements.data
+            site.notes = form.notes.data
             # Landowner information
-            cluster.landowner_name = form.landowner_name.data
-            cluster.landowner_phone = form.landowner_phone.data
-            cluster.landowner_email = form.landowner_email.data
-            cluster.landowner_address = form.landowner_address.data
+            site.landowner_name = form.landowner_name.data
+            site.landowner_phone = form.landowner_phone.data
+            site.landowner_email = form.landowner_email.data
+            site.landowner_address = form.landowner_address.data
             # Site classification
-            cluster.site_type = form.site_type.data
-            cluster.access_type = form.access_type.data
-            cluster.contact_before_visit = form.contact_before_visit.data
-            cluster.is_quarantine = form.is_quarantine.data
+            site.site_type = form.site_type.data
+            site.access_type = form.access_type.data
+            site.contact_before_visit = form.contact_before_visit.data
+            site.is_quarantine = form.is_quarantine.data
             # Hive setup details
-            cluster.single_brood_boxes = form.single_brood_boxes.data
-            cluster.double_brood_boxes = form.double_brood_boxes.data
-            cluster.nucs = form.nucs.data
-            cluster.dead_hives = form.dead_hives.data
-            cluster.top_splits = form.top_splits.data
+            site.single_brood_boxes = form.single_brood_boxes.data
+            site.double_brood_boxes = form.double_brood_boxes.data
+            site.nucs = form.nucs.data
+            site.dead_hives = form.dead_hives.data
+            site.top_splits = form.top_splits.data
             # Hive strength ratings
-            cluster.strong_hives = form.strong_hives.data
-            cluster.medium_hives = form.medium_hives.data
-            cluster.weak_hives = form.weak_hives.data
-            cluster.cluster_strength = form.cluster_strength.data
-            cluster.updated_at = datetime.utcnow()
+            site.strong_hives = form.strong_hives.data
+            site.medium_hives = form.medium_hives.data
+            site.weak_hives = form.weak_hives.data
+            site.site_strength = form.site_strength.data
+            site.updated_at = datetime.utcnow()
             db.session.commit()
-            flash(f'Hive cluster "{cluster.name}" updated successfully!', 'success')
-            return redirect(url_for('cluster_detail', cluster_id=cluster.id))
+            flash(f'Hive site "{site.name}" updated successfully!', 'success')
+            return redirect(url_for('site_detail', site_id=site.id))
         
-        return render_template('cluster_form.html', form=form, title='Edit Hive Cluster', cluster=cluster)
+        return render_template('site_form.html', form=form, title='Edit Hive Site', site=site)
     
-    @app.route('/cluster/<int:cluster_id>')
+    @app.route('/site/<int:site_id>')
     @login_required
-    def cluster_detail(cluster_id):
-        """View cluster details"""
-        cluster = HiveCluster.query.filter_by(id=cluster_id, user_id=current_user.id).first_or_404()
-        individual_hives = IndividualHive.query.filter_by(cluster_id=cluster_id, is_active=True).all()
-        actions = HiveAction.query.filter_by(cluster_id=cluster_id, is_archived=False)\
+    def site_detail(site_id):
+        """View site details"""
+        site = HiveSite.query.filter_by(id=site_id, user_id=current_user.id).first_or_404()
+        individual_hives = IndividualHive.query.filter_by(site_id=site_id, is_active=True).all()
+        actions = HiveAction.query.filter_by(site_id=site_id, is_archived=False)\
             .order_by(HiveAction.action_date.desc()).all()
-        disease_reports = DiseaseReport.query.filter_by(cluster_id=cluster_id)\
+        disease_reports = DiseaseReport.query.filter_by(site_id=site_id)\
             .order_by(DiseaseReport.report_date.desc()).limit(5).all()
         
-        return render_template('cluster_detail.html', 
-                             cluster=cluster, 
+        return render_template('site_detail.html', 
+                             site=site, 
                              individual_hives=individual_hives,
                              actions=actions,
                              disease_reports=disease_reports,
                              google_maps_key=app.config['GOOGLE_MAPS_API_KEY'])
     
-    @app.route('/cluster/<int:cluster_id>/delete', methods=['POST'])
+    @app.route('/site/<int:site_id>/delete', methods=['POST'])
     @login_required
-    def delete_cluster(cluster_id):
-        """Delete (deactivate) hive cluster"""
-        cluster = HiveCluster.query.filter_by(id=cluster_id, user_id=current_user.id).first_or_404()
-        cluster.is_active = False
+    def delete_site(site_id):
+        """Delete (deactivate) hive site"""
+        site = HiveSite.query.filter_by(id=site_id, user_id=current_user.id).first_or_404()
+        site.is_active = False
         db.session.commit()
-        flash(f'Hive cluster "{cluster.name}" has been deleted.', 'info')
-        return redirect(url_for('clusters'))
+        flash(f'Hive site "{site.name}" has been deleted.', 'info')
+        return redirect(url_for('sites'))
     
-    @app.route('/cluster/<int:cluster_id>/hive/add', methods=['GET', 'POST'])
+    @app.route('/site/<int:site_id>/hive/add', methods=['GET', 'POST'])
     @login_required
-    def add_individual_hive(cluster_id):
-        """Add individual hive to cluster"""
-        cluster = HiveCluster.query.filter_by(id=cluster_id, user_id=current_user.id).first_or_404()
+    def add_individual_hive(site_id):
+        """Add individual hive to site"""
+        site = HiveSite.query.filter_by(id=site_id, user_id=current_user.id).first_or_404()
         form = IndividualHiveForm()
         
         if form.validate_on_submit():
             hive = IndividualHive(
-                cluster_id=cluster_id,
+                site_id=site_id,
                 hive_number=form.hive_number.data,
                 status=form.status.data,
                 hive_strength=form.hive_strength.data,
@@ -413,17 +413,17 @@ def create_app(config_name='default'):
             )
             db.session.add(hive)
             db.session.commit()
-            flash(f'Individual hive "{hive.hive_number}" added to cluster "{cluster.name}"', 'success')
-            return redirect(url_for('cluster_detail', cluster_id=cluster_id))
+            flash(f'Individual hive "{hive.hive_number}" added to site "{site.name}"', 'success')
+            return redirect(url_for('site_detail', site_id=site_id))
         
-        return render_template('hive_form.html', form=form, cluster=cluster, title='Add Individual Hive')
+        return render_template('hive_form.html', form=form, site=site, title='Add Individual Hive')
     
     @app.route('/hive/<int:hive_id>/edit', methods=['GET', 'POST'])
     @login_required
     def edit_individual_hive(hive_id):
         """Edit individual hive"""
         hive = IndividualHive.query.get_or_404(hive_id)
-        cluster = HiveCluster.query.filter_by(id=hive.cluster_id, user_id=current_user.id).first_or_404()
+        site = HiveSite.query.filter_by(id=hive.site_id, user_id=current_user.id).first_or_404()
         form = IndividualHiveForm(obj=hive)
         
         if form.validate_on_submit():
@@ -434,9 +434,9 @@ def create_app(config_name='default'):
             hive.updated_at = datetime.utcnow()
             db.session.commit()
             flash(f'Individual hive "{hive.hive_number}" updated successfully!', 'success')
-            return redirect(url_for('cluster_detail', cluster_id=cluster.id))
+            return redirect(url_for('site_detail', site_id=site.id))
         
-        return render_template('hive_form.html', form=form, cluster=cluster, hive=hive, title='Edit Individual Hive')
+        return render_template('hive_form.html', form=form, site=site, hive=hive, title='Edit Individual Hive')
     
     @app.route('/actions')
     @login_required
@@ -461,19 +461,19 @@ def create_app(config_name='default'):
         form = HiveActionForm()
         
         # Get pre-filled parameters from URL
-        cluster_id = request.args.get('cluster_id', type=int)
+        site_id = request.args.get('site_id', type=int)
         hive_id = request.args.get('hive_id', type=int)
         
-        # Populate cluster choices
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
-        form.cluster_id.choices = [(c.id, c.name) for c in clusters]
+        # Populate site choices
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
+        form.site_id.choices = [(c.id, c.name) for c in sites]
         
-        # Pre-fill cluster if specified
-        if cluster_id:
-            form.cluster_id.data = cluster_id
+        # Pre-fill site if specified
+        if site_id:
+            form.site_id.data = site_id
             
-            # Populate individual hive choices for the selected cluster
-            individual_hives = IndividualHive.query.filter_by(cluster_id=cluster_id, is_active=True).all()
+            # Populate individual hive choices for the selected site
+            individual_hives = IndividualHive.query.filter_by(site_id=site_id, is_active=True).all()
             form.individual_hive_id.choices = [(0, '-- All Hives --')] + [(h.id, h.hive_number) for h in individual_hives]
             
             # Pre-fill individual hive if specified
@@ -481,7 +481,7 @@ def create_app(config_name='default'):
                 form.individual_hive_id.data = hive_id
         else:
             # Populate individual hive choices (empty initially)
-            form.individual_hive_id.choices = [(0, '-- Select Cluster First --')]
+            form.individual_hive_id.choices = [(0, '-- Select Site First --')]
         
         # Populate task type choices
         task_types = TaskType.query.filter_by(is_active=True).order_by(TaskType.order).all()
@@ -501,7 +501,7 @@ def create_app(config_name='default'):
             individual_hive_id = form.individual_hive_id.data if form.individual_hive_id.data else None
             
             action = HiveAction(
-                cluster_id=form.cluster_id.data,
+                site_id=form.site_id.data,
                 individual_hive_id=individual_hive_id,
                 user_id=current_user.id,
                 task_type_id=task_type_id,
@@ -523,24 +523,24 @@ def create_app(config_name='default'):
         data = request.get_json()
         
         task_ids = data.get('task_ids', [])
-        cluster_id = data.get('cluster_id')
+        site_id = data.get('site_id')
         individual_hive_id = data.get('individual_hive_id')
         action_date = datetime.fromisoformat(data.get('action_date')) if data.get('action_date') else datetime.utcnow()
         
-        if not task_ids or not cluster_id:
+        if not task_ids or not site_id:
             return jsonify({'success': False, 'message': 'Missing required fields'}), 400
         
-        # Verify cluster belongs to user
-        cluster = HiveCluster.query.filter_by(id=cluster_id, user_id=current_user.id).first()
-        if not cluster:
-            return jsonify({'success': False, 'message': 'Invalid cluster'}), 404
+        # Verify site belongs to user
+        site = HiveSite.query.filter_by(id=site_id, user_id=current_user.id).first()
+        if not site:
+            return jsonify({'success': False, 'message': 'Invalid site'}), 404
         
         actions_logged = []
         for task_id in task_ids:
             task = TaskType.query.get(task_id)
             if task:
                 action = HiveAction(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     individual_hive_id=individual_hive_id,
                     user_id=current_user.id,
                     task_type_id=task.id,
@@ -576,11 +576,11 @@ def create_app(config_name='default'):
         db.session.commit()
         return jsonify({'success': True, 'message': 'Action unarchived'})
     
-    @app.route('/api/clusters')
+    @app.route('/api/sites')
     @login_required
-    def api_clusters():
-        """API endpoint for cluster data (for maps)"""
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+    def api_sites():
+        """API endpoint for site data (for maps)"""
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         return jsonify([{
             'id': c.id,
             'name': c.name,
@@ -590,14 +590,14 @@ def create_app(config_name='default'):
             'hive_count': c.hive_count,
             'harvest_timeline': c.harvest_timeline,
             'sugar_requirements': c.sugar_requirements
-        } for c in clusters])
+        } for c in sites])
     
-    @app.route('/api/cluster/<int:cluster_id>/hives')
+    @app.route('/api/site/<int:site_id>/hives')
     @login_required
-    def api_cluster_hives(cluster_id):
-        """API endpoint for individual hives in a cluster"""
-        cluster = HiveCluster.query.filter_by(id=cluster_id, user_id=current_user.id).first_or_404()
-        hives = IndividualHive.query.filter_by(cluster_id=cluster_id, is_active=True).all()
+    def api_site_hives(site_id):
+        """API endpoint for individual hives in a site"""
+        site = HiveSite.query.filter_by(id=site_id, user_id=current_user.id).first_or_404()
+        hives = IndividualHive.query.filter_by(site_id=site_id, is_active=True).all()
         
         return jsonify([{
             'id': h.id,
@@ -612,13 +612,13 @@ def create_app(config_name='default'):
         """Disease reporting form"""
         form = DiseaseReportForm()
         
-        # Populate cluster choices
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
-        form.cluster_id.choices = [(c.id, c.name) for c in clusters]
+        # Populate site choices
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
+        form.site_id.choices = [(c.id, c.name) for c in sites]
         
         if form.validate_on_submit():
             report = DiseaseReport(
-                cluster_id=form.cluster_id.data,
+                site_id=form.site_id.data,
                 user_id=current_user.id,
                 afb_count=form.afb_count.data,
                 varroa_count=form.varroa_count.data,
@@ -631,7 +631,7 @@ def create_app(config_name='default'):
             db.session.add(report)
             db.session.commit()
             flash('Disease report submitted successfully!', 'success')
-            return redirect(url_for('cluster_detail', cluster_id=form.cluster_id.data))
+            return redirect(url_for('site_detail', site_id=form.site_id.data))
         
         return render_template('disease_report.html', form=form)
     
@@ -641,19 +641,19 @@ def create_app(config_name='default'):
         """Quick field reporting interface"""
         form = FieldReportForm()
         
-        # Populate cluster choices
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
-        form.cluster_id.choices = [(c.id, c.name) for c in clusters]
+        # Populate site choices
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
+        form.site_id.choices = [(c.id, c.name) for c in sites]
         
         if form.validate_on_submit():
             # Log actions based on checkboxes
-            cluster_id = form.cluster_id.data
-            cluster = HiveCluster.query.get(cluster_id)
+            site_id = form.site_id.data
+            site = HiveSite.query.get(site_id)
             
             actions_logged = []
             if form.inspection.data:
                 action = HiveAction(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     user_id=current_user.id,
                     task_name='Field Inspection',
                     description='Quick field inspection',
@@ -664,7 +664,7 @@ def create_app(config_name='default'):
             
             if form.feeding.data:
                 action = HiveAction(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     user_id=current_user.id,
                     task_name='Field Feeding',
                     description='Quick feeding activity',
@@ -675,7 +675,7 @@ def create_app(config_name='default'):
             
             if form.treatment.data:
                 action = HiveAction(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     user_id=current_user.id,
                     task_name='Field Treatment',
                     description='Quick treatment application',
@@ -686,7 +686,7 @@ def create_app(config_name='default'):
             
             if form.harvest.data:
                 action = HiveAction(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     user_id=current_user.id,
                     task_name='Field Harvest',
                     description='Quick harvest activity',
@@ -697,7 +697,7 @@ def create_app(config_name='default'):
             
             if form.maintenance.data:
                 action = HiveAction(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     user_id=current_user.id,
                     task_name='Field Maintenance',
                     description='Quick maintenance activity',
@@ -706,16 +706,16 @@ def create_app(config_name='default'):
                 db.session.add(action)
                 actions_logged.append('Maintenance')
             
-            # Update cluster hive counts and strength ratings
-            cluster.strong_hives = form.strong_hives.data
-            cluster.medium_hives = form.medium_hives.data
-            cluster.weak_hives = form.weak_hives.data
+            # Update site hive counts and strength ratings
+            site.strong_hives = form.strong_hives.data
+            site.medium_hives = form.medium_hives.data
+            site.weak_hives = form.weak_hives.data
             
             # Create disease report if any diseases reported
             if any([form.afb_count.data, form.varroa_count.data, form.chalkbrood_count.data, 
                    form.sacbrood_count.data, form.dwv_count.data]):
                 disease_report = DiseaseReport(
-                    cluster_id=cluster_id,
+                    site_id=site_id,
                     user_id=current_user.id,
                     afb_count=form.afb_count.data,
                     varroa_count=form.varroa_count.data,
@@ -730,22 +730,22 @@ def create_app(config_name='default'):
             db.session.commit()
             
             flash(f'Field report submitted! Actions logged: {", ".join(actions_logged) if actions_logged else "None"}', 'success')
-            return redirect(url_for('cluster_detail', cluster_id=cluster_id))
+            return redirect(url_for('site_detail', site_id=site_id))
         
         return render_template('field_report.html', form=form)
     
-    @app.route('/export/clusters')
+    @app.route('/export/sites')
     @login_required
-    def export_clusters():
-        """Export all clusters with comprehensive data"""
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+    def export_sites():
+        """Export all sites with comprehensive data"""
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         
         output = io.StringIO()
         writer = csv.writer(output)
         
         # Write header with all new fields
         headers = [
-            'Cluster ID', 'Name', 'Description', 'Latitude', 'Longitude', 'Hive Count',
+            'Site ID', 'Name', 'Description', 'Latitude', 'Longitude', 'Hive Count',
             'Harvest Timeline', 'Sugar Requirements', 'Notes',
             # Landowner Information
             'Landowner Name', 'Landowner Phone', 'Landowner Email', 'Landowner Address',
@@ -761,46 +761,46 @@ def create_app(config_name='default'):
         writer.writerow(headers)
         
         # Write data
-        for cluster in clusters:
+        for site in sites:
             writer.writerow([
-                cluster.id,
-                cluster.name,
-                cluster.description or '',
-                cluster.latitude,
-                cluster.longitude,
-                cluster.hive_count,
-                cluster.harvest_timeline or '',
-                cluster.sugar_requirements or '',
-                cluster.notes or '',
+                site.id,
+                site.name,
+                site.description or '',
+                site.latitude,
+                site.longitude,
+                site.hive_count,
+                site.harvest_timeline or '',
+                site.sugar_requirements or '',
+                site.notes or '',
                 # Landowner Information
-                cluster.landowner_name or '',
-                cluster.landowner_phone or '',
-                cluster.landowner_email or '',
-                cluster.landowner_address or '',
+                site.landowner_name or '',
+                site.landowner_phone or '',
+                site.landowner_email or '',
+                site.landowner_address or '',
                 # Site Classification
-                cluster.site_type or '',
-                cluster.access_type or '',
-                cluster.contact_before_visit,
-                cluster.is_quarantine,
+                site.site_type or '',
+                site.access_type or '',
+                site.contact_before_visit,
+                site.is_quarantine,
                 # Hive Setup Details
-                cluster.single_brood_boxes or 0,
-                cluster.double_brood_boxes or 0,
-                cluster.nucs or 0,
-                cluster.dead_hives or 0,
-                cluster.top_splits or 0,
+                site.single_brood_boxes or 0,
+                site.double_brood_boxes or 0,
+                site.nucs or 0,
+                site.dead_hives or 0,
+                site.top_splits or 0,
                 # Hive Strength Ratings
-                cluster.strong_hives or 0,
-                cluster.medium_hives or 0,
-                cluster.weak_hives or 0,
+                site.strong_hives or 0,
+                site.medium_hives or 0,
+                site.weak_hives or 0,
                 # Timestamps
-                cluster.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                cluster.updated_at.strftime('%Y-%m-%d %H:%M:%S')
+                site.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                site.updated_at.strftime('%Y-%m-%d %H:%M:%S')
             ])
         
         output.seek(0)
         response = make_response(output.getvalue())
         response.headers['Content-Type'] = 'text/csv'
-        response.headers['Content-Disposition'] = f'attachment; filename=clusters_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        response.headers['Content-Disposition'] = f'attachment; filename=sites_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
         return response
     
     @app.route('/export/actions')
@@ -815,7 +815,7 @@ def create_app(config_name='default'):
         
         # Write header
         headers = [
-            'Action ID', 'Cluster Name', 'Individual Hive', 'Task Name', 'Task Category',
+            'Action ID', 'Site Name', 'Individual Hive', 'Task Name', 'Task Category',
             'Description', 'Action Date', 'Created At', 'Is Archived'
         ]
         writer.writerow(headers)
@@ -824,7 +824,7 @@ def create_app(config_name='default'):
         for action in actions:
             writer.writerow([
                 action.id,
-                action.cluster.name,
+                action.site.name,
                 action.individual_hive.hive_number if action.individual_hive else '',
                 action.task_name,
                 action.task_type.category if action.task_type else '',
@@ -844,8 +844,8 @@ def create_app(config_name='default'):
     @login_required
     def export_disease_reports():
         """Export all disease reports"""
-        disease_reports = DiseaseReport.query.join(HiveCluster)\
-            .filter(HiveCluster.user_id == current_user.id)\
+        disease_reports = DiseaseReport.query.join(HiveSite)\
+            .filter(HiveSite.user_id == current_user.id)\
             .order_by(DiseaseReport.report_date.desc()).all()
         
         output = io.StringIO()
@@ -853,7 +853,7 @@ def create_app(config_name='default'):
         
         # Write header
         headers = [
-            'Report ID', 'Cluster Name', 'Report Date', 'AFB Count', 'Varroa Count',
+            'Report ID', 'Site Name', 'Report Date', 'AFB Count', 'Varroa Count',
             'Chalkbrood Count', 'Sacbrood Count', 'DWV Count', 'Notes', 'Created At'
         ]
         writer.writerow(headers)
@@ -862,7 +862,7 @@ def create_app(config_name='default'):
         for report in disease_reports:
             writer.writerow([
                 report.id,
-                report.cluster.name,
+                report.site.name,
                 report.report_date.strftime('%Y-%m-%d %H:%M:%S'),
                 report.afb_count,
                 report.varroa_count,
@@ -883,16 +883,16 @@ def create_app(config_name='default'):
     @login_required
     def export_individual_hives():
         """Export all individual hives"""
-        hives = IndividualHive.query.join(HiveCluster)\
-            .filter(HiveCluster.user_id == current_user.id, IndividualHive.is_active == True)\
-            .order_by(HiveCluster.name, IndividualHive.hive_number).all()
+        hives = IndividualHive.query.join(HiveSite)\
+            .filter(HiveSite.user_id == current_user.id, IndividualHive.is_active == True)\
+            .order_by(HiveSite.name, IndividualHive.hive_number).all()
         
         output = io.StringIO()
         writer = csv.writer(output)
         
         # Write header
         headers = [
-            'Hive ID', 'Cluster Name', 'Hive Number', 'Status', 'Notes',
+            'Hive ID', 'Site Name', 'Hive Number', 'Status', 'Notes',
             'Created At', 'Updated At', 'Is Active'
         ]
         writer.writerow(headers)
@@ -901,7 +901,7 @@ def create_app(config_name='default'):
         for hive in hives:
             writer.writerow([
                 hive.id,
-                hive.cluster.name,
+                hive.site.name,
                 hive.hive_number,
                 hive.status,
                 hive.notes or '',
@@ -920,16 +920,16 @@ def create_app(config_name='default'):
     @login_required
     def export_comprehensive():
         """Export comprehensive data including all new fields"""
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         
         output = io.StringIO()
         writer = csv.writer(output)
         
         # Write comprehensive header
         headers = [
-            # Cluster Basic Info
-            'Cluster ID', 'Cluster Name', 'Description', 'Latitude', 'Longitude', 'Hive Count',
-            'Harvest Timeline', 'Sugar Requirements', 'Cluster Notes',
+            # Site Basic Info
+            'Site ID', 'Site Name', 'Description', 'Latitude', 'Longitude', 'Hive Count',
+            'Harvest Timeline', 'Sugar Requirements', 'Site Notes',
             # Landowner Information
             'Landowner Name', 'Landowner Phone', 'Landowner Email', 'Landowner Address',
             # Site Classification
@@ -938,8 +938,8 @@ def create_app(config_name='default'):
             'Single Brood Boxes', 'Double Brood Boxes', 'Nucs', 'Dead Hives', 'Top Splits',
             # Hive Strength Ratings
             'Strong Hives', 'Medium Hives', 'Weak Hives',
-            # Cluster Timestamps
-            'Cluster Created At', 'Cluster Updated At',
+            # Site Timestamps
+            'Site Created At', 'Site Updated At',
             # Individual Hives Summary
             'Individual Hives Count', 'Healthy Hives', 'Infected Hives', 'Quarantine Hives', 'Weak Hives', 'Queenless Hives', 'Dead Hives',
             # Recent Actions Summary
@@ -949,25 +949,25 @@ def create_app(config_name='default'):
         ]
         writer.writerow(headers)
         
-        # Write comprehensive data for each cluster
-        for cluster in clusters:
+        # Write comprehensive data for each site
+        for site in sites:
             # Get individual hives data
-            individual_hives = IndividualHive.query.filter_by(cluster_id=cluster.id, is_active=True).all()
+            individual_hives = IndividualHive.query.filter_by(site_id=site.id, is_active=True).all()
             hive_status_counts = {}
             for hive in individual_hives:
                 hive_status_counts[hive.status] = hive_status_counts.get(hive.status, 0) + 1
             
             # Get actions data
-            actions = HiveAction.query.filter_by(cluster_id=cluster.id, is_archived=False).all()
-            recent_actions = HiveAction.query.filter_by(cluster_id=cluster.id, is_archived=False)\
+            actions = HiveAction.query.filter_by(site_id=site.id, is_archived=False).all()
+            recent_actions = HiveAction.query.filter_by(site_id=site.id, is_archived=False)\
                 .filter(HiveAction.action_date >= datetime.utcnow().replace(day=1)).all()
             
-            last_action = HiveAction.query.filter_by(cluster_id=cluster.id, is_archived=False)\
+            last_action = HiveAction.query.filter_by(site_id=site.id, is_archived=False)\
                 .order_by(HiveAction.action_date.desc()).first()
             
             # Get disease reports data
-            disease_reports = DiseaseReport.query.filter_by(cluster_id=cluster.id).all()
-            latest_disease_report = DiseaseReport.query.filter_by(cluster_id=cluster.id)\
+            disease_reports = DiseaseReport.query.filter_by(site_id=site.id).all()
+            latest_disease_report = DiseaseReport.query.filter_by(site_id=site.id)\
                 .order_by(DiseaseReport.report_date.desc()).first()
             
             # Calculate disease totals
@@ -978,39 +978,39 @@ def create_app(config_name='default'):
             dwv_total = sum(report.dwv_count for report in disease_reports)
             
             writer.writerow([
-                # Cluster Basic Info
-                cluster.id,
-                cluster.name,
-                cluster.description or '',
-                cluster.latitude,
-                cluster.longitude,
-                cluster.hive_count,
-                cluster.harvest_timeline or '',
-                cluster.sugar_requirements or '',
-                cluster.notes or '',
+                # Site Basic Info
+                site.id,
+                site.name,
+                site.description or '',
+                site.latitude,
+                site.longitude,
+                site.hive_count,
+                site.harvest_timeline or '',
+                site.sugar_requirements or '',
+                site.notes or '',
                 # Landowner Information
-                cluster.landowner_name or '',
-                cluster.landowner_phone or '',
-                cluster.landowner_email or '',
-                cluster.landowner_address or '',
+                site.landowner_name or '',
+                site.landowner_phone or '',
+                site.landowner_email or '',
+                site.landowner_address or '',
                 # Site Classification
-                cluster.site_type or '',
-                cluster.access_type or '',
-                cluster.contact_before_visit,
-                cluster.is_quarantine,
+                site.site_type or '',
+                site.access_type or '',
+                site.contact_before_visit,
+                site.is_quarantine,
                 # Hive Setup Details
-                cluster.single_brood_boxes or 0,
-                cluster.double_brood_boxes or 0,
-                cluster.nucs or 0,
-                cluster.dead_hives or 0,
-                cluster.top_splits or 0,
+                site.single_brood_boxes or 0,
+                site.double_brood_boxes or 0,
+                site.nucs or 0,
+                site.dead_hives or 0,
+                site.top_splits or 0,
                 # Hive Strength Ratings
-                cluster.strong_hives or 0,
-                cluster.medium_hives or 0,
-                cluster.weak_hives or 0,
-                # Cluster Timestamps
-                cluster.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                cluster.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+                site.strong_hives or 0,
+                site.medium_hives or 0,
+                site.weak_hives or 0,
+                # Site Timestamps
+                site.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                site.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
                 # Individual Hives Summary
                 len(individual_hives),
                 hive_status_counts.get('healthy', 0),
@@ -1045,15 +1045,15 @@ def create_app(config_name='default'):
     def export_management():
         """Export management page"""
         # Get statistics for the export page
-        clusters_count = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).count()
+        sites_count = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).count()
         actions_count = HiveAction.query.filter_by(user_id=current_user.id, is_archived=False).count()
-        disease_reports_count = DiseaseReport.query.join(HiveCluster)\
-            .filter(HiveCluster.user_id == current_user.id).count()
-        individual_hives_count = IndividualHive.query.join(HiveCluster)\
-            .filter(HiveCluster.user_id == current_user.id, IndividualHive.is_active == True).count()
+        disease_reports_count = DiseaseReport.query.join(HiveSite)\
+            .filter(HiveSite.user_id == current_user.id).count()
+        individual_hives_count = IndividualHive.query.join(HiveSite)\
+            .filter(HiveSite.user_id == current_user.id, IndividualHive.is_active == True).count()
         
         stats = {
-            'clusters': clusters_count,
+            'sites': sites_count,
             'actions': actions_count,
             'disease_reports': disease_reports_count,
             'individual_hives': individual_hives_count
@@ -1074,17 +1074,17 @@ def create_app(config_name='default'):
         start_dt = datetime.strptime(start_date, '%Y-%m-%d')
         end_dt = datetime.strptime(end_date, '%Y-%m-%d')
         
-        # Get all clusters for the user
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        # Get all sites for the user
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         
         # Calculate time series data
-        time_series_data = calculate_time_series_data(clusters, start_dt, end_dt, group_by)
+        time_series_data = calculate_time_series_data(sites, start_dt, end_dt, group_by)
         
         # Calculate categorical breakdowns
-        categorical_data = calculate_categorical_breakdowns(clusters, start_dt, end_dt)
+        categorical_data = calculate_categorical_breakdowns(sites, start_dt, end_dt)
         
         # Calculate key metrics
-        key_metrics = calculate_key_metrics(clusters, start_dt, end_dt)
+        key_metrics = calculate_key_metrics(sites, start_dt, end_dt)
         
         return render_template('report_dashboard.html', 
                              time_series_data=time_series_data,
@@ -1093,7 +1093,7 @@ def create_app(config_name='default'):
                              start_date=start_date,
                              end_date=end_date,
                              group_by=group_by,
-                             clusters=clusters)
+                             sites=sites)
     
     @app.route('/api/report-data')
     @login_required
@@ -1106,12 +1106,12 @@ def create_app(config_name='default'):
         start_dt = datetime.strptime(start_date, '%Y-%m-%d')
         end_dt = datetime.strptime(end_date, '%Y-%m-%d')
         
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         
         return jsonify({
-            'time_series': calculate_time_series_data(clusters, start_dt, end_dt, group_by),
-            'categorical': calculate_categorical_breakdowns(clusters, start_dt, end_dt),
-            'key_metrics': calculate_key_metrics(clusters, start_dt, end_dt)
+            'time_series': calculate_time_series_data(sites, start_dt, end_dt, group_by),
+            'categorical': calculate_categorical_breakdowns(sites, start_dt, end_dt),
+            'key_metrics': calculate_key_metrics(sites, start_dt, end_dt)
         })
     
     @app.route('/scheduler')
@@ -1132,14 +1132,14 @@ def create_app(config_name='default'):
         task_templates = TaskTemplate.query.filter_by(is_active=True)\
             .order_by(TaskTemplate.category, TaskTemplate.name).all()
         
-        # Get clusters for assignment
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
+        # Get sites for assignment
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
         
         return render_template('scheduler.html', 
                              upcoming_tasks=upcoming_tasks,
                              overdue_tasks=overdue_tasks,
                              task_templates=task_templates,
-                             clusters=clusters)
+                             sites=sites)
     
     @app.route('/scheduler/templates')
     @login_required
@@ -1208,12 +1208,12 @@ def create_app(config_name='default'):
                                         for t in TaskTemplate.query.filter_by(is_active=True)
                                         .order_by(TaskTemplate.category, TaskTemplate.name).all()]
         
-        clusters = HiveCluster.query.filter_by(user_id=current_user.id, is_active=True).all()
-        form.selected_clusters.choices = [(c.id, c.name) for c in clusters]
+        sites = HiveSite.query.filter_by(user_id=current_user.id, is_active=True).all()
+        form.selected_sites.choices = [(c.id, c.name) for c in sites]
         
-        individual_hives = IndividualHive.query.join(HiveCluster)\
-            .filter(HiveCluster.user_id == current_user.id, IndividualHive.is_active == True).all()
-        form.selected_hives.choices = [(h.id, f"{h.cluster.name} - {h.hive_number}") for h in individual_hives]
+        individual_hives = IndividualHive.query.join(HiveSite)\
+            .filter(HiveSite.user_id == current_user.id, IndividualHive.is_active == True).all()
+        form.selected_hives.choices = [(h.id, f"{h.site.name} - {h.hive_number}") for h in individual_hives]
         
         if form.validate_on_submit():
             template = TaskTemplate.query.get(form.task_template_id.data)
@@ -1238,22 +1238,22 @@ def create_app(config_name='default'):
             db.session.flush()  # Get the ID
             
             # Create assignments
-            if form.assign_to_all_clusters.data:
-                for cluster in clusters:
+            if form.assign_to_all_sites.data:
+                for site in sites:
                     assignment = TaskAssignment(
                         scheduled_task_id=scheduled_task.id,
-                        target_type='cluster',
-                        target_id=cluster.id,
+                        target_type='site',
+                        target_id=site.id,
                         estimated_duration=template.estimated_duration
                     )
                     db.session.add(assignment)
             else:
-                # Assign to selected clusters
-                for cluster_id in form.selected_clusters.data:
+                # Assign to selected sites
+                for site_id in form.selected_sites.data:
                     assignment = TaskAssignment(
                         scheduled_task_id=scheduled_task.id,
-                        target_type='cluster',
-                        target_id=cluster_id,
+                        target_type='site',
+                        target_id=site_id,
                         estimated_duration=template.estimated_duration
                     )
                     db.session.add(assignment)
@@ -1488,14 +1488,14 @@ def create_app(config_name='default'):
         def debug_db_info():
             """Debug endpoint to show database information"""
             users = User.query.count()
-            clusters = HiveCluster.query.count()
+            sites = HiveSite.query.count()
             actions = HiveAction.query.count()
             tasks = TaskType.query.count()
             
             return jsonify({
                 'database': app.config['SQLALCHEMY_DATABASE_URI'],
                 'users': users,
-                'clusters': clusters,
+                'sites': sites,
                 'actions': actions,
                 'task_types': tasks
             })
@@ -1511,16 +1511,16 @@ def create_app(config_name='default'):
                 db.session.add(user)
                 db.session.commit()
             
-            # Create sample clusters
-            if HiveCluster.query.filter_by(user_id=user.id).count() == 0:
-                clusters_data = [
+            # Create sample sites
+            if HiveSite.query.filter_by(user_id=user.id).count() == 0:
+                sites_data = [
                     {'name': 'North Field', 'lat': 40.7128, 'lon': -74.0060, 'hives': 5},
                     {'name': 'South Meadow', 'lat': 40.7580, 'lon': -73.9855, 'hives': 8},
                     {'name': 'East Garden', 'lat': 40.7489, 'lon': -73.9680, 'hives': 3}
                 ]
                 
-                for data in clusters_data:
-                    cluster = HiveCluster(
+                for data in sites_data:
+                    site = HiveSite(
                         user_id=user.id,
                         name=data['name'],
                         latitude=data['lat'],
@@ -1529,7 +1529,7 @@ def create_app(config_name='default'):
                         harvest_timeline='Spring 2025',
                         sugar_requirements='10kg per month'
                     )
-                    db.session.add(cluster)
+                    db.session.add(site)
                 
                 db.session.commit()
             

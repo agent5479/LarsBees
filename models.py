@@ -37,7 +37,7 @@ class User(UserMixin, db.Model):
     is_super_admin = db.Column(db.Boolean, default=False)  # Only for system administrators
     
     # Relationships
-    hive_clusters = db.relationship('HiveCluster', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
+    hive_sites = db.relationship('HiveSite', backref='owner', lazy='dynamic', cascade='all, delete-orphan')
     organization = db.relationship('Organization', backref='users', lazy='dynamic')
     
     def set_password(self, password):
@@ -117,7 +117,7 @@ class Organization(db.Model):
     
     # Organization settings
     max_users = db.Column(db.Integer, default=10)
-    max_clusters = db.Column(db.Integer, default=50)
+    max_sites = db.Column(db.Integer, default=50)
     subscription_tier = db.Column(db.String(50), default='basic')  # basic, pro, enterprise
     
     # Contact information
@@ -140,17 +140,17 @@ class Organization(db.Model):
         """Get number of active users in organization"""
         return self.users.filter_by(is_active=True).count()
     
-    def get_cluster_count(self):
-        """Get number of clusters in organization"""
-        return HiveCluster.query.join(User).filter(
+    def get_site_count(self):
+        """Get number of sites in organization"""
+        return HiveSite.query.join(User).filter(
             User.organization_id == self.firebase_org_id,
-            HiveCluster.is_active == True
+            HiveSite.is_active == True
         ).count()
 
 
-class HiveCluster(db.Model):
-    """Hive cluster location model"""
-    __tablename__ = 'hive_clusters'
+class HiveSite(db.Model):
+    """Hive site location model"""
+    __tablename__ = 'hive_sites'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -192,35 +192,35 @@ class HiveCluster(db.Model):
     medium_hives = db.Column(db.Integer, default=0)
     weak_hives = db.Column(db.Integer, default=0)
     
-    # Overall cluster strength categorization
-    cluster_strength = db.Column(db.String(20), default='medium')  # strong, medium, weak, nuc
+    # Overall site strength categorization
+    site_strength = db.Column(db.String(20), default='medium')  # strong, medium, weak, nuc
     
     # Relationships
-    individual_hives = db.relationship('IndividualHive', backref='cluster', lazy='dynamic', cascade='all, delete-orphan')
-    actions = db.relationship('HiveAction', backref='cluster', lazy='dynamic', cascade='all, delete-orphan')
+    individual_hives = db.relationship('IndividualHive', backref='site', lazy='dynamic', cascade='all, delete-orphan')
+    actions = db.relationship('HiveAction', backref='site', lazy='dynamic', cascade='all, delete-orphan')
     
     def __repr__(self):
-        return f'<HiveCluster {self.name}>'
+        return f'<HiveSite {self.name}>'
     
     def get_strength_display_name(self):
-        """Get display name for cluster strength"""
+        """Get display name for site strength"""
         strength_names = {
             'strong': 'Strong',
             'medium': 'Medium',
             'weak': 'Weak',
             'nuc': 'NUC'
         }
-        return strength_names.get(self.cluster_strength, 'Medium')
+        return strength_names.get(self.site_strength, 'Medium')
     
     def get_strength_color(self):
-        """Get color for cluster strength"""
+        """Get color for site strength"""
         colors = {
             'strong': 'success',
             'medium': 'warning',
             'weak': 'danger',
             'nuc': 'info'
         }
-        return colors.get(self.cluster_strength, 'secondary')
+        return colors.get(self.site_strength, 'secondary')
 
 
 class IndividualHive(db.Model):
@@ -228,7 +228,7 @@ class IndividualHive(db.Model):
     __tablename__ = 'individual_hives'
     
     id = db.Column(db.Integer, primary_key=True)
-    cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=False)
+    site_id = db.Column(db.Integer, db.ForeignKey('hive_sites.id'), nullable=False)
     hive_number = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(50), default='healthy')  # healthy, infected, quarantine, etc.
     
@@ -287,7 +287,7 @@ class HiveAction(db.Model):
     __tablename__ = 'hive_actions'
     
     id = db.Column(db.Integer, primary_key=True)
-    cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=False)
+    site_id = db.Column(db.Integer, db.ForeignKey('hive_sites.id'), nullable=False)
     individual_hive_id = db.Column(db.Integer, db.ForeignKey('individual_hives.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
@@ -310,11 +310,11 @@ class HiveAction(db.Model):
 
 
 class DiseaseReport(db.Model):
-    """Disease reporting for clusters"""
+    """Disease reporting for sites"""
     __tablename__ = 'disease_reports'
     
     id = db.Column(db.Integer, primary_key=True)
-    cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=False)
+    site_id = db.Column(db.Integer, db.ForeignKey('hive_sites.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
     # Disease counts
@@ -330,11 +330,11 @@ class DiseaseReport(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relationships
-    cluster = db.relationship('HiveCluster', backref='disease_reports')
+    site = db.relationship('HiveSite', backref='disease_reports')
     user = db.relationship('User', backref='disease_reports')
     
     def __repr__(self):
-        return f'<DiseaseReport {self.cluster.name} - {self.report_date}>'
+        return f'<DiseaseReport {self.site.name} - {self.report_date}>'
 
 
 class ScheduledTask(db.Model):
@@ -359,7 +359,7 @@ class ScheduledTask(db.Model):
     priority = db.Column(db.String(10), default='medium')  # low, medium, high, urgent
     
     # Assignment
-    assigned_to_cluster_id = db.Column(db.Integer, db.ForeignKey('hive_clusters.id'), nullable=True)
+    assigned_to_site_id = db.Column(db.Integer, db.ForeignKey('hive_sites.id'), nullable=True)
     assigned_to_hive_id = db.Column(db.Integer, db.ForeignKey('individual_hives.id'), nullable=True)
     
     # Recurrence
@@ -380,7 +380,7 @@ class ScheduledTask(db.Model):
     # Relationships
     user = db.relationship('User', backref='scheduled_tasks')
     task_template = db.relationship('TaskTemplate', backref='scheduled_tasks')
-    assigned_cluster = db.relationship('HiveCluster', backref='scheduled_tasks')
+    assigned_site = db.relationship('HiveSite', backref='scheduled_tasks')
     assigned_hive = db.relationship('IndividualHive', backref='scheduled_tasks')
     
     def __repr__(self):
@@ -502,15 +502,15 @@ class TaskTemplate(db.Model):
 
 
 class TaskAssignment(db.Model):
-    """Assignments of scheduled tasks to specific clusters or hives"""
+    """Assignments of scheduled tasks to specific sites or hives"""
     __tablename__ = 'task_assignments'
     
     id = db.Column(db.Integer, primary_key=True)
     scheduled_task_id = db.Column(db.Integer, db.ForeignKey('scheduled_tasks.id'), nullable=False)
     
     # Assignment target
-    target_type = db.Column(db.String(20), nullable=False)  # cluster, individual_hive
-    target_id = db.Column(db.Integer, nullable=False)  # ID of cluster or individual hive
+    target_type = db.Column(db.String(20), nullable=False)  # site, individual_hive
+    target_id = db.Column(db.Integer, nullable=False)  # ID of site or individual hive
     
     # Assignment details
     notes = db.Column(db.Text)

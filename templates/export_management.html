@@ -17,8 +17,8 @@
     </div>
     <div class="export-stats-grid">
         <div class="export-stat-item">
-            <h3 class="text-primary">{{ stats.clusters }}</h3>
-            <p class="mb-0">Clusters</p>
+            <h3 class="text-primary">{{ stats.sites }}</h3>
+            <p class="mb-0">Sites</p>
         </div>
         <div class="export-stat-item">
             <h3 class="text-success">{{ stats.actions }}</h3>
@@ -46,7 +46,7 @@
             <div class="WIDGET-BODY">
                 <p>Complete dataset including all new fields and calculated summaries.</p>
                 <ul class="list-unstyled">
-                    <li><i class="bi bi-check-circle text-success"></i> All cluster information</li>
+                    <li><i class="bi bi-check-circle text-success"></i> All site information</li>
                     <li><i class="bi bi-check-circle text-success"></i> Landowner details</li>
                     <li><i class="bi bi-check-circle text-success"></i> Site classifications</li>
                     <li><i class="bi bi-check-circle text-success"></i> Hive setup details</li>
@@ -74,9 +74,9 @@
                 <p>Export specific data types separately.</p>
                 
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('export_clusters') }}" class="WIDGET-BUTTON">
-                        <i class="bi bi-geo-alt"></i> Clusters Only
-                        <span class="WIDGET-BADGE ms-2">{{ stats.clusters }}</span>
+                    <a href="{{ url_for('export_sites') }}" class="WIDGET-BUTTON">
+                        <i class="bi bi-geo-alt"></i> Sites Only
+                        <span class="WIDGET-BADGE ms-2">{{ stats.sites }}</span>
                     </a>
                     
                     <a href="{{ url_for('export_actions') }}" class="WIDGET-BUTTON" style="background-color: #28a745;">
@@ -109,7 +109,7 @@
             <div class="col-md-6">
                 <h6>Comprehensive Export Includes:</h6>
                 <ul class="list-unstyled">
-                    <li><strong>Cluster Data:</strong> All basic cluster information</li>
+                    <li><strong>Site Data:</strong> All basic site information</li>
                     <li><strong>Landowner Info:</strong> Contact details and requirements</li>
                     <li><strong>Site Classification:</strong> Summer/Winter, Access types</li>
                     <li><strong>Hive Setup:</strong> Single/Double/Nuc/Dead/Top Splits</li>
@@ -120,12 +120,12 @@
             <div class="col-md-6">
                 <h6>Calculated Summaries:</h6>
                 <ul class="list-unstyled">
-                    <li><strong>Individual Hives:</strong> Status counts by cluster</li>
+                    <li><strong>Individual Hives:</strong> Status counts by site</li>
                     <li><strong>Action History:</strong> Total and recent action counts</li>
                     <li><strong>Disease Totals:</strong> Cumulative disease counts</li>
                     <li><strong>Timestamps:</strong> Creation and update dates</li>
                     <li><strong>Last Activity:</strong> Most recent action details</li>
-                    <li><strong>Health Status:</strong> Overall cluster health indicators</li>
+                    <li><strong>Health Status:</strong> Overall site health indicators</li>
                 </ul>
             </div>
         </div>

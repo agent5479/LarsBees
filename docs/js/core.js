@@ -8,7 +8,7 @@ const VERSION_HISTORY = [
     { version: '0.91', date: '2024-12-19', changes: ['Fixed dashboard loading issue', 'Enhanced login system', 'Added welcome popup', 'Improved map initialization'] },
     { version: '0.92', date: '2024-12-19', changes: ['Added version tag to login screen', 'Implemented lazy map loading', 'Enhanced error prevention', 'Improved user experience'] },
     { version: '0.94', date: '2024-12-19', changes: ['Sales-ready deployment', 'New Firebase project integration', 'Terms of use and privacy declarations', 'Removed migration tools', 'Enhanced security and data isolation'] },
-    { version: '0.96', date: '2024-12-19', changes: ['Added Demo user account for client demonstrations', 'Enhanced hive strength breakdown system', 'Improved cluster editing with detailed breakdowns', 'Updated reports with comprehensive data integration'] }
+    { version: '0.96', date: '2024-12-19', changes: ['Added Demo user account for client demonstrations', 'Enhanced hive strength breakdown system', 'Improved site editing with detailed breakdowns', 'Updated reports with comprehensive data integration'] }
 ];
 
 // Master account credentials
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error('❌ Login form not found!');
     }
-    document.getElementById('clusterForm').addEventListener('submit', handleSaveCluster);
+    document.getElementById('siteForm').addEventListener('submit', handleSaveSite);
     document.getElementById('actionForm').addEventListener('submit', handleLogAction);
     document.getElementById('addEmployeeForm')?.addEventListener('submit', handleAddEmployee);
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
@@ -946,7 +946,7 @@ function updateDashboardStats() {
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
     
     // Animate number changes
-    animateNumber(document.getElementById('statClusters'), sites.length);
+    animateNumber(document.getElementById('statSites'), sites.length);
     animateNumber(document.getElementById('statHives'), totalHives);
     animateNumber(document.getElementById('statActions'), actions.length);
     animateNumber(document.getElementById('statFlagged'), flaggedCount);
@@ -1326,27 +1326,27 @@ function createGBTechTestData() {
     
     // Create diverse test actions
     const testActions = [
-        { id: 2001, clusterId: 1001, task: 'General Inspection', date: getDateDaysAgo(2), employee: 'GBTech', notes: 'All hives strong, queen laying well' },
-        { id: 2002, clusterId: 1001, task: 'Honey Harvest', date: getDateDaysAgo(15), employee: 'GBTech', notes: 'Harvested 45kg premium honey', harvestQuantity: 45 },
-        { id: 2003, clusterId: 1002, task: 'Varroa Treatment', date: getDateDaysAgo(5), employee: 'GBTech', notes: 'Applied Apivar strips', flag: 'urgent' },
-        { id: 2004, clusterId: 1003, task: 'Queen Replacement', date: getDateDaysAgo(10), employee: 'GBTech', notes: 'Replaced 3 failing queens' },
-        { id: 2005, clusterId: 1004, task: 'Emergency Feeding', date: getDateDaysAgo(3), employee: 'GBTech', notes: 'Provided sugar syrup due to weather', flag: 'warning' },
-        { id: 2006, clusterId: 1005, task: 'Swarm Prevention', date: getDateDaysAgo(7), employee: 'GBTech', notes: 'Added supers to prevent swarming' },
-        { id: 2007, clusterId: 1006, task: 'Equipment Sanitization', date: getDateDaysAgo(1), employee: 'GBTech', notes: 'Cleaned all equipment after pollination' },
-        { id: 2008, clusterId: 1007, task: 'Disease Check', date: getDateDaysAgo(0), employee: 'GBTech', notes: 'AFB detected in 2 hives - quarantine active', flag: 'urgent' },
-        { id: 2009, clusterId: 1008, task: 'Record Keeping', date: getDateDaysAgo(4), employee: 'GBTech', notes: 'Data collection for research project' },
-        { id: 2010, clusterId: 1001, task: 'Feed Dry Sugar', date: getDateDaysAgo(20), employee: 'GBTech', notes: 'Winter feed preparation' }
+        { id: 2001, siteId: 1001, task: 'General Inspection', date: getDateDaysAgo(2), employee: 'GBTech', notes: 'All hives strong, queen laying well' },
+        { id: 2002, siteId: 1001, task: 'Honey Harvest', date: getDateDaysAgo(15), employee: 'GBTech', notes: 'Harvested 45kg premium honey', harvestQuantity: 45 },
+        { id: 2003, siteId: 1002, task: 'Varroa Treatment', date: getDateDaysAgo(5), employee: 'GBTech', notes: 'Applied Apivar strips', flag: 'urgent' },
+        { id: 2004, siteId: 1003, task: 'Queen Replacement', date: getDateDaysAgo(10), employee: 'GBTech', notes: 'Replaced 3 failing queens' },
+        { id: 2005, siteId: 1004, task: 'Emergency Feeding', date: getDateDaysAgo(3), employee: 'GBTech', notes: 'Provided sugar syrup due to weather', flag: 'warning' },
+        { id: 2006, siteId: 1005, task: 'Swarm Prevention', date: getDateDaysAgo(7), employee: 'GBTech', notes: 'Added supers to prevent swarming' },
+        { id: 2007, siteId: 1006, task: 'Equipment Sanitization', date: getDateDaysAgo(1), employee: 'GBTech', notes: 'Cleaned all equipment after pollination' },
+        { id: 2008, siteId: 1007, task: 'Disease Check', date: getDateDaysAgo(0), employee: 'GBTech', notes: 'AFB detected in 2 hives - quarantine active', flag: 'urgent' },
+        { id: 2009, siteId: 1008, task: 'Record Keeping', date: getDateDaysAgo(4), employee: 'GBTech', notes: 'Data collection for research project' },
+        { id: 2010, siteId: 1001, task: 'Feed Dry Sugar', date: getDateDaysAgo(20), employee: 'GBTech', notes: 'Winter feed preparation' }
     ];
     
     // Create diverse test scheduled tasks
     const testScheduledTasks = [
-        { id: 3001, clusterId: 1001, task: 'General Inspection', dueDate: getDateDaysFromNow(3), priority: 'normal', completed: false },
-        { id: 3002, clusterId: 1002, task: 'Remove Varroa Treatment', dueDate: getDateDaysFromNow(7), priority: 'high', completed: false },
-        { id: 3003, clusterId: 1003, task: 'Mark New Queens', dueDate: getDateDaysFromNow(14), priority: 'normal', completed: false },
-        { id: 3004, clusterId: 1004, task: 'Aerial Check-up', dueDate: getDateDaysFromNow(21), priority: 'normal', completed: false },
-        { id: 3005, clusterId: 1007, task: 'Re-inspect Quarantine', dueDate: getDateDaysFromNow(2), priority: 'urgent', completed: false },
-        { id: 3006, clusterId: 1006, task: 'Contract Completion', dueDate: getDateDaysFromNow(30), priority: 'normal', completed: false },
-        { id: 3007, clusterId: 1001, task: 'Harvest Honey', dueDate: getDateDaysFromNow(45), priority: 'high', completed: false }
+        { id: 3001, siteId: 1001, task: 'General Inspection', dueDate: getDateDaysFromNow(3), priority: 'normal', completed: false },
+        { id: 3002, siteId: 1002, task: 'Remove Varroa Treatment', dueDate: getDateDaysFromNow(7), priority: 'high', completed: false },
+        { id: 3003, siteId: 1003, task: 'Mark New Queens', dueDate: getDateDaysFromNow(14), priority: 'normal', completed: false },
+        { id: 3004, siteId: 1004, task: 'Aerial Check-up', dueDate: getDateDaysFromNow(21), priority: 'normal', completed: false },
+        { id: 3005, siteId: 1007, task: 'Re-inspect Quarantine', dueDate: getDateDaysFromNow(2), priority: 'urgent', completed: false },
+        { id: 3006, siteId: 1006, task: 'Contract Completion', dueDate: getDateDaysFromNow(30), priority: 'normal', completed: false },
+        { id: 3007, siteId: 1001, task: 'Harvest Honey', dueDate: getDateDaysFromNow(45), priority: 'high', completed: false }
     ];
     
     // Helper functions for date calculation

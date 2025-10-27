@@ -3,19 +3,19 @@
 
 /**
  * USER ROLES
- * - master_admin: Full access, can delete clusters, manage employees
- * - admin: Full access, can delete clusters, manage employees
+ * - master_admin: Full access, can delete sites, manage employees
+ * - admin: Full access, can delete sites, manage employees
  * - demo_admin: Demo account with full read access
- * - employee: Can view, create, update; cannot delete clusters
+ * - employee: Can view, create, update; cannot delete sites
  */
 
 // Permission definitions
 const PERMISSIONS = {
-    // Cluster Management
-    CLUSTER_VIEW: ['master_admin', 'admin', 'demo_admin', 'employee'],
-    CLUSTER_CREATE: ['master_admin', 'admin', 'demo_admin', 'employee'],
-    CLUSTER_UPDATE: ['master_admin', 'admin', 'demo_admin', 'employee'],
-    CLUSTER_DELETE: ['master_admin', 'admin'], // Employees cannot delete
+    // Site Management
+    SITE_VIEW: ['master_admin', 'admin', 'demo_admin', 'employee'],
+    SITE_CREATE: ['master_admin', 'admin', 'demo_admin', 'employee'],
+    SITE_UPDATE: ['master_admin', 'admin', 'demo_admin', 'employee'],
+    SITE_DELETE: ['master_admin', 'admin'], // Employees cannot delete
     
     // Action Management
     ACTION_VIEW: ['master_admin', 'admin', 'demo_admin', 'employee'],
@@ -81,10 +81,10 @@ function hasPermission(permission) {
 }
 
 /**
- * Check if user can delete clusters
+ * Check if user can delete sites
  */
-function canDeleteCluster() {
-    return hasPermission('CLUSTER_DELETE');
+function canDeleteSite() {
+    return hasPermission('SITE_DELETE');
 }
 
 /**
@@ -191,7 +191,7 @@ function isEmployeeOnly() {
 
 // Expose permission functions globally
 window.hasPermission = hasPermission;
-window.canDeleteCluster = canDeleteCluster;
+window.canDeleteSite = canDeleteSite;
 window.canDeleteAction = canDeleteAction;
 window.canDeleteTask = canDeleteTask;
 window.canDeleteHive = canDeleteHive;

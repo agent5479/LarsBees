@@ -71,8 +71,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="#" onclick="showClusters()">
-                                <i class="bi bi-geo-alt"></i> Clusters
+                            <a class="nav-link text-dark" href="#" onclick="showSites()">
+                                <i class="bi bi-geo-alt"></i> Sites
                             </a>
                         </li>
                         <li class="nav-item">
@@ -111,8 +111,8 @@
                 <div class="col-md-3">
                     <div class="card bg-warning">
                         <div class="card-body stat-card">
-                            <h6>Total Clusters</h6>
-                            <h2 id="statClusters">0</h2>
+                            <h6>Total Sites</h6>
+                            <h2 id="statSites">0</h2>
                         </div>
                     </div>
                 </div>
@@ -145,14 +145,14 @@
             <!-- Map -->
             <div class="card">
                 <div class="card-header bg-warning">
-                    <h5 class="mb-0"><i class="bi bi-map"></i> Hive Cluster Locations</h5>
+                    <h5 class="mb-0"><i class="bi bi-map"></i> Hive Site Locations</h5>
                 </div>
                 <div class="card-body p-0">
                     <div id="map"></div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-warning" onclick="showAddClusterForm()">
-                        <i class="bi bi-plus-circle"></i> Add New Cluster
+                    <button class="btn btn-warning" onclick="showAddSiteForm()">
+                        <i class="bi bi-plus-circle"></i> Add New Site
                     </button>
                 </div>
             </div>
@@ -168,14 +168,14 @@
             </div>
         </div>
 
-        <!-- Clusters View -->
+        <!-- Sites View -->
         <div id="sitesView" class="container mt-4 hidden">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="bi bi-geo-alt"></i> Hive Clusters</h1>
+                <h1><i class="bi bi-geo-alt"></i> Hive Sites</h1>
                 <button class="btn btn-warning btn-lg me-2" onclick="migrateUserDataToTenant()" id="migrationButton">
                     <i class="bi bi-arrow-repeat"></i> Migrate Data
                 </button>
-                <button class="btn btn-primary btn-lg" onclick="showAddClusterForm()">
+                <button class="btn btn-primary btn-lg" onclick="showAddSiteForm()">
                     <i class="bi bi-plus-circle"></i> Add Site
                 </button>
             </div>
@@ -183,26 +183,26 @@
             <div id="sitesList" class="row"></div>
         </div>
 
-        <!-- Add/Edit Cluster Form -->
-        <div id="clusterFormView" class="container mt-4 hidden">
+        <!-- Add/Edit Site Form -->
+        <div id="siteFormView" class="container mt-4 hidden">
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header bg-warning">
-                            <h4 class="mb-0" id="clusterFormTitle">Add Hive Cluster</h4>
+                            <h4 class="mb-0" id="siteFormTitle">Add Hive Site</h4>
                         </div>
                         <div class="card-body">
-                            <form id="clusterForm">
-                                <input type="hidden" id="clusterId">
+                            <form id="siteForm">
+                                <input type="hidden" id="siteId">
                                 
                                 <div class="mb-3">
-                                    <label class="form-label">Cluster Name</label>
-                                    <input type="text" id="clusterName" class="form-control" placeholder="e.g., North Field Apiary" required>
+                                    <label class="form-label">Site Name</label>
+                                    <input type="text" id="siteName" class="form-control" placeholder="e.g., North Field Apiary" required>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Description</label>
-                                    <textarea id="clusterDescription" class="form-control" rows="2" placeholder="Brief description of location"></textarea>
+                                    <textarea id="siteDescription" class="form-control" rows="2" placeholder="Brief description of location"></textarea>
                                 </div>
                                 
                                 <div class="card mb-3 bg-light">
@@ -212,11 +212,11 @@
                                         <div class="row mb-3">
                                             <div class="col-md-6">
                                                 <label class="form-label">Latitude</label>
-                                                <input type="number" step="any" id="clusterLat" class="form-control" placeholder="40.7128" required>
+                                                <input type="number" step="any" id="siteLat" class="form-control" placeholder="40.7128" required>
                                             </div>
                                             <div class="col-md-6">
                                                 <label class="form-label">Longitude</label>
-                                                <input type="number" step="any" id="clusterLng" class="form-control" placeholder="-74.0060" required>
+                                                <input type="number" step="any" id="siteLng" class="form-control" placeholder="-74.0060" required>
                                             </div>
                                         </div>
                                         
@@ -240,30 +240,30 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Number of Hives</label>
-                                        <input type="number" id="clusterHiveCount" class="form-control" value="1" min="1" required>
+                                        <input type="number" id="siteHiveCount" class="form-control" value="1" min="1" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Harvest Timeline</label>
-                                        <input type="text" id="clusterHarvest" class="form-control" placeholder="e.g., Spring 2025">
+                                        <input type="text" id="siteHarvest" class="form-control" placeholder="e.g., Spring 2025">
                                     </div>
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Sugar/Feeding Requirements</label>
-                                    <input type="text" id="clusterSugar" class="form-control" placeholder="e.g., 10kg per month">
+                                    <input type="text" id="siteSugar" class="form-control" placeholder="e.g., 10kg per month">
                                 </div>
                                 
                                 <div class="mb-3">
                                     <label class="form-label">Notes</label>
-                                    <textarea id="clusterNotes" class="form-control" rows="4" placeholder="Any special notes about this cluster..."></textarea>
+                                    <textarea id="siteNotes" class="form-control" rows="4" placeholder="Any special notes about this site..."></textarea>
                                 </div>
                                 
                                 <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-secondary" onclick="showClusters()">
+                                    <button type="button" class="btn btn-secondary" onclick="showSites()">
                                         <i class="bi bi-x"></i> Cancel
                                     </button>
                                     <button type="submit" class="btn btn-warning btn-lg">
-                                        <i class="bi bi-check-circle"></i> Save Cluster
+                                        <i class="bi bi-check-circle"></i> Save Site
                                     </button>
                                 </div>
                             </form>
@@ -271,7 +271,7 @@
                             <!-- Break into individual hives section -->
                             <div id="breakIntoHivesSection" class="mt-4 pt-4 border-top hidden">
                                 <h5 class="text-danger"><i class="bi bi-exclamation-triangle"></i> Anomaly Management</h5>
-                                <p class="text-muted">Break this cluster into individually tracked hives for infection management or problem monitoring.</p>
+                                <p class="text-muted">Break this site into individually tracked hives for infection management or problem monitoring.</p>
                                 <button class="btn btn-danger" onclick="breakIntoIndividualHives()">
                                     <i class="bi bi-diagram-3"></i> Break Into Individual Hives
                                 </button>
@@ -285,15 +285,15 @@
         <!-- Individual Hives View (for anomalies) -->
         <div id="individualHivesView" class="container mt-4 hidden">
             <div class="mb-4">
-                <button class="btn btn-secondary" onclick="showClusters()">
-                    <i class="bi bi-arrow-left"></i> Back to Clusters
+                <button class="btn btn-secondary" onclick="showSites()">
+                    <i class="bi bi-arrow-left"></i> Back to Sites
                 </button>
             </div>
             
-            <h2 class="mb-4"><i class="bi bi-hexagon"></i> Individual Hives: <span id="individualHivesClusterName"></span></h2>
+            <h2 class="mb-4"><i class="bi bi-hexagon"></i> Individual Hives: <span id="individualHivesSiteName"></span></h2>
             
             <div class="alert alert-warning">
-                <i class="bi bi-info-circle"></i> <strong>Anomaly Tracking:</strong> This cluster has been broken into individual hives for detailed monitoring.
+                <i class="bi bi-info-circle"></i> <strong>Anomaly Tracking:</strong> This site has been broken into individual hives for detailed monitoring.
             </div>
             
             <div id="individualHivesList"></div>
@@ -317,9 +317,9 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <label class="form-label">Filter by Cluster</label>
-                            <select id="filterCluster" class="form-select" onchange="filterActions()">
-                                <option value="">All Clusters</option>
+                            <label class="form-label">Filter by Site</label>
+                            <select id="filterSite" class="form-select" onchange="filterActions()">
+                                <option value="">All Sites</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -348,14 +348,14 @@
                         <div class="card-body">
                             <form id="actionForm">
                                 <div class="mb-3">
-                                    <label class="form-label">Select Cluster</label>
-                                    <select id="actionCluster" class="form-select form-select-lg" required onchange="loadIndividualHivesForAction()"></select>
+                                    <label class="form-label">Select Site</label>
+                                    <select id="actionSite" class="form-select form-select-lg" required onchange="loadIndividualHivesForAction()"></select>
                                 </div>
                                 
                                 <div id="individualHiveSelectContainer" class="mb-3 hidden">
                                     <label class="form-label">Specific Hive (Optional)</label>
                                     <select id="actionIndividualHive" class="form-select">
-                                        <option value="">All hives in cluster</option>
+                                        <option value="">All hives in site</option>
                                     </select>
                                 </div>
                                 
@@ -428,11 +428,11 @@
             </div>
         </div>
 
-        <!-- Cluster Detail View (with individual hives) -->
-        <div id="clusterDetailView" class="container mt-4 hidden">
+        <!-- Site Detail View (with individual hives) -->
+        <div id="siteDetailView" class="container mt-4 hidden">
             <div class="mb-3">
-                <button class="btn btn-secondary" onclick="showClusters()">
-                    <i class="bi bi-arrow-left"></i> Back to Clusters
+                <button class="btn btn-secondary" onclick="showSites()">
+                    <i class="bi bi-arrow-left"></i> Back to Sites
                 </button>
             </div>
             
@@ -440,16 +440,16 @@
                 <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header bg-warning">
-                            <h4 class="mb-0" id="clusterDetailName">Cluster Details</h4>
+                            <h4 class="mb-0" id="siteDetailName">Site Details</h4>
                         </div>
-                        <div class="card-body" id="clusterDetailInfo"></div>
+                        <div class="card-body" id="siteDetailInfo"></div>
                     </div>
                     
                     <div class="card mt-3">
                         <div class="card-header bg-info text-white">
-                            <h5 class="mb-0">Recent Actions for This Cluster</h5>
+                            <h5 class="mb-0">Recent Actions for This Site</h5>
                         </div>
-                        <div class="card-body" id="clusterActions"></div>
+                        <div class="card-body" id="siteActions"></div>
                     </div>
                 </div>
                 
@@ -458,7 +458,7 @@
                         <div class="card-header bg-success text-white">
                             <h6 class="mb-0"><i class="bi bi-hexagon"></i> Individual Hives</h6>
                         </div>
-                        <div class="card-body" id="individualHivesForCluster"></div>
+                        <div class="card-body" id="individualHivesForSite"></div>
                     </div>
                     
                     <div class="card mt-3">

@@ -59,13 +59,13 @@
 <!-- Statistics Cards -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <a href="{{ url_for('clusters') }}" class="dashboard-stat-card">
+        <a href="{{ url_for('sites') }}" class="dashboard-stat-card">
             <div class="card bg-warning text-dark">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-subtitle mb-2">Total Clusters</h6>
-                            <h2 class="card-title mb-0">{{ stats.total_clusters }}</h2>
+                            <h6 class="card-subtitle mb-2">Total Sites</h6>
+                            <h2 class="card-title mb-0">{{ stats.total_sites }}</h2>
                         </div>
                         <i class="bi bi-geo-alt-fill" style="font-size: 3rem; opacity: 0.3;"></i>
                     </div>
@@ -74,7 +74,7 @@
         </a>
     </div>
     <div class="col-md-3">
-        <a href="{{ url_for('clusters') }}" class="dashboard-stat-card">
+        <a href="{{ url_for('sites') }}" class="dashboard-stat-card">
             <div class="card bg-success text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
@@ -125,17 +125,17 @@
     <div class="col">
         <div class="card">
             <div class="card-header bg-warning">
-                <h5 class="mb-0"><i class="bi bi-map"></i> Hive Cluster Locations</h5>
+                <h5 class="mb-0"><i class="bi bi-map"></i> Hive Site Locations</h5>
             </div>
             <div class="card-body p-0">
                 <div id="map" style="height: 400px; width: 100%;"></div>
             </div>
             <div class="card-footer">
-                <a href="{{ url_for('add_cluster') }}" class="btn btn-warning">
-                    <i class="bi bi-plus-circle"></i> Add New Cluster
+                <a href="{{ url_for('add_site') }}" class="btn btn-warning">
+                    <i class="bi bi-plus-circle"></i> Add New Site
                 </a>
-                <a href="{{ url_for('clusters') }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-list"></i> View All Clusters
+                <a href="{{ url_for('sites') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-list"></i> View All Sites
                 </a>
                 <a href="{{ url_for('field_report') }}" class="btn btn-success">
                     <i class="bi bi-check-square"></i> Field Report
@@ -168,18 +168,18 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Cluster</th>
+                                <th>Site</th>
                                 <th>Task</th>
                                 <th>Description</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for action in recent_actions %}
-                            <tr class="action-row" data-href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" style="cursor: pointer;">
+                            <tr class="action-row" data-href="{{ url_for('site_detail', site_id=action.site_id) }}" style="cursor: pointer;">
                                 <td>{{ action.action_date.strftime('%Y-%m-%d %H:%M') }}</td>
                                 <td>
-                                    <a href="{{ url_for('cluster_detail', cluster_id=action.cluster_id) }}" class="text-decoration-none fw-bold">
-                                        <i class="bi bi-geo-alt-fill text-warning"></i> {{ action.cluster.name }}
+                                    <a href="{{ url_for('site_detail', site_id=action.site_id) }}" class="text-decoration-none fw-bold">
+                                        <i class="bi bi-geo-alt-fill text-warning"></i> {{ action.site.name }}
                                     </a>
                                 </td>
                                 <td><span class="badge bg-secondary">{{ action.task_name }}</span></td>
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     actionRows.forEach(function(row) {
         row.addEventListener('click', function(e) {
-            // Don't navigate if clicking on the cluster name link
+            // Don't navigate if clicking on the site name link
             if (e.target.tagName === 'A') {
                 return;
             }
@@ -268,20 +268,20 @@ function initMap() {
         mapTypeId: 'terrain'
     });
     
-    // Fetch clusters and add markers
-    fetch('{{ url_for("api_clusters") }}')
+    // Fetch sites and add markers
+    fetch('{{ url_for("api_sites") }}')
         .then(response => response.json())
-        .then(clusters => {
-            if (clusters.length > 0) {
-                // Center map on first cluster
-                map.setCenter({ lat: clusters[0].latitude, lng: clusters[0].longitude });
+        .then(sites => {
+            if (sites.length > 0) {
+                // Center map on first site
+                map.setCenter({ lat: sites[0].latitude, lng: sites[0].longitude });
                 
-                // Add markers for each cluster
-                clusters.forEach(cluster => {
+                // Add markers for each site
+                sites.forEach(site => {
                     const marker = new google.maps.Marker({
-                        position: { lat: cluster.latitude, lng: cluster.longitude },
+                        position: { lat: site.latitude, lng: site.longitude },
                         map: map,
-                        title: cluster.name,
+                        title: site.name,
                         icon: {
                             path: google.maps.SymbolPath.CIRCLE,
                             scale: 10,
@@ -296,11 +296,11 @@ function initMap() {
                     const infoWindow = new google.maps.InfoWindow({
                         content: `
                             <div style="padding: 10px;">
-                                <h6><strong>${cluster.name}</strong></h6>
-                                <p class="mb-1"><small>${cluster.description || 'No description'}</small></p>
-                                <p class="mb-1"><strong>Hives:</strong> ${cluster.hive_count}</p>
-                                ${cluster.harvest_timeline ? `<p class="mb-1"><strong>Harvest:</strong> ${cluster.harvest_timeline}</p>` : ''}
-                                <a href="/cluster/${cluster.id}" class="btn btn-sm btn-warning mt-2">View Details</a>
+                                <h6><strong>${site.name}</strong></h6>
+                                <p class="mb-1"><small>${site.description || 'No description'}</small></p>
+                                <p class="mb-1"><strong>Hives:</strong> ${site.hive_count}</p>
+                                ${site.harvest_timeline ? `<p class="mb-1"><strong>Harvest:</strong> ${site.harvest_timeline}</p>` : ''}
+                                <a href="/site/${site.id}" class="btn btn-sm btn-warning mt-2">View Details</a>
                             </div>
                         `
                     });
@@ -311,16 +311,16 @@ function initMap() {
                 });
                 
                 // Fit bounds to show all markers
-                if (clusters.length > 1) {
+                if (sites.length > 1) {
                     const bounds = new google.maps.LatLngBounds();
-                    clusters.forEach(cluster => {
-                        bounds.extend(new google.maps.LatLng(cluster.latitude, cluster.longitude));
+                    sites.forEach(site => {
+                        bounds.extend(new google.maps.LatLng(site.latitude, site.longitude));
                     });
                     map.fitBounds(bounds);
                 }
             }
         })
-        .catch(error => console.error('Error loading clusters:', error));
+        .catch(error => console.error('Error loading sites:', error));
 }
 </script>
 {% endblock %}
