@@ -730,8 +730,7 @@
             
             // Debug system removed for production
             
-            // Hide any lingering skeleton loaders on page load
-            hideAllSkeletonLoaders();
+            // Skeleton loaders will be hidden after charts are generated
             
             // Reset chart generation flags to allow charts to be generated
             window.hivePerformanceChartGenerated = false;
@@ -1265,12 +1264,6 @@
                     existingChart.destroy();
                 }
                 
-                // Hide skeleton loader immediately
-                const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
-                if (hivePerformanceSkeleton) {
-                    hivePerformanceSkeleton.style.display = 'none';
-                }
-                
                 // Check if chart already exists and is being updated
                 if (window.hivePerformanceChartGenerated) {
                     console.log('📊 Hive performance chart already generated, skipping...');
@@ -1324,6 +1317,12 @@
                 
                 // Mark chart as generated to prevent regeneration
                 window.hivePerformanceChartGenerated = true;
+                
+                // Hide skeleton loader after chart is created
+                const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
+                if (hivePerformanceSkeleton) {
+                    hivePerformanceSkeleton.style.display = 'none';
+                }
                 
                 // Show enhanced performance summary with stack data
                 const summary = `
@@ -1413,12 +1412,6 @@
                     existingHealthChart.destroy();
                 }
                 
-                // Hide skeleton loader immediately
-                const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
-                if (healthMortalitySkeleton) {
-                    healthMortalitySkeleton.style.display = 'none';
-                }
-                
                 // Check if chart already exists and is being updated
                 if (window.healthMortalityChartGenerated) {
                     console.log('📊 Health mortality chart already generated, skipping...');
@@ -1474,6 +1467,12 @@
                 
                 // Mark chart as generated to prevent regeneration
                 window.healthMortalityChartGenerated = true;
+                
+                // Hide skeleton loader after chart is created
+                const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
+                if (healthMortalitySkeleton) {
+                    healthMortalitySkeleton.style.display = 'none';
+                }
                 
                 // Show health summary
                 const summary = `
@@ -1540,12 +1539,6 @@
                     existingOpsChart.destroy();
                 }
                 
-                // Hide skeleton loader immediately
-                const operationsSkeleton = document.getElementById('operationsSkeleton');
-                if (operationsSkeleton) {
-                    operationsSkeleton.style.display = 'none';
-                }
-                
                 // Check if chart already exists and is being updated
                 if (window.operationsChartGenerated) {
                     console.log('📊 Operations chart already generated, skipping...');
@@ -1597,6 +1590,12 @@
                 
                 // Mark chart as generated to prevent regeneration
                 window.operationsChartGenerated = true;
+                
+                // Hide skeleton loader after chart is created
+                const operationsSkeleton = document.getElementById('operationsSkeleton');
+                if (operationsSkeleton) {
+                    operationsSkeleton.style.display = 'none';
+                }
                 
                 // Show operations summary
                 const summary = `
