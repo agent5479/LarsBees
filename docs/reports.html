@@ -350,6 +350,23 @@
             background: #17a2b8;
             color: white;
         }
+        
+        /* Honey Type Cards */
+        .honey-type-card {
+            transition: var(--transition);
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .honey-type-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-color: var(--accent);
+        }
+        
+        .honey-type-card.clickable {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -579,6 +596,30 @@
             </div>
         </div>
 
+        <!-- Honey Potentials -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="report-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-flower1"></i> Honey Potentials</h5>
+                        <small class="text-muted">Click on honey types to see associated sites</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="honeyPotentialsSection">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted mt-3">Loading honey potential data...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Site Details Modal -->
         <div class="modal fade" id="clusterDetailsModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
@@ -708,6 +749,30 @@
                                 <button class="btn btn-outline-danger w-100" onclick="generateQuickReport('health')">
                                     <i class="bi bi-heart-pulse"></i> Health Dashboard
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Integrity Check -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="report-card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-shield-check"></i> Data Integrity Check</h5>
+                        <small class="text-muted">Identify data inconsistencies and missing information across sites</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="integrityCheckSection">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="text-muted mt-3">Analyzing data integrity...</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -862,6 +927,46 @@
         
         function showSyncProgress(message) {
             showSyncStatus(message, 'loading');
+        }
+        
+        // BeeMarshall alert function for branded messages
+        function beeMarshallAlert(message, type = 'info') {
+            // Create custom modal for BeeMarshall alerts
+            const alertModal = document.createElement('div');
+            alertModal.className = 'modal fade';
+            alertModal.id = 'beeMarshallAlert';
+            alertModal.innerHTML = `
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                        <div class="modal-header border-0">
+                            <h5 class="modal-title d-flex align-items-center">
+                                <i class="bi bi-hexagon-fill me-2" style="color: var(--accent); font-size: 1.2rem;"></i>
+                                BeeMarshall says
+                            </h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : type === 'error' ? 'exclamation-triangle-fill text-danger' : type === 'warning' ? 'exclamation-triangle-fill text-warning' : 'info-circle-fill text-primary'}" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <p class="mb-0" style="white-space: pre-line;">${message}</p>
+                        </div>
+                        <div class="modal-footer border-0 justify-content-center">
+                            <button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">
+                                <i class="bi bi-check me-2"></i>OK
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(alertModal);
+            const modal = new bootstrap.Modal(alertModal);
+            modal.show();
+            
+            // Remove modal from DOM after hiding
+            alertModal.addEventListener('hidden.bs.modal', () => {
+                document.body.removeChild(alertModal);
+            });
         }
         
         // Get current tenant ID from localStorage
@@ -1086,23 +1191,57 @@
                 clearTimeout(reportGenerationTimeout);
             }
             
+            // Set 10-second timeout for report generation
+            const timeoutId = setTimeout(() => {
+                if (isGeneratingReports) {
+                    Logger.error('⏱️ Report generation timeout - exceeded 10 seconds');
+                    beeMarshallAlert('⏱️ Report Generation Timeout\n\nThe report generation took longer than expected.\n\nSome reports may be incomplete. Please refresh the page or try again.', 'warning');
+                    isGeneratingReports = false;
+                }
+            }, 10000);
+            
             reportGenerationTimeout = setTimeout(() => {
-                Logger.log('📊 Generating all reports...');
+                Logger.log('📊 Starting data integrity check before generating reports...');
                 
-                if (clusters && clusters.length > 0) {
-                    generateHivePerformanceReport();
-                    generateHarvestHistoryReport();
-                }
-                if (actions && actions.length > 0) {
-                    generateHealthMortalityReport();
-                }
-                if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
-                    generateOperationsReport();
-                }
+                // Step 1: Run data integrity check first
+                const integrityIssues = performDataIntegrityCheck();
                 
-                // Mark reports as generated
-                reportsGenerated = true;
-                Logger.log('✅ All reports generated successfully');
+                // Step 2: Display integrity check results
+                displayIntegrityCheckResults(integrityIssues);
+                
+                // Step 3: Only generate summary graphics if integrity check passes
+                if (integrityIssues.totalIssues === 0) {
+                    Logger.log('✅ Data integrity check passed - proceeding with report generation...');
+                    
+                    try {
+                        if (clusters && clusters.length > 0) {
+                            generateHivePerformanceReport();
+                            generateHarvestHistoryReport();
+                            generateHoneyPotentialsReport();
+                        }
+                        if (actions && actions.length > 0) {
+                            generateHealthMortalityReport();
+                        }
+                        if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
+                            generateOperationsReport();
+                        }
+                        
+                        // Also generate detailed integrity check report
+                        generateDataIntegrityCheck();
+                        
+                        // Mark reports as generated
+                        reportsGenerated = true;
+                        clearTimeout(timeoutId);
+                        Logger.log('✅ All reports generated successfully');
+                    } catch (error) {
+                        Logger.error('❌ Error during report generation:', error);
+                        beeMarshallAlert('❌ Report Generation Error\n\nAn error occurred while generating reports.\n\nPlease refresh the page and try again.', 'error');
+                        isGeneratingReports = false;
+                    }
+                } else {
+                    Logger.warn(`⚠️ Data integrity check found ${integrityIssues.totalIssues} issues. Report generation skipped.`);
+                    beeMarshallAlert(`⚠️ Data Integrity Issues Found\n\n${integrityIssues.totalIssues} data integrity issues have been detected.\n\nPlease review and fix the issues listed in the Data Integrity Check section before viewing summary reports.`, 'warning');
+                }
             }, 1000);
         }
         
@@ -1657,6 +1796,92 @@
             });
         }
         
+        function generateHoneyPotentialsReport() {
+            if (!clusters || clusters.length === 0) {
+                document.getElementById('honeyPotentialsSection').innerHTML = '<p class="text-muted text-center">No sites found. Add sites to start tracking honey potentials.</p>';
+                return;
+            }
+            
+            // Collect all honey types and their associated sites
+            const honeyTypesMap = {};
+            
+            clusters.forEach(cluster => {
+                if (cluster.honeyPotentials && Array.isArray(cluster.honeyPotentials) && cluster.honeyPotentials.length > 0) {
+                    cluster.honeyPotentials.forEach(honeyType => {
+                        if (!honeyTypesMap[honeyType]) {
+                            honeyTypesMap[honeyType] = [];
+                        }
+                        honeyTypesMap[honeyType].push({
+                            id: cluster.id,
+                            name: cluster.name,
+                            hiveCount: cluster.hiveCount || 0
+                        });
+                    });
+                }
+            });
+            
+            if (Object.keys(honeyTypesMap).length === 0) {
+                document.getElementById('honeyPotentialsSection').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No honey potentials recorded yet.
+                        <br>Edit your sites to add honey type information.
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort honey types by number of sites
+            const sortedHoneyTypes = Object.entries(honeyTypesMap)
+                .sort((a, b) => b[1].length - a[1].length);
+            
+            // Generate HTML
+            let html = '<div class="row g-2">';
+            
+            sortedHoneyTypes.forEach(([honeyType, sites]) => {
+                const totalHives = sites.reduce((sum, site) => sum + site.hiveCount, 0);
+                html += `
+                    <div class="col-6 col-md-4 col-lg-3">
+                        <div class="card honey-type-card clickable" onclick="showSitesByHoneyType('${honeyType}')">
+                            <div class="card-body text-center">
+                                <i class="bi bi-flower1 text-warning" style="font-size: 2rem;"></i>
+                                <h6 class="mt-2 mb-1">${honeyType}</h6>
+                                <p class="mb-0">
+                                    <small class="text-muted">${sites.length} site${sites.length > 1 ? 's' : ''}</small><br>
+                                    <small class="text-muted">${totalHives} hives</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            
+            document.getElementById('honeyPotentialsSection').innerHTML = html;
+        }
+        
+        // Function to show sites by honey type
+        function showSitesByHoneyType(honeyType) {
+            if (!clusters || clusters.length === 0) {
+                beeMarshallAlert('📊 No site data available.', 'info');
+                return;
+            }
+            
+            const associatedSites = clusters.filter(cluster => 
+                cluster.honeyPotentials && 
+                Array.isArray(cluster.honeyPotentials) && 
+                cluster.honeyPotentials.includes(honeyType)
+            );
+            
+            if (associatedSites.length === 0) {
+                alert(`No sites found for ${honeyType} honey.`);
+                return;
+            }
+            
+            // Show sites in modal
+            showSiteDetailsModal(associatedSites, honeyType);
+        }
+        
         function generateQuickReport(type) {
             const reports = {
                 'monthly': 'Monthly Summary Report',
@@ -1882,6 +2107,535 @@
                 const data = JSON.parse(taskData);
                 window.location.href = `beemarshall-full.html#schedule-task-${data.siteId}`;
             }
+        }
+        
+        // Data Integrity Check Functions
+        
+        /**
+         * Perform data integrity check and return issues
+         */
+        function performDataIntegrityCheck() {
+            if (!clusters || clusters.length === 0) {
+                return { totalIssues: 0, issues: {} };
+            }
+            
+            const issues = {
+                hiveCountMismatches: [],
+                missingLandownerInfo: [],
+                missingAccessInfo: [],
+                missingGPS: [],
+                missingContactDetails: []
+            };
+            
+            // Check each site for data integrity issues
+            clusters.forEach(site => {
+                // Check 1: Hive count consistency (exclude dead hives)
+                if (site.hiveStrength && site.hiveStacks) {
+                    // Active hive count (excluding dead)
+                    const activeHiveStrengthTotal = (site.hiveStrength.strong || 0) + 
+                                                    (site.hiveStrength.medium || 0) + 
+                                                    (site.hiveStrength.weak || 0) + 
+                                                    (site.hiveStrength.nuc || 0);
+                    
+                    // Hive box total (excluding empty)
+                    const hiveBoxTotal = (site.hiveStacks.doubles || 0) +
+                                        (site.hiveStacks.topSplits || 0) +
+                                        (site.hiveStacks.singles || 0) +
+                                        (site.hiveStacks.nucs || 0);
+                    
+                    // Check if active hives match hive boxes (dead hives don't count)
+                    if (activeHiveStrengthTotal !== hiveBoxTotal && site.hiveCount > 0) {
+                        issues.hiveCountMismatches.push({
+                            siteName: site.name,
+                            siteId: site.id,
+                            strengthTotal: activeHiveStrengthTotal,
+                            boxTotal: hiveBoxTotal,
+                            difference: Math.abs(activeHiveStrengthTotal - hiveBoxTotal)
+                        });
+                    }
+                }
+                
+                // Check 2: Missing landowner information
+                if (!site.landownerName || !site.landownerName.trim()) {
+                    issues.missingLandownerInfo.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Landowner Name'
+                    });
+                }
+                
+                // Check 3: Missing access information
+                if (!site.accessType || !site.accessType.trim()) {
+                    issues.missingAccessInfo.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Access Type'
+                    });
+                }
+                
+                // Check 4: Missing GPS coordinates
+                if (!site.latitude || !site.longitude || 
+                    site.latitude === 0 || site.longitude === 0) {
+                    issues.missingGPS.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+                
+                // Check 5: Missing contact details
+                const hasPhone = site.landownerPhone && site.landownerPhone.trim();
+                const hasEmail = site.landownerEmail && site.landownerEmail.trim();
+                if (!hasPhone && !hasEmail) {
+                    issues.missingContactDetails.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+            });
+            
+            // Calculate total issues
+            const totalIssues = issues.hiveCountMismatches.length + 
+                              issues.missingLandownerInfo.length + 
+                              issues.missingAccessInfo.length + 
+                              issues.missingGPS.length + 
+                              issues.missingContactDetails.length;
+            
+            return { totalIssues, issues };
+        }
+        
+        /**
+         * Display data integrity check results in a modal
+         */
+        function displayIntegrityCheckResults(integrityResults) {
+            const modalHtml = `
+                <div class="modal fade" id="integrityCheckModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header ${integrityResults.totalIssues === 0 ? 'bg-success' : 'bg-warning'} text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi ${integrityResults.totalIssues === 0 ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'}"></i>
+                                    Data Integrity Check
+                                </h5>
+                            </div>
+                            <div class="modal-body">
+                                ${integrityResults.totalIssues === 0 ? `
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-check-circle-fill"></i> <strong>All Data Integrity Checks Passed!</strong>
+                                        <p class="mb-0 mt-2">No data integrity issues found. All sites have complete and consistent data.</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <button class="btn btn-success btn-lg" data-bs-dismiss="modal" onclick="proceedWithReports()">
+                                            <i class="bi bi-arrow-right-circle"></i> Proceed to Reports
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="alert alert-warning">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> <strong>Data Integrity Issues Found: ${integrityResults.totalIssues}</strong>
+                                        <p class="mb-0 mt-2">The following data integrity issues were detected across your sites:</p>
+                                    </div>
+                                    
+                                    ${integrityResults.issues.hiveCountMismatches.length > 0 ? `
+                                        <div class="card mb-2 border-danger">
+                                            <div class="card-header bg-danger text-white">
+                                                <i class="bi bi-exclamation-triangle"></i> Hive Count Mismatches (${integrityResults.issues.hiveCountMismatches.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-muted small">Sites where hive strength counts don't match hive box counts:</p>
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.hiveCountMismatches.map(issue => `
+                                        <li class="list-group-item">
+                                            <strong>${issue.siteName}</strong> (ID: ${issue.siteId})<br>
+                                            <small class="text-danger">Strength: ${issue.strengthTotal} | Boxes: ${issue.boxTotal}</small>
+                                        </li>
+                                    `).join('')}
+                                    ${integrityResults.issues.hiveCountMismatches.length > 0 ? '</ul></div></div>' : ''}
+                                    
+                                    ${integrityResults.issues.missingLandownerInfo.length > 0 ? `
+                                        <div class="card mb-2 border-warning">
+                                            <div class="card-header bg-warning text-dark">
+                                                <i class="bi bi-person-x"></i> Missing Landowner Info (${integrityResults.issues.missingLandownerInfo.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.missingLandownerInfo.map(issue => `
+                                        <li class="list-group-item">${issue.siteName} (ID: ${issue.siteId})</li>
+                                    `).join('')}
+                                    ${integrityResults.issues.missingLandownerInfo.length > 0 ? '</ul></div></div>' : ''}
+                                    
+                                    ${integrityResults.issues.missingAccessInfo.length > 0 ? `
+                                        <div class="card mb-2 border-warning">
+                                            <div class="card-header bg-warning text-dark">
+                                                <i class="bi bi-signpost"></i> Missing Access Info (${integrityResults.issues.missingAccessInfo.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.missingAccessInfo.map(issue => `
+                                        <li class="list-group-item">${issue.siteName} (ID: ${issue.siteId})</li>
+                                    `).join('')}
+                                    ${integrityResults.issues.missingAccessInfo.length > 0 ? '</ul></div></div>' : ''}
+                                    
+                                    ${integrityResults.issues.missingGPS.length > 0 ? `
+                                        <div class="card mb-2 border-danger">
+                                            <div class="card-header bg-danger text-white">
+                                                <i class="bi bi-geo-alt"></i> Missing GPS Coordinates (${integrityResults.issues.missingGPS.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.missingGPS.map(issue => `
+                                        <li class="list-group-item">${issue.siteName} (ID: ${issue.siteId})</li>
+                                    `).join('')}
+                                    ${integrityResults.issues.missingGPS.length > 0 ? '</ul></div></div>' : ''}
+                                    
+                                    ${integrityResults.issues.missingContactDetails.length > 0 ? `
+                                        <div class="card mb-2 border-info">
+                                            <div class="card-header bg-info text-white">
+                                                <i class="bi bi-telephone"></i> Missing Contact Details (${integrityResults.issues.missingContactDetails.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.missingContactDetails.map(issue => `
+                                        <li class="list-group-item">${issue.siteName} (ID: ${issue.siteId})</li>
+                                    `).join('')}
+                                    ${integrityResults.issues.missingContactDetails.length > 0 ? '</ul></div></div>' : ''}
+                                    
+                                    <div class="alert alert-info mt-3">
+                                        <strong>Next Steps:</strong>
+                                        <ul class="mb-0">
+                                            <li>Review the issues listed above</li>
+                                            <li>Click "View Full Report" to see detailed information with "Fix" buttons</li>
+                                            <li>Fix data integrity issues in the Site Management section</li>
+                                            <li>Return to Reports after fixing issues</li>
+                                        </ul>
+                                    </div>
+                                `}
+                            </div>
+                            <div class="modal-footer">
+                                ${integrityResults.totalIssues === 0 ? `
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                ` : `
+                                    <button type="button" class="btn btn-warning" onclick="viewFullIntegrityReport()">View Full Report</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Anyway</button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('integrityCheckModal');
+            if (existingModal) existingModal.remove();
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('integrityCheckModal'));
+            modal.show();
+        }
+        
+        /**
+         * Proceed with report generation after integrity check passes
+         */
+        function proceedWithReports() {
+            Logger.log('✅ User approved - proceeding with report generation...');
+            
+            if (clusters && clusters.length > 0) {
+                generateHivePerformanceReport();
+                generateHarvestHistoryReport();
+            }
+            if (actions && actions.length > 0) {
+                generateHealthMortalityReport();
+            }
+            if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
+                generateOperationsReport();
+            }
+            
+            // Also generate detailed integrity check report
+            generateDataIntegrityCheck();
+            
+            // Mark reports as generated
+            reportsGenerated = true;
+            Logger.log('✅ All reports generated successfully');
+        }
+        
+        /**
+         * View full integrity report
+         */
+        function viewFullIntegrityReport() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('integrityCheckModal'));
+            if (modal) modal.hide();
+            
+            // Scroll to the integrity check section
+            const integritySection = document.getElementById('integrityCheckSection');
+            if (integritySection) {
+                integritySection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Data Integrity Check Function
+        function generateDataIntegrityCheck() {
+            if (!clusters || clusters.length === 0) {
+                document.getElementById('integrityCheckSection').innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No sites found. Add sites to perform data integrity checks.
+                    </div>
+                `;
+                return;
+            }
+            
+            Logger.log('🔍 Running data integrity check...');
+            
+            const issues = {
+                hiveCountMismatches: [],
+                missingLandownerInfo: [],
+                missingAccessInfo: [],
+                missingGPS: [],
+                missingContactDetails: []
+            };
+            
+            // Check each site for data integrity issues
+            clusters.forEach(site => {
+                // Check 1: Hive count consistency
+                if (site.hiveStrength && site.hiveStacks) {
+                    const hiveStrengthTotal = (site.hiveStrength.strong || 0) + 
+                                             (site.hiveStrength.medium || 0) + 
+                                             (site.hiveStrength.weak || 0) + 
+                                             (site.hiveStrength.nuc || 0) + 
+                                             (site.hiveStrength.dead || 0);
+                    
+                    const hiveBoxTotal = (site.hiveStacks.doubles || 0) * 2 +
+                                        (site.hiveStacks.topSplits || 0) +
+                                        (site.hiveStacks.singles || 0) +
+                                        (site.hiveStacks.nucs || 0) +
+                                        (site.hiveStacks.empty || 0);
+                    
+                    if (hiveStrengthTotal !== hiveBoxTotal && site.hiveCount > 0) {
+                        issues.hiveCountMismatches.push({
+                            siteName: site.name,
+                            siteId: site.id,
+                            strengthTotal: hiveStrengthTotal,
+                            boxTotal: hiveBoxTotal,
+                            difference: Math.abs(hiveStrengthTotal - hiveBoxTotal)
+                        });
+                    }
+                }
+                
+                // Check 2: Missing landowner information
+                if (!site.landownerName || !site.landownerName.trim()) {
+                    issues.missingLandownerInfo.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Landowner Name'
+                    });
+                }
+                
+                // Check 3: Missing access information
+                if (!site.accessType || !site.accessType.trim()) {
+                    issues.missingAccessInfo.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Access Type'
+                    });
+                }
+                
+                // Check 4: Missing GPS coordinates
+                if (!site.latitude || !site.longitude || 
+                    site.latitude === 0 || site.longitude === 0) {
+                    issues.missingGPS.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+                
+                // Check 5: Missing contact details
+                const hasPhone = site.landownerPhone && site.landownerPhone.trim();
+                const hasEmail = site.landownerEmail && site.landownerEmail.trim();
+                if (!hasPhone && !hasEmail) {
+                    issues.missingContactDetails.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+            });
+            
+            // Calculate total issues
+            const totalIssues = issues.hiveCountMismatches.length + 
+                              issues.missingLandownerInfo.length + 
+                              issues.missingAccessInfo.length + 
+                              issues.missingGPS.length + 
+                              issues.missingContactDetails.length;
+            
+            // Generate HTML report
+            let html = '';
+            
+            if (totalIssues === 0) {
+                html = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle-fill"></i> <strong>Data Integrity: Excellent!</strong>
+                        <p class="mb-0 mt-2">All sites have complete and consistent data. No issues detected.</p>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i> <strong>Data Integrity Issues Found: ${totalIssues}</strong>
+                        <p class="mb-0 mt-2">The following data inconsistencies and missing information have been detected across your sites:</p>
+                    </div>
+                `;
+                
+                // Hive count mismatches
+                if (issues.hiveCountMismatches.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-exclamation-triangle"></i> Hive Count Mismatches (${issues.hiveCountMismatches.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites where hive strength counts don't match hive box counts:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.hiveCountMismatches.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <br>
+                                <small class="text-danger">
+                                    Strength Total: ${issue.strengthTotal} | Box Total: ${issue.boxTotal} | Difference: ${issue.difference}
+                                </small>
+                                <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing landowner info
+                if (issues.missingLandownerInfo.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-person-x"></i> Missing Landowner Information (${issues.missingLandownerInfo.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites missing landowner name:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingLandownerInfo.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing access info
+                if (issues.missingAccessInfo.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-signpost"></i> Missing Access Information (${issues.missingAccessInfo.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites missing access type:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingAccessInfo.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing GPS
+                if (issues.missingGPS.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-geo-alt"></i> Missing GPS Coordinates (${issues.missingGPS.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites without GPS coordinates:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingGPS.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing contact details
+                if (issues.missingContactDetails.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-info">
+                            <div class="card-header bg-info text-white">
+                                <i class="bi bi-telephone-x"></i> Missing Contact Details (${issues.missingContactDetails.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites without phone or email contact:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingContactDetails.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            document.getElementById('integrityCheckSection').innerHTML = html;
+            Logger.log('✅ Data integrity check completed:', { totalIssues });
         }
     </script>
 </body>

@@ -123,6 +123,20 @@ const COMPREHENSIVE_TASKS = [
     { id: 'task_28', name: 'Treatment Required', category: 'Problems', description: 'Identify and treat disease or pest issues' }
 ];
 
+// Honey types list - editable by admins
+let HONEY_TYPES = [
+    'Manuka',
+    'Rewarewa',
+    'Clover',
+    'Wildflower',
+    'Bush',
+    'Thyme',
+    'Lemon',
+    'Kamahi',
+    'Rata',
+    'Pohutukawa'
+];
+
 let tasks = COMPREHENSIVE_TASKS;
 let deletedTasks = {}; // Archive of deleted tasks for historical record display
 let map = null;

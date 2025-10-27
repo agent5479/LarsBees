@@ -54,6 +54,32 @@ function renderClusters() {
             // Add archived indicator
             const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
             
+            // Get landowner info
+            const landownerInfo = c.landownerName ? `${c.landownerName}${c.landownerPhone ? ' • ' + c.landownerPhone : ''}` : 'Not specified';
+            
+            // Get hive strength breakdown for inline editing
+            const hiveStrong = c.hiveStrength?.strong || 0;
+            const hiveMedium = c.hiveStrength?.medium || 0;
+            const hiveWeak = c.hiveStrength?.weak || 0;
+            const hiveNUC = c.hiveStrength?.nuc || 0;
+            const hiveDead = c.hiveStrength?.dead || 0;
+            
+            // Get hive stacks for clickable cards
+            const hiveDoubles = c.hiveStacks?.doubles || 0;
+            const hiveTopSplits = c.hiveStacks?.topSplits || 0;
+            const hiveSingles = c.hiveStacks?.singles || 0;
+            const hiveNUCs = c.hiveStacks?.nucs || 0;
+            const hiveEmpty = c.hiveStacks?.empty || 0;
+            
+            // Get honey potentials
+            const honeyPotentials = c.honeyPotentials || [];
+            const honeyPotentialsList = honeyPotentials.length > 0 
+                ? honeyPotentials.map(p => `<span class="badge bg-warning me-1">${p}</span>`).join('')
+                : '<span class="text-muted">None specified</span>';
+            
+            // Determine site type label
+            const siteTypeLabel = c.siteType || 'Not specified';
+            
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card cluster-card h-100" data-cluster-type="${clusterType}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
@@ -68,15 +94,66 @@ function renderClusters() {
                                     ${typeInfo.name}
                                 </span>
                             </div>
-                            <p class="card-text text-muted">${c.description || 'No description'}</p>
-                            <ul class="list-unstyled small">
-                                <li><strong>Hives:</strong> ${c.hiveCount}</li>
-                                <li><strong>GPS:</strong> ${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}</li>
-                                ${c.harvestTimeline ? `<li><strong>Harvest:</strong> ${c.harvestTimeline}</li>` : ''}
-                                ${c.sugarRequirements ? `<li><strong>Sugar:</strong> ${c.sugarRequirements}</li>` : ''}
-                                ${c.landownerName ? `<li><strong>Landowner:</strong> ${c.landownerName}</li>` : ''}
-                                ${c.siteType ? `<li><strong>Site Type:</strong> ${c.siteType}</li>` : ''}
-                            </ul>
+                            
+                            <!-- Landowner & Phone -->
+                            <div class="mb-2">
+                                <i class="bi bi-person-fill text-muted me-1"></i>
+                                <strong>Landowner:</strong> ${landownerInfo}
+                            </div>
+                            
+                            <!-- Site Type -->
+                            <div class="mb-2">
+                                <i class="bi bi-calendar-event text-muted me-1"></i>
+                                <strong>Site Type:</strong> ${siteTypeLabel}
+                            </div>
+                            
+                            <!-- Hive Count Summary (Editable inline) -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editCluster(${c.id})" title="Edit hive counts">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 small">
+                                    <span class="badge bg-success" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Strong: ${hiveStrong}</span>
+                                    <span class="badge bg-warning text-dark" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Med: ${hiveMedium}</span>
+                                    <span class="badge bg-danger" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Weak: ${hiveWeak}</span>
+                                    <span class="badge bg-info" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">NUC: ${hiveNUC}</span>
+                                    <span class="badge bg-secondary" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Dead: ${hiveDead}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Hive Boxes (Clickable mini cards) -->
+                            <div class="mb-3">
+                                <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
+                                <div class="d-flex flex-wrap gap-1 mt-1 small">
+                                    <span class="badge bg-primary" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
+                                        <i class="bi bi-stack"></i> ${hiveDoubles}
+                                    </span>
+                                    <span class="badge bg-success" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
+                                        <i class="bi bi-layers-half"></i> ${hiveTopSplits}
+                                    </span>
+                                    <span class="badge bg-warning text-dark" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
+                                        <i class="bi bi-square"></i> ${hiveSingles}
+                                    </span>
+                                    <span class="badge bg-info" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
+                                        <i class="bi bi-circle"></i> ${hiveNUCs}
+                                    </span>
+                                    <span class="badge bg-secondary" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
+                                        <i class="bi bi-square"></i> ${hiveEmpty}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Honey Potentials -->
+                            <div class="mb-3">
+                                <strong><i class="bi bi-flower1"></i> Honey Potentials:</strong>
+                                <div class="mt-1">
+                                    ${honeyPotentialsList}
+                                </div>
+                            </div>
+                            
                             ${c.lastModifiedBy ? `<small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small>` : ''}
                         </div>
                         <div class="card-footer bg-light">
@@ -372,6 +449,8 @@ function handleSaveCluster(e) {
         accessType: document.getElementById('accessType').value,
         contactBeforeVisit: document.getElementById('contactBeforeVisit').checked,
         isQuarantine: document.getElementById('isQuarantine').checked,
+        // Get selected honey potentials from checkboxes
+        honeyPotentials: getSelectedHoneyPotentials(),
         lastModifiedBy: currentUser.username,
         lastModifiedAt: new Date().toISOString(),
         createdAt: id ? (clusters.find(c => c.id === parseInt(id))?.createdAt || new Date().toISOString()) : new Date().toISOString()
@@ -521,6 +600,45 @@ function editCluster(id) {
     // Initialize and render visual hive grid - auto-populate on page load
     visualHiveData = null; // Reset visual data
     renderVisualHiveGrid(); // Render immediately on page load
+    
+    // Render honey potentials checkboxes
+    renderHoneyPotentials(cluster.honeyPotentials || []);
+}
+
+/**
+ * Render honey potentials checkboxes in the form
+ */
+function renderHoneyPotentials(selectedPotentials = []) {
+    const container = document.getElementById('honeyPotentialsContainer');
+    if (!container) return;
+    
+    if (!HONEY_TYPES || HONEY_TYPES.length === 0) {
+        container.innerHTML = '<p class="text-muted small">No honey types available. Add honey types in Task Management.</p>';
+        return;
+    }
+    
+    container.innerHTML = HONEY_TYPES.map(type => {
+        const isChecked = selectedPotentials.includes(type);
+        return `
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="${type}" id="honey_${type}" ${isChecked ? 'checked' : ''}>
+                <label class="form-check-label" for="honey_${type}">
+                    ${type}
+                </label>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Get selected honey potentials from checkboxes
+ */
+function getSelectedHoneyPotentials() {
+    const container = document.getElementById('honeyPotentialsContainer');
+    if (!container) return [];
+    
+    const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
 }
 
 // Global variable to track which record is being edited
