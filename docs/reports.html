@@ -68,88 +68,10 @@
             }
         }
         
-        /* Sync Status */
-        .sync-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-            background: rgba(255, 255, 255, 0.95);
-            border: 1px solid var(--accent);
-            border-radius: 20px;
-            padding: 12px 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
-            backdrop-filter: blur(8px);
-            opacity: 0.9;
-        }
         
-        .sync-content {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
         
-        .sync-icon {
-            font-size: 1.1rem;
-            color: var(--accent);
-        }
         
-        .sync-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
         
-        .sync-timestamp {
-            font-size: 0.75rem;
-            color: #666;
-            font-weight: 500;
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Mobile sync indicator positioning */
-        @media (max-width: 768px) {
-            .sync-indicator {
-                top: 80px;
-                left: 50%;
-                transform: translateX(-50%);
-                bottom: auto;
-                right: auto;
-                width: auto;
-                min-width: 200px;
-                text-align: center;
-                z-index: 1030;
-            }
-            
-            /* Ensure sync indicator doesn't overlap with navbar */
-            .sync-indicator.syncing,
-            .sync-indicator.error {
-                top: 90px;
-            }
-        }
-        
-        .sync-indicator.syncing {
-            background: rgba(255, 193, 7, 0.15);
-            border-color: var(--accent);
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        
-        .sync-indicator.error {
-            background: rgba(220, 53, 69, 0.15);
-            border-color: #DC3545;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.9; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.02); }
-            100% { opacity: 0.9; transform: scale(1); }
-        }
         
         .navbar-brand {
             font-weight: 700;
@@ -384,18 +306,6 @@
         </div>
     </nav>
 
-    <!-- Sync Status Indicator -->
-    <div id="syncIndicator" class="sync-indicator hidden">
-        <div class="sync-content">
-            <div class="sync-icon" id="syncIcon">
-                <i class="bi bi-arrow-clockwise"></i>
-            </div>
-            <div class="sync-text">
-                <div id="syncText">Loading reports data...</div>
-                <div class="sync-timestamp" id="syncTimestamp"></div>
-            </div>
-        </div>
-    </div>
 
     <!-- Main Content -->
     <div class="container-fluid py-4">
@@ -406,6 +316,12 @@
                     <div>
                         <h1 class="h3 mb-1"><i class="bi bi-graph-up"></i> Reports Dashboard</h1>
                         <p class="text-muted mb-0">Analytics and insights for your beekeeping operations</p>
+                        <div id="syncTimestamp" class="mt-1">
+                            <small class="text-muted">
+                                <i class="bi bi-arrow-clockwise text-primary me-1"></i>
+                                Synchronizing data...
+                            </small>
+                        </div>
                         <div class="alert alert-info border-0 mt-2" style="background: rgba(13, 202, 240, 0.1); padding: 0.5rem 0.75rem;">
                             <small>
                                 <strong>Data-Driven Beekeeping:</strong> Visual analytics for hive performance, health trends, and operational efficiency<br>
@@ -797,6 +713,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             Logger.log('📊 Reports page loaded, initializing...');
             
+            // Setup debug system
+            setupDebugSystem();
+            
             // Hide any lingering skeleton loaders on page load
             hideAllSkeletonLoaders();
             
@@ -898,6 +817,21 @@
             showSyncStatus(message, 'loading');
         }
         
+        // Update sync timestamp in the header
+        function updateSyncTimestamp() {
+            const now = new Date();
+            const timestamp = now.toLocaleString();
+            const syncTimestampElement = document.getElementById('syncTimestamp');
+            if (syncTimestampElement) {
+                syncTimestampElement.innerHTML = `
+                    <small class="text-muted">
+                        <i class="bi bi-check-circle-fill text-success me-1"></i>
+                        Last synchronized: ${timestamp}
+                    </small>
+                `;
+            }
+        }
+        
         // BeeMarshall alert function for branded messages
         function beeMarshallAlert(message, type = 'info') {
             // Create custom modal for BeeMarshall alerts
@@ -973,7 +907,7 @@
                 
                 if (dataLoadCount >= totalDataTypes) {
                     Logger.log('✅ All reports data loaded successfully');
-                    showSyncSuccess('Reports data synchronized');
+                    updateSyncTimestamp();
                     updateMetrics();
                 }
             }
@@ -1125,11 +1059,19 @@
                 });
                 
                 // Show success message when data is loaded (only once)
+                console.log('📊 Checking if data is loaded...');
+                console.log('📊 clusters:', clusters ? clusters.length : 'undefined');
+                console.log('📊 actions:', actions ? actions.length : 'undefined');
+                console.log('📊 reportsDataLoaded:', window.reportsDataLoaded);
+                
                 if ((clusters && clusters.length > 0 || actions && actions.length > 0) && !window.reportsDataLoaded) {
+                    console.log('📊 Data loaded, generating reports...');
                     window.reportsDataLoaded = true;
                     // Success message is now handled in loadDataFromFirebase()
                     // Generate reports only once when data is first loaded
                     generateAllReports();
+                } else {
+                    console.log('📊 Data not ready or already loaded');
                 }
             } catch (error) {
                 Logger.error('❌ Error updating metrics:', error);
@@ -1164,9 +1106,71 @@
             });
         }
         
+        // Debug system for reports page
+        function setupDebugSystem() {
+            // Create debug panel
+            const debugPanel = document.createElement('div');
+            debugPanel.id = 'debugPanel';
+            debugPanel.innerHTML = `
+                <div style="position: fixed; top: 10px; right: 10px; width: 300px; background: #000; color: #0f0; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; z-index: 9999; max-height: 400px; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong>🐛 DEBUG PANEL</strong>
+                        <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: #333; color: #fff; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">×</button>
+                    </div>
+                    <div id="debugLog" style="white-space: pre-wrap;"></div>
+                </div>
+            `;
+            document.body.appendChild(debugPanel);
+            
+            // Override console.log to also show in debug panel
+            const originalLog = console.log;
+            const originalError = console.error;
+            const originalWarn = console.warn;
+            
+            function debugLog(level, ...args) {
+                const debugLogElement = document.getElementById('debugLog');
+                if (debugLogElement) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ');
+                    debugLogElement.innerHTML += `[${timestamp}] ${level}: ${message}\n`;
+                    debugLogElement.scrollTop = debugLogElement.scrollHeight;
+                }
+            }
+            
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                debugLog('LOG', ...args);
+            };
+            
+            console.error = function(...args) {
+                originalError.apply(console, args);
+                debugLog('ERROR', ...args);
+            };
+            
+            console.warn = function(...args) {
+                originalWarn.apply(console, args);
+                debugLog('WARN', ...args);
+            };
+            
+            // Log initial state
+            console.log('🐛 Debug system initialized');
+            console.log('📊 Data state:', {
+                clusters: clusters ? clusters.length : 'undefined',
+                actions: actions ? actions.length : 'undefined',
+                scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
+                reportsGenerated: reportsGenerated,
+                isGeneratingReports: isGeneratingReports
+            });
+        }
+        
         // Consolidated report generation function
         function generateAllReports() {
+            console.log('📊 generateAllReports called');
+            console.log('📊 isGeneratingReports:', isGeneratingReports);
+            console.log('📊 reportsGenerated:', reportsGenerated);
+            
             if (isGeneratingReports || reportsGenerated) {
+                console.log('📊 Report generation already in progress or completed, skipping...');
                 Logger.log('📊 Report generation already in progress or completed, skipping...');
                 return;
             }
@@ -1237,12 +1241,16 @@
         }
         
         function generateHivePerformanceReport() {
+            console.log('📊 generateHivePerformanceReport called');
             try {
                 if (!clusters || clusters.length === 0) {
+                    console.log('📊 No clusters data available');
                     beeMarshallAlert('📊 No site data available for hive performance analysis.\n\nGet started by adding your first apiary site to see performance insights.', 'info');
                     return;
                 }
                 
+                console.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
+                console.log('📊 Using clusters data:', clusters.length, 'clusters');
                 Logger.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
                 Logger.log('📊 Using clusters data:', clusters.length, 'clusters');
                 
@@ -2517,16 +2525,26 @@
         
         // Data Integrity Check Function
         function generateDataIntegrityCheck() {
+            console.log('🔍 generateDataIntegrityCheck called');
+            console.log('🔍 clusters data:', clusters);
+            console.log('🔍 integrityCheckSection element:', document.getElementById('integrityCheckSection'));
+            
             if (!clusters || clusters.length === 0) {
-                document.getElementById('integrityCheckSection').innerHTML = `
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> No sites found. Add sites to perform data integrity checks.
-                    </div>
-                `;
+                console.log('🔍 No clusters found, showing no sites message');
+                const section = document.getElementById('integrityCheckSection');
+                if (section) {
+                    section.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No sites found. Add sites to perform data integrity checks.
+                        </div>
+                    `;
+                } else {
+                    console.error('❌ integrityCheckSection element not found!');
+                }
                 return;
             }
             
-            Logger.log('🔍 Running data integrity check...');
+            console.log('🔍 Running data integrity check on', clusters.length, 'sites...');
             
             const issues = {
                 hiveCountMismatches: [],
