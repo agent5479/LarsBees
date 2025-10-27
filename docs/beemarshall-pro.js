@@ -208,7 +208,7 @@ function loadDataFromFirebase() {
     database.ref(`users/${userId}/clusters`).on('value', (snapshot) => {
         clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateDashboard();
-        if (!document.getElementById('clustersView').classList.contains('hidden')) renderClusters();
+        if (!document.getElementById('sitesView').classList.contains('hidden')) renderClusters();
         showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
@@ -301,7 +301,7 @@ setTimeout(() => {
 
 // Navigation
 function hideAllViews() {
-    ['dashboardView', 'clustersView', 'clusterFormView', 'actionsView', 'logActionView', 'clusterDetailView', 'individualHivesView'].forEach(id => {
+    ['dashboardView', 'sitesView', 'clusterFormView', 'actionsView', 'logActionView', 'clusterDetailView', 'individualHivesView'].forEach(id => {
         document.getElementById(id).classList.add('hidden');
     });
 }
@@ -314,7 +314,7 @@ function showDashboard() {
 
 function showClusters() {
     hideAllViews();
-    document.getElementById('clustersView').classList.remove('hidden');
+    document.getElementById('sitesView').classList.remove('hidden');
     renderClusters();
 }
 
@@ -451,7 +451,7 @@ function renderClusters() {
         `).join('')
         : '<div class="col-12"><p class="text-center text-muted my-5">No clusters yet. Add your first cluster to get started!</p></div>';
     
-    document.getElementById('clustersList').innerHTML = html;
+    document.getElementById('sitesList').innerHTML = html;
 }
 
 function handleSaveCluster(e) {

@@ -83,7 +83,7 @@ function showMainApp() {
 // Navigation
 function hideAllViews() {
     document.getElementById('dashboardView').classList.add('hidden');
-    document.getElementById('clustersView').classList.add('hidden');
+    document.getElementById('sitesView').classList.add('hidden');
     document.getElementById('clusterFormView').classList.add('hidden');
     document.getElementById('actionsView').classList.add('hidden');
     document.getElementById('logActionView').classList.add('hidden');
@@ -97,7 +97,7 @@ function showDashboard() {
 
 function showClusters() {
     hideAllViews();
-    document.getElementById('clustersView').classList.remove('hidden');
+    document.getElementById('sitesView').classList.remove('hidden');
     renderClusters();
 }
 
@@ -274,7 +274,7 @@ function renderClusters() {
         `).join('')
         : '<div class="col-12"><p class="text-center text-muted">No clusters yet. Add your first cluster!</p></div>';
     
-    document.getElementById('clustersList').innerHTML = clustersHtml;
+    document.getElementById('sitesList').innerHTML = clustersHtml;
 }
 
 function handleSaveCluster(e) {
