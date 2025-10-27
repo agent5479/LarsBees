@@ -1779,13 +1779,16 @@
                         <button class="btn btn-outline-success me-2" onclick="exportSitesCSV()">
                             <i class="bi bi-download"></i> Export CSV
                         </button>
+                        <a href="site-type-migration.html" class="btn btn-outline-warning me-2" title="Fix functional classification display issues">
+                            <i class="bi bi-tools"></i> Fix Classifications
+                        </a>
                         <button class="btn btn-primary" onclick="showAddSiteForm()">
                             <i class="bi bi-plus"></i> Add Site
                         </button>
                     </div>
                 </div>
                 
-                <div id="siteTypeFilter" class="mb-4"></div>
+                <div id="functionalClassificationFilter" class="mb-4"></div>
                 
                 <div class="row" id="sitesList">
                     <div class="text-center my-5">
@@ -1825,9 +1828,9 @@
                                             <div class="form-text">Give your apiary location a descriptive name</div>
                                         </div>
                                         <div class="col-md-6 mb-3">
-                                            <label for="siteType" class="form-label">Site Type <span class="text-danger">*</span></label>
-                                            <select class="form-select" id="siteType" required>
-                                                <option value="">Select site type...</option>
+                                            <label for="functionalClassification" class="form-label">Functional Classification <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="functionalClassification" required>
+                                                <option value="">Select functional classification...</option>
                                                 <option value="production">Production</option>
                                                 <option value="nucleus">NUC (Nucleus)</option>
                                                 <option value="queen-rearing">Queen Rearing</option>
@@ -1838,6 +1841,14 @@
                                                 <option value="custom">Custom</option>
                                             </select>
                                             <div class="form-text">Choose the primary purpose of this apiary location</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="seasonalClassification" class="form-label">Seasonal Classification</label>
+                                            <select class="form-select" id="seasonalClassification">
+                                                <option value="summer">Summer Site</option>
+                                                <option value="winter">Winter Site</option>
+                                            </select>
+                                            <div class="form-text">When is this site primarily used?</div>
                                         </div>
                                     </div>
                                     
@@ -2914,7 +2925,7 @@
                             'custom': { name: 'Custom', color: '#6c757d', icon: 'bi-geo-alt' }
                         };
                         
-                        const typeInfo = SITE_TYPES[site.siteType] || SITE_TYPES['custom'];
+                        const typeInfo = SITE_TYPES[site.functionalClassification] || SITE_TYPES['custom'];
                         
                         // Get pending tasks for this site
                         const siteTasks = (typeof scheduledTasks !== 'undefined' && scheduledTasks) 
@@ -3183,12 +3194,14 @@
                     'Single Stacks': site.hiveStacks?.singles || 0,
                     'NUC Stacks': site.hiveStacks?.nucs || 0,
                     'Empty Platforms': site.hiveStacks?.empty || 0,
-                    'Site Type': site.siteType || '',
+                    'Functional Classification': site.functionalClassification || '',
+                    'Seasonal Classification': site.seasonalClassification || '',
                     'Landowner Name': site.landownerName || '',
                     'Landowner Phone': site.landownerPhone || '',
                     'Landowner Email': site.landownerEmail || '',
                     'Landowner Address': site.landownerAddress || '',
-                    'Site Type': site.siteType || '',
+                    'Functional Classification': site.functionalClassification || '',
+                    'Seasonal Classification': site.seasonalClassification || '',
                     'Access Type': site.accessType || '',
                     'Contact Before Visit': site.contactBeforeVisit ? 'Yes' : 'No',
                     'Quarantine': site.isQuarantine ? 'Yes' : 'No',
@@ -3334,12 +3347,14 @@
                         'Single Stacks': site.hiveStacks?.singles || 0,
                         'NUC Stacks': site.hiveStacks?.nucs || 0,
                         'Empty Platforms': site.hiveStacks?.empty || 0,
-                        'Site Type': site.siteType || '',
+                        'Functional Classification': site.functionalClassification || '',
+                    'Seasonal Classification': site.seasonalClassification || '',
                         'Landowner Name': site.landownerName || '',
                         'Landowner Phone': site.landownerPhone || '',
                         'Landowner Email': site.landownerEmail || '',
                         'Landowner Address': site.landownerAddress || '',
-                        'Site Type': site.siteType || '',
+                        'Functional Classification': site.functionalClassification || '',
+                    'Seasonal Classification': site.seasonalClassification || '',
                         'Access Type': site.accessType || '',
                         'Contact Before Visit': site.contactBeforeVisit ? 'Yes' : 'No',
                         'Quarantine': site.isQuarantine ? 'Yes' : 'No',

@@ -44,7 +44,17 @@ class HiveSiteForm(FlaskForm):
     landowner_address = TextAreaField('Landowner Address', validators=[Optional()])
     
     # Site classification
-    site_type = SelectField('Site Type', choices=[
+    functional_classification = SelectField('Functional Classification', choices=[
+        ('production', 'Production'),
+        ('nucleus', 'Nucleus'),
+        ('queen-rearing', 'Queen Rearing'),
+        ('research', 'Research'),
+        ('education', 'Education'),
+        ('quarantine', 'Quarantine'),
+        ('backup', 'Backup'),
+        ('custom', 'Custom')
+    ], default='production')
+    seasonal_classification = SelectField('Seasonal Classification', choices=[
         ('summer', 'Summer Site'),
         ('winter', 'Winter Site')
     ], default='summer')

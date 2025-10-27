@@ -175,7 +175,8 @@ class HiveSite(db.Model):
     landowner_address = db.Column(db.Text)
     
     # Site classification
-    site_type = db.Column(db.String(20), default='summer')  # summer, winter
+    functional_classification = db.Column(db.String(20), default='production')  # production, nucleus, queen-rearing, research, education, quarantine, backup, custom
+    seasonal_classification = db.Column(db.String(20), default='summer')  # summer, winter
     access_type = db.Column(db.String(20), default='all_weather')  # all_weather, dry_only
     contact_before_visit = db.Column(db.Boolean, default=False)
     is_quarantine = db.Column(db.Boolean, default=False)

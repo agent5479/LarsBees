@@ -301,7 +301,8 @@ def create_app(config_name='default'):
                 landowner_email=form.landowner_email.data,
                 landowner_address=form.landowner_address.data,
                 # Site classification
-                site_type=form.site_type.data,
+                functional_classification=form.functional_classification.data,
+                seasonal_classification=form.seasonal_classification.data,
                 access_type=form.access_type.data,
                 contact_before_visit=form.contact_before_visit.data,
                 is_quarantine=form.is_quarantine.data,
@@ -346,7 +347,8 @@ def create_app(config_name='default'):
             site.landowner_email = form.landowner_email.data
             site.landowner_address = form.landowner_address.data
             # Site classification
-            site.site_type = form.site_type.data
+            site.functional_classification = form.functional_classification.data
+            site.seasonal_classification = form.seasonal_classification.data
             site.access_type = form.access_type.data
             site.contact_before_visit = form.contact_before_visit.data
             site.is_quarantine = form.is_quarantine.data

@@ -76,9 +76,6 @@ function renderScheduledTasks() {
             <button class="btn btn-outline-secondary ms-2" onclick="showSuggestedSchedule()">
                 <i class="bi bi-lightbulb"></i> Suggested Schedule
             </button>
-            <a href="schedule-migration.html" class="btn btn-outline-warning ms-2" title="Fix location display issues">
-                <i class="bi bi-tools"></i> Migration Tool
-            </a>
         </div>
     `;
     

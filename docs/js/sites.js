@@ -48,8 +48,8 @@ function renderSites() {
                 </button>
             ` : '';
             
-            const siteType = c.siteType || 'production';
-            const typeInfo = SITE_TYPES[siteType] || SITE_TYPES['custom'];
+            const functionalClassification = c.functionalClassification || 'production';
+            const typeInfo = SITE_TYPES[functionalClassification] || SITE_TYPES['custom'];
             
             // Add archived indicator
             const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
@@ -77,12 +77,12 @@ function renderSites() {
                 ? honeyPotentials.map(p => `<span class="badge bg-warning me-1">${p}</span>`).join('')
                 : '<span class="text-muted">None specified</span>';
             
-            // Determine site type label
-            const siteTypeLabel = c.siteType || 'Not specified';
+            // Determine functional classification label
+            const functionalClassificationLabel = c.functionalClassification || 'Not specified';
             
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card site-card h-100" data-site-type="${siteType}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
+                    <div class="card site-card h-100" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">
@@ -101,10 +101,10 @@ function renderSites() {
                                 <strong>Landowner:</strong> ${landownerInfo}
                             </div>
                             
-                            <!-- Site Type -->
+                            <!-- Functional Classification -->
                             <div class="mb-2">
                                 <i class="bi bi-calendar-event text-muted me-1"></i>
-                                <strong>Site Type:</strong> ${siteTypeLabel}
+                                <strong>Functional Classification:</strong> ${functionalClassificationLabel}
                             </div>
                             
                             <!-- Total Hive Count -->
@@ -214,7 +214,7 @@ function renderSites() {
 }
 
 function renderSiteTypeFilter() {
-    const filterContainer = document.getElementById('siteTypeFilter');
+    const filterContainer = document.getElementById('functionalClassificationFilter');
     if (!filterContainer) return;
     
     const filterHtml = `
@@ -222,7 +222,7 @@ function renderSiteTypeFilter() {
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label mb-0"><strong>Filter:</strong></label>
                 <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleSiteFilter()" id="filterToggleBtn">
-                    <i class="bi bi-chevron-down" id="filterToggleIcon"></i> Types
+                    <i class="bi bi-chevron-down" id="filterToggleIcon"></i> Functional Classifications
                 </button>
             </div>
             <div class="collapse" id="siteFilterOptions">
@@ -333,19 +333,19 @@ function showAddSiteForm() {
     document.getElementById('anomalySection')?.classList.add('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
     
-    // Populate site type dropdown
-    populateSiteTypeDropdown();
+    // Populate functional classification dropdown
+    populateFunctionalClassificationDropdown();
     
     // Render honey potentials checkboxes (empty for new site)
     renderHoneyPotentials([]);
     
-    // Add event listener for site type changes
-    const siteTypeSelect = document.getElementById('siteType');
+    // Add event listener for seasonal classification changes
+    const seasonalClassificationSelect = document.getElementById('seasonalClassification');
     const hiveCountField = document.getElementById('siteHiveCount');
     const formText = document.querySelector('#siteHiveCount + .form-text');
     
-    if (siteTypeSelect && hiveCountField && formText) {
-        siteTypeSelect.addEventListener('change', function() {
+    if (seasonalClassificationSelect && hiveCountField && formText) {
+        seasonalClassificationSelect.addEventListener('change', function() {
             const isZeroHiveAllowed = this.value === 'summer-only' || this.value === 'winter-only';
             
             if (isZeroHiveAllowed) {
@@ -393,8 +393,8 @@ function validateCoordinates() {
     }
 }
 
-function populateSiteTypeDropdown() {
-    const typeSelect = document.getElementById('siteType');
+function populateFunctionalClassificationDropdown() {
+    const typeSelect = document.getElementById('functionalClassification');
     if (!typeSelect) return;
     
     const options = Object.entries(SITE_TYPES).map(([key, type]) => 
@@ -403,7 +403,7 @@ function populateSiteTypeDropdown() {
         </option>`
     ).join('');
     
-                typeSelect.innerHTML = `<option value="production">Select site type...</option>${options}`;
+    typeSelect.innerHTML = `<option value="production">Select functional classification...</option>${options}`;
 }
 
 function handleSaveSite(e) {
@@ -421,10 +421,10 @@ function handleSaveSite(e) {
     
     const hiveCountField = document.getElementById('siteHiveCount');
     const hiveCount = parseInt(hiveCountField.value);
-    const siteType = document.getElementById('siteType').value;
+    const seasonalClassification = document.getElementById('seasonalClassification').value;
     
     // Allow 0 hives only for Summer Only and Winter Only sites
-    const isZeroHiveAllowed = siteType === 'summer-only' || siteType === 'winter-only';
+    const isZeroHiveAllowed = seasonalClassification === 'summer-only' || seasonalClassification === 'winter-only';
     
     if (isNaN(hiveCount) || hiveCount < 0 || (!isZeroHiveAllowed && hiveCount <= 0)) {
         const message = isZeroHiveAllowed 
@@ -504,12 +504,12 @@ function handleSaveSite(e) {
         harvestTimeline: document.getElementById('siteHarvest').value,
         sugarRequirements: document.getElementById('siteSugar').value,
         notes: document.getElementById('siteNotes').value,
-        siteType: document.getElementById('siteType').value || 'production',
+        functionalClassification: document.getElementById('functionalClassification').value || 'production',
+        seasonalClassification: document.getElementById('seasonalClassification').value || 'summer',
         landownerName: document.getElementById('landownerName').value,
         landownerPhone: document.getElementById('landownerPhone').value,
         landownerEmail: document.getElementById('landownerEmail').value,
         landownerAddress: document.getElementById('landownerAddress').value,
-        siteType: document.getElementById('siteType').value,
         accessType: document.getElementById('accessType').value,
         contactBeforeVisit: document.getElementById('contactBeforeVisit').checked,
         isQuarantine: document.getElementById('isQuarantine').checked,
@@ -591,12 +591,12 @@ function editSite(id) {
     
     document.getElementById('siteSugar').value = site.sugarRequirements || '';
     document.getElementById('siteNotes').value = site.notes || '';
-    document.getElementById('siteType').value = site.siteType || 'production';
+    document.getElementById('functionalClassification').value = site.functionalClassification || 'production';
+    document.getElementById('seasonalClassification').value = site.seasonalClassification || 'summer';
     document.getElementById('landownerName').value = site.landownerName || '';
     document.getElementById('landownerPhone').value = site.landownerPhone || '';
     document.getElementById('landownerEmail').value = site.landownerEmail || '';
     document.getElementById('landownerAddress').value = site.landownerAddress || '';
-    document.getElementById('siteType').value = site.siteType || '';
     document.getElementById('accessType').value = site.accessType || '';
     document.getElementById('contactBeforeVisit').checked = site.contactBeforeVisit || false;
     document.getElementById('isQuarantine').checked = site.isQuarantine || false;
@@ -641,8 +641,8 @@ function editSite(id) {
     document.getElementById('anomalySection')?.classList.remove('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
     
-    // Populate site type dropdown
-    populateSiteTypeDropdown();
+    // Populate functional classification dropdown
+    populateFunctionalClassificationDropdown();
     
     // Add event listeners for coordinate validation
     document.getElementById('siteLat').addEventListener('blur', validateCoordinates);
@@ -668,13 +668,13 @@ function editSite(id) {
     // Render honey potentials checkboxes
     renderHoneyPotentials(site.honeyPotentials || []);
     
-    // Add event listener for site type changes
-    const siteTypeSelect = document.getElementById('siteType');
+    // Add event listener for seasonal classification changes
+    const seasonalClassificationSelect = document.getElementById('seasonalClassification');
     const hiveCountField = document.getElementById('siteHiveCount');
     const formText = document.querySelector('#siteHiveCount + .form-text');
     
-    if (siteTypeSelect && hiveCountField && formText) {
-        siteTypeSelect.addEventListener('change', function() {
+    if (seasonalClassificationSelect && hiveCountField && formText) {
+        seasonalClassificationSelect.addEventListener('change', function() {
             const isZeroHiveAllowed = this.value === 'summer-only' || this.value === 'winter-only';
             
             if (isZeroHiveAllowed) {
