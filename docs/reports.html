@@ -1192,47 +1192,45 @@
             reportGenerationTimeout = setTimeout(() => {
                 Logger.log('📊 Starting data integrity check before generating reports...');
                 
-                // Step 1: Run data integrity check first
+                // Step 1: Run data integrity check first (for logging and bottom report)
                 const integrityIssues = performDataIntegrityCheck();
                 
-                // Step 2: Display integrity check results
-                displayIntegrityCheckResults(integrityIssues);
-                
-                // Step 3: Only generate summary graphics if integrity check passes
+                // Step 2: Log integrity check results (no modal popup)
                 if (integrityIssues.totalIssues === 0) {
-                    Logger.log('✅ Data integrity check passed - proceeding with report generation...');
-                    
-                    try {
-                        if (clusters && clusters.length > 0) {
-                            generateHivePerformanceReport();
-                            generateHarvestHistoryReport();
-                            generateHoneyPotentialsReport();
-                        }
-                        if (actions && actions.length > 0) {
-                            generateHealthMortalityReport();
-                        }
-                        if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
-                            generateOperationsReport();
-                        }
-                        
-                        // Also generate detailed integrity check report
-                        generateDataIntegrityCheck();
-                        
-                        // Mark reports as generated and reset flag
-                        reportsGenerated = true;
-                        isGeneratingReports = false;
-                        clearTimeout(timeoutId);
-                        hideAllSkeletonLoaders(); // Ensure all skeletons are hidden on success
-                        Logger.log('✅ All reports generated successfully');
-                    } catch (error) {
-                        Logger.error('❌ Error during report generation:', error);
-                        hideAllSkeletonLoaders(); // Hide all loading skeletons
-                        beeMarshallAlert('❌ Report Generation Error\n\nAn error occurred while generating reports.\n\nPlease refresh the page and try again.', 'error');
-                        isGeneratingReports = false;
-                    }
+                    Logger.log('✅ Data integrity check passed - all data is consistent');
                 } else {
-                    Logger.warn(`⚠️ Data integrity check found ${integrityIssues.totalIssues} issues. Report generation skipped.`);
-                    beeMarshallAlert(`⚠️ Data Integrity Issues Found\n\n${integrityIssues.totalIssues} data integrity issues have been detected.\n\nPlease review and fix the issues listed in the Data Integrity Check section before viewing summary reports.`, 'warning');
+                    Logger.warn(`⚠️ Data integrity check found ${integrityIssues.totalIssues} issues - see detailed report below`);
+                }
+                
+                // Step 3: Always generate reports regardless of integrity issues
+                Logger.log('📊 Proceeding with report generation...');
+                
+                try {
+                    if (clusters && clusters.length > 0) {
+                        generateHivePerformanceReport();
+                        generateHarvestHistoryReport();
+                        generateHoneyPotentialsReport();
+                    }
+                    if (actions && actions.length > 0) {
+                        generateHealthMortalityReport();
+                    }
+                    if ((actions && actions.length > 0) || (scheduledTasks && scheduledTasks.length > 0)) {
+                        generateOperationsReport();
+                    }
+                    
+                    // Always generate detailed integrity check report at bottom
+                    generateDataIntegrityCheck();
+                    
+                    // Mark reports as generated and reset flag
+                    reportsGenerated = true;
+                    isGeneratingReports = false;
+                    clearTimeout(timeoutId);
+                    hideAllSkeletonLoaders(); // Ensure all skeletons are hidden on success
+                    Logger.log('✅ All reports generated successfully');
+                } catch (error) {
+                    Logger.error('❌ Error during report generation:', error);
+                    hideAllSkeletonLoaders(); // Hide all loading skeletons
+                    beeMarshallAlert('❌ Report Generation Error\n\nAn error occurred while generating reports.\n\nPlease refresh the page and try again.', 'error');
                     isGeneratingReports = false;
                 }
             }, 1000);
@@ -2311,6 +2309,7 @@
         
         /**
          * Display data integrity check results in a modal
+         * NOTE: This function is no longer used - reports now load automatically
          */
         function displayIntegrityCheckResults(integrityResults) {
             const modalHtml = `
@@ -2477,6 +2476,7 @@
         
         /**
          * Proceed with report generation after integrity check passes
+         * NOTE: This function is no longer used - reports now load automatically
          */
         function proceedWithReports() {
             Logger.log('✅ User approved - proceeding with report generation...');
@@ -2502,6 +2502,7 @@
         
         /**
          * View full integrity report
+         * NOTE: This function is no longer used - reports now load automatically
          */
         function viewFullIntegrityReport() {
             const modal = bootstrap.Modal.getInstance(document.getElementById('integrityCheckModal'));
