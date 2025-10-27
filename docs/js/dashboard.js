@@ -286,7 +286,7 @@ function updateScheduledTasksPreview() {
                         <div>
                             <strong>${displayTaskName}</strong>
                             <span class="badge bg-${priorityBadge}">${t.priority || 'normal'}</span>
-                            <br><small>${cluster?.name || 'Unknown'}</small>
+                            <br><small>${site?.name || 'Unknown'}</small>
                         </div>
                         <button class="btn btn-sm btn-success" onclick="completeScheduledTask('${t.id}')">
                             <i class="bi bi-check"></i>
