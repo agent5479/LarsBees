@@ -704,7 +704,7 @@
         }
         
         // Global variables
-        let clusters = [];
+        let sites = [];
         let actions = [];
         let scheduledTasks = [];
         
@@ -916,8 +916,8 @@
             try {
             database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
                 try {
-                    clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
-                    Logger.log('📊 Reports sites loaded for', currentTenantId + ':', clusters.length);
+                    sites = snapshot.val() ? Object.values(snapshot.val()) : [];
+                    Logger.log('📊 Reports sites loaded for', currentTenantId + ':', sites.length);
                         updateHiveStrengthBreakdown();
                         checkAllDataLoaded();
                     } catch (error) {
@@ -1037,11 +1037,11 @@
                 const flaggedIssuesEl = document.getElementById('flaggedIssues');
                 
                 if (totalClustersEl) {
-                    totalClustersEl.textContent = clusters ? clusters.length : 0;
+                    totalClustersEl.textContent = sites ? sites.length : 0;
                 }
                 
                 if (totalHivesEl) {
-                    totalHivesEl.textContent = clusters ? clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0) : 0;
+                    totalHivesEl.textContent = sites ? sites.reduce((sum, c) => sum + (c.hiveCount || 0), 0) : 0;
                 }
                 
                 if (totalActionsEl) {
@@ -1053,18 +1053,18 @@
                 }
                 
                 Logger.log('📊 Metrics updated:', {
-                    clusters: clusters ? clusters.length : 0,
+                    sites: sites ? sites.length : 0,
                     actions: actions ? actions.length : 0,
                     scheduledTasks: scheduledTasks ? scheduledTasks.length : 0
                 });
                 
                 // Show success message when data is loaded (only once)
                 console.log('📊 Checking if data is loaded...');
-                console.log('📊 clusters:', clusters ? clusters.length : 'undefined');
+                console.log('📊 sites:', sites ? sites.length : 'undefined');
                 console.log('📊 actions:', actions ? actions.length : 'undefined');
                 console.log('📊 reportsDataLoaded:', window.reportsDataLoaded);
                 
-                if ((clusters && clusters.length > 0 || actions && actions.length > 0) && !window.reportsDataLoaded) {
+                if ((sites && sites.length > 0 || actions && actions.length > 0) && !window.reportsDataLoaded) {
                     console.log('📊 Data loaded, generating reports...');
                     window.reportsDataLoaded = true;
                     // Reset the reports generated flag when new data loads
@@ -1157,7 +1157,7 @@
             // Log initial state
             console.log('🐛 Debug system initialized');
             console.log('📊 Data state:', {
-                clusters: clusters ? clusters.length : 'undefined',
+                sites: sites ? sites.length : 'undefined',
                 actions: actions ? actions.length : 'undefined',
                 scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
                 reportsGenerated: reportsGenerated,
@@ -1170,12 +1170,12 @@
             console.log('📊 generateAllReports called');
             console.log('📊 isGeneratingReports:', isGeneratingReports);
             console.log('📊 reportsGenerated:', reportsGenerated);
-            console.log('📊 clusters available:', clusters ? clusters.length : 'undefined');
+            console.log('📊 sites available:', sites ? sites.length : 'undefined');
             
             // Check if we have data before proceeding
-            if (!clusters || clusters.length === 0) {
-                console.log('📊 No clusters data available, skipping report generation');
-                Logger.log('📊 No clusters data available, skipping report generation');
+            if (!sites || sites.length === 0) {
+                console.log('📊 No sites data available, skipping report generation');
+                Logger.log('📊 No sites data available, skipping report generation');
                 return;
             }
             
@@ -1208,9 +1208,9 @@
                 Logger.log('📊 Starting data integrity check before generating reports...');
                 
                 // Check if we have data before proceeding
-                if (!clusters || clusters.length === 0) {
-                    console.log('📊 No clusters data available, skipping reports');
-                    Logger.log('📊 No clusters data available, skipping reports');
+                if (!sites || sites.length === 0) {
+                    console.log('📊 No sites data available, skipping reports');
+                    Logger.log('📊 No sites data available, skipping reports');
                     isGeneratingReports = false;
                     return;
                 }
@@ -1232,7 +1232,7 @@
                 Logger.log('📊 Proceeding with report generation...');
                 
                 try {
-                    if (clusters && clusters.length > 0) {
+                    if (sites && sites.length > 0) {
                         generateHivePerformanceReport();
                         generateHarvestHistoryReport();
                         generateHoneyPotentialsReport();
@@ -1245,7 +1245,7 @@
                     }
                     
                     // Always generate detailed integrity check report at bottom
-                    generateDataIntegrityCheck(clusters);
+                    generateDataIntegrityCheck(sites);
                     
                     // Mark reports as generated and reset flag
                     reportsGenerated = true;
@@ -1265,31 +1265,31 @@
         function generateHivePerformanceReport() {
             console.log('📊 generateHivePerformanceReport called');
             try {
-                if (!clusters || clusters.length === 0) {
-                    console.log('📊 No clusters data available');
+                if (!sites || sites.length === 0) {
+                    console.log('📊 No sites data available');
                     beeMarshallAlert('📊 No site data available for hive performance analysis.\n\nGet started by adding your first apiary site to see performance insights.', 'info');
                     return;
                 }
                 
                 console.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
-                console.log('📊 Using clusters data:', clusters.length, 'clusters');
+                console.log('📊 Using sites data:', sites.length, 'sites');
                 Logger.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
-                Logger.log('📊 Using clusters data:', clusters.length, 'clusters');
+                Logger.log('📊 Using sites data:', sites.length, 'sites');
                 
                 // Calculate detailed hive performance metrics using new breakdown data
-                const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
-                const strongHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.strong || 0), 0);
-                const mediumHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.medium || 0), 0);
-                const weakHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.weak || 0), 0);
-                const nucHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.nuc || 0), 0);
-                const deadHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
+                const totalHives = sites.reduce((sum, site) => sum + (site.hiveCount || 0), 0);
+                const strongHives = sites.reduce((sum, site) => sum + (site.hiveStrength?.strong || 0), 0);
+                const mediumHives = sites.reduce((sum, site) => sum + (site.hiveStrength?.medium || 0), 0);
+                const weakHives = sites.reduce((sum, site) => sum + (site.hiveStrength?.weak || 0), 0);
+                const nucHives = sites.reduce((sum, site) => sum + (site.hiveStrength?.nuc || 0), 0);
+                const deadHives = sites.reduce((sum, site) => sum + (site.hiveStrength?.dead || 0), 0);
                 
                 // Calculate stack configuration metrics
-                const totalDoubles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.doubles || 0), 0);
-                const totalTopSplits = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.topSplits || 0), 0);
-                const totalSingles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.singles || 0), 0);
-                const totalNUCStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.nucs || 0), 0);
-                const totalEmptyStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.empty || 0), 0);
+                const totalDoubles = sites.reduce((sum, site) => sum + (site.hiveStacks?.doubles || 0), 0);
+                const totalTopSplits = sites.reduce((sum, site) => sum + (site.hiveStacks?.topSplits || 0), 0);
+                const totalSingles = sites.reduce((sum, site) => sum + (site.hiveStacks?.singles || 0), 0);
+                const totalNUCStacks = sites.reduce((sum, site) => sum + (site.hiveStacks?.nucs || 0), 0);
+                const totalEmptyStacks = sites.reduce((sum, site) => sum + (site.hiveStacks?.empty || 0), 0);
                 
                 const performanceRate = totalHives > 0 ? ((strongHives + mediumHives) / totalHives * 100).toFixed(1) : 0;
                 const mortalityRate = totalHives > 0 ? (deadHives / totalHives * 100).toFixed(1) : 0;
@@ -1373,7 +1373,7 @@
                             </div>
                         </div>
                         <hr>
-                        <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Sites:</strong> ${clusters.length}</p>
+                        <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Sites:</strong> ${sites.length}</p>
                     </div>
                 `;
                 // Remove ALL existing summaries to prevent duplicates
@@ -1426,9 +1426,9 @@
                     }
                 });
                 
-                // Calculate mortality from clusters
-                const totalDead = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
-                const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
+                // Calculate mortality from sites
+                const totalDead = sites.reduce((sum, site) => sum + (site.hiveStrength?.dead || 0), 0);
+                const totalHives = sites.reduce((sum, site) => sum + (site.hiveCount || 0), 0);
                 const mortalityRate = totalHives > 0 ? (totalDead / totalHives * 100).toFixed(1) : 0;
                 
                 // Destroy existing chart if it exists
@@ -1544,7 +1544,7 @@
                 
                 // Calculate efficiency metrics
                 const taskCompletionRate = scheduledTasks.length > 0 ? (completedTasks / scheduledTasks.length * 100).toFixed(1) : 0;
-                const actionsPerCluster = clusters.length > 0 ? (totalActions / clusters.length).toFixed(1) : 0;
+                const actionsPerSite = sites.length > 0 ? (totalActions / sites.length).toFixed(1) : 0;
                 
                 // Destroy existing chart if it exists
                 const existingOpsChart = Chart.getChart('operationsChart');
@@ -1626,20 +1626,20 @@
         }
         
         function generateHarvestHistoryReport() {
-            if (!clusters || clusters.length === 0) {
+            if (!sites || sites.length === 0) {
                 document.getElementById('harvestHistorySection').innerHTML = '<p class="text-muted text-center">No sites found. Add sites to start tracking harvests.</p>';
                 return;
             }
             
-            // Collect all harvest records from all clusters
+            // Collect all harvest records from all sites
             const allHarvests = [];
-            clusters.forEach(cluster => {
-                if (cluster.harvestRecords && cluster.harvestRecords.length > 0) {
-                    cluster.harvestRecords.forEach(record => {
+            sites.forEach(site => {
+                if (site.harvestRecords && site.harvestRecords.length > 0) {
+                    site.harvestRecords.forEach(record => {
                         allHarvests.push({
                             ...record,
-                            clusterId: cluster.id,
-                            clusterName: cluster.name
+                            siteId: site.id,
+                            siteName: site.name
                         });
                     });
                 }
@@ -1649,7 +1649,7 @@
                 document.getElementById('harvestHistorySection').innerHTML = `
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i> No harvest records found yet. 
-                        <br>Edit your clusters and add harvest records to see year-on-year accumulation.
+                        <br>Edit your sites and add harvest records to see year-on-year accumulation.
                     </div>
                 `;
                 return;
@@ -1657,7 +1657,7 @@
             
             // Group by year and month
             const byYear = {};
-            const byCluster = {};
+            const bySite = {};
             
             allHarvests.forEach(harvest => {
                 const date = new Date(harvest.date);
@@ -1678,11 +1678,11 @@
                 byYear[year].months[month].records.push(harvest);
                 
                             // Group by site
-            if (!byCluster[harvest.clusterName]) {
-                byCluster[harvest.clusterName] = { total: 0, records: [] };
+            if (!bySite[harvest.siteName]) {
+                bySite[harvest.siteName] = { total: 0, records: [] };
             }
-            byCluster[harvest.clusterName].total += harvest.quantity;
-            byCluster[harvest.clusterName].records.push(harvest);
+            bySite[harvest.siteName].total += harvest.quantity;
+            bySite[harvest.siteName].records.push(harvest);
             });
             
             // Sort years
@@ -1704,17 +1704,17 @@
                         <div class="list-group">
             `;
             
-            // Sort clusters by total harvest
-            const sortedClusters = Object.entries(byCluster)
+            // Sort sites by total harvest
+            const sortedSites = Object.entries(bySite)
                 .sort((a, b) => b[1].total - a[1].total)
                 .slice(0, 5);
             
-            sortedClusters.forEach(([clusterName, data], index) => {
+            sortedSites.forEach(([siteName, data], index) => {
                 html += `
                     <div class="list-group-item">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>${index + 1}. ${clusterName}</strong>
+                                <strong>${index + 1}. ${siteName}</strong>
                                 <br><small class="text-muted">${data.records.length} harvest${data.records.length > 1 ? 'es' : ''}</small>
                             </div>
                             <span class="badge bg-success" style="font-size: 1rem;">${data.total.toFixed(1)} kg</span>
@@ -1831,32 +1831,32 @@
         function generateHoneyPotentialsReport() {
             console.log('🍯 generateHoneyPotentialsReport called');
             try {
-                if (!clusters || clusters.length === 0) {
-                    console.log('🍯 No clusters data available');
+                if (!sites || sites.length === 0) {
+                    console.log('🍯 No sites data available');
                     document.getElementById('honeyPotentialsSection').innerHTML = '<p class="text-muted text-center">No sites found. Add sites to start tracking honey potentials.</p>';
                     return;
                 }
             
-            console.log('🍯 Processing', clusters.length, 'clusters for honey potentials');
+            console.log('🍯 Processing', sites.length, 'sites for honey potentials');
             
             // Collect all honey types and calculate site strength counts
             const honeyTypesMap = {};
             
-            clusters.forEach((cluster, index) => {
-                console.log(`🍯 Processing cluster ${index + 1}:`, cluster.name);
-                console.log('🍯 Honey potentials:', cluster.honeyPotentials);
-                console.log('🍯 Hive strength:', cluster.hiveStrength);
+            sites.forEach((site, index) => {
+                console.log(`🍯 Processing site ${index + 1}:`, site.name);
+                console.log('🍯 Honey potentials:', site.honeyPotentials);
+                console.log('🍯 Hive strength:', site.hiveStrength);
                 
-                if (cluster.honeyPotentials && Array.isArray(cluster.honeyPotentials) && cluster.honeyPotentials.length > 0) {
+                if (site.honeyPotentials && Array.isArray(site.honeyPotentials) && site.honeyPotentials.length > 0) {
                     // Calculate total active hive strength for this site (excluding dead hives)
-                    const siteHiveStrength = (cluster.hiveStrength?.strong || 0) + 
-                                           (cluster.hiveStrength?.medium || 0) + 
-                                           (cluster.hiveStrength?.weak || 0) + 
-                                           (cluster.hiveStrength?.nuc || 0);
+                    const siteHiveStrength = (site.hiveStrength?.strong || 0) + 
+                                           (site.hiveStrength?.medium || 0) + 
+                                           (site.hiveStrength?.weak || 0) + 
+                                           (site.hiveStrength?.nuc || 0);
                     
-                    console.log(`🍯 Site ${cluster.name} has ${siteHiveStrength} active hives`);
+                    console.log(`🍯 Site ${site.name} has ${siteHiveStrength} active hives`);
                     
-                    cluster.honeyPotentials.forEach(honeyType => {
+                    site.honeyPotentials.forEach(honeyType => {
                         if (!honeyTypesMap[honeyType]) {
                             honeyTypesMap[honeyType] = 0;
                         }
@@ -2006,15 +2006,15 @@
         
         // Function to show sites by honey type
         function showSitesByHoneyType(honeyType) {
-            if (!clusters || clusters.length === 0) {
+            if (!sites || sites.length === 0) {
                 beeMarshallAlert('📊 No site data available.', 'info');
                 return;
             }
             
-            const associatedSites = clusters.filter(cluster => 
-                cluster.honeyPotentials && 
-                Array.isArray(cluster.honeyPotentials) && 
-                cluster.honeyPotentials.includes(honeyType)
+            const associatedSites = sites.filter(site => 
+                site.honeyPotentials && 
+                Array.isArray(site.honeyPotentials) && 
+                site.honeyPotentials.includes(honeyType)
             );
             
             if (associatedSites.length === 0) {
@@ -2029,8 +2029,8 @@
         
         // Interactive Hive Analysis Functions
         function updateHiveStrengthBreakdown() {
-            if (!clusters || clusters.length === 0) {
-                Logger.log('📭 No clusters data for hive strength breakdown');
+            if (!sites || sites.length === 0) {
+                Logger.log('📭 No sites data for hive strength breakdown');
                 return;
             }
             
@@ -2048,21 +2048,21 @@
             let totalNUCStacks = 0;
             let totalEmptyStacks = 0;
             
-            clusters.forEach(cluster => {
-                if (cluster.hiveStrength) {
-                    totalStrong += cluster.hiveStrength.strong || 0;
-                    totalMedium += cluster.hiveStrength.medium || 0;
-                    totalWeak += cluster.hiveStrength.weak || 0;
-                    totalNUC += cluster.hiveStrength.nuc || 0;
-                    totalDead += cluster.hiveStrength.dead || 0;
+            sites.forEach(site => {
+                if (site.hiveStrength) {
+                    totalStrong += site.hiveStrength.strong || 0;
+                    totalMedium += site.hiveStrength.medium || 0;
+                    totalWeak += site.hiveStrength.weak || 0;
+                    totalNUC += site.hiveStrength.nuc || 0;
+                    totalDead += site.hiveStrength.dead || 0;
                 }
-                if (cluster.hiveStacks) {
-                    totalEmpty += cluster.hiveStacks.empty || 0;
-                    totalDoubles += cluster.hiveStacks.doubles || 0;
-                    totalTopSplits += cluster.hiveStacks.topSplits || 0;
-                    totalSingles += cluster.hiveStacks.singles || 0;
-                    totalNUCStacks += cluster.hiveStacks.nucs || 0;
-                    totalEmptyStacks += cluster.hiveStacks.empty || 0;
+                if (site.hiveStacks) {
+                    totalEmpty += site.hiveStacks.empty || 0;
+                    totalDoubles += site.hiveStacks.doubles || 0;
+                    totalTopSplits += site.hiveStacks.topSplits || 0;
+                    totalSingles += site.hiveStacks.singles || 0;
+                    totalNUCStacks += site.hiveStacks.nucs || 0;
+                    totalEmptyStacks += site.hiveStacks.empty || 0;
                 }
             });
             
@@ -2094,16 +2094,16 @@
         }
         
         function showSitesByCategory(category) {
-            if (!clusters || clusters.length === 0) {
+            if (!sites || sites.length === 0) {
                 beeMarshallAlert('📊 No site data available.\n\nAdd your first apiary site to start generating reports and insights.', 'info');
                 return;
             }
             
-            const affectedSites = clusters.filter(cluster => {
+            const affectedSites = sites.filter(site => {
                 if (category === 'empty') {
-                    return cluster.hiveStacks && cluster.hiveStacks.empty > 0;
-                } else if (cluster.hiveStrength) {
-                    return cluster.hiveStrength[category] > 0;
+                    return site.hiveStacks && site.hiveStacks.empty > 0;
+                } else if (site.hiveStrength) {
+                    return site.hiveStrength[category] > 0;
                 }
                 return false;
             });
@@ -2249,7 +2249,7 @@
          * Perform data integrity check and return issues
          */
         function performDataIntegrityCheck() {
-            if (!clusters || clusters.length === 0) {
+            if (!sites || sites.length === 0) {
                 return { totalIssues: 0, issues: {} };
             }
             
@@ -2264,7 +2264,7 @@
             };
             
             // Check each site for data integrity issues
-            clusters.forEach(site => {
+            sites.forEach(site => {
                 // Check 1: Hive count consistency (exclude dead hives)
                 if (site.hiveStrength && site.hiveStacks) {
                     // Active hive count (excluding dead)
@@ -2579,7 +2579,7 @@
         function proceedWithReports() {
             Logger.log('✅ User approved - proceeding with report generation...');
             
-            if (clusters && clusters.length > 0) {
+            if (sites && sites.length > 0) {
                 generateHivePerformanceReport();
                 generateHarvestHistoryReport();
             }
@@ -2591,7 +2591,7 @@
             }
             
             // Also generate detailed integrity check report
-            generateDataIntegrityCheck(clusters);
+            generateDataIntegrityCheck(sites);
             
             // Mark reports as generated
             reportsGenerated = true;
@@ -2614,14 +2614,14 @@
         }
         
         // Data Integrity Check Function
-        function generateDataIntegrityCheck(clustersData = clusters) {
+        function generateDataIntegrityCheck(sitesData = sites) {
             console.log('🔍 generateDataIntegrityCheck called');
-            console.log('🔍 clusters data passed:', clustersData);
-            console.log('🔍 global clusters:', clusters);
+            console.log('🔍 sites data passed:', sitesData);
+            console.log('🔍 global sites:', sites);
             console.log('🔍 integrityCheckSection element:', document.getElementById('integrityCheckSection'));
             
-            if (!clustersData || clustersData.length === 0) {
-                console.log('🔍 No clusters found, showing no sites message');
+            if (!sitesData || sitesData.length === 0) {
+                console.log('🔍 No sites found, showing no sites message');
                 const section = document.getElementById('integrityCheckSection');
                 if (section) {
                     section.innerHTML = `
@@ -2635,7 +2635,7 @@
                 return;
             }
             
-            console.log('🔍 Running data integrity check on', clustersData.length, 'sites...');
+            console.log('🔍 Running data integrity check on', sitesData.length, 'sites...');
             
             const issues = {
                 hiveCountMismatches: [],
@@ -2648,7 +2648,7 @@
             };
             
             // Check each site for data integrity issues
-            clustersData.forEach(site => {
+            sitesData.forEach(site => {
                 // Check 1: Hive count consistency
                 if (site.hiveStrength && site.hiveStacks) {
                     const hiveStrengthTotal = (site.hiveStrength.strong || 0) + 
