@@ -1,5 +1,5 @@
 // BeeMarshall - Weather Widget Module
-// Fetches weather data based on average cluster GPS coordinates
+// Fetches weather data based on average site GPS coordinates
 
 // OpenWeatherMap API configuration
 const WEATHER_API_KEY = 'YOUR_API_KEY_HERE'; // User needs to add their key
@@ -133,7 +133,7 @@ async function updateWeatherWidget() {
             widget.innerHTML = `
                 <div class="weather-placeholder">
                     <i class="bi bi-cloud-slash text-muted"></i>
-                    <p class="text-muted small mt-2">No cluster locations available</p>
+                    <p class="text-muted small mt-2">No site locations available</p>
                 </div>
             `;
             return;

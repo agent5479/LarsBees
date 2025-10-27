@@ -179,7 +179,7 @@ function updateDashboard() {
             flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
                 const site = sites.find(s => s.id === a.clusterId);
                 return `<div class="mb-2">
-                    <strong>${cluster?.name || 'Unknown'}:</strong> ${a.taskName}
+                    <strong>${site?.name || 'Unknown'}:</strong> ${a.taskName}
                     <br><small>${a.notes}</small>
                     <br>
                     <div class="mt-1">
@@ -258,7 +258,7 @@ function updateDashboard() {
             const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
             return `
                 <div class="action-item ${a.flag ? 'flag-' + a.flag : ''}">
-                    <div><strong>${flagIcon} ${displayTaskName}</strong> - ${cluster?.name || 'Unknown'}</div>
+                    <div><strong>${flagIcon} ${displayTaskName}</strong> - ${site?.name || 'Unknown'}</div>
                     <small class="text-muted">${a.date} • ${a.loggedBy || 'User'}</small>
                     ${a.notes ? `<p class="mb-0 mt-1"><small>${a.notes}</small></p>` : ''}
                 </div>
@@ -380,7 +380,7 @@ function updateCalendarWidget() {
                                             ${isOverdue ? '<span class="badge bg-danger">Overdue</span>' : ''}
                                         </div>
                                         <div class="task-details">
-                                            <small><i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}</small>
+                                            <small><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</small>
                                             ${task.scheduledTime ? `<br><small><i class="bi bi-clock"></i> ${task.scheduledTime}</small>` : ''}
                                             ${task.type === 'next-visit' ? '<br><small><i class="bi bi-calendar-plus"></i> Next Visit</small>' : ''}
                                         </div>
@@ -854,7 +854,7 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
     } else {
         // Schedule a harvest task
         const site = sites.find(s => s.id === clusterId);
-        if (cluster && typeof showScheduleTaskModal === 'function') {
+        if (site && typeof showScheduleTaskModal === 'function') {
             // Try to find a harvest task in the tasks list
             const harvestTask = tasks.find(t => 
                 t.name.toLowerCase().includes('harvest') || 

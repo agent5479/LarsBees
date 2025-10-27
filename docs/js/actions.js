@@ -155,7 +155,7 @@ function renderActions() {
                                 <strong class="${isDeletedTask ? 'text-muted' : ''}">${displayTaskName}</strong>
                             </div>
                             <div class="text-muted small">
-                                <i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}
+                                <i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}
                                 ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
                                 <br>
                                 <i class="bi bi-calendar"></i> ${a.date} • 
@@ -207,7 +207,7 @@ function renderFlaggedItems() {
                         <div class="d-flex justify-content-between">
                             <div>
                                 <h5>${flagIcon} ${a.taskName}</h5>
-                                <p class="mb-1"><i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}</p>
+                                <p class="mb-1"><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</p>
                                 <p class="mb-1"><small><i class="bi bi-calendar"></i> ${a.date} • <i class="bi bi-person"></i> ${a.loggedBy}</small></p>
                                 <span class="badge bg-${flagClass}">${a.flag.toUpperCase()}</span>
                                 ${a.notes ? `<p class="mt-2">${a.notes}</p>` : ''}

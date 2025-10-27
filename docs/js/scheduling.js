@@ -88,7 +88,7 @@ function renderScheduledTasks() {
                                     ${isOverdue ? '<span class="badge bg-danger">OVERDUE</span>' : ''}
                                 </h5>
                                 <p class="mb-1">
-                                    <i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}
+                                    <i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}
                                     ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
                                 </p>
                                 <p class="mb-1">
@@ -135,13 +135,13 @@ function renderScheduledTasks() {
                                 <h2 class="accordion-header" id="heading${t.id}">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${t.id}">
                                         <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        ${displayTaskName} - ${cluster?.name || 'Unknown'}
+                                        ${displayTaskName} - ${site?.name || 'Unknown'}
                                         <span class="badge bg-success ms-2">Completed ${completedDate.toLocaleDateString()}</span>
                                     </button>
                                 </h2>
                                 <div id="collapse${t.id}" class="accordion-collapse collapse" data-bs-parent="#completedTasksAccordion">
                                     <div class="accordion-body">
-                                        <p><strong>Cluster:</strong> ${cluster?.name || 'Unknown'}</p>
+                                        <p><strong>Site:</strong> ${site?.name || 'Unknown'}</p>
                                         ${hive ? `<p><strong>Hive:</strong> ${hive.hiveName}</p>` : ''}
                                         <p><strong>Completed by:</strong> ${t.completedBy || 'Unknown'}</p>
                                         <p><strong>Completed on:</strong> ${completedDate.toLocaleString()}</p>
@@ -243,7 +243,7 @@ function renderScheduleTimeline() {
                                         </div>
                                     </div>
                                     <p class="mb-1">
-                                        <i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}
+                                        <i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}
                                         ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
                                     </p>
                                     ${task.scheduledTime ? `<p class="mb-1"><i class="bi bi-clock"></i> ${task.scheduledTime}</p>` : ''}
@@ -282,7 +282,7 @@ function renderScheduleTimeline() {
                 <span class="badge bg-${priorityClass} ms-1">${task.priority || 'normal'}</span>
                 ${isCompleted ? '<span class="badge bg-success ms-1">Completed</span>' : ''}
                 <br><small class="text-muted">
-                    <i class="bi bi-geo-alt"></i> ${cluster?.name || 'Unknown'}
+                                        <i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}
                     ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
                     ${task.scheduledTime ? ` • <i class="bi bi-clock"></i> ${task.scheduledTime}` : ''}
                 </small>
@@ -730,7 +730,7 @@ function editScheduledTask(taskId) {
 
 // Populate edit task dropdowns
 function populateEditTaskDropdowns() {
-    // Populate cluster dropdown
+    // Populate site dropdown
     const clusterSelect = document.getElementById('editTaskCluster');
     clusterSelect.innerHTML = '<option value="">Select site...</option>' + 
         sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
@@ -859,8 +859,8 @@ function generateEnhancedICS(tasks) {
         const endUTC = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         
         const summary = displayTaskName;
-        const description = `Cluster: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `Notes: ${task.notes}` : ''}`;
-        const location = cluster?.name || 'Apiary Location';
+        const description = `Site: ${site?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `Notes: ${task.notes}` : ''}`;
+        const location = site?.name || 'Apiary Location';
         
         icsContent.push(
             'BEGIN:VEVENT',
@@ -920,8 +920,8 @@ function generateICS(tasks) {
         const endUTC = endDate.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
         
         const summary = displayTaskName;
-        const description = `Cluster: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `Notes: ${task.notes}` : ''}`;
-        const location = cluster?.name || 'Apiary Location';
+        const description = `Site: ${site?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}\nType: ${task.type || 'scheduled'}\n${task.notes ? `Notes: ${task.notes}` : ''}`;
+        const location = site?.name || 'Apiary Location';
         
         icsContent.push(
             'BEGIN:VEVENT',
@@ -1057,7 +1057,7 @@ function handleNextVisitForm(e) {
     const notes = document.getElementById('nextVisitNotes').value;
     
     if (!clusterId) {
-        alert('Please select a cluster.');
+        alert('Please select a site.');
         return;
     }
     
@@ -1105,13 +1105,13 @@ function handleNextVisitForm(e) {
     });
 }
 
-// Schedule task for specific cluster (called from map popup)
+// Schedule task for specific site (called from map popup)
 function scheduleTaskForCluster(clusterId) {
     // Show the schedule task modal
     const modal = new bootstrap.Modal(document.getElementById('scheduleTaskModal'));
     modal.show();
     
-    // Pre-populate the cluster dropdown
+    // Pre-populate the site dropdown
     setTimeout(() => {
         const clusterSelect = document.getElementById('scheduleCluster');
         if (clusterSelect) {
@@ -1173,12 +1173,12 @@ function initializeCalendar() {
                 
                 return {
                     id: task.id,
-                    title: `${taskName} - ${cluster?.name || 'Unknown'}`,
+                    title: `${taskName} - ${site?.name || 'Unknown'}`,
                     start: task.dueDate,
                     allDay: !task.scheduledTime,
                     extendedProps: {
                         task: task,
-                        cluster: cluster,
+                        site: site,
                         taskName: taskName
                     },
                     className: [
@@ -1203,10 +1203,10 @@ function initializeCalendar() {
         eventDidMount: function(info) {
             // Add custom styling and tooltips
             const task = info.event.extendedProps.task;
-            const cluster = info.event.extendedProps.cluster;
+            const site = info.event.extendedProps.site;
             
             // Add tooltip
-            info.el.title = `${task.notes || 'No notes'}\nCluster: ${cluster?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}`;
+            info.el.title = `${task.notes || 'No notes'}\nSite: ${site?.name || 'Unknown'}\nPriority: ${task.priority || 'normal'}`;
         }
     });
     
@@ -1236,7 +1236,7 @@ function showTaskDetails(task) {
                         <div class="row">
                             <div class="col-md-6">
                                 <strong>Task:</strong> ${taskName}<br>
-                                <strong>Cluster:</strong> ${cluster?.name || 'Unknown'}<br>
+                                <strong>Site:</strong> ${site?.name || 'Unknown'}<br>
                                 <strong>Due Date:</strong> ${new Date(task.dueDate).toLocaleDateString()}<br>
                                 <strong>Priority:</strong> <span class="badge bg-${task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'info'}">${task.priority || 'normal'}</span>
                             </div>
