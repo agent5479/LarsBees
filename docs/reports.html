@@ -797,6 +797,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             Logger.log('📊 Reports page loaded, initializing...');
             
+            // Hide any lingering skeleton loaders on page load
+            hideAllSkeletonLoaders();
+            
             // Comprehensive debug and error reporting
             window.addEventListener('error', function(event) {
                 Logger.error('❌ Global error caught:', {
@@ -1145,6 +1148,22 @@
         let isGeneratingReports = false;
         let reportsGenerated = false; // Track if reports have been generated
         
+        // Global function to hide all skeleton loaders
+        function hideAllSkeletonLoaders() {
+            const skeletons = [
+                'hivePerformanceSkeleton',
+                'healthMortalitySkeleton', 
+                'operationsSkeleton'
+            ];
+            
+            skeletons.forEach(skeletonId => {
+                const skeleton = document.getElementById(skeletonId);
+                if (skeleton) {
+                    skeleton.style.display = 'none';
+                }
+            });
+        }
+        
         // Consolidated report generation function
         function generateAllReports() {
             if (isGeneratingReports || reportsGenerated) {
@@ -1164,6 +1183,7 @@
             const timeoutId = setTimeout(() => {
                 if (isGeneratingReports) {
                     Logger.error('⏱️ Report generation timeout - exceeded 10 seconds');
+                    hideAllSkeletonLoaders(); // Hide all loading skeletons on timeout
                     beeMarshallAlert('⏱️ Report Generation Timeout\n\nThe report generation took longer than expected.\n\nSome reports may be incomplete. Please refresh the page or try again.', 'warning');
                     isGeneratingReports = false;
                 }
@@ -1202,9 +1222,11 @@
                         reportsGenerated = true;
                         isGeneratingReports = false;
                         clearTimeout(timeoutId);
+                        hideAllSkeletonLoaders(); // Ensure all skeletons are hidden on success
                         Logger.log('✅ All reports generated successfully');
                     } catch (error) {
                         Logger.error('❌ Error during report generation:', error);
+                        hideAllSkeletonLoaders(); // Hide all loading skeletons
                         beeMarshallAlert('❌ Report Generation Error\n\nAn error occurred while generating reports.\n\nPlease refresh the page and try again.', 'error');
                         isGeneratingReports = false;
                     }
@@ -1334,6 +1356,11 @@
                 document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
             } catch (error) {
                 Logger.error('❌ Error generating hive performance report:', error);
+                // Hide skeleton loader on error
+                const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
+                if (hivePerformanceSkeleton) {
+                    hivePerformanceSkeleton.style.display = 'none';
+                }
                 beeMarshallAlert('❌ Error generating hive performance report.\n\nPlease refresh the page and try again.', 'error');
             }
         }
@@ -1774,10 +1801,11 @@
         }
         
         function generateHoneyPotentialsReport() {
-            if (!clusters || clusters.length === 0) {
-                document.getElementById('honeyPotentialsSection').innerHTML = '<p class="text-muted text-center">No sites found. Add sites to start tracking honey potentials.</p>';
-                return;
-            }
+            try {
+                if (!clusters || clusters.length === 0) {
+                    document.getElementById('honeyPotentialsSection').innerHTML = '<p class="text-muted text-center">No sites found. Add sites to start tracking honey potentials.</p>';
+                    return;
+                }
             
             // Collect all honey types and calculate site strength counts
             const honeyTypesMap = {};
@@ -1869,6 +1897,15 @@
                     }
                 }
             });
+            } catch (error) {
+                Logger.error('❌ Error generating honey potentials report:', error);
+                document.getElementById('honeyPotentialsSection').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> Error generating honey potentials report.
+                        <br>Please refresh the page and try again.
+                    </div>
+                `;
+            }
         }
         
         // Function to show sites by honey type
