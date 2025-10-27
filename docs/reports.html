@@ -332,13 +332,7 @@
                             <span class="badge bg-primary" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">
                                 <i class="bi bi-tag-fill me-1"></i>v1.0
                             </span>
-                            <!-- Debug info hidden in production -->
-                            <div id="reportsDebugInfo" style="display: none;" class="mt-2">
-                                <small class="text-muted">
-                                    <strong>Data Status:</strong> <span id="dataStatus">Loading...</span><br>
-                                    <strong>Charts:</strong> <span id="chartStatus">Initializing...</span>
-                                </small>
-                            </div>
+                            <!-- Debug info removed for production -->
                         </div>
                     </div>
                 </div>
@@ -713,8 +707,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             Logger.log('📊 Reports page loaded, initializing...');
             
-            // Setup debug system
-            setupDebugSystem();
+            // Debug system removed for production
             
             // Hide any lingering skeleton loaders on page load
             hideAllSkeletonLoaders();
@@ -1108,62 +1101,7 @@
             });
         }
         
-        // Debug system for reports page
-        function setupDebugSystem() {
-            // Create debug panel
-            const debugPanel = document.createElement('div');
-            debugPanel.id = 'debugPanel';
-            debugPanel.innerHTML = `
-                <div style="position: fixed; top: 10px; right: 10px; width: 300px; background: #000; color: #0f0; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; z-index: 9999; max-height: 400px; overflow-y: auto;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <strong>🐛 DEBUG PANEL</strong>
-                        <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: #333; color: #fff; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer;">×</button>
-                    </div>
-                    <div id="debugLog" style="white-space: pre-wrap;"></div>
-                </div>
-            `;
-            document.body.appendChild(debugPanel);
-            
-            // Override console.log to also show in debug panel
-            const originalLog = console.log;
-            const originalError = console.error;
-            const originalWarn = console.warn;
-            
-            function debugLog(level, ...args) {
-                const debugLogElement = document.getElementById('debugLog');
-                if (debugLogElement) {
-                    const timestamp = new Date().toLocaleTimeString();
-                    const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)).join(' ');
-                    debugLogElement.innerHTML += `[${timestamp}] ${level}: ${message}\n`;
-                    debugLogElement.scrollTop = debugLogElement.scrollHeight;
-                }
-            }
-            
-            console.log = function(...args) {
-                originalLog.apply(console, args);
-                debugLog('LOG', ...args);
-            };
-            
-            console.error = function(...args) {
-                originalError.apply(console, args);
-                debugLog('ERROR', ...args);
-            };
-            
-            console.warn = function(...args) {
-                originalWarn.apply(console, args);
-                debugLog('WARN', ...args);
-            };
-            
-            // Log initial state
-            console.log('🐛 Debug system initialized');
-            console.log('📊 Data state:', {
-                sites: sites ? sites.length : 'undefined',
-                actions: actions ? actions.length : 'undefined',
-                scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-                reportsGenerated: reportsGenerated,
-                isGeneratingReports: isGeneratingReports
-            });
-        }
+        // Debug system removed for production
         
         // Consolidated report generation function
         function generateAllReports() {
@@ -1603,7 +1541,7 @@
                     <div class="alert alert-success mt-3">
                         <h6><i class="bi bi-gear"></i> Operations Summary</h6>
                         <p><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
-                        <p><strong>Actions per Site:</strong> ${actionsPerCluster}</p>
+                        <p><strong>Actions per Site:</strong> ${actionsPerSite}</p>
                         <p><strong>Total Actions Logged:</strong> ${totalActions}</p>
                         <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
                     </div>
