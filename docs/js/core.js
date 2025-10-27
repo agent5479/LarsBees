@@ -120,7 +120,12 @@ const COMPREHENSIVE_TASKS = [
     { id: 'task_25', name: 'General Problems', category: 'Problems', description: 'Address general hive problems requiring attention' },
     { id: 'task_26', name: 'Records Issues', category: 'Problems', description: 'Address inconsistencies or missing records' },
     { id: 'task_27', name: 'Seasonal Issues', category: 'Problems', description: 'Address season-specific problems' },
-    { id: 'task_28', name: 'Treatment Required', category: 'Problems', description: 'Identify and treat disease or pest issues' }
+    { id: 'task_28', name: 'Treatment Required', category: 'Problems', description: 'Identify and treat disease or pest issues' },
+    { id: 'task_29', name: 'Hive State Update', category: 'Management', description: 'Update hive strength counts (Strong, Medium, Weak, NUC, Dead)' },
+    { id: 'task_30', name: 'Hive Box Update', category: 'Management', description: 'Update hive box counts (Doubles, Top-Splits, Singles, NUCs, Empty)' },
+    { id: 'task_31', name: 'Archive Site', category: 'Management', description: 'Archive a site to remove it from active counts while preserving historical data' },
+    { id: 'task_32', name: 'Unarchive Site', category: 'Management', description: 'Restore an archived site to active status' },
+    { id: 'task_33', name: 'Site Visit & Inventory', category: 'Inspection', description: 'Conduct a site visit and update inventory records' }
 ];
 
 // Honey types list - editable by admins

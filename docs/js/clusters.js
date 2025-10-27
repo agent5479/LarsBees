@@ -107,6 +107,12 @@ function renderClusters() {
                                 <strong>Site Type:</strong> ${siteTypeLabel}
                             </div>
                             
+                            <!-- Total Hive Count -->
+                            <div class="mb-2">
+                                <i class="bi bi-hexagon text-muted me-1"></i>
+                                <strong>Total Hives:</strong> <span class="badge bg-primary">${c.hiveCount || 0}</span>
+                            </div>
+                            
                             <!-- Hive Count Summary (Editable inline) -->
                             <div class="mb-3">
                                 <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
