@@ -1115,7 +1115,7 @@ function loadDataFromFirebase() {
     
     // Load tenant-specific data - simplified approach
     let dataLoadCount = 0;
-    const totalDataTypes = 4; // clusters, actions, individualHives, scheduledTasks
+    const totalDataTypes = 5; // clusters, actions, individualHives, scheduledTasks, honeyTypes
     
     function checkAllDataLoaded() {
         dataLoadCount++;
@@ -1124,7 +1124,8 @@ function loadDataFromFirebase() {
             clusters: clusters ? clusters.length : 'undefined',
             actions: actions ? actions.length : 'undefined',
             scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-            individualHives: individualHives ? individualHives.length : 'undefined'
+            individualHives: individualHives ? individualHives.length : 'undefined',
+            honeyTypes: HONEY_TYPES ? HONEY_TYPES.length : 'undefined'
         });
         
         if (dataLoadCount >= totalDataTypes) {
@@ -1133,7 +1134,8 @@ function loadDataFromFirebase() {
                 clusters: clusters ? clusters.length : 'undefined',
                 actions: actions ? actions.length : 'undefined',
                 scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-                individualHives: individualHives ? individualHives.length : 'undefined'
+                individualHives: individualHives ? individualHives.length : 'undefined',
+                honeyTypes: HONEY_TYPES ? HONEY_TYPES.length : 'undefined'
             });
             isLoadingData = false;
             showSyncStatus('', 'success');
@@ -1210,6 +1212,35 @@ function loadDataFromFirebase() {
     }, (error) => {
         console.log('❌ Tenant tasks access failed:', error.message);
         console.error('❌ Scheduled tasks loading error:', error);
+        checkAllDataLoaded();
+    });
+    
+    // Load honey types
+    database.ref(`tenants/${currentTenantId}/honeyTypes`).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data && Array.isArray(data)) {
+            HONEY_TYPES = data;
+        } else {
+            // Initialize with default honey types if none exist
+            HONEY_TYPES = [
+                'Manuka',
+                'Rewarewa',
+                'Clover',
+                'Wildflower',
+                'Bush',
+                'Thyme',
+                'Lemon',
+                'Kamahi',
+                'Rata',
+                'Pohutukawa'
+            ];
+            // Save default honey types to Firebase
+            database.ref(`tenants/${currentTenantId}/honeyTypes`).set(HONEY_TYPES);
+        }
+        console.log('🍯 Honey types loaded for', currentTenantId + ':', HONEY_TYPES.length);
+        checkAllDataLoaded();
+    }, (error) => {
+        console.log('❌ Tenant honey types access failed:', error.message);
         checkAllDataLoaded();
     });
     

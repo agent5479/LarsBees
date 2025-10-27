@@ -2440,34 +2440,63 @@
                     </button>
                 </div>
                 
-                <!-- Task Categories -->
+                <!-- Task Display Options -->
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                                <h5 class="mb-0">Task Categories</h5>
+                                <h5 class="mb-0"><i class="bi bi-gear"></i> Task Display Options</h5>
                             </div>
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-3 mb-3">
-                                        <button class="btn btn-outline-primary w-100" onclick="filterTasksByCategory('Inspection')">
-                                            <i class="bi bi-search"></i> Inspection
-                                        </button>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="taskGroupingToggle" checked>
+                                            <label class="form-check-label" for="taskGroupingToggle">
+                                                <strong>Group by Category</strong>
+                                                <small class="text-muted d-block">Show tasks organized by category</small>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3 mb-3">
-                                        <button class="btn btn-outline-success w-100" onclick="filterTasksByCategory('Management')">
-                                            <i class="bi bi-gear"></i> Management
-                                        </button>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="taskAlphabeticalToggle">
+                                            <label class="form-check-label" for="taskAlphabeticalToggle">
+                                                <strong>Alphabetical List</strong>
+                                                <small class="text-muted d-block">Show all tasks in alphabetical order</small>
+                                            </label>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3 mb-3">
-                                        <button class="btn btn-outline-warning w-100" onclick="filterTasksByCategory('Health')">
-                                            <i class="bi bi-heart-pulse"></i> Health
-                                        </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Honey Type Management (Admin Only) -->
+                <div class="row mb-4" id="honeyTypeManagement" style="display: none;">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-flower1"></i> Honey Type Management</h5>
+                                <small class="text-muted">Manage honey types for site selection</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Add New Honey Type</h6>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" id="newHoneyType" placeholder="Enter honey type name">
+                                            <button class="btn btn-success" onclick="addHoneyType()">
+                                                <i class="bi bi-plus"></i> Add
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="col-md-3 mb-3">
-                                        <button class="btn btn-outline-info w-100" onclick="filterTasksByCategory('All')">
-                                            <i class="bi bi-list"></i> All Tasks
-                                        </button>
+                                    <div class="col-md-6">
+                                        <h6>Existing Honey Types</h6>
+                                        <div id="honeyTypesList" class="list-group" style="max-height: 200px; overflow-y: auto;">
+                                            <!-- Honey types will be loaded here -->
+                                        </div>
                                     </div>
                                 </div>
                             </div>

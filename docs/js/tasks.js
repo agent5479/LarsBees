@@ -47,6 +47,15 @@ function showTasks() {
         
         renderTasksList();
         
+        // Set up toggle event listeners
+        setupTaskDisplayToggles();
+        
+        // Show/hide honey type management for admins
+        if (typeof isAdmin !== 'undefined' && isAdmin) {
+            document.getElementById('honeyTypeManagement').style.display = 'block';
+            loadHoneyTypes();
+        }
+        
         console.log('✅ Tasks view displayed');
     }, 10);
 }
@@ -62,37 +71,32 @@ window.renderTasksList = function(filterCategory = 'All') {
         filteredTasks = tasksToUse.filter(task => task.category === filterCategory);
     }
     
-    // Group tasks by category
-    const tasksByCategory = {};
-    filteredTasks.forEach(task => {
-        if (!tasksByCategory[task.category]) {
-            tasksByCategory[task.category] = [];
-        }
-        tasksByCategory[task.category].push(task);
-    });
+    // Check display mode
+    const isGrouped = document.getElementById('taskGroupingToggle')?.checked ?? true;
+    const isAlphabetical = document.getElementById('taskAlphabeticalToggle')?.checked ?? false;
     
-    // Sort categories alphabetically
-    const sortedCategories = Object.keys(tasksByCategory).sort();
+    let html = '';
     
-    const html = sortedCategories.map(category => `
-        <div class="category-section mb-4">
-            <div class="d-flex justify-content-between align-items-center category-header">
-                <h5 class="mb-0"><i class="bi bi-folder2-open"></i> ${category}</h5>
-                <span class="badge bg-dark">${tasksByCategory[category].length} tasks</span>
-            </div>
-            <div class="table-responsive mt-2">
+    if (isAlphabetical) {
+        // Display all tasks alphabetically
+        const sortedTasks = filteredTasks.sort((a, b) => a.name.localeCompare(b.name));
+        
+        html = `
+            <div class="table-responsive">
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th style="width: 60%">Task Name</th>
+                            <th style="width: 40%">Task Name</th>
+                            <th style="width: 20%">Category</th>
                             <th style="width: 20%">Common</th>
                             <th style="width: 20%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${tasksByCategory[category].map(task => `
+                        ${sortedTasks.map(task => `
                             <tr>
                                 <td>${task.name}</td>
+                                <td><span class="badge bg-primary">${task.category}</span></td>
                                 <td>
                                     ${task.common 
                                         ? '<span class="badge bg-success">Quick List</span>' 
@@ -111,8 +115,60 @@ window.renderTasksList = function(filterCategory = 'All') {
                     </tbody>
                 </table>
             </div>
-        </div>
-    `).join('');
+        `;
+    } else if (isGrouped) {
+        // Group tasks by category (original behavior)
+        const tasksByCategory = {};
+        filteredTasks.forEach(task => {
+            if (!tasksByCategory[task.category]) {
+                tasksByCategory[task.category] = [];
+            }
+            tasksByCategory[task.category].push(task);
+        });
+        
+        // Sort categories alphabetically
+        const sortedCategories = Object.keys(tasksByCategory).sort();
+        
+        html = sortedCategories.map(category => `
+            <div class="category-section mb-4">
+                <div class="d-flex justify-content-between align-items-center category-header">
+                    <h5 class="mb-0"><i class="bi bi-folder2-open"></i> ${category}</h5>
+                    <span class="badge bg-dark">${tasksByCategory[category].length} tasks</span>
+                </div>
+                <div class="table-responsive mt-2">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 60%">Task Name</th>
+                                <th style="width: 20%">Common</th>
+                                <th style="width: 20%">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tasksByCategory[category].map(task => `
+                                <tr>
+                                    <td>${task.name}</td>
+                                    <td>
+                                        ${task.common 
+                                            ? '<span class="badge bg-success">Quick List</span>' 
+                                            : '<span class="badge bg-secondary">Full List</span>'}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `).join('');
+    }
     
     document.getElementById('tasksList').innerHTML = html || '<p class="text-muted">No tasks found. Add your first task above!</p>';
 };
@@ -453,4 +509,140 @@ function showAddTaskForm() {
 
 function filterTasksByCategory(category) {
     renderTasksList(category);
+}
+
+// Task Display Toggle Functions
+function setupTaskDisplayToggles() {
+    const groupingToggle = document.getElementById('taskGroupingToggle');
+    const alphabeticalToggle = document.getElementById('taskAlphabeticalToggle');
+    
+    if (groupingToggle) {
+        groupingToggle.addEventListener('change', function() {
+            if (this.checked) {
+                alphabeticalToggle.checked = false;
+            }
+            renderTasksList();
+        });
+    }
+    
+    if (alphabeticalToggle) {
+        alphabeticalToggle.addEventListener('change', function() {
+            if (this.checked) {
+                groupingToggle.checked = false;
+            }
+            renderTasksList();
+        });
+    }
+}
+
+// Honey Type Management Functions
+function loadHoneyTypes() {
+    if (typeof HONEY_TYPES === 'undefined') {
+        console.error('HONEY_TYPES not defined');
+        return;
+    }
+    
+    const container = document.getElementById('honeyTypesList');
+    if (!container) return;
+    
+    container.innerHTML = HONEY_TYPES.map((type, index) => `
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <span class="me-2">${type}</span>
+                <span class="badge bg-success">Active</span>
+            </div>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-primary" onclick="editHoneyType(${index})" title="Edit">
+                    <i class="bi bi-pencil"></i>
+                </button>
+                <button class="btn btn-outline-warning" onclick="toggleHoneyType(${index})" title="Deactivate">
+                    <i class="bi bi-eye-slash"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function addHoneyType() {
+    const input = document.getElementById('newHoneyType');
+    const newType = input.value.trim();
+    
+    if (!newType) {
+        beeMarshallAlert('Please enter a honey type name.', 'warning');
+        return;
+    }
+    
+    if (HONEY_TYPES.includes(newType)) {
+        beeMarshallAlert('This honey type already exists.', 'warning');
+        return;
+    }
+    
+    // Add to global array
+    HONEY_TYPES.push(newType);
+    
+    // Save to Firebase
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/honeyTypes` : 'honeyTypes';
+    database.ref(tenantPath).set(HONEY_TYPES).then(() => {
+        beeMarshallAlert(`✅ Honey type "${newType}" added successfully!`, 'success');
+        input.value = '';
+        loadHoneyTypes();
+    }).catch(error => {
+        console.error('Error adding honey type:', error);
+        beeMarshallAlert('❌ Error adding honey type. Please try again.', 'error');
+    });
+}
+
+function editHoneyType(index) {
+    const currentType = HONEY_TYPES[index];
+    const newType = prompt('Edit honey type name:', currentType);
+    
+    if (newType === null) return; // User cancelled
+    
+    const trimmedType = newType.trim();
+    if (!trimmedType) {
+        beeMarshallAlert('Honey type name cannot be empty.', 'warning');
+        return;
+    }
+    
+    if (trimmedType === currentType) return; // No change
+    
+    if (HONEY_TYPES.includes(trimmedType)) {
+        beeMarshallAlert('This honey type name already exists.', 'warning');
+        return;
+    }
+    
+    // Update the array
+    HONEY_TYPES[index] = trimmedType;
+    
+    // Save to Firebase
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/honeyTypes` : 'honeyTypes';
+    database.ref(tenantPath).set(HONEY_TYPES).then(() => {
+        beeMarshallAlert(`✅ Honey type updated: "${currentType}" → "${trimmedType}"`, 'success');
+        loadHoneyTypes();
+    }).catch(error => {
+        console.error('Error updating honey type:', error);
+        beeMarshallAlert('❌ Error updating honey type. Please try again.', 'error');
+    });
+}
+
+function toggleHoneyType(index) {
+    const honeyType = HONEY_TYPES[index];
+    const isActive = true; // For now, we'll implement deactivation later
+    
+    if (isActive) {
+        if (confirm(`Deactivate honey type "${honeyType}"?\n\nThis will hide it from new site selections but won't affect existing sites.`)) {
+            // For now, just remove from the list
+            // In a full implementation, you'd mark it as inactive instead
+            HONEY_TYPES.splice(index, 1);
+            
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/honeyTypes` : 'honeyTypes';
+            database.ref(tenantPath).set(HONEY_TYPES).then(() => {
+                beeMarshallAlert(`✅ Honey type "${honeyType}" deactivated.`, 'success');
+                loadHoneyTypes();
+            }).catch(error => {
+                console.error('Error deactivating honey type:', error);
+                beeMarshallAlert('❌ Error deactivating honey type. Please try again.', 'error');
+            });
+        }
+    }
 }
