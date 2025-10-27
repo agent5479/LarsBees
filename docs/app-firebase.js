@@ -121,8 +121,8 @@ function showMainApp() {
 function loadDataFromFirebase() {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Loading...', 'syncing');
     
-    // Listen for clusters
-    database.ref(`users/${userId}/clusters`).on('value', (snapshot) => {
+    // Listen for sites
+    database.ref(`tenants/${userId}/sites`).on('value', (snapshot) => {
         const data = snapshot.val();
         clusters = data ? Object.values(data) : [];
         updateDashboard();
@@ -133,7 +133,7 @@ function loadDataFromFirebase() {
     });
     
     // Listen for actions
-    database.ref(`users/${userId}/actions`).on('value', (snapshot) => {
+    database.ref(`tenants/${userId}/actions`).on('value', (snapshot) => {
         const data = snapshot.val();
         actions = data ? Object.values(data) : [];
         updateDashboard();
@@ -144,10 +144,10 @@ function loadDataFromFirebase() {
     });
     
     // Initialize tasks if not exists
-    database.ref(`users/${userId}/tasks`).once('value', (snapshot) => {
+    database.ref(`tenants/${userId}/tasks`).once('value', (snapshot) => {
         if (!snapshot.exists()) {
             DEFAULT_TASKS.forEach(task => {
-                database.ref(`users/${userId}/tasks/${task.id}`).set(task);
+                database.ref(`tenants/${userId}/tasks/${task.id}`).set(task);
             });
         }
     });
@@ -155,7 +155,7 @@ function loadDataFromFirebase() {
 
 function saveClusterToFirebase(cluster) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
-    return database.ref(`users/${userId}/clusters/${cluster.id}`).set(cluster)
+    return database.ref(`tenants/${userId}/sites/${cluster.id}`).set(cluster)
         .then(() => {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Saved');
         })
@@ -167,7 +167,7 @@ function saveClusterToFirebase(cluster) {
 
 function deleteClusterFromFirebase(clusterId) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Deleting...', 'syncing');
-    return database.ref(`users/${userId}/clusters/${clusterId}`).remove()
+    return database.ref(`tenants/${userId}/sites/${clusterId}`).remove()
         .then(() => {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Deleted');
         })
@@ -179,7 +179,7 @@ function deleteClusterFromFirebase(clusterId) {
 
 function saveActionToFirebase(action) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
-    return database.ref(`users/${userId}/actions/${action.id}`).set(action)
+    return database.ref(`tenants/${userId}/actions/${action.id}`).set(action)
         .then(() => {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Saved');
         })
@@ -191,7 +191,7 @@ function saveActionToFirebase(action) {
 
 function deleteActionFromFirebase(actionId) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Deleting...', 'syncing');
-    return database.ref(`users/${userId}/actions/${actionId}`).remove()
+    return database.ref(`tenants/${userId}/actions/${actionId}`).remove()
         .then(() => {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Deleted');
         })

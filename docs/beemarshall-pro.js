@@ -205,28 +205,28 @@ function showMainApp() {
 function loadDataFromFirebase() {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Loading...', 'syncing');
     
-    database.ref(`users/${userId}/clusters`).on('value', (snapshot) => {
+    database.ref(`tenants/${userId}/sites`).on('value', (snapshot) => {
         clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateDashboard();
         if (!document.getElementById('sitesView').classList.contains('hidden')) renderClusters();
         showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
-    database.ref(`users/${userId}/actions`).on('value', (snapshot) => {
+    database.ref(`tenants/${userId}/actions`).on('value', (snapshot) => {
         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
         updateDashboard();
         if (!document.getElementById('actionsView').classList.contains('hidden')) renderActions();
         showSyncStatus('<i class="bi bi-cloud-check"></i> Synced');
     });
     
-    database.ref(`users/${userId}/individualHives`).on('value', (snapshot) => {
+    database.ref(`tenants/${userId}/individualHives`).on('value', (snapshot) => {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
     });
     
-    database.ref(`users/${userId}/tasks`).once('value', (snapshot) => {
+    database.ref(`tenants/${userId}/tasks`).once('value', (snapshot) => {
         if (!snapshot.exists()) {
             COMPREHENSIVE_TASKS.forEach(task => {
-                database.ref(`users/${userId}/tasks/${task.id}`).set(task);
+                database.ref(`tenants/${userId}/tasks/${task.id}`).set(task);
             });
         } else {
             tasks = Object.values(snapshot.val());
@@ -499,7 +499,7 @@ function editCluster(id) {
 
 function deleteCluster(id) {
     if (confirm('Delete this cluster? This cannot be undone.')) {
-        database.ref(`users/${userId}/clusters/${id}`).remove();
+        database.ref(`tenants/${userId}/sites/${id}`).remove();
     }
 }
 
@@ -637,7 +637,7 @@ function handleLogAction(e) {
             loggedBy: currentUser,
             createdAt: new Date().toISOString()
         };
-        return database.ref(`users/${userId}/actions/${action.id}`).set(action);
+        return database.ref(`tenants/${userId}/actions/${action.id}`).set(action);
     });
     
     Promise.all(promises).then(() => {
@@ -704,7 +704,7 @@ function renderActions() {
 
 function deleteAction(id) {
     if (confirm('Delete this action?')) {
-        database.ref(`users/${userId}/actions/${id}`).remove();
+        database.ref(`tenants/${userId}/actions/${id}`).remove();
     }
 }
 
@@ -739,7 +739,7 @@ function breakIntoIndividualHives() {
 // Firebase operations
 function saveClusterToFirebase(cluster) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
-    database.ref(`users/${userId}/clusters/${cluster.id}`).set(cluster)
+    database.ref(`tenants/${userId}/sites/${cluster.id}`).set(cluster)
         .then(() => showSyncStatus('<i class="bi bi-cloud-check"></i> Saved by ' + currentUser))
         .catch(err => showSyncStatus('<i class="bi bi-x"></i> Error', 'error'));
 }
