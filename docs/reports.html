@@ -1251,125 +1251,126 @@
                 Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
-            isGeneratingReports = true;
             
-            if (!clusters || clusters.length === 0) {
-                beeMarshallAlert('📊 No site data available for hive performance analysis.\n\nGet started by adding your first apiary site to see performance insights.', 'info');
-                return;
-            }
-            
-            Logger.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
-            Logger.log('📊 Using clusters data:', clusters.length, 'clusters');
-            
-            // Calculate detailed hive performance metrics using new breakdown data
-            const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
-            const strongHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.strong || 0), 0);
-            const mediumHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.medium || 0), 0);
-            const weakHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.weak || 0), 0);
-            const nucHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.nuc || 0), 0);
-            const deadHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
-            
-            // Calculate stack configuration metrics
-            const totalDoubles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.doubles || 0), 0);
-            const totalTopSplits = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.topSplits || 0), 0);
-            const totalSingles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.singles || 0), 0);
-            const totalNUCStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.nucs || 0), 0);
-            const totalEmptyStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.empty || 0), 0);
-            
-            const performanceRate = totalHives > 0 ? ((strongHives + mediumHives) / totalHives * 100).toFixed(1) : 0;
-            const mortalityRate = totalHives > 0 ? (deadHives / totalHives * 100).toFixed(1) : 0;
-            const stackUtilization = totalHives > 0 ? (((totalDoubles + totalTopSplits + totalSingles + totalNUCStacks) / totalHives) * 100).toFixed(1) : 0;
-            
-            // Destroy existing chart if it exists
-            const existingChart = Chart.getChart('hivePerformanceChart');
-            if (existingChart) {
-                existingChart.destroy();
-            }
-            
-            // Hide skeleton loader
-            const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
-            if (hivePerformanceSkeleton) {
-                hivePerformanceSkeleton.style.display = 'none';
-            }
-            
-            // Create performance chart
-            const ctx = document.getElementById('hivePerformanceChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Strong', 'Medium', 'Weak', 'NUC', 'Dead'],
-                    datasets: [{
-                        data: [strongHives, mediumHives, weakHives, nucHives, deadHives],
-                        backgroundColor: [
-                            '#28a745', // Strong - Green
-                            '#ffc107', // Medium - Yellow
-                            '#fd7e14', // Weak - Orange
-                            '#6f42c1', // NUC - Purple
-                            '#dc3545'  // Dead - Red
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: `Hive Performance Overview (${totalHives} Total Hives)`,
-                            font: {
-                                size: 16,
-                                weight: 'bold'
+            try {
+                if (!clusters || clusters.length === 0) {
+                    beeMarshallAlert('📊 No site data available for hive performance analysis.\n\nGet started by adding your first apiary site to see performance insights.', 'info');
+                    return;
+                }
+                
+                Logger.log('📊 Generating hive performance report for tenant:', getCurrentTenantId());
+                Logger.log('📊 Using clusters data:', clusters.length, 'clusters');
+                
+                // Calculate detailed hive performance metrics using new breakdown data
+                const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
+                const strongHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.strong || 0), 0);
+                const mediumHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.medium || 0), 0);
+                const weakHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.weak || 0), 0);
+                const nucHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.nuc || 0), 0);
+                const deadHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
+                
+                // Calculate stack configuration metrics
+                const totalDoubles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.doubles || 0), 0);
+                const totalTopSplits = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.topSplits || 0), 0);
+                const totalSingles = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.singles || 0), 0);
+                const totalNUCStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.nucs || 0), 0);
+                const totalEmptyStacks = clusters.reduce((sum, cluster) => sum + (cluster.hiveStacks?.empty || 0), 0);
+                
+                const performanceRate = totalHives > 0 ? ((strongHives + mediumHives) / totalHives * 100).toFixed(1) : 0;
+                const mortalityRate = totalHives > 0 ? (deadHives / totalHives * 100).toFixed(1) : 0;
+                const stackUtilization = totalHives > 0 ? (((totalDoubles + totalTopSplits + totalSingles + totalNUCStacks) / totalHives) * 100).toFixed(1) : 0;
+                
+                // Destroy existing chart if it exists
+                const existingChart = Chart.getChart('hivePerformanceChart');
+                if (existingChart) {
+                    existingChart.destroy();
+                }
+                
+                // Hide skeleton loader
+                const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
+                if (hivePerformanceSkeleton) {
+                    hivePerformanceSkeleton.style.display = 'none';
+                }
+                
+                // Create performance chart
+                const ctx = document.getElementById('hivePerformanceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Strong', 'Medium', 'Weak', 'NUC', 'Dead'],
+                        datasets: [{
+                            data: [strongHives, mediumHives, weakHives, nucHives, deadHives],
+                            backgroundColor: [
+                                '#28a745', // Strong - Green
+                                '#ffc107', // Medium - Yellow
+                                '#fd7e14', // Weak - Orange
+                                '#6f42c1', // NUC - Purple
+                                '#dc3545'  // Dead - Red
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: `Hive Performance Overview (${totalHives} Total Hives)`,
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
                             }
                         }
                     }
-                }
-            });
-            
-            // Show enhanced performance summary with stack data
-            const summary = `
-                <div class="alert alert-info mt-3">
-                    <h6><i class="bi bi-graph-up"></i> Enhanced Performance Summary</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6>Hive Strength Analysis</h6>
-                            <p><strong>Performance Rate:</strong> ${performanceRate}% (Strong + Medium hives)</p>
-                            <p><strong>Mortality Rate:</strong> ${mortalityRate}% (Dead hives)</p>
-                            <p><strong>Strong Hives:</strong> ${strongHives} (${totalHives > 0 ? ((strongHives / totalHives) * 100).toFixed(1) : 0}%)</p>
-                            <p><strong>Medium Hives:</strong> ${mediumHives} (${totalHives > 0 ? ((mediumHives / totalHives) * 100).toFixed(1) : 0}%)</p>
-                            <p><strong>Weak Hives:</strong> ${weakHives} (${totalHives > 0 ? ((weakHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                });
+                
+                // Show enhanced performance summary with stack data
+                const summary = `
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="bi bi-graph-up"></i> Enhanced Performance Summary</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Hive Strength Analysis</h6>
+                                <p><strong>Performance Rate:</strong> ${performanceRate}% (Strong + Medium hives)</p>
+                                <p><strong>Mortality Rate:</strong> ${mortalityRate}% (Dead hives)</p>
+                                <p><strong>Strong Hives:</strong> ${strongHives} (${totalHives > 0 ? ((strongHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                                <p><strong>Medium Hives:</strong> ${mediumHives} (${totalHives > 0 ? ((mediumHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                                <p><strong>Weak Hives:</strong> ${weakHives} (${totalHives > 0 ? ((weakHives / totalHives) * 100).toFixed(1) : 0}%)</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Stack Configuration Analysis</h6>
+                                <p><strong>Stack Utilization:</strong> ${stackUtilization}%</p>
+                                <p><strong>Double Stacks:</strong> ${totalDoubles}</p>
+                                <p><strong>Top-Splits:</strong> ${totalTopSplits}</p>
+                                <p><strong>Single Stacks:</strong> ${totalSingles}</p>
+                                <p><strong>NUC Stacks:</strong> ${totalNUCStacks}</p>
+                                <p><strong>Empty Platforms:</strong> ${totalEmptyStacks}</p>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <h6>Stack Configuration Analysis</h6>
-                            <p><strong>Stack Utilization:</strong> ${stackUtilization}%</p>
-                            <p><strong>Double Stacks:</strong> ${totalDoubles}</p>
-                            <p><strong>Top-Splits:</strong> ${totalTopSplits}</p>
-                            <p><strong>Single Stacks:</strong> ${totalSingles}</p>
-                            <p><strong>NUC Stacks:</strong> ${totalNUCStacks}</p>
-                            <p><strong>Empty Platforms:</strong> ${totalEmptyStacks}</p>
-                        </div>
+                        <hr>
+                        <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Sites:</strong> ${clusters.length}</p>
                     </div>
-                    <hr>
-                    <p><strong>Total Hives:</strong> ${totalHives} | <strong>Active Sites:</strong> ${clusters.length}</p>
-                </div>
-            `;
-            // Remove ALL existing summaries to prevent duplicates
-            const chartParent = document.getElementById('hivePerformanceChart').parentNode;
-            const existingSummaries = chartParent.querySelectorAll('.alert.alert-info');
-            existingSummaries.forEach(summary => summary.remove());
-            
-            document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
-            
-            // Reset generation flag
-            isGeneratingReports = false;
+                `;
+                // Remove ALL existing summaries to prevent duplicates
+                const chartParent = document.getElementById('hivePerformanceChart').parentNode;
+                const existingSummaries = chartParent.querySelectorAll('.alert.alert-info');
+                existingSummaries.forEach(summary => summary.remove());
+                
+                document.getElementById('hivePerformanceChart').parentNode.insertAdjacentHTML('afterend', summary);
+            } catch (error) {
+                Logger.error('❌ Error generating hive performance report:', error);
+                beeMarshallAlert('❌ Error generating hive performance report.\n\nPlease refresh the page and try again.', 'error');
+            }
         }
         
         function generateHealthMortalityReport() {
@@ -1378,112 +1379,125 @@
                 Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
-            isGeneratingReports = true;
             
-            if (!actions || actions.length === 0) {
-                beeMarshallAlert('📊 No action data available for health analysis.\n\nStart logging inspections and treatments to see health insights and trends.', 'info');
-                isGeneratingReports = false;
-                return;
-            }
-            
-            Logger.log('📊 Generating health mortality report for tenant:', getCurrentTenantId());
-            Logger.log('📊 Using actions data:', actions.length, 'actions');
-            
-            // Analyze health data from actions
-            const diseaseActions = actions.filter(action => 
-                action.diseaseFound === 'Yes' || action.diseaseType || action.treatmentApplied
-            );
-            
-            const diseaseTypes = {};
-            const treatments = {};
-            const mortalityData = {};
-            
-            diseaseActions.forEach(action => {
-                if (action.diseaseType) {
-                    diseaseTypes[action.diseaseType] = (diseaseTypes[action.diseaseType] || 0) + 1;
+            try {
+                if (!actions || actions.length === 0) {
+                    // Hide skeleton loader even when no data
+                    const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
+                    if (healthMortalitySkeleton) {
+                        healthMortalitySkeleton.style.display = 'none';
+                    }
+                    beeMarshallAlert('📊 No action data available for health analysis.\n\nStart logging inspections and treatments to see health insights and trends.', 'info');
+                    return;
                 }
-                if (action.treatmentApplied) {
-                    treatments[action.treatmentApplied] = (treatments[action.treatmentApplied] || 0) + 1;
+                
+                Logger.log('📊 Generating health mortality report for tenant:', getCurrentTenantId());
+                Logger.log('📊 Using actions data:', actions.length, 'actions');
+                
+                // Analyze health data from actions
+                const diseaseActions = actions.filter(action => 
+                    action.diseaseFound === 'Yes' || action.diseaseType || action.treatmentApplied
+                );
+                
+                const diseaseTypes = {};
+                const treatments = {};
+                const mortalityData = {};
+                
+                diseaseActions.forEach(action => {
+                    if (action.diseaseType) {
+                        diseaseTypes[action.diseaseType] = (diseaseTypes[action.diseaseType] || 0) + 1;
+                    }
+                    if (action.treatmentApplied) {
+                        treatments[action.treatmentApplied] = (treatments[action.treatmentApplied] || 0) + 1;
+                    }
+                });
+                
+                // Calculate mortality from clusters
+                const totalDead = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
+                const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
+                const mortalityRate = totalHives > 0 ? (totalDead / totalHives * 100).toFixed(1) : 0;
+                
+                // Destroy existing chart if it exists
+                const existingHealthChart = Chart.getChart('healthMortalityChart');
+                if (existingHealthChart) {
+                    existingHealthChart.destroy();
                 }
-            });
-            
-            // Calculate mortality from clusters
-            const totalDead = clusters.reduce((sum, cluster) => sum + (cluster.hiveStrength?.dead || 0), 0);
-            const totalHives = clusters.reduce((sum, cluster) => sum + (cluster.hiveCount || 0), 0);
-            const mortalityRate = totalHives > 0 ? (totalDead / totalHives * 100).toFixed(1) : 0;
-            
-            // Destroy existing chart if it exists
-            const existingHealthChart = Chart.getChart('healthMortalityChart');
-            if (existingHealthChart) {
-                existingHealthChart.destroy();
-            }
-            
-            // Hide skeleton loader
-            const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
-            if (healthMortalitySkeleton) {
-                healthMortalitySkeleton.style.display = 'none';
-            }
-            
-            // Create health chart
-            const ctx = document.getElementById('healthMortalityChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(diseaseTypes).length > 0 ? Object.keys(diseaseTypes) : ['No Disease Data'],
-                    datasets: [{
-                        label: 'Disease Incidents',
-                        data: Object.keys(diseaseTypes).length > 0 ? Object.values(diseaseTypes) : [0],
-                        backgroundColor: '#dc3545',
-                        borderColor: '#b02a37',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Disease Outbreak Analysis',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
+                
+                // Hide skeleton loader
+                const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
+                if (healthMortalitySkeleton) {
+                    healthMortalitySkeleton.style.display = 'none';
+                }
+                
+                // Create health chart - handle case where there's no disease data
+                const ctx = document.getElementById('healthMortalityChart').getContext('2d');
+                const diseaseKeys = Object.keys(diseaseTypes);
+                const diseaseValues = Object.values(diseaseTypes);
+                
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: diseaseKeys.length > 0 ? diseaseKeys : ['No Disease Data'],
+                        datasets: [{
+                            label: 'Disease Incidents',
+                            data: diseaseKeys.length > 0 ? diseaseValues : [0],
+                            backgroundColor: diseaseKeys.length > 0 ? '#dc3545' : '#6c757d',
+                            borderColor: diseaseKeys.length > 0 ? '#b02a37' : '#5a6268',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Disease Outbreak Analysis',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            legend: {
+                                display: false
                             }
                         },
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
                             }
                         }
                     }
+                });
+                
+                // Show health summary
+                const summary = `
+                    <div class="alert alert-warning mt-3">
+                        <h6><i class="bi bi-heart-pulse"></i> Health Summary</h6>
+                        <p><strong>Mortality Rate:</strong> ${mortalityRate}% (${totalDead} dead hives)</p>
+                        <p><strong>Disease Incidents:</strong> ${diseaseActions.length}</p>
+                        <p><strong>Disease Types Found:</strong> ${Object.keys(diseaseTypes).length}</p>
+                        <p><strong>Treatments Applied:</strong> ${Object.keys(treatments).length}</p>
+                    </div>
+                `;
+                // Remove ALL existing summaries to prevent duplicates
+                const healthChartParent = document.getElementById('healthMortalityChart').parentNode;
+                const existingHealthSummaries = healthChartParent.querySelectorAll('.alert.alert-warning');
+                existingHealthSummaries.forEach(summary => summary.remove());
+                
+                document.getElementById('healthMortalityChart').parentNode.insertAdjacentHTML('afterend', summary);
+            } catch (error) {
+                Logger.error('❌ Error generating health mortality report:', error);
+                // Hide skeleton loader on error
+                const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
+                if (healthMortalitySkeleton) {
+                    healthMortalitySkeleton.style.display = 'none';
                 }
-            });
-            
-            // Show health summary
-            const summary = `
-                <div class="alert alert-warning mt-3">
-                    <h6><i class="bi bi-heart-pulse"></i> Health Summary</h6>
-                    <p><strong>Mortality Rate:</strong> ${mortalityRate}% (${totalDead} dead hives)</p>
-                    <p><strong>Disease Incidents:</strong> ${diseaseActions.length}</p>
-                    <p><strong>Disease Types Found:</strong> ${Object.keys(diseaseTypes).length}</p>
-                    <p><strong>Treatments Applied:</strong> ${Object.keys(treatments).length}</p>
-                </div>
-            `;
-            // Remove ALL existing summaries to prevent duplicates
-            const healthChartParent = document.getElementById('healthMortalityChart').parentNode;
-            const existingHealthSummaries = healthChartParent.querySelectorAll('.alert.alert-warning');
-            existingHealthSummaries.forEach(summary => summary.remove());
-            
-            document.getElementById('healthMortalityChart').parentNode.insertAdjacentHTML('afterend', summary);
-            
-            // Reset generation flag
-            isGeneratingReports = false;
+                beeMarshallAlert('❌ Error generating health and mortality report.\n\nPlease refresh the page and try again.', 'error');
+            }
         }
         
         function generateOperationsReport() {
@@ -1492,105 +1506,115 @@
                 Logger.log('📊 Report generation already in progress, skipping...');
                 return;
             }
-            isGeneratingReports = true;
             
-            if (!actions || actions.length === 0 && !scheduledTasks || scheduledTasks.length === 0) {
-                beeMarshallAlert('📊 No operational data available for analysis.\n\nSchedule tasks and log actions to see operational insights and efficiency metrics.', 'info');
-                isGeneratingReports = false;
-                return;
-            }
-            
-            Logger.log('📊 Generating operations report for tenant:', getCurrentTenantId());
-            Logger.log('📊 Using actions data:', actions.length, 'actions');
-            Logger.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
-            
-            // Analyze operational data
-            const completedTasks = scheduledTasks.filter(task => task.completed).length;
-            const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
-            const totalActions = actions.length;
-            
-            // Calculate action types
-            const actionTypes = {};
-            actions.forEach(action => {
-                const type = action.actionType || 'General';
-                actionTypes[type] = (actionTypes[type] || 0) + 1;
-            });
-            
-            // Calculate efficiency metrics
-            const taskCompletionRate = scheduledTasks.length > 0 ? (completedTasks / scheduledTasks.length * 100).toFixed(1) : 0;
-            const actionsPerCluster = clusters.length > 0 ? (totalActions / clusters.length).toFixed(1) : 0;
-            
-            // Destroy existing chart if it exists
-            const existingOpsChart = Chart.getChart('operationsChart');
-            if (existingOpsChart) {
-                existingOpsChart.destroy();
-            }
-            
-            // Hide skeleton loader
-            const operationsSkeleton = document.getElementById('operationsSkeleton');
-            if (operationsSkeleton) {
-                operationsSkeleton.style.display = 'none';
-            }
-            
-            // Create operations chart
-            const ctx = document.getElementById('operationsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Completed Tasks', 'Pending Tasks', 'Actions Logged'],
-                    datasets: [{
-                        data: [completedTasks, pendingTasks, totalActions],
-                        backgroundColor: [
-                            '#28a745', // Completed - Green
-                            '#ffc107', // Pending - Yellow
-                            '#17a2b8'  // Actions - Blue
-                        ],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                usePointStyle: true
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Operations Overview',
-                            font: {
-                                size: 16,
-                                weight: 'bold'
+            try {
+                if (!actions || actions.length === 0 && !scheduledTasks || scheduledTasks.length === 0) {
+                    // Hide skeleton loader even when no data
+                    const operationsSkeleton = document.getElementById('operationsSkeleton');
+                    if (operationsSkeleton) {
+                        operationsSkeleton.style.display = 'none';
+                    }
+                    beeMarshallAlert('📊 No operational data available for analysis.\n\nSchedule tasks and log actions to see operational insights and efficiency metrics.', 'info');
+                    return;
+                }
+                
+                Logger.log('📊 Generating operations report for tenant:', getCurrentTenantId());
+                Logger.log('📊 Using actions data:', actions.length, 'actions');
+                Logger.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
+                
+                // Analyze operational data
+                const completedTasks = scheduledTasks.filter(task => task.completed).length;
+                const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
+                const totalActions = actions.length;
+                
+                // Calculate action types
+                const actionTypes = {};
+                actions.forEach(action => {
+                    const type = action.actionType || 'General';
+                    actionTypes[type] = (actionTypes[type] || 0) + 1;
+                });
+                
+                // Calculate efficiency metrics
+                const taskCompletionRate = scheduledTasks.length > 0 ? (completedTasks / scheduledTasks.length * 100).toFixed(1) : 0;
+                const actionsPerCluster = clusters.length > 0 ? (totalActions / clusters.length).toFixed(1) : 0;
+                
+                // Destroy existing chart if it exists
+                const existingOpsChart = Chart.getChart('operationsChart');
+                if (existingOpsChart) {
+                    existingOpsChart.destroy();
+                }
+                
+                // Hide skeleton loader
+                const operationsSkeleton = document.getElementById('operationsSkeleton');
+                if (operationsSkeleton) {
+                    operationsSkeleton.style.display = 'none';
+                }
+                
+                // Create operations chart
+                const ctx = document.getElementById('operationsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Completed Tasks', 'Pending Tasks', 'Actions Logged'],
+                        datasets: [{
+                            data: [completedTasks, pendingTasks, totalActions],
+                            backgroundColor: [
+                                '#28a745', // Completed - Green
+                                '#ffc107', // Pending - Yellow
+                                '#17a2b8'  // Actions - Blue
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    padding: 20,
+                                    usePointStyle: true
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Operations Overview',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
                             }
                         }
                     }
+                });
+                
+                // Show operations summary
+                const summary = `
+                    <div class="alert alert-success mt-3">
+                        <h6><i class="bi bi-gear"></i> Operations Summary</h6>
+                        <p><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
+                        <p><strong>Actions per Site:</strong> ${actionsPerCluster}</p>
+                        <p><strong>Total Actions Logged:</strong> ${totalActions}</p>
+                        <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
+                    </div>
+                `;
+                // Remove ALL existing summaries to prevent duplicates
+                const opsChartParent = document.getElementById('operationsChart').parentNode;
+                const existingOpsSummaries = opsChartParent.querySelectorAll('.alert.alert-success');
+                existingOpsSummaries.forEach(summary => summary.remove());
+                
+                document.getElementById('operationsChart').parentNode.insertAdjacentHTML('afterend', summary);
+            } catch (error) {
+                Logger.error('❌ Error generating operations report:', error);
+                // Hide skeleton loader on error
+                const operationsSkeleton = document.getElementById('operationsSkeleton');
+                if (operationsSkeleton) {
+                    operationsSkeleton.style.display = 'none';
                 }
-            });
-            
-            // Show operations summary
-            const summary = `
-                <div class="alert alert-success mt-3">
-                    <h6><i class="bi bi-gear"></i> Operations Summary</h6>
-                    <p><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
-                    <p><strong>Actions per Site:</strong> ${actionsPerCluster}</p>
-                    <p><strong>Total Actions Logged:</strong> ${totalActions}</p>
-                    <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
-                </div>
-            `;
-            // Remove ALL existing summaries to prevent duplicates
-            const opsChartParent = document.getElementById('operationsChart').parentNode;
-            const existingOpsSummaries = opsChartParent.querySelectorAll('.alert.alert-success');
-            existingOpsSummaries.forEach(summary => summary.remove());
-            
-            document.getElementById('operationsChart').parentNode.insertAdjacentHTML('afterend', summary);
-            
-            // Reset generation flag
-            isGeneratingReports = false;
+                beeMarshallAlert('❌ Error generating operations report.\n\nPlease refresh the page and try again.', 'error');
+            }
         }
         
         function generateHarvestHistoryReport() {
@@ -1802,20 +1826,32 @@
                 return;
             }
             
-            // Collect all honey types and their associated sites
+            // Collect all honey types and calculate cumulative hive strength x honey type
             const honeyTypesMap = {};
             
             clusters.forEach(cluster => {
                 if (cluster.honeyPotentials && Array.isArray(cluster.honeyPotentials) && cluster.honeyPotentials.length > 0) {
+                    // Calculate total hive strength for this site
+                    const siteHiveStrength = (cluster.hiveStrength?.strong || 0) + 
+                                           (cluster.hiveStrength?.medium || 0) + 
+                                           (cluster.hiveStrength?.weak || 0) + 
+                                           (cluster.hiveStrength?.nuc || 0);
+                    
                     cluster.honeyPotentials.forEach(honeyType => {
                         if (!honeyTypesMap[honeyType]) {
-                            honeyTypesMap[honeyType] = [];
+                            honeyTypesMap[honeyType] = {
+                                sites: [],
+                                totalHiveStrength: 0
+                            };
                         }
-                        honeyTypesMap[honeyType].push({
+                        honeyTypesMap[honeyType].sites.push({
                             id: cluster.id,
                             name: cluster.name,
-                            hiveCount: cluster.hiveCount || 0
+                            hiveCount: cluster.hiveCount || 0,
+                            hiveStrength: siteHiveStrength
                         });
+                        // Accumulate hive strength for this honey type
+                        honeyTypesMap[honeyType].totalHiveStrength += siteHiveStrength;
                     });
                 }
             });
@@ -1830,15 +1866,23 @@
                 return;
             }
             
-            // Sort honey types by number of sites
+            // Sort honey types by total hive strength
             const sortedHoneyTypes = Object.entries(honeyTypesMap)
-                .sort((a, b) => b[1].length - a[1].length);
+                .sort((a, b) => b[1].totalHiveStrength - a[1].totalHiveStrength);
             
-            // Generate HTML
-            let html = '<div class="row g-2">';
+            // Generate HTML with bar chart
+            let html = `
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <h6><i class="bi bi-bar-chart"></i> Honey Potential by Hive Strength</h6>
+                        <p class="text-muted small">Aggregate total of site hive strength × expected honey type</p>
+                        <canvas id="honeyPotentialsChart" height="100"></canvas>
+                    </div>
+                </div>
+                <div class="row g-2">
+            `;
             
-            sortedHoneyTypes.forEach(([honeyType, sites]) => {
-                const totalHives = sites.reduce((sum, site) => sum + site.hiveCount, 0);
+            sortedHoneyTypes.forEach(([honeyType, data]) => {
                 html += `
                     <div class="col-6 col-md-4 col-lg-3">
                         <div class="card honey-type-card clickable" onclick="showSitesByHoneyType('${honeyType}')">
@@ -1846,8 +1890,8 @@
                                 <i class="bi bi-flower1 text-warning" style="font-size: 2rem;"></i>
                                 <h6 class="mt-2 mb-1">${honeyType}</h6>
                                 <p class="mb-0">
-                                    <small class="text-muted">${sites.length} site${sites.length > 1 ? 's' : ''}</small><br>
-                                    <small class="text-muted">${totalHives} hives</small>
+                                    <small class="text-muted">${data.sites.length} site${data.sites.length > 1 ? 's' : ''}</small><br>
+                                    <small class="text-muted"><strong>${data.totalHiveStrength} hive strength units</strong></small>
                                 </p>
                             </div>
                         </div>
@@ -1858,6 +1902,51 @@
             html += '</div>';
             
             document.getElementById('honeyPotentialsSection').innerHTML = html;
+            
+            // Create cumulative bar chart
+            const ctx = document.getElementById('honeyPotentialsChart').getContext('2d');
+            const honeyLabels = sortedHoneyTypes.map(([honeyType]) => honeyType);
+            const honeyValues = sortedHoneyTypes.map(([_, data]) => data.totalHiveStrength);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: honeyLabels,
+                    datasets: [{
+                        label: 'Total Hive Strength Units',
+                        data: honeyValues,
+                        backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                        borderColor: 'rgba(255, 193, 7, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + ' hive strength units';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
         }
         
         // Function to show sites by honey type
