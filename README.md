@@ -1,6 +1,6 @@
-# 🐝 LarsBees - Apiary Management System
+# 🐝 LarsBees - Complete Apiary Management System
 
-A comprehensive web-based apiary (beekeeping) management system built with Python Flask. Track your hive locations, manage individual hives, log maintenance activities, and visualize your apiary on interactive maps.
+A comprehensive, production-ready web-based apiary (beekeeping) management system built with Python Flask and Firebase. Track your hive sites, manage individual hives, log maintenance activities, schedule tasks, generate reports, and visualize your apiary on interactive maps with real-time data synchronization.
 
 ![Python](https://img.shields.io/badge/python-3.8+-blue.svg)
 ![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)
@@ -9,15 +9,22 @@ A comprehensive web-based apiary (beekeeping) management system built with Pytho
 ## 📋 Features
 
 ### Core Functionality
-- **🔐 User Authentication** - Secure login and registration system
-- **📍 Hive Cluster Management** - Add, edit, and manage hive locations with GPS coordinates
-- **🗺️ Interactive Maps** - Google Maps integration showing all your hive cluster locations
-- **🐝 Individual Hive Tracking** - Optional detailed tracking for infection management
-- **📝 Action Logging** - Record all hive management activities with automatic date stamps
+- **🔐 Multi-Tenant Authentication** - Secure Firebase-based user authentication and tenant management
+- **📍 Apiary Site Management** - Add, edit, and manage hive locations with GPS coordinates and site classifications
+- **🗺️ Interactive Maps** - Google Maps integration with real-time site visualization and weather data
+- **🐝 Individual Hive Tracking** - Detailed tracking for infection management and hive health monitoring
+- **📝 Comprehensive Action Logging** - Record all hive management activities with automatic timestamps
 - **✅ Quick Task Logging** - Checkbox-based system for logging multiple tasks at once
+- **📅 Task Scheduling** - Schedule future tasks with automated reminders and tracking
+- **📊 Advanced Reporting** - Generate detailed reports with charts, analytics, and data visualization
 - **📦 Archive System** - Hide old records to keep your action list manageable
-- **📊 Dashboard** - Overview of all your apiaries with recent activities
 - **⚙️ Custom Settings** - Track harvest timelines, sugar requirements, and custom notes
+- **🌐 Real-time Sync** - Firebase-powered real-time data synchronization across devices
+- **📱 Mobile Responsive** - Fully responsive design optimized for mobile and desktop use
+
+### Site Classifications
+- **Functional Classification** - Production, Nucleus, Queen Rearing, Research, Education, Quarantine, Backup, Custom
+- **Seasonal Classification** - Summer Site, Winter Site
 
 ### Task Categories
 The system includes pre-configured tasks organized by category:
@@ -28,12 +35,23 @@ The system includes pre-configured tasks organized by category:
 - **Maintenance** - Adding/removing supers, frame replacement, repairs
 - **Events** - Swarm collection, colony splits, requeening
 
+### Advanced Features
+- **📈 Performance Analytics** - Track hive strength, productivity, and growth over time
+- **🏥 Health Monitoring** - Monitor disease outbreaks, mortality rates, and health trends
+- **⚙️ Operations Analysis** - Analyze task completion, efficiency, and resource usage
+- **🍯 Harvest Tracking** - Track honey production and harvest timelines
+- **📊 Data Export** - Export all data to CSV for external analysis
+- **🔍 Data Integrity** - Built-in data validation and integrity checking
+- **🌤️ Weather Integration** - Real-time weather data for informed decision making
+
 ## 🚀 Quick Start
 
 ### Prerequisites
 - Python 3.8 or higher
 - pip (Python package manager)
 - Google Maps API key (for map functionality)
+- Firebase project (for real-time data sync)
+- OpenWeatherMap API key (for weather integration)
 
 ### Installation
 
@@ -67,6 +85,8 @@ cp .env.example .env
 # Edit .env and add your configuration:
 # - SECRET_KEY: Generate a secure random key
 # - GOOGLE_MAPS_API_KEY: Your Google Maps API key
+# - FIREBASE_CONFIG: Your Firebase configuration JSON
+# - OPENWEATHER_API_KEY: Your OpenWeatherMap API key
 ```
 
 5. **Run the application**
@@ -80,6 +100,8 @@ http://localhost:5000
 ```
 
 You'll see the beautiful landing page. Click "Login" or "Sign Up" to get started!
+
+**Note:** The application now uses Firebase for real-time data synchronization. Make sure to configure your Firebase project and add the configuration to your environment variables.
 
 ## 🔧 Configuration
 
@@ -99,6 +121,12 @@ DATABASE_URL=sqlite:///larsbees.db
 # Google Maps API
 GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
 
+# Firebase Configuration (JSON string)
+FIREBASE_CONFIG={"apiKey":"your-api-key","authDomain":"your-project.firebaseapp.com","projectId":"your-project-id","storageBucket":"your-project.appspot.com","messagingSenderId":"123456789","appId":"your-app-id"}
+
+# OpenWeatherMap API
+OPENWEATHER_API_KEY=your-openweather-api-key-here
+
 # Debug Mode
 DEBUG=True
 ```
@@ -113,7 +141,24 @@ DEBUG=True
 4. Create credentials (API Key)
 5. Copy the API key to your `.env` file
 
-**Note:** For development, you can use the app without a Google Maps API key, but maps won't display properly.
+**Note:** For development, you can use the app without API keys, but maps and weather features won't display properly.
+
+### Setting up Firebase
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project or select an existing one
+3. Enable Authentication (Email/Password)
+4. Enable Realtime Database
+5. Go to Project Settings > General > Your apps
+6. Add a web app and copy the configuration
+7. Add the configuration to your `.env` file as `FIREBASE_CONFIG`
+
+### Getting an OpenWeatherMap API Key
+
+1. Go to [OpenWeatherMap](https://openweathermap.org/api)
+2. Sign up for a free account
+3. Generate an API key
+4. Add the key to your `.env` file as `OPENWEATHER_API_KEY`
 
 ## 🧪 Debug Features
 
@@ -156,41 +201,60 @@ sqlitebrowser larsbees.db
 
 ## 📱 Usage Guide
 
-### Adding Your First Hive Cluster
+### Adding Your First Apiary Site
 
 1. **Login** to your account
-2. Click **"Add New Cluster"** on the dashboard
+2. Click **"Add Site"** on the dashboard
 3. Fill in the details:
-   - **Cluster Name**: e.g., "North Field Apiary"
+   - **Site Name**: e.g., "North Field Apiary"
    - **Description**: Brief description of the location
    - **Coordinates**: Enter GPS coordinates or click "Use My Current Location"
+   - **Functional Classification**: Production, Nucleus, Queen Rearing, etc.
+   - **Seasonal Classification**: Summer Site or Winter Site
    - **Hive Count**: Number of hives at this location
    - **Harvest Timeline**: When you expect to harvest (optional)
    - **Sugar Requirements**: Feeding schedule (optional)
-4. Click **"Save Cluster"**
+4. Click **"Save Site"**
 
 ### Logging Actions
 
 #### Quick Log (Multiple Tasks)
 1. Go to **"Log Action"**
-2. Select your cluster from dropdown
+2. Select your site from dropdown
 3. Check all tasks you completed
 4. Click **"Log Selected Tasks"**
 
 #### Detailed Log (Single Task with Notes)
 1. Go to **"Log Action"**
 2. Scroll to "Detailed Log" section
-3. Select cluster, task type, and add notes
+3. Select site, task type, and add notes
 4. Click **"Log Action"**
+
+#### Scheduling Tasks
+1. Go to **"Scheduler"** tab
+2. Click **"Schedule New Task"**
+3. Select site, task type, and due date
+4. Set priority and add notes
+5. Click **"Schedule Task"**
 
 ### Managing Individual Hives
 
 For infection management or detailed tracking:
-1. Open a cluster detail page
+1. Open a site detail page
 2. Click **"Add Individual Hive"**
 3. Give it a unique number/ID
 4. Set status (healthy, infected, quarantine, etc.)
 5. Add notes as needed
+
+### Generating Reports
+
+1. Go to **"Reports"** tab
+2. View automatically generated reports:
+   - **Hive Performance**: Track hive strength and productivity
+   - **Health & Mortality**: Monitor disease outbreaks and health trends
+   - **Operations**: Analyze task completion and efficiency
+   - **Harvest History**: Track honey production over time
+3. Export data to CSV for external analysis
 
 ### Archiving Old Records
 
@@ -212,14 +276,24 @@ LarsBees/
 ├── .env                   # Environment variables (create this)
 ├── .gitignore            # Git ignore rules
 ├── README.md             # This file
-├── templates/            # HTML templates
+├── docs/                 # Documentation and standalone HTML files
+│   ├── beemarshall-full.html  # Main application interface
+│   ├── reports.html           # Reports and analytics
+│   ├── js/                    # JavaScript modules
+│   │   ├── sites.js           # Site management
+│   │   ├── actions.js         # Action logging
+│   │   ├── scheduling.js      # Task scheduling
+│   │   ├── reports.js         # Report generation
+│   │   └── ...                # Other modules
+│   └── css/                   # Custom stylesheets
+├── templates/            # Flask HTML templates
 │   ├── base.html
 │   ├── login.html
 │   ├── register.html
 │   ├── dashboard.html
-│   ├── clusters.html
-│   ├── cluster_form.html
-│   ├── cluster_detail.html
+│   ├── sites.html
+│   ├── site_form.html
+│   ├── site_detail.html
 │   ├── actions.html
 │   ├── action_form.html
 │   └── hive_form.html
@@ -305,19 +379,26 @@ This application is designed for personal/small-scale use and includes:
 ### Users
 - id, username, email, password_hash, created_at
 
-### HiveCluster
+### HiveSite (formerly HiveCluster)
 - id, user_id, name, description, latitude, longitude, hive_count
+- functional_classification, seasonal_classification
 - harvest_timeline, sugar_requirements, notes, created_at, updated_at
 
 ### IndividualHive
-- id, cluster_id, hive_number, status, notes, created_at, updated_at
+- id, site_id, hive_number, status, notes, created_at, updated_at
 
 ### HiveAction
-- id, cluster_id, individual_hive_id, user_id, task_type_id
+- id, site_id, individual_hive_id, user_id, task_type_id
 - task_name, description, action_date, is_archived, created_at
+
+### ScheduledTask
+- id, site_id, task_id, individual_hive_id, due_date, priority, status
+- notes, created_by, completed_by, created_at, completed_at
 
 ### TaskType
 - id, name, description, category, order
+
+**Note:** The application now uses Firebase Realtime Database for primary data storage with SQLite as a local backup. The schema above represents the local SQLite structure.
 
 ## 🔄 Future Mobile App Integration
 
@@ -373,17 +454,28 @@ For issues, questions, or suggestions:
 
 ## 🎯 Roadmap
 
-Potential future features:
-- [ ] Export data to CSV/Excel
-- [ ] Weather integration for activity planning
-- [ ] Honey production tracking and analytics
+### ✅ Completed Features
+- [x] Export data to CSV/Excel
+- [x] Weather integration for activity planning
+- [x] Honey production tracking and analytics
+- [x] Advanced reporting and analytics
+- [x] Task scheduling and management
+- [x] Real-time data synchronization
+- [x] Multi-tenant architecture
+- [x] Site classification system
+- [x] Data integrity checking
+
+### 🔄 Future Features
 - [ ] Equipment inventory management
-- [ ] Multi-user collaboration
 - [ ] Mobile app (iOS/Android)
 - [ ] Email notifications for scheduled tasks
 - [ ] Photo uploads for hives
 - [ ] Queen tracking and lineage
 - [ ] Financial tracking (expenses/revenue)
+- [ ] Advanced analytics dashboard
+- [ ] API for third-party integrations
+- [ ] Offline mode support
+- [ ] Multi-language support
 
 ---
 

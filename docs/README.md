@@ -1,25 +1,44 @@
-# 🐝 BeeMarshall - Choose Your Version
+# 🐝 BeeMarshall - Complete Apiary Management System
 
-## Two Versions Available!
+## 🚀 Production-Ready Version Available!
 
-### 🌩️ **Cloud Sync Version** (Recommended)
-**URL:** [app-firebase.html](app-firebase.html)
+### 🌩️ **Full-Featured Cloud Version** (Recommended)
+**URL:** [beemarshall-full.html](beemarshall-full.html)
 
 **Features:**
-- ✅ **Syncs across ALL browsers and devices**
-- ✅ Automatic cloud backup
-- ✅ Real-time updates
-- ✅ Access from anywhere
-- ✅ Free (Firebase free tier)
-- ⚙️ Requires 5-minute Firebase setup
+- ✅ **Complete apiary management system**
+- ✅ **Real-time data synchronization across all devices**
+- ✅ **Advanced reporting and analytics**
+- ✅ **Task scheduling and management**
+- ✅ **Site classification system**
+- ✅ **Weather integration**
+- ✅ **Data export capabilities**
+- ✅ **Multi-tenant architecture**
+- ✅ **Mobile-responsive design**
+- ⚙️ Requires Firebase setup (5 minutes)
 
-**Best for:** Using on multiple devices, automatic backup, sharing across browsers
+**Best for:** Professional beekeepers, multi-device use, comprehensive management
 
 [**🔥 Firebase Setup Guide**](../FIREBASE_SETUP.md)
 
 ---
 
-### 💻 **Local Only Version**
+### 📊 **Reports & Analytics**
+**URL:** [reports.html](reports.html)
+
+**Features:**
+- ✅ **Performance analytics**
+- ✅ **Health monitoring**
+- ✅ **Operations analysis**
+- ✅ **Harvest tracking**
+- ✅ **Data visualization**
+- ✅ **Export capabilities**
+
+**Best for:** Data analysis, performance tracking, business insights
+
+---
+
+### 💻 **Legacy Local Version**
 **URL:** [app.html](app.html)
 
 **Features:**
@@ -29,25 +48,33 @@
 - ✅ Works offline
 - ✅ Fastest performance
 - ❌ No sync across browsers/devices
+- ❌ Limited features
 
 **Best for:** Single device use, maximum privacy, offline access
-
-**No setup required** - just open and use!
 
 ---
 
 ## 🤔 Which Should You Choose?
 
-### Choose **Cloud Sync** if:
+### Choose **Full-Featured Cloud Version** if:
+- ✅ You want complete apiary management
 - ✅ You use multiple devices (phone, laptop, tablet)
-- ✅ You want automatic backups
-- ✅ You want to access from any browser
-- ✅ You don't mind 5 minutes of setup
+- ✅ You want advanced reporting and analytics
+- ✅ You need task scheduling and management
+- ✅ You want real-time data synchronization
+- ✅ You don't mind 5 minutes of Firebase setup
 
-### Choose **Local Only** if:
+### Choose **Reports & Analytics** if:
+- ✅ You want to analyze existing data
+- ✅ You need performance insights
+- ✅ You want to track trends and patterns
+- ✅ You need data visualization
+
+### Choose **Legacy Local Version** if:
 - ✅ You only use one device/browser
 - ✅ You want zero setup
 - ✅ You prefer maximum privacy
+- ✅ You only need basic functionality
 - ✅ You need offline access
 
 ---
