@@ -69,7 +69,7 @@ function renderScheduledTasks() {
     
     const pendingHtml = pending.length > 0
         ? pending.map(t => {
-            const cluster = clusters.find(c => c.id === t.clusterId);
+            const site = sites.find(s => s.id === t.clusterId);
             const hive = individualHives.find(h => h.id === t.individualHiveId);
             const task = tasks.find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
@@ -124,7 +124,7 @@ function renderScheduledTasks() {
                 <h6><i class="bi bi-check-circle-fill text-success"></i> Recently Completed</h6>
                 <div class="accordion" id="completedTasksAccordion">
                     ${completed.slice(0, 10).map(t => {
-                        const cluster = clusters.find(c => c.id === t.clusterId);
+                        const site = sites.find(s => s.id === t.clusterId);
                         const hive = individualHives.find(h => h.id === t.individualHiveId);
                         const task = tasks.find(tk => tk.id === t.taskId);
                         const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
@@ -218,7 +218,7 @@ function renderScheduleTimeline() {
                 </h6>
                 <div class="timeline-tasks">
                     ${tasks.map(task => {
-                        const cluster = clusters.find(c => c.id === task.clusterId);
+                        const site = sites.find(s => s.id === task.clusterId);
                         const hive = individualHives.find(h => h.id === task.individualHiveId);
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
@@ -270,7 +270,7 @@ function renderScheduleTimeline() {
         </h6>`;
         
         const taskList = tasks.map(task => {
-            const cluster = clusters.find(c => c.id === task.clusterId);
+            const site = sites.find(s => s.id === task.clusterId);
             const hive = individualHives.find(h => h.id === task.individualHiveId);
             const taskObj = tasks.find(tk => tk.id === task.taskId);
             const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
@@ -841,7 +841,7 @@ function generateEnhancedICS(tasks) {
     ];
     
     tasks.forEach(task => {
-        const cluster = clusters.find(c => c.id === task.clusterId);
+        const site = sites.find(s => s.id === task.clusterId);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         
@@ -902,7 +902,7 @@ function generateICS(tasks) {
     ];
     
     tasks.forEach(task => {
-        const cluster = clusters.find(c => c.id === task.clusterId);
+        const site = sites.find(s => s.id === task.clusterId);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         
@@ -1166,7 +1166,7 @@ function initializeCalendar() {
         events: function(fetchInfo, successCallback, failureCallback) {
             // Convert scheduled tasks to FullCalendar events
             const events = scheduledTasks.map(task => {
-                const cluster = clusters.find(c => c.id === task.clusterId);
+                const site = sites.find(s => s.id === task.clusterId);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 const dueDate = new Date(task.dueDate);
                 const isOverdue = dueDate < new Date() && !task.completed;

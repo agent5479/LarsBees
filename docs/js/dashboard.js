@@ -81,16 +81,16 @@ window.getTaskDisplayName = function(taskName, taskId) {
 function updateDashboard() {
     console.log('📊 Updating dashboard with data...');
     console.log('🔍 Current data state:', {
-        clusters: clusters ? clusters.length : 'undefined',
+        sites: sites ? sites.length : 'undefined',
         actions: actions ? actions.length : 'undefined',
         scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
         individualHives: individualHives ? individualHives.length : 'undefined'
     });
     
     // Check if data arrays are properly initialized
-    if (!clusters) {
-        console.error('❌ Clusters array is undefined!');
-        clusters = [];
+    if (!sites) {
+        console.error('❌ Sites array is undefined!');
+        sites = [];
     }
     if (!actions) {
         console.error('❌ Actions array is undefined!');
@@ -106,9 +106,9 @@ function updateDashboard() {
     }
     
     // Filter out archived sites for statistics
-    const activeClusters = clusters.filter(c => !c.archived);
+    const activeSites = sites.filter(s => !s.archived);
     
-    const totalHives = activeClusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    const totalHives = activeSites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
     console.log('📊 Total hives calculated:', totalHives);
     
     // Check for overdue tasks and update flagged count
@@ -125,13 +125,13 @@ function updateDashboard() {
     window.flaggedCount = flaggedCount;
     
     // Set numbers directly without animation (active sites only)
-    document.getElementById('statClusters').textContent = activeClusters.length;
+    document.getElementById('statClusters').textContent = activeSites.length;
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = actions.length;
     document.getElementById('statFlagged').textContent = flaggedCount;
     
     console.log('📊 Dashboard cards updated:', {
-        clusters: clusters.length,
+        sites: sites.length,
         hives: totalHives,
         actions: actions.length,
         flagged: flaggedCount
@@ -160,7 +160,7 @@ function updateDashboard() {
     today.setHours(0, 0, 0, 0);
     const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
     
-    const upcomingHarvests = clusters.filter(site => {
+    const upcomingHarvests = sites.filter(site => {
         if (!site.harvestTimeline) return false;
         try {
             const harvestDate = new Date(site.harvestTimeline);
@@ -177,7 +177,7 @@ function updateDashboard() {
         // Add urgent actions
         if (urgentFlagged.length > 0) {
             flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
-                const cluster = clusters.find(c => c.id === a.clusterId);
+                const site = sites.find(s => s.id === a.clusterId);
                 return `<div class="mb-2">
                     <strong>${cluster?.name || 'Unknown'}:</strong> ${a.taskName}
                     <br><small>${a.notes}</small>
@@ -197,11 +197,11 @@ function updateDashboard() {
         // Add overdue tasks
         if (overdueTasksForAlert.length > 0) {
             flaggedHtml += overdueTasksForAlert.slice(0, 3).map(task => {
-                const cluster = clusters.find(c => c.id === task.clusterId);
+                const site = sites.find(s => s.id === task.clusterId);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 return `
                     <div class="mb-2">
-                        <strong>OVERDUE: ${taskName}</strong> - ${cluster?.name || 'Unknown'}
+                        <strong>OVERDUE: ${taskName}</strong> - ${site?.name || 'Unknown'}
                         <br><small>Due: ${new Date(task.dueDate).toLocaleDateString()}</small>
                         <br>
                         <div class="mt-1">
@@ -219,19 +219,19 @@ function updateDashboard() {
         
         // Add upcoming harvests
         if (upcomingHarvests.length > 0) {
-            flaggedHtml += upcomingHarvests.slice(0, 3).map(cluster => {
-                const harvestDate = new Date(cluster.harvestTimeline);
+            flaggedHtml += upcomingHarvests.slice(0, 3).map(site => {
+                const harvestDate = new Date(site.harvestTimeline);
                 const daysUntil = Math.ceil((harvestDate - today) / (1000 * 60 * 60 * 24));
                 return `
                     <div class="mb-2">
-                        <strong>🍯 HARVEST: ${cluster.name}</strong>
+                        <strong>🍯 HARVEST: ${site.name}</strong>
                         <br><small>Expected: ${harvestDate.toLocaleDateString()} (${daysUntil} days)</small>
                         <br>
                         <div class="mt-1">
-                            <button class="btn btn-sm btn-outline-primary" onclick="handleHarvestAction('${cluster.id}', '${cluster.harvestTimeline}')">
+                            <button class="btn btn-sm btn-outline-primary" onclick="handleHarvestAction('${site.id}', '${site.harvestTimeline}')">
                                 <i class="bi bi-calendar-plus"></i> Schedule Harvest
                             </button>
-                            <button class="btn btn-sm btn-outline-success" onclick="handleHarvestAction('${cluster.id}', '${cluster.harvestTimeline}', true)">
+                            <button class="btn btn-sm btn-outline-success" onclick="handleHarvestAction('${site.id}', '${site.harvestTimeline}', true)">
                                 <i class="bi bi-check"></i> Mark Addressed
                             </button>
                         </div>
@@ -253,7 +253,7 @@ function updateDashboard() {
     const recentActions = [...actions].reverse().slice(0, 10);
     const recentHtml = recentActions.length > 0 
         ? recentActions.map(a => {
-            const cluster = clusters.find(c => c.id === a.clusterId);
+                const site = sites.find(s => s.id === a.clusterId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
             return `
@@ -276,7 +276,7 @@ function updateScheduledTasksPreview() {
     const pending = scheduledTasks.filter(t => !t.completed);
     const html = pending.length > 0
         ? pending.slice(0, 5).map(t => {
-            const cluster = clusters.find(c => c.id === t.clusterId);
+                const site = sites.find(s => s.id === t.clusterId);
             const task = tasks.find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
             const priorityBadge = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
@@ -364,7 +364,7 @@ function updateCalendarWidget() {
                 </div>
                 <div class="calendar-tasks">
                     ${tasks.map(task => {
-                        const cluster = clusters.find(c => c.id === task.clusterId);
+                        const site = sites.find(s => s.id === task.clusterId);
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
                         const priorityClass = task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'secondary';
@@ -622,7 +622,7 @@ function makeDashboardCardsClickable() {
             let tooltipText = '';
             switch(target) {
                 case 'sites':
-                    tooltipText = `View and manage all ${clusters.length} apiary sites`;
+                    tooltipText = `View and manage all ${sites.length} apiary sites`;
                     break;
                 case 'actions':
                     tooltipText = `View and manage all ${actions.length} logged actions`;
@@ -663,9 +663,9 @@ function makeRecentActionsClickable() {
         item.addEventListener('click', function() {
             const actionText = this.querySelector('strong').textContent;
             const clusterName = actionText.split(' - ')[1];
-            const cluster = clusters.find(c => c.name === clusterName);
-            if (cluster) {
-                viewClusterDetails(cluster.id);
+            const site = sites.find(s => s.name === clusterName);
+            if (site) {
+                viewClusterDetails(site.id);
             }
         });
     });
@@ -675,7 +675,7 @@ function makeRecentActionsClickable() {
 window.forceDashboardRefresh = function() {
     console.log('🔄 Force refreshing dashboard...');
     console.log('📊 Current data state:', {
-        clusters: clusters ? clusters.length : 'undefined',
+        sites: sites ? sites.length : 'undefined',
         actions: actions ? actions.length : 'undefined',
         scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
         individualHives: individualHives ? individualHives.length : 'undefined'
@@ -840,12 +840,12 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
     
     if (markAddressed) {
         // Clear the harvest date to mark as addressed
-        const cluster = clusters.find(c => c.id === clusterId);
-        if (cluster) {
-            cluster.harvestTimeline = '';
+        const site = sites.find(s => s.id === clusterId);
+        if (site) {
+            site.harvestTimeline = '';
             
             const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-            database.ref(`${tenantPath}/${cluster.id}`).update({ harvestTimeline: '' })
+            database.ref(`${tenantPath}/${site.id}`).update({ harvestTimeline: '' })
                 .then(() => {
                     beeMarshallAlert('✅ Harvest marked as addressed', 'success');
                     updateDashboard();
@@ -853,7 +853,7 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
         }
     } else {
         // Schedule a harvest task
-        const cluster = clusters.find(c => c.id === clusterId);
+        const site = sites.find(s => s.id === clusterId);
         if (cluster && typeof showScheduleTaskModal === 'function') {
             // Try to find a harvest task in the tasks list
             const harvestTask = tasks.find(t => 

@@ -9,7 +9,7 @@ function showLogActionForm() {
 function populateActionForm() {
     const clusterSelect = document.getElementById('actionCluster');
     clusterSelect.innerHTML = '<option value="">Select site...</option>' +
-        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     const tasksByCategory = {};
     tasks.forEach(task => {
@@ -111,7 +111,7 @@ function handleLogAction(e) {
 function populateActionFilters() {
     const clusterFilter = document.getElementById('filterCluster');
     clusterFilter.innerHTML = '<option value="">All Sites</option>' +
-        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     const categories = [...new Set(tasks.map(t => t.category))].sort();
     document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
@@ -134,7 +134,7 @@ function renderActions() {
     
     const html = filtered.reverse().length > 0
         ? filtered.map(a => {
-            const cluster = clusters.find(c => c.id === a.clusterId);
+            const site = sites.find(s => s.id === a.clusterId);
             const hive = individualHives.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const deleteBtn = canDeleteAction() ? `
@@ -197,7 +197,7 @@ function renderFlaggedItems() {
     const flagged = actions.filter(a => a.flag && a.flag !== '');
     const html = flagged.reverse().length > 0
         ? flagged.map(a => {
-            const cluster = clusters.find(c => c.id === a.clusterId);
+            const site = sites.find(s => s.id === a.clusterId);
             const flagClass = a.flag === 'urgent' ? 'danger' : a.flag === 'warning' ? 'warning' : 'info';
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : 'ℹ️';
             
