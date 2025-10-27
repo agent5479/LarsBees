@@ -73,9 +73,9 @@
                 </div>
                 
                 <div class="alert alert-info">
-                <h5><i class="bi bi-info-circle"></i> Functional Classification Migration</h5>
-                <p class="mb-0">This tool fixes functional classification data to ensure proper map symbols and colors are displayed. 
-                It will analyze your sites and help you assign the correct functional classifications.</p>
+                <h5><i class="bi bi-info-circle"></i> Site Classification Migration</h5>
+                <p class="mb-0">This tool fixes site classification data to ensure proper map symbols and colors are displayed. 
+                It will analyze your sites and help you assign the correct functional and seasonal classifications.</p>
                 </div>
 
                 <!-- Migration Statistics -->
@@ -402,10 +402,16 @@
                     // Update the site object
                     site.functionalClassification = suggestedType;
                     
+                    // Also migrate seasonal classification if needed
+                    const seasonalClassification = site.seasonal_classification || 'summer';
+                    site.seasonalClassification = seasonalClassification;
+                    
                     // Create migration promise
                     const migrationPromise = database.ref(`tenants/${currentTenantId}/sites/${site.id}`)
                         .update({
-                            functionalClassification: suggestedType
+                            functionalClassification: suggestedType,
+                            seasonalClassification: seasonalClassification,
+                            seasonal_classification: null // Remove old field
                         })
                         .then(() => {
                             migratedCount++;

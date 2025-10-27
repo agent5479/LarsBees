@@ -110,7 +110,7 @@ function renderSites() {
                             <!-- Seasonal Classification -->
                             <div class="mb-2">
                                 <i class="bi bi-sun text-muted me-1"></i>
-                                <strong>Seasonal Classification:</strong> ${c.seasonalClassification || 'Not specified'}
+                                <strong>Seasonal Classification:</strong> ${c.seasonalClassification || c.seasonal_classification || 'Not specified'}
                             </div>
                             
                             <!-- Total Hive Count -->
@@ -610,7 +610,7 @@ function editSite(id) {
     document.getElementById('siteSugar').value = site.sugarRequirements || '';
     document.getElementById('siteNotes').value = site.notes || '';
     document.getElementById('functionalClassification').value = site.functionalClassification || site.siteType || 'production';
-    document.getElementById('seasonalClassification').value = site.seasonalClassification || site.site_type || 'summer';
+    document.getElementById('seasonalClassification').value = site.seasonalClassification || site.seasonal_classification || 'summer';
     document.getElementById('landownerName').value = site.landownerName || '';
     document.getElementById('landownerPhone').value = site.landownerPhone || '';
     document.getElementById('landownerEmail').value = site.landownerEmail || '';
