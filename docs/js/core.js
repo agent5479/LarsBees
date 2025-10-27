@@ -875,6 +875,14 @@ function showProfileModal() {
                     <div class="mb-3">
                         <label class="form-label fw-bold">Tenant</label>
                         <input type="text" class="form-control" value="${currentTenantId || 'Default'}" disabled>
+                        <small class="form-text text-muted">Tenant information cannot be changed</small>
+                    </div>
+                    <hr class="my-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Change Password</label>
+                        <button class="btn btn-outline-primary w-100" onclick="showChangePasswordModal(); bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();">
+                            <i class="bi bi-key"></i> Change Password
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
@@ -891,6 +899,124 @@ function showProfileModal() {
     profileModal.addEventListener('hidden.bs.modal', () => {
         document.body.removeChild(profileModal);
     });
+}
+
+// Show Change Password Modal
+function showChangePasswordModal() {
+    const passwordModal = document.createElement('div');
+    passwordModal.className = 'modal fade';
+    passwordModal.id = 'changePasswordModal';
+    passwordModal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title d-flex align-items-center">
+                        <i class="bi bi-key me-2" style="color: var(--accent); font-size: 1.2rem;"></i>
+                        Change Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min 6 characters)" required>
+                        <small class="form-text text-muted">Password must be at least 6 characters long</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password" required>
+                    </div>
+                    <div id="passwordChangeMessage" class="alert d-none" role="alert"></div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="savePasswordChange()">Change Password</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(passwordModal);
+    const modal = new bootstrap.Modal(passwordModal);
+    modal.show();
+    
+    passwordModal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(passwordModal);
+    });
+}
+
+// Save password change
+function savePasswordChange() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const messageDiv = document.getElementById('passwordChangeMessage');
+    
+    // Validation
+    if (!currentPassword || !newPassword || !confirmPassword) {
+        messageDiv.className = 'alert alert-danger';
+        messageDiv.textContent = 'Please fill in all fields';
+        messageDiv.classList.remove('d-none');
+        return;
+    }
+    
+    if (newPassword.length < 6) {
+        messageDiv.className = 'alert alert-danger';
+        messageDiv.textContent = 'Password must be at least 6 characters long';
+        messageDiv.classList.remove('d-none');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        messageDiv.className = 'alert alert-danger';
+        messageDiv.textContent = 'New passwords do not match';
+        messageDiv.classList.remove('d-none');
+        return;
+    }
+    
+    // Verify current password by re-authenticating
+    const username = currentUser.username;
+    const email = currentUser.email;
+    
+    auth.signInWithEmailAndPassword(email, currentPassword)
+        .then((userCredential) => {
+            // Current password is correct, now update to new password
+            return userCredential.user.updatePassword(newPassword);
+        })
+        .then(() => {
+            messageDiv.className = 'alert alert-success';
+            messageDiv.textContent = 'Password changed successfully!';
+            messageDiv.classList.remove('d-none');
+            
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            // Close modal after 2 seconds
+            setTimeout(() => {
+                bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                beeMarshallAlert('Password changed successfully!', 'success');
+            }, 2000);
+        })
+        .catch((error) => {
+            console.error('Error changing password:', error);
+            messageDiv.className = 'alert alert-danger';
+            
+            if (error.code === 'auth/wrong-password') {
+                messageDiv.textContent = 'Current password is incorrect';
+            } else if (error.code === 'auth/weak-password') {
+                messageDiv.textContent = 'New password is too weak';
+            } else {
+                messageDiv.textContent = 'Error changing password: ' + error.message;
+            }
+            
+            messageDiv.classList.remove('d-none');
+        });
 }
 
 function showMainApp() {
