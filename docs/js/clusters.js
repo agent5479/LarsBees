@@ -1927,7 +1927,7 @@ function editHiveStateCount(state) {
     cluster.hiveStrength[state.toLowerCase()] = newValue;
     
     // Save to Firebase
-    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
     database.ref(`${tenantPath}/${cluster.id}`).update({
         hiveStrength: cluster.hiveStrength,
         lastModified: new Date().toISOString(),
@@ -2019,7 +2019,7 @@ function quickEditHiveStrength(clusterId, state, currentValue) {
     cluster.hiveStrength[state.toLowerCase()] = newValue;
     
     // Save to Firebase
-    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
     database.ref(`${tenantPath}/${clusterId}`).update({
         hiveStrength: cluster.hiveStrength,
         lastModified: new Date().toISOString(),
@@ -2092,7 +2092,7 @@ function quickEditHiveBox(clusterId, boxType, currentValue) {
                        (cluster.hiveStacks.nucs || 0);
     
     // Save to Firebase
-    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
     database.ref(`${tenantPath}/${clusterId}`).update({
         hiveStacks: cluster.hiveStacks,
         hiveCount: cluster.hiveCount,

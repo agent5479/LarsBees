@@ -213,7 +213,7 @@ All tenant data follows the pattern: `tenants/{tenantId}/`
 
 ### Creating a New Cluster
 ```
-User Input → clusters.js → database.ref('tenants/lars/clusters/123').set(clusterData)
+User Input → clusters.js → database.ref('tenants/lars/sites/123').set(clusterData)
                               ↓
                          Firebase Realtime DB
                               ↓

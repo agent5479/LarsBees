@@ -252,7 +252,7 @@ function loadDataFromFirebase() {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Loading...', 'syncing');
     
     // Listen for clusters
-    database.ref(`users/${userId}/clusters`).on('value', (snapshot) => {
+    database.ref(`tenants/${userId}/sites`).on('value', (snapshot) => {
         const data = snapshot.val();
         clusters = data ? Object.values(data) : [];
         updateDashboard();
@@ -290,7 +290,7 @@ function saveClusterToFirebase(cluster) {
     cluster.lastModifiedBy = currentUser;
     cluster.lastModifiedAt = new Date().toISOString();
     
-    return database.ref(`users/${userId}/clusters/${cluster.id}`).set(cluster)
+    return database.ref(`tenants/${userId}/sites/${cluster.id}`).set(cluster)
         .then(() => {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Saved by ' + currentUser);
         })
@@ -302,7 +302,7 @@ function saveClusterToFirebase(cluster) {
 
 function deleteClusterFromFirebase(clusterId) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Deleting...', 'syncing');
-    return database.ref(`users/${userId}/clusters/${clusterId}`).remove()
+    return database.ref(`tenants/${userId}/sites/${clusterId}`).remove()
         .then(() => {
             showSyncStatus('<i class="bi bi-cloud-check"></i> Deleted');
         })
