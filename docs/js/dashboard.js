@@ -19,8 +19,8 @@ function updateActiveNav(section) {
     // Map sections to their corresponding function names
     const sectionMap = {
         'dashboard': 'showDashboard',
-        'Clusters': 'showClusters',
-        'Sites': 'showClusters',
+        'Clusters': 'showSites',
+        'Sites': 'showSites',
         'Actions': 'showActions',
         'Schedule': 'showScheduledTasks',
         'Tasks': 'showTasks',
@@ -590,7 +590,7 @@ function makeDashboardCardsClickable() {
             const target = this.dataset.target;
             switch(target) {
                 case 'sites':
-                    setTimeout(() => showClusters(), 200);
+                    setTimeout(() => showSites(), 200);
                     break;
                 case 'actions':
                     setTimeout(() => showActions(), 200);
@@ -599,7 +599,7 @@ function makeDashboardCardsClickable() {
                     setTimeout(() => showFlagged(), 200);
                     break;
                 default:
-                    setTimeout(() => showClusters(), 200);
+                    setTimeout(() => showSites(), 200);
             }
         });
         

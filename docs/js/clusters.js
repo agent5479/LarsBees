@@ -538,7 +538,7 @@ function handleSaveCluster(e) {
             showSyncStatus('<i class="bi bi-check"></i> Saved by ' + currentUser.username);
             // Close the form and return to sites view
             setTimeout(() => {
-                showClusters();
+                showSites();
             }, 500);
         })
         .catch(error => {

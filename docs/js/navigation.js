@@ -56,8 +56,8 @@ function showDashboard() {
     }, 10);
 }
 
-function showClusters() {
-    console.log('🔄 Switching to Clusters view...');
+function showSites() {
+    console.log('🔄 Switching to Sites view...');
     hideAllViews();
     
     // Small delay to ensure all views are hidden before showing new view
