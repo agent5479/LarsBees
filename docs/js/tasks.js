@@ -12,13 +12,21 @@ function getTaskDisplayName(taskName, taskId) {
     }
     
     // Check if it's a deleted task
-    if (taskId && deletedTasks[taskId]) {
+    if (taskId && deletedTasks && deletedTasks[taskId]) {
         return `[Deleted: ${deletedTasks[taskId].name}]`;
     }
     
     // Fallback to the stored name with deleted indicator
     if (taskName) {
         return `[Deleted: ${taskName}]`;
+    }
+    
+    // Try to find in COMPREHENSIVE_TASKS if available
+    if (typeof COMPREHENSIVE_TASKS !== 'undefined' && taskId) {
+        const comprehensiveTask = COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+        if (comprehensiveTask) {
+            return comprehensiveTask.name;
+        }
     }
     
     return '[Unknown Task]';

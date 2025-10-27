@@ -382,14 +382,19 @@ function completeScheduledTask(id) {
     const task = scheduledTasks.find(t => t.id === id);
     if (!task) return;
     
+    // Find the task name from the comprehensive tasks list
+    const taskObj = tasks.find(t => t.id === task.taskId);
+    const taskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
+    const taskCategory = taskObj ? taskObj.category : 'Task';
+    
     // Convert scheduled task to completed action
     const action = {
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         clusterId: task.clusterId,
         individualHiveId: task.individualHiveId,
         taskId: task.taskId,
-        taskName: getTaskDisplayName(null, task.taskId),
-        taskCategory: tasks.find(t => t.id === task.taskId)?.category || 'Task',
+        taskName: taskName,
+        taskCategory: taskCategory,
         date: new Date().toISOString().split('T')[0],
         notes: task.notes || '',
         flag: '',
