@@ -721,40 +721,6 @@
             </div>
         </div>
 
-        <!-- Quick Reports -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="report-card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-lightning"></i> Quick Reports</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <button class="btn btn-outline-success w-100" onclick="generateQuickReport('monthly')">
-                                    <i class="bi bi-calendar-month"></i> Monthly Summary
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <button class="btn btn-outline-info w-100" onclick="generateQuickReport('seasonal')">
-                                    <i class="bi bi-sun"></i> Seasonal Analysis
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <button class="btn btn-outline-warning w-100" onclick="generateQuickReport('cluster')">
-                                    <i class="bi bi-houses"></i> Site Performance
-                                </button>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <button class="btn btn-outline-danger w-100" onclick="generateQuickReport('health')">
-                                    <i class="bi bi-heart-pulse"></i> Health Dashboard
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Data Integrity Check -->
         <div class="row mt-4">
@@ -1186,6 +1152,9 @@
                 return;
             }
             
+            // Set generation flag
+            isGeneratingReports = true;
+            
             // Clear any pending generation
             if (reportGenerationTimeout) {
                 clearTimeout(reportGenerationTimeout);
@@ -1229,8 +1198,9 @@
                         // Also generate detailed integrity check report
                         generateDataIntegrityCheck();
                         
-                        // Mark reports as generated
+                        // Mark reports as generated and reset flag
                         reportsGenerated = true;
+                        isGeneratingReports = false;
                         clearTimeout(timeoutId);
                         Logger.log('✅ All reports generated successfully');
                     } catch (error) {
@@ -1241,17 +1211,12 @@
                 } else {
                     Logger.warn(`⚠️ Data integrity check found ${integrityIssues.totalIssues} issues. Report generation skipped.`);
                     beeMarshallAlert(`⚠️ Data Integrity Issues Found\n\n${integrityIssues.totalIssues} data integrity issues have been detected.\n\nPlease review and fix the issues listed in the Data Integrity Check section before viewing summary reports.`, 'warning');
+                    isGeneratingReports = false;
                 }
             }, 1000);
         }
         
         function generateHivePerformanceReport() {
-            // Prevent multiple simultaneous generations
-            if (isGeneratingReports) {
-                Logger.log('📊 Report generation already in progress, skipping...');
-                return;
-            }
-            
             try {
                 if (!clusters || clusters.length === 0) {
                     beeMarshallAlert('📊 No site data available for hive performance analysis.\n\nGet started by adding your first apiary site to see performance insights.', 'info');
@@ -1374,12 +1339,6 @@
         }
         
         function generateHealthMortalityReport() {
-            // Prevent multiple simultaneous generations
-            if (isGeneratingReports) {
-                Logger.log('📊 Report generation already in progress, skipping...');
-                return;
-            }
-            
             try {
                 if (!actions || actions.length === 0) {
                     // Hide skeleton loader even when no data
@@ -1501,12 +1460,6 @@
         }
         
         function generateOperationsReport() {
-            // Prevent multiple simultaneous generations
-            if (isGeneratingReports) {
-                Logger.log('📊 Report generation already in progress, skipping...');
-                return;
-            }
-            
             try {
                 if (!actions || actions.length === 0 && !scheduledTasks || scheduledTasks.length === 0) {
                     // Hide skeleton loader even when no data
@@ -1826,7 +1779,7 @@
                 return;
             }
             
-            // Collect all honey types and calculate cumulative hive strength x honey type
+            // Collect all honey types and calculate site strength counts
             const honeyTypesMap = {};
             
             clusters.forEach(cluster => {
@@ -1839,19 +1792,10 @@
                     
                     cluster.honeyPotentials.forEach(honeyType => {
                         if (!honeyTypesMap[honeyType]) {
-                            honeyTypesMap[honeyType] = {
-                                sites: [],
-                                totalHiveStrength: 0
-                            };
+                            honeyTypesMap[honeyType] = 0;
                         }
-                        honeyTypesMap[honeyType].sites.push({
-                            id: cluster.id,
-                            name: cluster.name,
-                            hiveCount: cluster.hiveCount || 0,
-                            hiveStrength: siteHiveStrength
-                        });
-                        // Accumulate hive strength for this honey type
-                        honeyTypesMap[honeyType].totalHiveStrength += siteHiveStrength;
+                        // Add site strength to this honey type
+                        honeyTypesMap[honeyType] += siteHiveStrength;
                     });
                 }
             });
@@ -1866,54 +1810,34 @@
                 return;
             }
             
-            // Sort honey types by total hive strength
+            // Sort honey types by strength count
             const sortedHoneyTypes = Object.entries(honeyTypesMap)
-                .sort((a, b) => b[1].totalHiveStrength - a[1].totalHiveStrength);
+                .sort((a, b) => b[1] - a[1]);
             
-            // Generate HTML with bar chart
+            // Generate simple bar chart
             let html = `
-                <div class="row mb-3">
+                <div class="row">
                     <div class="col-12">
-                        <h6><i class="bi bi-bar-chart"></i> Honey Potential by Hive Strength</h6>
-                        <p class="text-muted small">Aggregate total of site hive strength × expected honey type</p>
-                        <canvas id="honeyPotentialsChart" height="100"></canvas>
+                        <h6><i class="bi bi-bar-chart"></i> Honey Varieties by Site Strength</h6>
+                        <p class="text-muted small">Total site strength for each honey type</p>
+                        <canvas id="honeyPotentialsChart" height="150"></canvas>
                     </div>
                 </div>
-                <div class="row g-2">
             `;
-            
-            sortedHoneyTypes.forEach(([honeyType, data]) => {
-                html += `
-                    <div class="col-6 col-md-4 col-lg-3">
-                        <div class="card honey-type-card clickable" onclick="showSitesByHoneyType('${honeyType}')">
-                            <div class="card-body text-center">
-                                <i class="bi bi-flower1 text-warning" style="font-size: 2rem;"></i>
-                                <h6 class="mt-2 mb-1">${honeyType}</h6>
-                                <p class="mb-0">
-                                    <small class="text-muted">${data.sites.length} site${data.sites.length > 1 ? 's' : ''}</small><br>
-                                    <small class="text-muted"><strong>${data.totalHiveStrength} hive strength units</strong></small>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            html += '</div>';
             
             document.getElementById('honeyPotentialsSection').innerHTML = html;
             
-            // Create cumulative bar chart
+            // Create simple bar chart
             const ctx = document.getElementById('honeyPotentialsChart').getContext('2d');
             const honeyLabels = sortedHoneyTypes.map(([honeyType]) => honeyType);
-            const honeyValues = sortedHoneyTypes.map(([_, data]) => data.totalHiveStrength);
+            const honeyValues = sortedHoneyTypes.map(([_, strength]) => strength);
             
             new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: honeyLabels,
                     datasets: [{
-                        label: 'Total Hive Strength Units',
+                        label: 'Site Strength',
                         data: honeyValues,
                         backgroundColor: 'rgba(255, 193, 7, 0.8)',
                         borderColor: 'rgba(255, 193, 7, 1)',
@@ -1930,7 +1854,7 @@
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    return context.parsed.y + ' hive strength units';
+                                    return context.parsed.y + ' strength units';
                                 }
                             }
                         }
@@ -1939,9 +1863,7 @@
                         y: {
                             beginAtZero: true,
                             ticks: {
-                                callback: function(value) {
-                                    return value;
-                                }
+                                stepSize: 1
                             }
                         }
                     }
@@ -1971,16 +1893,6 @@
             showSiteDetailsModal(associatedSites, honeyType);
         }
         
-        function generateQuickReport(type) {
-            const reports = {
-                'monthly': 'Monthly Summary Report',
-                'seasonal': 'Seasonal Analysis Report',
-                'cluster': 'Site Performance Report',
-                'health': 'Health Dashboard Report'
-            };
-            
-            alert(`${reports[type]}\n\nThis report will provide:\n• Key performance indicators\n• Trend analysis\n• Comparative data\n• Actionable insights\n\nFeature coming soon!`);
-        }
         
         // Interactive Hive Analysis Functions
         function updateHiveStrengthBreakdown() {
@@ -2213,7 +2125,9 @@
                 missingLandownerInfo: [],
                 missingAccessInfo: [],
                 missingGPS: [],
-                missingContactDetails: []
+                missingContactDetails: [],
+                missingHoneyTypes: [],
+                overdueCompliance: []
             };
             
             // Check each site for data integrity issues
@@ -2280,14 +2194,80 @@
                         siteId: site.id
                     });
                 }
+                
+                // Check 6: Missing honey types
+                if (!site.honeyPotentials || !Array.isArray(site.honeyPotentials) || site.honeyPotentials.length === 0) {
+                    issues.missingHoneyTypes.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
             });
+            
+            // Check 7: Overdue compliance requirements
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            
+            // Check for overdue Annual Disease Return (due by 1 June)
+            const adrDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > adrDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Annual Disease Return (ADR)',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Annual Disease Return was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Check for overdue Colony Return (due by 1 June)
+            const colonyReturnDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > colonyReturnDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Colony Return',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Colony Return was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Check for overdue Certificate of Inspection (COI) window (1 Aug - 30 Nov)
+            const coiStart = new Date(currentYear, 7, 1); // August 1st
+            const coiEnd = new Date(currentYear, 10, 30); // November 30th
+            if (currentDate > coiEnd) {
+                issues.overdueCompliance.push({
+                    requirement: 'Certificate of Inspection (COI)',
+                    deadline: '30 November ' + currentYear,
+                    status: 'Overdue',
+                    description: 'COI window closed on 30 November ' + currentYear
+                });
+            } else if (currentDate >= coiStart && currentDate <= coiEnd) {
+                issues.overdueCompliance.push({
+                    requirement: 'Certificate of Inspection (COI)',
+                    deadline: '30 November ' + currentYear,
+                    status: 'Due Soon',
+                    description: 'COI window is open until 30 November ' + currentYear
+                });
+            }
+            
+            // Check for overdue levies and payments (due 1 June)
+            const levyDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > levyDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Levy Payment',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Annual levy payment was due by 1 June ' + currentYear
+                });
+            }
             
             // Calculate total issues
             const totalIssues = issues.hiveCountMismatches.length + 
                               issues.missingLandownerInfo.length + 
                               issues.missingAccessInfo.length + 
                               issues.missingGPS.length + 
-                              issues.missingContactDetails.length;
+                              issues.missingContactDetails.length +
+                              issues.missingHoneyTypes.length +
+                              issues.overdueCompliance.length;
             
             return { totalIssues, issues };
         }
@@ -2392,6 +2372,36 @@
                                     `).join('')}
                                     ${integrityResults.issues.missingContactDetails.length > 0 ? '</ul></div></div>' : ''}
                                     
+                                    ${integrityResults.issues.missingHoneyTypes.length > 0 ? `
+                                        <div class="card mb-2 border-warning">
+                                            <div class="card-header bg-warning text-dark">
+                                                <i class="bi bi-flower1"></i> Missing Honey Types (${integrityResults.issues.missingHoneyTypes.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.missingHoneyTypes.map(issue => `
+                                        <li class="list-group-item">${issue.siteName} (ID: ${issue.siteId})</li>
+                                    `).join('')}
+                                    ${integrityResults.issues.missingHoneyTypes.length > 0 ? '</ul></div></div>' : ''}
+                                    
+                                    ${integrityResults.issues.overdueCompliance.length > 0 ? `
+                                        <div class="card mb-2 border-danger">
+                                            <div class="card-header bg-danger text-white">
+                                                <i class="bi bi-exclamation-triangle"></i> Overdue Compliance Requirements (${integrityResults.issues.overdueCompliance.length})
+                                            </div>
+                                            <div class="card-body">
+                                                <ul class="list-group small">
+                                    ` : ''}
+                                    ${integrityResults.issues.overdueCompliance.map(issue => `
+                                        <li class="list-group-item">
+                                            <strong>${issue.requirement}</strong><br>
+                                            <small class="text-${issue.status === 'Overdue' ? 'danger' : 'warning'}">${issue.status} - ${issue.deadline}</small><br>
+                                            <small class="text-muted">${issue.description}</small>
+                                        </li>
+                                    `).join('')}
+                                    ${integrityResults.issues.overdueCompliance.length > 0 ? '</ul></div></div>' : ''}
+                                    
                                     <div class="alert alert-info mt-3">
                                         <strong>Next Steps:</strong>
                                         <ul class="mb-0">
@@ -2485,7 +2495,9 @@
                 missingLandownerInfo: [],
                 missingAccessInfo: [],
                 missingGPS: [],
-                missingContactDetails: []
+                missingContactDetails: [],
+                missingHoneyTypes: [],
+                overdueCompliance: []
             };
             
             // Check each site for data integrity issues
@@ -2551,14 +2563,80 @@
                         siteId: site.id
                     });
                 }
+                
+                // Check 6: Missing honey types
+                if (!site.honeyPotentials || !Array.isArray(site.honeyPotentials) || site.honeyPotentials.length === 0) {
+                    issues.missingHoneyTypes.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
             });
+            
+            // Check 7: Overdue compliance requirements
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            
+            // Check for overdue Annual Disease Return (due by 1 June)
+            const adrDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > adrDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Annual Disease Return (ADR)',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Annual Disease Return was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Check for overdue Colony Return (due by 1 June)
+            const colonyReturnDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > colonyReturnDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Colony Return',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Colony Return was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Check for overdue Certificate of Inspection (COI) window (1 Aug - 30 Nov)
+            const coiStart = new Date(currentYear, 7, 1); // August 1st
+            const coiEnd = new Date(currentYear, 10, 30); // November 30th
+            if (currentDate > coiEnd) {
+                issues.overdueCompliance.push({
+                    requirement: 'Certificate of Inspection (COI)',
+                    deadline: '30 November ' + currentYear,
+                    status: 'Overdue',
+                    description: 'COI window closed on 30 November ' + currentYear
+                });
+            } else if (currentDate >= coiStart && currentDate <= coiEnd) {
+                issues.overdueCompliance.push({
+                    requirement: 'Certificate of Inspection (COI)',
+                    deadline: '30 November ' + currentYear,
+                    status: 'Due Soon',
+                    description: 'COI window is open until 30 November ' + currentYear
+                });
+            }
+            
+            // Check for overdue levies and payments (due 1 June)
+            const levyDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > levyDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Levy Payment',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Annual levy payment was due by 1 June ' + currentYear
+                });
+            }
             
             // Calculate total issues
             const totalIssues = issues.hiveCountMismatches.length + 
                               issues.missingLandownerInfo.length + 
                               issues.missingAccessInfo.length + 
                               issues.missingGPS.length + 
-                              issues.missingContactDetails.length;
+                              issues.missingContactDetails.length +
+                              issues.missingHoneyTypes.length +
+                              issues.overdueCompliance.length;
             
             // Generate HTML report
             let html = '';
@@ -2712,6 +2790,61 @@
                                 <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
                                     <i class="bi bi-arrow-right"></i> Fix
                                 </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing honey types
+                if (issues.missingHoneyTypes.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-flower1"></i> Missing Honey Types (${issues.missingHoneyTypes.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites without honey type information:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingHoneyTypes.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="navigateToSpecificSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Overdue compliance requirements
+                if (issues.overdueCompliance.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-exclamation-triangle"></i> Overdue Compliance Requirements (${issues.overdueCompliance.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Regulatory compliance items requiring attention:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.overdueCompliance.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.requirement}</strong><br>
+                                <small class="text-${issue.status === 'Overdue' ? 'danger' : 'warning'}">${issue.status} - ${issue.deadline}</small><br>
+                                <small class="text-muted">${issue.description}</small>
                             </li>
                         `;
                     });

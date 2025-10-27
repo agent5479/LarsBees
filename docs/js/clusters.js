@@ -27,8 +27,8 @@ function renderClusters() {
     
     const html = visibleClusters.length > 0
         ? visibleClusters.map(c => {
-            // Archive button for all users (shown on active sites)
-            const archiveBtn = !c.archived ? `
+            // Archive button for admins only (shown on active sites)
+            const archiveBtn = (isAdmin && !c.archived) ? `
                 <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveCluster(${c.id})">
                     <i class="bi bi-archive"></i> Archive
                 </button>
