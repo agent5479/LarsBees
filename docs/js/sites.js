@@ -107,6 +107,12 @@ function renderSites() {
                                 <strong>Functional Classification:</strong> ${functionalClassificationLabel}
                             </div>
                             
+                            <!-- Seasonal Classification -->
+                            <div class="mb-2">
+                                <i class="bi bi-sun text-muted me-1"></i>
+                                <strong>Seasonal Classification:</strong> ${c.seasonalClassification || 'Not specified'}
+                            </div>
+                            
                             <!-- Total Hive Count -->
                             <div class="mb-2">
                                 <i class="bi bi-hexagon text-muted me-1"></i>
@@ -117,23 +123,23 @@ function renderSites() {
                             <div class="mb-3">
                                 <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
                                 <div class="d-flex flex-wrap gap-2 mt-2">
-                                    <div class="badge bg-success d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Strong', ${hiveStrong})" style="cursor: pointer; font-size: 0.9rem; min-width: 80px; justify-content: center;">
+                                    <div class="badge bg-success d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Strong', ${hiveStrong})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
                                         <i class="bi bi-hexagon-fill me-1"></i>
                                         <span>Strong: <strong id="hiveStrong_${c.id}">${hiveStrong}</strong></span>
                                     </div>
-                                    <div class="badge bg-warning text-dark d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Medium', ${hiveMedium})" style="cursor: pointer; font-size: 0.9rem; min-width: 80px; justify-content: center;">
+                                    <div class="badge bg-warning text-dark d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Medium', ${hiveMedium})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
                                         <i class="bi bi-hexagon me-1"></i>
                                         <span>Med: <strong id="hiveMedium_${c.id}">${hiveMedium}</strong></span>
                                     </div>
-                                    <div class="badge bg-danger d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Weak', ${hiveWeak})" style="cursor: pointer; font-size: 0.9rem; min-width: 80px; justify-content: center;">
+                                    <div class="badge bg-danger d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Weak', ${hiveWeak})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
                                         <i class="bi bi-hexagon me-1"></i>
                                         <span>Weak: <strong id="hiveWeak_${c.id}">${hiveWeak}</strong></span>
                                     </div>
-                                    <div class="badge bg-info d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'NUC', ${hiveNUC})" style="cursor: pointer; font-size: 0.9rem; min-width: 80px; justify-content: center;">
+                                    <div class="badge bg-info d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'NUC', ${hiveNUC})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
                                         <i class="bi bi-hexagon-half me-1"></i>
                                         <span>NUC: <strong id="hiveNUC_${c.id}">${hiveNUC}</strong></span>
                                     </div>
-                                    <div class="badge bg-secondary d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Dead', ${hiveDead})" style="cursor: pointer; font-size: 0.9rem; min-width: 80px; justify-content: center;">
+                                    <div class="badge bg-secondary d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Dead', ${hiveDead})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
                                         <i class="bi bi-hexagon me-1"></i>
                                         <span>Dead: <strong id="hiveDead_${c.id}">${hiveDead}</strong></span>
                                     </div>
@@ -144,39 +150,39 @@ function renderSites() {
                             <div class="mb-3">
                                 <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
                                 <div class="d-flex flex-wrap gap-2 mt-2">
-                                    <div class="card bg-primary text-white hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; min-width: 100px; max-width: 120px;">
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #e3f2fd; border: 2px solid #2196f3;">
                                         <div class="card-body p-2 text-center">
-                                            <i class="bi bi-stack" style="font-size: 1.2rem;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.8rem;">Doubles</div>
-                                            <div class="h5 mb-0" id="boxDoubles_${c.id}">${hiveDoubles}</div>
+                                            <i class="bi bi-stack" style="font-size: 1.2rem; color: #1976d2;"></i>
+                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #1976d2;">Doubles</div>
+                                            <div class="h5 mb-0" id="boxDoubles_${c.id}" style="color: #1976d2; font-weight: 600;">${hiveDoubles}</div>
                                         </div>
                                     </div>
-                                    <div class="card bg-success text-white hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; min-width: 100px; max-width: 120px;">
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
                                         <div class="card-body p-2 text-center">
-                                            <i class="bi bi-layers-half" style="font-size: 1.2rem;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.8rem;">Top-Splits</div>
-                                            <div class="h5 mb-0" id="boxTopSplits_${c.id}">${hiveTopSplits}</div>
+                                            <i class="bi bi-layers-half" style="font-size: 1.2rem; color: #7b1fa2;"></i>
+                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #7b1fa2;">Top-Splits</div>
+                                            <div class="h5 mb-0" id="boxTopSplits_${c.id}" style="color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
                                         </div>
                                     </div>
-                                    <div class="card bg-warning text-dark hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; min-width: 100px; max-width: 120px;">
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #e8f5e8; border: 2px solid #4caf50;">
                                         <div class="card-body p-2 text-center">
-                                            <i class="bi bi-square" style="font-size: 1.2rem;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.8rem;">Singles</div>
-                                            <div class="h5 mb-0" id="boxSingles_${c.id}">${hiveSingles}</div>
+                                            <i class="bi bi-square" style="font-size: 1.2rem; color: #388e3c;"></i>
+                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #388e3c;">Singles</div>
+                                            <div class="h5 mb-0" id="boxSingles_${c.id}" style="color: #388e3c; font-weight: 600;">${hiveSingles}</div>
                                         </div>
                                     </div>
-                                    <div class="card bg-info text-white hive-box-card" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer; min-width: 100px; max-width: 120px;">
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #fff3e0; border: 2px solid #ff9800;">
                                         <div class="card-body p-2 text-center">
-                                            <i class="bi bi-circle" style="font-size: 1.2rem;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.8rem;">NUCs</div>
-                                            <div class="h5 mb-0" id="boxNucs_${c.id}">${hiveNUCs}</div>
+                                            <i class="bi bi-circle" style="font-size: 1.2rem; color: #f57c00;"></i>
+                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #f57c00;">NUCs</div>
+                                            <div class="h5 mb-0" id="boxNucs_${c.id}" style="color: #f57c00; font-weight: 600;">${hiveNUCs}</div>
                                         </div>
                                     </div>
-                                    <div class="card bg-secondary text-white hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; min-width: 100px; max-width: 120px;">
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #f5f5f5; border: 2px solid #9e9e9e;">
                                         <div class="card-body p-2 text-center">
-                                            <i class="bi bi-square" style="font-size: 1.2rem;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.8rem;">Empty</div>
-                                            <div class="h5 mb-0" id="boxEmpty_${c.id}">${hiveEmpty}</div>
+                                            <i class="bi bi-square" style="font-size: 1.2rem; color: #616161;"></i>
+                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #616161;">Empty</div>
+                                            <div class="h5 mb-0" id="boxEmpty_${c.id}" style="color: #616161; font-weight: 600;">${hiveEmpty}</div>
                                         </div>
                                     </div>
                                 </div>
