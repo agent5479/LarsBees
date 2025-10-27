@@ -2844,7 +2844,7 @@
             }
             
             // Migrate clusters to sites
-            database.ref(`users/${currentUserId}/clusters`).once('value', (snapshot) => {
+            database.ref(`tenants/${currentTenantId}/clusters`).once('value', (snapshot) => {
                 const oldClusters = snapshot.val();
                 if (oldClusters) {
                     console.log('📦 Migrating clusters to sites...');
@@ -2863,64 +2863,37 @@
                 }
             });
             
-            // Migrate actions
-            database.ref(`users/${currentUserId}/actions`).once('value', (snapshot) => {
-                const oldActions = snapshot.val();
-                if (oldActions) {
-                    console.log('📦 Migrating actions...');
-                    migrationPromises.push(
-                        database.ref(`tenants/${currentTenantId}/actions`).set(oldActions).then(() => {
-                            console.log('✅ Actions migrated successfully');
-                            checkMigrationComplete();
-                        }).catch(error => {
-                            console.error('❌ Error migrating actions:', error);
-                            checkMigrationComplete();
-                        })
-                    );
+            // Actions are already in the correct location, just check if they exist
+            database.ref(`tenants/${currentTenantId}/actions`).once('value', (snapshot) => {
+                const actions = snapshot.val();
+                if (actions) {
+                    console.log('✅ Actions already in correct location');
                 } else {
-                    console.log('📭 No actions found to migrate');
-                    checkMigrationComplete();
+                    console.log('📭 No actions found');
                 }
+                checkMigrationComplete();
             });
             
-            // Migrate tasks
-            database.ref(`users/${currentUserId}/tasks`).once('value', (snapshot) => {
-                const oldTasks = snapshot.val();
-                if (oldTasks) {
-                    console.log('📦 Migrating tasks...');
-                    migrationPromises.push(
-                        database.ref(`tenants/${currentTenantId}/tasks`).set(oldTasks).then(() => {
-                            console.log('✅ Tasks migrated successfully');
-                            checkMigrationComplete();
-                        }).catch(error => {
-                            console.error('❌ Error migrating tasks:', error);
-                            checkMigrationComplete();
-                        })
-                    );
+            // Tasks are already in the correct location, just check if they exist
+            database.ref(`tenants/${currentTenantId}/tasks`).once('value', (snapshot) => {
+                const tasks = snapshot.val();
+                if (tasks) {
+                    console.log('✅ Tasks already in correct location');
                 } else {
-                    console.log('📭 No tasks found to migrate');
-                    checkMigrationComplete();
+                    console.log('📭 No tasks found');
                 }
+                checkMigrationComplete();
             });
             
-            // Migrate individual hives
-            database.ref(`users/${currentUserId}/individualHives`).once('value', (snapshot) => {
-                const oldHives = snapshot.val();
-                if (oldHives) {
-                    console.log('📦 Migrating individual hives...');
-                    migrationPromises.push(
-                        database.ref(`tenants/${currentTenantId}/individualHives`).set(oldHives).then(() => {
-                            console.log('✅ Individual hives migrated successfully');
-                            checkMigrationComplete();
-                        }).catch(error => {
-                            console.error('❌ Error migrating individual hives:', error);
-                            checkMigrationComplete();
-                        })
-                    );
+            // Individual hives are already in the correct location, just check if they exist
+            database.ref(`tenants/${currentTenantId}/individualHives`).once('value', (snapshot) => {
+                const hives = snapshot.val();
+                if (hives) {
+                    console.log('✅ Individual hives already in correct location');
                 } else {
-                    console.log('📭 No individual hives found to migrate');
-                    checkMigrationComplete();
+                    console.log('📭 No individual hives found');
                 }
+                checkMigrationComplete();
             });
         };
     </script>

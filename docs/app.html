@@ -372,7 +372,7 @@
             alert('🔄 Starting data migration... This may take a moment.');
             
             // Migrate clusters to sites
-            database.ref(`users/${currentUserId}/clusters`).once('value', (snapshot) => {
+            database.ref(`tenants/${currentTenantId}/clusters`).once('value', (snapshot) => {
                 const oldClusters = snapshot.val();
                 if (oldClusters) {
                     console.log('📦 Migrating clusters to sites...');
