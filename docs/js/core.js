@@ -3,7 +3,7 @@
 // Employees: Can add/view, cannot delete
 
 // Version Management
-const APP_VERSION = '0.96';
+const APP_VERSION = '1.0';
 const VERSION_HISTORY = [
     { version: '0.91', date: '2024-12-19', changes: ['Fixed dashboard loading issue', 'Enhanced login system', 'Added welcome popup', 'Improved map initialization'] },
     { version: '0.92', date: '2024-12-19', changes: ['Added version tag to login screen', 'Implemented lazy map loading', 'Enhanced error prevention', 'Improved user experience'] },
