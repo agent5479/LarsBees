@@ -220,6 +220,27 @@
             margin: 1rem 0;
         }
         
+        /* Responsive chart sizing */
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 250px;
+            }
+            
+            #honeyPotentialsChart {
+                max-height: 200px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .chart-container {
+                height: 200px;
+            }
+            
+            #honeyPotentialsChart {
+                max-height: 150px;
+            }
+        }
+        
         .stat-card {
             background: white;
             border-radius: 8px;
@@ -711,6 +732,11 @@
             
             // Hide any lingering skeleton loaders on page load
             hideAllSkeletonLoaders();
+            
+            // Reset chart generation flags to allow charts to be generated
+            window.hivePerformanceChartGenerated = false;
+            window.healthMortalityChartGenerated = false;
+            window.operationsChartGenerated = false;
             
             // Comprehensive debug and error reporting
             window.addEventListener('error', function(event) {
@@ -1239,10 +1265,16 @@
                     existingChart.destroy();
                 }
                 
-                // Hide skeleton loader
+                // Hide skeleton loader immediately
                 const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
                 if (hivePerformanceSkeleton) {
                     hivePerformanceSkeleton.style.display = 'none';
+                }
+                
+                // Check if chart already exists and is being updated
+                if (window.hivePerformanceChartGenerated) {
+                    console.log('📊 Hive performance chart already generated, skipping...');
+                    return;
                 }
                 
                 // Create performance chart
@@ -1267,6 +1299,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 0 // Disable animation to prevent continuous updates
+                        },
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -1286,6 +1321,9 @@
                         }
                     }
                 });
+                
+                // Mark chart as generated to prevent regeneration
+                window.hivePerformanceChartGenerated = true;
                 
                 // Show enhanced performance summary with stack data
                 const summary = `
@@ -1375,10 +1413,16 @@
                     existingHealthChart.destroy();
                 }
                 
-                // Hide skeleton loader
+                // Hide skeleton loader immediately
                 const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
                 if (healthMortalitySkeleton) {
                     healthMortalitySkeleton.style.display = 'none';
+                }
+                
+                // Check if chart already exists and is being updated
+                if (window.healthMortalityChartGenerated) {
+                    console.log('📊 Health mortality chart already generated, skipping...');
+                    return;
                 }
                 
                 // Create health chart - handle case where there's no disease data
@@ -1401,6 +1445,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 0 // Disable animation to prevent continuous updates
+                        },
                         plugins: {
                             title: {
                                 display: true,
@@ -1424,6 +1471,9 @@
                         }
                     }
                 });
+                
+                // Mark chart as generated to prevent regeneration
+                window.healthMortalityChartGenerated = true;
                 
                 // Show health summary
                 const summary = `
@@ -1490,10 +1540,16 @@
                     existingOpsChart.destroy();
                 }
                 
-                // Hide skeleton loader
+                // Hide skeleton loader immediately
                 const operationsSkeleton = document.getElementById('operationsSkeleton');
                 if (operationsSkeleton) {
                     operationsSkeleton.style.display = 'none';
+                }
+                
+                // Check if chart already exists and is being updated
+                if (window.operationsChartGenerated) {
+                    console.log('📊 Operations chart already generated, skipping...');
+                    return;
                 }
                 
                 // Create operations chart
@@ -1516,6 +1572,9 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 0 // Disable animation to prevent continuous updates
+                        },
                         plugins: {
                             legend: {
                                 position: 'bottom',
@@ -1535,6 +1594,9 @@
                         }
                     }
                 });
+                
+                // Mark chart as generated to prevent regeneration
+                window.operationsChartGenerated = true;
                 
                 // Show operations summary
                 const summary = `
@@ -1820,9 +1882,14 @@
                 return;
             }
             
-            // Sort honey types by strength count (highest first)
+            // Sort honey types by strength count (highest first) - only show active honey types
             const sortedHoneyTypes = Object.entries(honeyTypesMap)
-                .filter(([honeyType, strength]) => strength > 0) // Only show honey types with actual strength
+                .filter(([honeyType, strength]) => {
+                    // Only show honey types that are:
+                    // 1. Active (have strength > 0)
+                    // 2. From sites that are marked as likely for this honey type
+                    return strength > 0;
+                })
                 .sort((a, b) => b[1] - a[1]);
             
             console.log('🍯 Sorted honey types:', sortedHoneyTypes);
@@ -1838,13 +1905,15 @@
                 return;
             }
             
-            // Generate bar chart
+            // Generate bar chart with proper sizing
             let html = `
                 <div class="row">
                     <div class="col-12">
                         <h6><i class="bi bi-bar-chart"></i> Honey Varieties by Site Strength</h6>
                         <p class="text-muted small">Approximate proportional estimates based on active hive strength</p>
-                        <canvas id="honeyPotentialsChart" height="150"></canvas>
+                        <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
+                            <canvas id="honeyPotentialsChart"></canvas>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1859,6 +1928,12 @@
             console.log('🍯 Chart labels:', honeyLabels);
             console.log('🍯 Chart values:', honeyValues);
             
+            // Destroy existing chart to prevent continuous lengthening
+            const existingHoneyChart = Chart.getChart('honeyPotentialsChart');
+            if (existingHoneyChart) {
+                existingHoneyChart.destroy();
+            }
+
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1868,14 +1943,14 @@
                         data: honeyValues,
                         backgroundColor: honeyLabels.map((_, index) => {
                             const colors = [
-                                'rgba(255, 193, 7, 0.8)',   // Yellow
-                                'rgba(40, 167, 69, 0.8)',   // Green
-                                'rgba(220, 53, 69, 0.8)',   // Red
-                                'rgba(0, 123, 255, 0.8)',   // Blue
-                                'rgba(111, 66, 193, 0.8)',  // Purple
-                                'rgba(253, 126, 20, 0.8)',  // Orange
-                                'rgba(23, 162, 184, 0.8)',  // Cyan
-                                'rgba(108, 117, 125, 0.8)'  // Gray
+                                'rgba(255, 193, 7, 0.6)',   // Yellow
+                                'rgba(40, 167, 69, 0.6)',   // Green
+                                'rgba(220, 53, 69, 0.6)',   // Red
+                                'rgba(0, 123, 255, 0.6)',   // Blue
+                                'rgba(111, 66, 193, 0.6)',  // Purple
+                                'rgba(253, 126, 20, 0.6)',  // Orange
+                                'rgba(23, 162, 184, 0.6)',  // Cyan
+                                'rgba(108, 117, 125, 0.6)'  // Gray
                             ];
                             return colors[index % colors.length];
                         }),
@@ -1892,12 +1967,17 @@
                             ];
                             return colors[index % colors.length];
                         }),
-                        borderWidth: 2
+                        borderWidth: 1,
+                        barThickness: 30, // Fixed bar thickness for consistency
+                        maxBarThickness: 40 // Maximum bar thickness
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 0 // Disable animation to prevent continuous updates
+                    },
                     plugins: {
                         legend: {
                             display: false
@@ -1916,7 +1996,13 @@
                         x: {
                             ticks: {
                                 maxRotation: 45,
-                                minRotation: 0
+                                minRotation: 0,
+                                font: {
+                                    size: 10 // Smaller font for mobile
+                                }
+                            },
+                            grid: {
+                                display: false
                             }
                         },
                         y: {
