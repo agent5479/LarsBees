@@ -16,8 +16,8 @@ const CLUSTER_TYPES = {
 };
 
 function renderClusters() {
-    // Filter clusters based on archive status
-    const visibleClusters = clusters.filter(c => {
+    // Filter sites based on archive status
+    const visibleClusters = sites.filter(c => {
         if (showArchivedSites) {
             return c.archived === true;
         } else {
@@ -494,7 +494,7 @@ function handleSaveCluster(e) {
             singles: visualHiveData.singles || 0,
             nucs: visualHiveData.nucs || 0,
             empty: visualHiveData.empty || 0
-        } : (clusters.find(c => c.id === parseInt(id))?.hiveStacks || {
+        } : (sites.find(c => c.id === parseInt(id))?.hiveStacks || {
             doubles: 0,
             topSplits: 0,
             singles: 0,
@@ -517,12 +517,12 @@ function handleSaveCluster(e) {
         honeyPotentials: getSelectedHoneyPotentials(),
         lastModifiedBy: currentUser.username,
         lastModifiedAt: new Date().toISOString(),
-        createdAt: id ? (clusters.find(c => c.id === parseInt(id))?.createdAt || new Date().toISOString()) : new Date().toISOString()
+        createdAt: id ? (sites.find(c => c.id === parseInt(id))?.createdAt || new Date().toISOString()) : new Date().toISOString()
     };
     
     // Preserve harvest records if they exist
     if (id) {
-        const existingCluster = clusters.find(c => c.id === parseInt(id));
+        const existingCluster = sites.find(c => c.id === parseInt(id));
         if (existingCluster && existingCluster.harvestRecords) {
             cluster.harvestRecords = existingCluster.harvestRecords;
         }
@@ -549,7 +549,7 @@ function handleSaveCluster(e) {
 }
 
 function editCluster(id) {
-    const cluster = clusters.find(c => c.id === id);
+    const cluster = sites.find(c => c.id === id);
     if (!cluster) return;
     
     hideAllViews();
@@ -745,7 +745,7 @@ function addHarvestRecord() {
     let harvestRecords = [];
     
     if (clusterId) {
-        const existingCluster = clusters.find(c => c.id === parseInt(clusterId));
+        const existingCluster = sites.find(c => c.id === parseInt(clusterId));
         if (existingCluster && existingCluster.harvestRecords) {
             harvestRecords = [...existingCluster.harvestRecords];
         }
@@ -781,9 +781,9 @@ function addHarvestRecord() {
     
     // Update the cluster in the array temporarily (will be saved when form is submitted)
     if (clusterId) {
-        const clusterIndex = clusters.findIndex(c => c.id === parseInt(clusterId));
+        const clusterIndex = sites.findIndex(c => c.id === parseInt(clusterId));
         if (clusterIndex !== -1) {
-            clusters[clusterIndex].harvestRecords = harvestRecords;
+            sites[clusterIndex].harvestRecords = harvestRecords;
         }
     }
     
@@ -813,7 +813,7 @@ function editHarvestRecord(index) {
         return;
     }
     
-    const existingCluster = clusters.find(c => c.id === parseInt(clusterId));
+    const existingCluster = sites.find(c => c.id === parseInt(clusterId));
     if (!existingCluster || !existingCluster.harvestRecords || !existingCluster.harvestRecords[index]) {
         beeMarshallAlert('Record not found', 'error');
         return;
@@ -923,17 +923,17 @@ function removeHarvestRecord(index) {
         return;
     }
     
-    const clusterIndex = clusters.findIndex(c => c.id === parseInt(clusterId));
+    const clusterIndex = sites.findIndex(c => c.id === parseInt(clusterId));
     if (clusterIndex === -1) {
         beeMarshallAlert('Cluster not found', 'error');
         return;
     }
     
-    if (!clusters[clusterIndex].harvestRecords) {
-        clusters[clusterIndex].harvestRecords = [];
+    if (!sites[clusterIndex].harvestRecords) {
+        sites[clusterIndex].harvestRecords = [];
     }
     
-    clusters[clusterIndex].harvestRecords.splice(index, 1);
+    sites[clusterIndex].harvestRecords.splice(index, 1);
     
     // Reset edit state if the deleted record was being edited
     if (editingHarvestRecordIndex === index) {
@@ -949,13 +949,13 @@ function removeHarvestRecord(index) {
         }
     }
     
-    renderHarvestRecords(clusters[clusterIndex].harvestRecords);
+    renderHarvestRecords(sites[clusterIndex].harvestRecords);
     
     beeMarshallAlert('Harvest record removed', 'info');
 }
 
 function viewClusterDetails(id) {
-    const cluster = clusters.find(c => c.id === id);
+    const cluster = sites.find(c => c.id === id);
     if (!cluster) return;
     
     const typeInfo = CLUSTER_TYPES[cluster.clusterType] || CLUSTER_TYPES['custom'];
@@ -1048,7 +1048,7 @@ function scheduleTaskForCluster(clusterId) {
 }
 
 function archiveCluster(id) {
-    const cluster = clusters.find(c => c.id === id);
+    const cluster = sites.find(c => c.id === id);
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1094,7 +1094,7 @@ function unarchiveCluster(id) {
         return;
     }
     
-    const cluster = clusters.find(c => c.id === id);
+    const cluster = sites.find(c => c.id === id);
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1141,7 +1141,7 @@ function deleteCluster(id) {
         return;
     }
     
-    const cluster = clusters.find(c => c.id === id);
+    const cluster = sites.find(c => c.id === id);
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1175,7 +1175,7 @@ function deleteCluster(id) {
  * Detects platform and opens appropriate app (Google Maps or Apple Maps)
  */
 function openInMaps(clusterId) {
-    const cluster = clusters.find(c => c.id === clusterId);
+    const cluster = sites.find(c => c.id === clusterId);
     if (!cluster) {
         beeMarshallAlert('Cluster not found', 'error');
         return;
@@ -1226,10 +1226,10 @@ function openInMaps(clusterId) {
 // Update map with new cluster data
 function updateMapWithClusters() {
     console.log('🔄 Updating map with cluster data...');
-    if (map && clusters && clusters.length > 0) {
+    if (map && sites && sites.length > 0) {
         renderClusters();
     } else if (map) {
-        console.log('📍 Map exists but no clusters to render');
+        console.log('📍 Map exists but no sites to render');
     } else {
         console.log('🗺️ Map not initialized yet');
     }
@@ -1295,16 +1295,16 @@ function initMap() {
     }
     markers = [];
     
-    // Only render clusters if we have data
-    if (!clusters || clusters.length === 0) {
-        console.log('📍 No clusters to render yet');
+    // Only render sites if we have data
+    if (!sites || sites.length === 0) {
+        console.log('📍 No sites to render yet');
         return;
     }
     
-    console.log(`📍 Rendering ${clusters.length} clusters on map`);
+    console.log(`📍 Rendering ${sites.length} sites on map`);
     
-    // Add marker for each cluster with type-specific colors
-    clusters.forEach(cluster => {
+    // Add marker for each site with type-specific colors
+    sites.forEach(cluster => {
         try {
             const typeInfo = CLUSTER_TYPES[cluster.clusterType] || CLUSTER_TYPES['custom'];
             
@@ -1421,7 +1421,7 @@ function initMap() {
     });
     
     // Fit bounds to show all markers
-    if (clusters.length > 1 && markers.length > 0) {
+    if (sites.length > 1 && markers.length > 0) {
         try {
             const group = new L.featureGroup(markers);
             map.fitBounds(group.getBounds().pad(0.1));
@@ -1527,7 +1527,7 @@ function renderVisualHiveGrid() {
         return;
     }
     
-    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    const cluster = sites.find(c => c.id === parseInt(clusterId));
     if (!cluster) {
         container.innerHTML = '<p class="text-muted">Site not found.</p>';
         return;
@@ -1731,7 +1731,7 @@ function updateHiveCount(type) {
     // Auto-save to Firebase and log as action
     const clusterId = document.getElementById('clusterId')?.value;
     if (clusterId && oldValue !== newValue) {
-        const cluster = clusters.find(c => c.id === parseInt(clusterId));
+        const cluster = sites.find(c => c.id === parseInt(clusterId));
         if (cluster) {
             // Update cluster data
             if (!cluster.hiveStacks) cluster.hiveStacks = {};
@@ -1766,7 +1766,7 @@ function saveVisualHiveChanges() {
         return;
     }
     
-    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    const cluster = sites.find(c => c.id === parseInt(clusterId));
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1860,7 +1860,7 @@ function editHiveStateCount(state) {
     }
     
     // Get the cluster
-    const cluster = clusters.find(c => c.id === parseInt(clusterId));
+    const cluster = sites.find(c => c.id === parseInt(clusterId));
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1978,8 +1978,8 @@ function updateArchivedButtonText() {
     const button = document.getElementById('toggleArchivedButton');
     if (!button) return;
     
-    const archivedCount = clusters.filter(c => c.archived === true).length;
-    const activeCount = clusters.filter(c => !c.archived).length;
+    const archivedCount = sites.filter(c => c.archived === true).length;
+    const activeCount = sites.filter(c => !c.archived).length;
     
     if (showArchivedSites) {
         button.innerHTML = '<i class="bi bi-arrow-left"></i> Show Active Sites';
@@ -1997,7 +1997,7 @@ function updateArchivedButtonText() {
  * Opens a prompt for entering new count and updates Firebase
  */
 function quickEditHiveStrength(clusterId, state, currentValue) {
-    const cluster = clusters.find(c => c.id === clusterId);
+    const cluster = sites.find(c => c.id === clusterId);
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -2061,7 +2061,7 @@ function quickEditHiveStrength(clusterId, state, currentValue) {
  * Opens a prompt for entering new count and updates Firebase
  */
 function quickEditHiveBox(clusterId, boxType, currentValue) {
-    const cluster = clusters.find(c => c.id === clusterId);
+    const cluster = sites.find(c => c.id === clusterId);
     if (!cluster) {
         beeMarshallAlert('Site not found', 'error');
         return;
