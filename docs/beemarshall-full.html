@@ -1782,6 +1782,9 @@
                         <button class="btn btn-warning me-2" onclick="migrateUserDataToTenant()" id="migrationButton">
                             <i class="bi bi-arrow-repeat"></i> Migrate Data
                         </button>
+                        <button class="btn btn-info me-2" onclick="debugLocalStorage()" id="debugButton">
+                            <i class="bi bi-bug"></i> Debug Storage
+                        </button>
                         <button class="btn btn-primary" onclick="showAddClusterForm()">
                             <i class="bi bi-plus"></i> Add Site
                         </button>
@@ -2802,13 +2805,40 @@
         // Migration function for user-based to tenant-based structure
         window.migrateUserDataToTenant = function() {
             console.log('🔄 Migrating user data to tenant structure...');
-            const currentUserId = localStorage.getItem('currentUserId');
-            const currentTenantId = localStorage.getItem('currentTenantId');
             
-            if (!currentUserId || !currentTenantId) {
-                console.error('❌ Missing user ID or tenant ID');
-                alert('❌ Missing user ID or tenant ID. Please log in again.');
-                return;
+            // Check what's actually in localStorage
+            console.log('🔍 Checking localStorage values:');
+            console.log('  currentUserId:', localStorage.getItem('currentUserId'));
+            console.log('  currentTenantId:', localStorage.getItem('currentTenantId'));
+            console.log('  All localStorage keys:', Object.keys(localStorage));
+            
+            // Try to get user ID from various possible keys
+            let currentUserId = localStorage.getItem('currentUserId') || 
+                               localStorage.getItem('userId') || 
+                               localStorage.getItem('user_id') ||
+                               localStorage.getItem('lars_user_id');
+            
+            // Try to get tenant ID from various possible keys
+            let currentTenantId = localStorage.getItem('currentTenantId') || 
+                                 localStorage.getItem('tenantId') || 
+                                 localStorage.getItem('tenant_id') ||
+                                 localStorage.getItem('lars_tenant_id') ||
+                                 'lars'; // Default to 'lars' if not found
+            
+            console.log('🔍 Resolved values:');
+            console.log('  currentUserId:', currentUserId);
+            console.log('  currentTenantId:', currentTenantId);
+            
+            if (!currentUserId) {
+                console.error('❌ No user ID found in localStorage');
+                alert('❌ No user ID found. Please log in first, or the migration will use default tenant "lars".');
+                // Continue with default tenant
+                currentUserId = 'lars';
+            }
+            
+            if (!currentTenantId) {
+                console.log('⚠️ No tenant ID found, using default: lars');
+                currentTenantId = 'lars';
             }
             
             console.log('📊 Migrating data for user:', currentUserId, 'to tenant:', currentTenantId);
@@ -2894,6 +2924,31 @@
                     console.log('📭 No individual hives found');
                 }
                 checkMigrationComplete();
+            });
+        };
+        
+        // Debug function to check localStorage
+        window.debugLocalStorage = function() {
+            console.log('🔍 LocalStorage Debug Info:');
+            console.log('  All keys:', Object.keys(localStorage));
+            console.log('  Values:');
+            Object.keys(localStorage).forEach(key => {
+                console.log(`    ${key}: ${localStorage.getItem(key)}`);
+            });
+            
+            // Check for common user/tenant ID patterns
+            const commonKeys = [
+                'currentUserId', 'userId', 'user_id', 'lars_user_id',
+                'currentTenantId', 'tenantId', 'tenant_id', 'lars_tenant_id',
+                'user', 'tenant', 'lars'
+            ];
+            
+            console.log('  Common ID keys:');
+            commonKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    console.log(`    ${key}: ${value}`);
+                }
             });
         };
     </script>
