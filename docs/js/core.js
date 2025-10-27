@@ -84,7 +84,7 @@ const ADMIN_ACCOUNTS = {
 let currentUser = null;
 let isAdmin = false;
 let currentTenantId = null; // For data isolation
-let clusters = [];
+let sites = [];
 let actions = [];
 let individualHives = [];
 let scheduledTasks = [];
@@ -397,7 +397,7 @@ window.forceLogin = function() {
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     localStorage.setItem('isAdmin', 'true');
     
-    clusters = [];
+    sites = [];
     actions = [];
     scheduledTasks = [];
     employees = [];
@@ -552,7 +552,7 @@ window.testDashboard = function() {
     console.log('🧪 Testing dashboard functionality...');
     console.log('Current User:', currentUser);
     console.log('Is Admin:', isAdmin);
-    console.log('Clusters:', clusters.length);
+    console.log('Sites:', sites.length);
     console.log('Actions:', actions.length);
     console.log('Scheduled Tasks:', scheduledTasks.length);
     console.log('Dashboard should be visible now');
@@ -567,7 +567,7 @@ window.testDashboard = function() {
     return {
         user: currentUser,
         isAdmin: isAdmin,
-        data: { clusters: clusters.length, actions: actions.length, tasks: scheduledTasks.length },
+        data: { sites: sites.length, actions: actions.length, tasks: scheduledTasks.length },
         ui: { 
             loginHidden: loginScreen.classList.contains('hidden'),
             mainVisible: !mainApp.classList.contains('hidden')
@@ -632,7 +632,7 @@ function handleLogin(e) {
         localStorage.setItem('currentTenantId', currentTenantId);
         
         // Initialize data for this tenant
-        clusters = [];
+        sites = [];
         actions = [];
         scheduledTasks = [];
         employees = [];
@@ -934,7 +934,7 @@ function showDashboardWithoutMap() {
 
 // Update only dashboard stats without map
 function updateDashboardStats() {
-    const totalHives = clusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
+    const totalHives = sites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
@@ -946,7 +946,7 @@ function updateDashboardStats() {
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
     
     // Animate number changes
-    animateNumber(document.getElementById('statClusters'), clusters.length);
+    animateNumber(document.getElementById('statClusters'), sites.length);
     animateNumber(document.getElementById('statHives'), totalHives);
     animateNumber(document.getElementById('statActions'), actions.length);
     animateNumber(document.getElementById('statFlagged'), flaggedCount);
@@ -984,7 +984,7 @@ function loadDataFromFirebase() {
         dataLoadCount++;
         console.log(`📊 Data load progress: ${dataLoadCount}/${totalDataTypes}`);
         console.log('📊 Current data state in checkAllDataLoaded:', {
-            clusters: clusters ? clusters.length : 'undefined',
+            sites: sites ? sites.length : 'undefined',
             actions: actions ? actions.length : 'undefined',
             scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
             individualHives: individualHives ? individualHives.length : 'undefined',
@@ -994,7 +994,7 @@ function loadDataFromFirebase() {
         if (dataLoadCount >= totalDataTypes) {
             console.log('✅ All data loaded, updating dashboard');
             console.log('🔍 Final data state:', {
-                clusters: clusters ? clusters.length : 'undefined',
+                sites: sites ? sites.length : 'undefined',
                 actions: actions ? actions.length : 'undefined',
                 scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
                 individualHives: individualHives ? individualHives.length : 'undefined',
@@ -1006,7 +1006,7 @@ function loadDataFromFirebase() {
             setTimeout(() => {
                 console.log('📊 About to call updateDashboard()');
                 console.log('📊 Data arrays before updateDashboard:', {
-                    clusters: Array.isArray(clusters) ? clusters.length : typeof clusters,
+                    sites: Array.isArray(sites) ? sites.length : typeof sites,
                     actions: Array.isArray(actions) ? actions.length : typeof actions,
                     scheduledTasks: Array.isArray(scheduledTasks) ? scheduledTasks.length : typeof scheduledTasks,
                     individualHives: Array.isArray(individualHives) ? individualHives.length : typeof individualHives
@@ -1019,11 +1019,11 @@ function loadDataFromFirebase() {
     database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('🔍 Raw sites data for', currentTenantId + ':', data);
-        clusters = data ? Object.values(data) : [];
-        console.log('📊 Sites loaded for', currentTenantId + ':', clusters.length);
-        console.log('📊 Sites array:', clusters);
+        sites = data ? Object.values(data) : [];
+        console.log('📊 Sites loaded for', currentTenantId + ':', sites.length);
+        console.log('📊 Sites array:', sites);
         
-        if (clusters.length === 0) {
+        if (sites.length === 0) {
             console.log('📭 No sites found - starting fresh');
             showSyncStatus('', 'success');
         } else {
@@ -1172,11 +1172,11 @@ function debugBeeMarshall() {
     console.log('Current Tenant ID:', currentTenantId);
     console.log('Is Admin:', isAdmin);
     console.log('Firebase App:', typeof firebase !== 'undefined' ? 'Initialized' : 'Not initialized');
-    console.log('Total Clusters:', clusters.length);
+    console.log('Total Sites:', sites.length);
     console.log('Total Actions:', actions.length);
     console.log('Total Scheduled Tasks:', scheduledTasks.length);
     console.log('Total Individual Hives:', individualHives.length);
-    console.log('Clusters:', clusters);
+    console.log('Sites:', sites);
     console.log('Actions:', actions);
     console.log('Scheduled Tasks:', scheduledTasks);
     console.log('====================================');
@@ -1201,7 +1201,7 @@ function createGBTechTestData() {
     
     // Backup current data
     gbtechTestDataBackup = {
-        clusters: JSON.parse(JSON.stringify(clusters)),
+        sites: JSON.parse(JSON.stringify(sites)),
         actions: JSON.parse(JSON.stringify(actions)),
         scheduledTasks: JSON.parse(JSON.stringify(scheduledTasks))
     };
