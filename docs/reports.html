@@ -1121,7 +1121,7 @@
             skeletons.forEach(skeletonId => {
                 const skeleton = document.getElementById(skeletonId);
                 if (skeleton) {
-                    skeleton.style.display = 'none';
+                    skeleton.remove(); // Remove the element entirely
                 }
             });
         }
@@ -1214,7 +1214,6 @@
                     reportsGenerated = true;
                     isGeneratingReports = false;
                     clearTimeout(timeoutId);
-                    hideAllSkeletonLoaders(); // Ensure all skeletons are hidden on success
                     Logger.log('✅ All reports generated successfully');
                 } catch (error) {
                     Logger.error('❌ Error during report generation:', error);
@@ -1321,7 +1320,7 @@
                 // Hide skeleton loader after chart is created
                 const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
                 if (hivePerformanceSkeleton) {
-                    hivePerformanceSkeleton.style.display = 'none';
+                    hivePerformanceSkeleton.remove(); // Remove the element entirely
                 }
                 
                 // Show enhanced performance summary with stack data
@@ -1362,7 +1361,7 @@
                 // Hide skeleton loader on error
                 const hivePerformanceSkeleton = document.getElementById('hivePerformanceSkeleton');
                 if (hivePerformanceSkeleton) {
-                    hivePerformanceSkeleton.style.display = 'none';
+                    hivePerformanceSkeleton.remove(); // Remove the element entirely
                 }
                 beeMarshallAlert('❌ Error generating hive performance report.\n\nPlease refresh the page and try again.', 'error');
             }
@@ -1374,7 +1373,7 @@
                     // Hide skeleton loader even when no data
                     const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
                     if (healthMortalitySkeleton) {
-                        healthMortalitySkeleton.style.display = 'none';
+                        healthMortalitySkeleton.remove(); // Remove the element entirely
                     }
                     beeMarshallAlert('📊 No action data available for health analysis.\n\nStart logging inspections and treatments to see health insights and trends.', 'info');
                     return;
@@ -1471,7 +1470,7 @@
                 // Hide skeleton loader after chart is created
                 const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
                 if (healthMortalitySkeleton) {
-                    healthMortalitySkeleton.style.display = 'none';
+                    healthMortalitySkeleton.remove(); // Remove the element entirely
                 }
                 
                 // Show health summary
@@ -1495,7 +1494,7 @@
                 // Hide skeleton loader on error
                 const healthMortalitySkeleton = document.getElementById('healthMortalitySkeleton');
                 if (healthMortalitySkeleton) {
-                    healthMortalitySkeleton.style.display = 'none';
+                    healthMortalitySkeleton.remove(); // Remove the element entirely
                 }
                 beeMarshallAlert('❌ Error generating health and mortality report.\n\nPlease refresh the page and try again.', 'error');
             }
@@ -1507,7 +1506,7 @@
                     // Hide skeleton loader even when no data
                     const operationsSkeleton = document.getElementById('operationsSkeleton');
                     if (operationsSkeleton) {
-                        operationsSkeleton.style.display = 'none';
+                        operationsSkeleton.remove(); // Remove the element entirely
                     }
                     beeMarshallAlert('📊 No operational data available for analysis.\n\nSchedule tasks and log actions to see operational insights and efficiency metrics.', 'info');
                     return;
@@ -1594,7 +1593,7 @@
                 // Hide skeleton loader after chart is created
                 const operationsSkeleton = document.getElementById('operationsSkeleton');
                 if (operationsSkeleton) {
-                    operationsSkeleton.style.display = 'none';
+                    operationsSkeleton.remove(); // Remove the element entirely
                 }
                 
                 // Show operations summary
@@ -1618,7 +1617,7 @@
                 // Hide skeleton loader on error
                 const operationsSkeleton = document.getElementById('operationsSkeleton');
                 if (operationsSkeleton) {
-                    operationsSkeleton.style.display = 'none';
+                    operationsSkeleton.remove(); // Remove the element entirely
                 }
                 beeMarshallAlert('❌ Error generating operations report.\n\nPlease refresh the page and try again.', 'error');
             }
