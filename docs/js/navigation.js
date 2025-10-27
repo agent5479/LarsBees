@@ -120,7 +120,7 @@ function showScheduledTasks() {
     console.log('🔄 Switching to Schedule view...');
     console.log('📊 Current data state:', {
         scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-        clusters: clusters ? clusters.length : 'undefined',
+        sites: sites ? sites.length : 'undefined',
         tasks: tasks ? tasks.length : 'undefined',
         individualHives: individualHives ? individualHives.length : 'undefined'
     });

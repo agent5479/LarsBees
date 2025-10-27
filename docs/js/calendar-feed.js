@@ -68,7 +68,7 @@ function generateICSCalendarFeed() {
     });
     
     futureTasks.forEach(task => {
-        const cluster = clusters.find(c => c.id === task.clusterId);
+        const site = sites.find(s => s.id === task.clusterId);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         

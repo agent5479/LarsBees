@@ -15,8 +15,8 @@ let weatherCache = {
 /**
  * Calculate average GPS coordinates from all clusters
  */
-function calculateAverageClusterCoordinates() {
-    if (!clusters || clusters.length === 0) {
+function calculateAverageSiteCoordinates() {
+    if (!sites || sites.length === 0) {
         return null;
     }
     
@@ -24,10 +24,10 @@ function calculateAverageClusterCoordinates() {
     let totalLon = 0;
     let validCoords = 0;
     
-    clusters.forEach(cluster => {
-        if (cluster.latitude && cluster.longitude) {
-            totalLat += parseFloat(cluster.latitude);
-            totalLon += parseFloat(cluster.longitude);
+    sites.forEach(site => {
+        if (site.latitude && site.longitude) {
+            totalLat += parseFloat(site.latitude);
+            totalLon += parseFloat(site.longitude);
             validCoords++;
         }
     });

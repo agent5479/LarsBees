@@ -317,7 +317,7 @@ function renderScheduleTimeline() {
 function showScheduleTaskModal() {
     const clusterSelect = document.getElementById('scheduleCluster');
     clusterSelect.innerHTML = '<option value="">Select site...</option>' +
-        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     const taskSelect = document.getElementById('scheduleTask');
     taskSelect.innerHTML = '<option value="">Select task...</option>' +
@@ -560,7 +560,7 @@ function generateSeasonalSuggestions() {
             category: 'Inspection',
             priority: 'high',
             timing: 'Early spring (September)',
-            recommendedClusters: clusters.map(c => c.name),
+            recommendedSites: sites.map(s => s.name),
             taskId: 101 // General Hive Inspection
         });
         
@@ -572,7 +572,7 @@ function generateSeasonalSuggestions() {
             category: 'Feeding',
             priority: 'high',
             timing: 'Early to mid-spring',
-            recommendedClusters: clusters.map(c => c.name),
+            recommendedSites: sites.map(s => s.name),
             taskId: 201 // Sugar Syrup 1:1
         });
     }
@@ -587,7 +587,7 @@ function generateSeasonalSuggestions() {
             category: 'Maintenance',
             priority: 'medium',
             timing: 'Mid-summer',
-            recommendedClusters: clusters.map(c => c.name),
+            recommendedSites: sites.map(s => s.name),
             taskId: 602 // Summer Ventilation Setup
         });
         
@@ -599,7 +599,7 @@ function generateSeasonalSuggestions() {
             category: 'Harvest',
             priority: 'high',
             timing: 'Late summer/early autumn',
-            recommendedClusters: clusters.filter(c => c.harvestTimeline).map(c => c.name),
+            recommendedSites: sites.filter(s => s.harvestTimeline).map(s => s.name),
             taskId: 401 // Honey Harvest
         });
     }
@@ -614,7 +614,7 @@ function generateSeasonalSuggestions() {
             category: 'Seasonal',
             priority: 'high',
             timing: 'Late autumn',
-            recommendedClusters: clusters.map(c => c.name),
+            recommendedSites: sites.map(s => s.name),
             taskId: 603 // Fall Winterization
         });
         
@@ -626,7 +626,7 @@ function generateSeasonalSuggestions() {
             category: 'Treatment',
             priority: 'high',
             timing: 'Late autumn',
-            recommendedClusters: clusters.map(c => c.name),
+            recommendedSites: sites.map(s => s.name),
             taskId: 301 // Varroa Treatment - Formic Acid
         });
     }
@@ -641,7 +641,7 @@ function generateSeasonalSuggestions() {
             category: 'Maintenance',
             priority: 'medium',
             timing: 'Mid-winter',
-            recommendedClusters: clusters.map(c => c.name),
+            recommendedSites: sites.map(s => s.name),
             taskId: 604 // Winter Insulation
         });
     }
@@ -733,7 +733,7 @@ function populateEditTaskDropdowns() {
     // Populate cluster dropdown
     const clusterSelect = document.getElementById('editTaskCluster');
     clusterSelect.innerHTML = '<option value="">Select site...</option>' + 
-        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     // Populate task dropdown
     const taskSelect = document.getElementById('editTaskType');
@@ -1000,8 +1000,8 @@ function showScheduleForNextVisit() {
 
 function populateNextVisitForm() {
     const clusterSelect = document.getElementById('nextVisitCluster');
-    clusterSelect.innerHTML = '<option value="">Choose cluster...</option>' +
-        clusters.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    clusterSelect.innerHTML = '<option value="">Choose site...</option>' +
+        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
     // Set default date to tomorrow
     const tomorrow = new Date();
@@ -1220,7 +1220,7 @@ function refreshCalendar() {
 }
 
 function showTaskDetails(task) {
-    const cluster = clusters.find(c => c.id === task.clusterId);
+        const site = sites.find(s => s.id === task.clusterId);
     const taskName = getTaskDisplayName(null, task.taskId);
     
     const modal = new bootstrap.Modal(document.createElement('div'));
