@@ -1812,7 +1812,7 @@
                     <div class="col-lg-8 mx-auto">
                         <div class="card">
                             <div class="card-header">
-                                <h5 id="clusterFormTitle">Add New Hive Cluster</h5>
+                                <h5 id="clusterFormTitle">Add New Site</h5>
                             </div>
                             <div class="card-body">
                                 <form id="clusterForm">
@@ -1930,8 +1930,8 @@
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
                                             <label for="clusterHiveCount" class="form-label">Total Hive Count *</label>
-                                            <input type="number" class="form-control" id="clusterHiveCount" min="1" required onchange="updateHiveStrengthTotals()">
-                                            <div class="form-text">Total number of hives in this site</div>
+                                            <input type="number" class="form-control" id="clusterHiveCount" min="0" required onchange="updateHiveStrengthTotals()">
+                                            <div class="form-text">Total number of hives in this site (0 allowed for Summer Only/Winter Only sites)</div>
                                         </div>
                                     </div>
                                     
@@ -2000,6 +2000,8 @@
                                                         <option value="">Select site type...</option>
                                                         <option value="summer">Summer Site</option>
                                                         <option value="winter">Winter Site</option>
+                                                        <option value="summer-only">Summer Only</option>
+                                                        <option value="winter-only">Winter Only</option>
                                                         <option value="year-round">Year-round Site</option>
                                                     </select>
                                                 </div>

@@ -327,7 +327,7 @@ function toggleClusterFilter() {
 function showAddClusterForm() {
     hideAllViews();
     document.getElementById('clusterFormView').classList.remove('hidden');
-    document.getElementById('clusterFormTitle').textContent = 'Add New Hive Cluster';
+    document.getElementById('clusterFormTitle').textContent = 'Add New Site';
     document.getElementById('clusterForm').reset();
     document.getElementById('clusterId').value = '';
     document.getElementById('anomalySection')?.classList.add('hidden');
@@ -338,6 +338,25 @@ function showAddClusterForm() {
     
     // Render honey potentials checkboxes (empty for new site)
     renderHoneyPotentials([]);
+    
+    // Add event listener for site type changes
+    const siteTypeSelect = document.getElementById('siteType');
+    const hiveCountField = document.getElementById('clusterHiveCount');
+    const formText = document.querySelector('#clusterHiveCount + .form-text');
+    
+    if (siteTypeSelect && hiveCountField && formText) {
+        siteTypeSelect.addEventListener('change', function() {
+            const isZeroHiveAllowed = this.value === 'summer-only' || this.value === 'winter-only';
+            
+            if (isZeroHiveAllowed) {
+                hiveCountField.min = '0';
+                formText.textContent = 'Total number of hives in this site (0 allowed for seasonal-only sites)';
+            } else {
+                hiveCountField.min = '1';
+                formText.textContent = 'Total number of hives in this site';
+            }
+        });
+    }
     
     // Setup GPS button
     setTimeout(() => {
@@ -402,8 +421,16 @@ function handleSaveCluster(e) {
     
     const hiveCountField = document.getElementById('clusterHiveCount');
     const hiveCount = parseInt(hiveCountField.value);
-    if (!hiveCount || hiveCount <= 0) {
-        beeMarshallAlert('⚠️ Please enter a valid hive count (must be greater than 0)', 'warning');
+    const siteType = document.getElementById('siteType').value;
+    
+    // Allow 0 hives only for Summer Only and Winter Only sites
+    const isZeroHiveAllowed = siteType === 'summer-only' || siteType === 'winter-only';
+    
+    if (isNaN(hiveCount) || hiveCount < 0 || (!isZeroHiveAllowed && hiveCount <= 0)) {
+        const message = isZeroHiveAllowed 
+            ? '⚠️ Please enter a valid hive count (0 or greater)'
+            : '⚠️ Please enter a valid hive count (must be greater than 0)';
+        beeMarshallAlert(message, 'warning');
         hiveCountField.focus();
         hiveCountField.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
@@ -640,6 +667,25 @@ function editCluster(id) {
     
     // Render honey potentials checkboxes
     renderHoneyPotentials(cluster.honeyPotentials || []);
+    
+    // Add event listener for site type changes
+    const siteTypeSelect = document.getElementById('siteType');
+    const hiveCountField = document.getElementById('clusterHiveCount');
+    const formText = document.querySelector('#clusterHiveCount + .form-text');
+    
+    if (siteTypeSelect && hiveCountField && formText) {
+        siteTypeSelect.addEventListener('change', function() {
+            const isZeroHiveAllowed = this.value === 'summer-only' || this.value === 'winter-only';
+            
+            if (isZeroHiveAllowed) {
+                hiveCountField.min = '0';
+                formText.textContent = 'Total number of hives in this site (0 allowed for seasonal-only sites)';
+            } else {
+                hiveCountField.min = '1';
+                formText.textContent = 'Total number of hives in this site';
+            }
+        });
+    }
 }
 
 /**
