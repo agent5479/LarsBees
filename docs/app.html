@@ -353,6 +353,44 @@
     
     <!-- Application JavaScript -->
     <script src="app.js"></script>
+    
+    <!-- Migration function -->
+    <script>
+        // Migration function for user-based to tenant-based structure
+        window.migrateUserDataToTenant = function() {
+            console.log('🔄 Migrating user data to tenant structure...');
+            const currentUserId = localStorage.getItem('currentUserId');
+            const currentTenantId = localStorage.getItem('currentTenantId');
+            
+            if (!currentUserId || !currentTenantId) {
+                console.error('❌ Missing user ID or tenant ID');
+                alert('❌ Missing user ID or tenant ID. Please log in again.');
+                return;
+            }
+            
+            console.log('📊 Migrating data for user:', currentUserId, 'to tenant:', currentTenantId);
+            alert('🔄 Starting data migration... This may take a moment.');
+            
+            // Migrate clusters to sites
+            database.ref(`users/${currentUserId}/clusters`).once('value', (snapshot) => {
+                const oldClusters = snapshot.val();
+                if (oldClusters) {
+                    console.log('📦 Migrating clusters to sites...');
+                    database.ref(`tenants/${currentTenantId}/sites`).set(oldClusters).then(() => {
+                        console.log('✅ Clusters migrated to sites successfully');
+                        alert('✅ Data migration completed! Please refresh the page to see your sites.');
+                        location.reload();
+                    }).catch(error => {
+                        console.error('❌ Error migrating clusters:', error);
+                        alert('❌ Error during migration: ' + error.message);
+                    });
+                } else {
+                    console.log('📭 No clusters found to migrate');
+                    alert('📭 No data found to migrate.');
+                }
+            });
+        };
+    </script>
 </body>
 </html>
 

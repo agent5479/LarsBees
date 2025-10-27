@@ -2797,6 +2797,134 @@
         };
     </script>
     
+    <!-- Migration function (backup) -->
+    <script>
+        // Migration function for user-based to tenant-based structure
+        window.migrateUserDataToTenant = function() {
+            console.log('🔄 Migrating user data to tenant structure...');
+            const currentUserId = localStorage.getItem('currentUserId');
+            const currentTenantId = localStorage.getItem('currentTenantId');
+            
+            if (!currentUserId || !currentTenantId) {
+                console.error('❌ Missing user ID or tenant ID');
+                alert('❌ Missing user ID or tenant ID. Please log in again.');
+                return;
+            }
+            
+            console.log('📊 Migrating data for user:', currentUserId, 'to tenant:', currentTenantId);
+            
+            // Show migration status
+            if (typeof showSyncStatus === 'function') {
+                showSyncStatus('<i class="bi bi-arrow-repeat"></i> Migrating data...', 'syncing');
+            }
+            
+            let migrationPromises = [];
+            let migrationCount = 0;
+            const totalDataTypes = 4; // clusters, actions, tasks, individualHives
+            
+            function checkMigrationComplete() {
+                migrationCount++;
+                console.log(`📊 Migration progress: ${migrationCount}/${totalDataTypes}`);
+                
+                if (migrationCount >= totalDataTypes) {
+                    console.log('🎉 User data migration completed successfully!');
+                    if (typeof showSyncStatus === 'function') {
+                        showSyncStatus('<i class="bi bi-check-circle"></i> Migration Complete', 'success');
+                    }
+                    
+                    // Reload data after migration
+                    setTimeout(() => {
+                        if (typeof loadDataFromFirebase === 'function') {
+                            loadDataFromFirebase();
+                        } else {
+                            location.reload();
+                        }
+                    }, 1000);
+                }
+            }
+            
+            // Migrate clusters to sites
+            database.ref(`users/${currentUserId}/clusters`).once('value', (snapshot) => {
+                const oldClusters = snapshot.val();
+                if (oldClusters) {
+                    console.log('📦 Migrating clusters to sites...');
+                    migrationPromises.push(
+                        database.ref(`tenants/${currentTenantId}/sites`).set(oldClusters).then(() => {
+                            console.log('✅ Clusters migrated to sites successfully');
+                            checkMigrationComplete();
+                        }).catch(error => {
+                            console.error('❌ Error migrating clusters:', error);
+                            checkMigrationComplete();
+                        })
+                    );
+                } else {
+                    console.log('📭 No clusters found to migrate');
+                    checkMigrationComplete();
+                }
+            });
+            
+            // Migrate actions
+            database.ref(`users/${currentUserId}/actions`).once('value', (snapshot) => {
+                const oldActions = snapshot.val();
+                if (oldActions) {
+                    console.log('📦 Migrating actions...');
+                    migrationPromises.push(
+                        database.ref(`tenants/${currentTenantId}/actions`).set(oldActions).then(() => {
+                            console.log('✅ Actions migrated successfully');
+                            checkMigrationComplete();
+                        }).catch(error => {
+                            console.error('❌ Error migrating actions:', error);
+                            checkMigrationComplete();
+                        })
+                    );
+                } else {
+                    console.log('📭 No actions found to migrate');
+                    checkMigrationComplete();
+                }
+            });
+            
+            // Migrate tasks
+            database.ref(`users/${currentUserId}/tasks`).once('value', (snapshot) => {
+                const oldTasks = snapshot.val();
+                if (oldTasks) {
+                    console.log('📦 Migrating tasks...');
+                    migrationPromises.push(
+                        database.ref(`tenants/${currentTenantId}/tasks`).set(oldTasks).then(() => {
+                            console.log('✅ Tasks migrated successfully');
+                            checkMigrationComplete();
+                        }).catch(error => {
+                            console.error('❌ Error migrating tasks:', error);
+                            checkMigrationComplete();
+                        })
+                    );
+                } else {
+                    console.log('📭 No tasks found to migrate');
+                    checkMigrationComplete();
+                }
+            });
+            
+            // Migrate individual hives
+            database.ref(`users/${currentUserId}/individualHives`).once('value', (snapshot) => {
+                const oldHives = snapshot.val();
+                if (oldHives) {
+                    console.log('📦 Migrating individual hives...');
+                    migrationPromises.push(
+                        database.ref(`tenants/${currentTenantId}/individualHives`).set(oldHives).then(() => {
+                            console.log('✅ Individual hives migrated successfully');
+                            checkMigrationComplete();
+                        }).catch(error => {
+                            console.error('❌ Error migrating individual hives:', error);
+                            checkMigrationComplete();
+                        })
+                    );
+                } else {
+                    console.log('📭 No individual hives found to migrate');
+                    checkMigrationComplete();
+                }
+            });
+        };
+    </script>
+    
     <!-- Firebase Configuration -->
     <script>
         // Firebase configuration - Corrected to use LarsBees project
