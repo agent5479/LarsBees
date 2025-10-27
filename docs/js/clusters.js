@@ -109,18 +109,13 @@ function renderClusters() {
                             
                             <!-- Hive Count Summary (Editable inline) -->
                             <div class="mb-3">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editCluster(${c.id})" title="Edit hive counts">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                </div>
-                                <div class="d-flex flex-wrap gap-1 small">
-                                    <span class="badge bg-success" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Strong: ${hiveStrong}</span>
-                                    <span class="badge bg-warning text-dark" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Med: ${hiveMedium}</span>
-                                    <span class="badge bg-danger" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Weak: ${hiveWeak}</span>
-                                    <span class="badge bg-info" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">NUC: ${hiveNUC}</span>
-                                    <span class="badge bg-secondary" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">Dead: ${hiveDead}</span>
+                                <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
+                                <div class="d-flex flex-wrap gap-1 mt-1 small">
+                                    <span class="badge bg-success" onclick="quickEditHiveStrength(${c.id}, 'Strong', ${hiveStrong})" style="cursor: pointer;">Strong: <span id="hiveStrong_${c.id}">${hiveStrong}</span></span>
+                                    <span class="badge bg-warning text-dark" onclick="quickEditHiveStrength(${c.id}, 'Medium', ${hiveMedium})" style="cursor: pointer;">Med: <span id="hiveMedium_${c.id}">${hiveMedium}</span></span>
+                                    <span class="badge bg-danger" onclick="quickEditHiveStrength(${c.id}, 'Weak', ${hiveWeak})" style="cursor: pointer;">Weak: <span id="hiveWeak_${c.id}">${hiveWeak}</span></span>
+                                    <span class="badge bg-info" onclick="quickEditHiveStrength(${c.id}, 'NUC', ${hiveNUC})" style="cursor: pointer;">NUC: <span id="hiveNUC_${c.id}">${hiveNUC}</span></span>
+                                    <span class="badge bg-secondary" onclick="quickEditHiveStrength(${c.id}, 'Dead', ${hiveDead})" style="cursor: pointer;">Dead: <span id="hiveDead_${c.id}">${hiveDead}</span></span>
                                 </div>
                             </div>
                             
@@ -128,20 +123,20 @@ function renderClusters() {
                             <div class="mb-3">
                                 <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
                                 <div class="d-flex flex-wrap gap-1 mt-1 small">
-                                    <span class="badge bg-primary" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
-                                        <i class="bi bi-stack"></i> ${hiveDoubles}
+                                    <span class="badge bg-primary" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer;">
+                                        <i class="bi bi-stack"></i> <span id="boxDoubles_${c.id}">${hiveDoubles}</span>
                                     </span>
-                                    <span class="badge bg-success" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
-                                        <i class="bi bi-layers-half"></i> ${hiveTopSplits}
+                                    <span class="badge bg-success" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer;">
+                                        <i class="bi bi-layers-half"></i> <span id="boxTopSplits_${c.id}">${hiveTopSplits}</span>
                                     </span>
-                                    <span class="badge bg-warning text-dark" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
-                                        <i class="bi bi-square"></i> ${hiveSingles}
+                                    <span class="badge bg-warning text-dark" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer;">
+                                        <i class="bi bi-square"></i> <span id="boxSingles_${c.id}">${hiveSingles}</span>
                                     </span>
-                                    <span class="badge bg-info" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
-                                        <i class="bi bi-circle"></i> ${hiveNUCs}
+                                    <span class="badge bg-info" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer;">
+                                        <i class="bi bi-circle"></i> <span id="boxNucs_${c.id}">${hiveNUCs}</span>
                                     </span>
-                                    <span class="badge bg-secondary" onclick="window.editingClusterId=${c.id}; editCluster(${c.id})" style="cursor: pointer;">
-                                        <i class="bi bi-square"></i> ${hiveEmpty}
+                                    <span class="badge bg-secondary" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer;">
+                                        <i class="bi bi-square"></i> <span id="boxEmpty_${c.id}">${hiveEmpty}</span>
                                     </span>
                                 </div>
                             </div>
@@ -157,9 +152,7 @@ function renderClusters() {
                             ${c.lastModifiedBy ? `<small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small>` : ''}
                         </div>
                         <div class="card-footer bg-light">
-                            <button class="btn btn-primary" onclick="editCluster(${c.id})">
-                                <i class="bi bi-pencil"></i> Update
-                            </button>
+                            ${isAdmin ? `<button class="btn btn-primary" onclick="editCluster(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
                             <button class="btn btn-sm btn-outline-info" onclick="viewClusterDetails(${c.id})">
                                 <i class="bi bi-eye"></i> View
                             </button>
@@ -301,6 +294,9 @@ function showAddClusterForm() {
     
     // Populate cluster type dropdown
     populateClusterTypeDropdown();
+    
+    // Render honey potentials checkboxes (empty for new site)
+    renderHoneyPotentials([]);
     
     // Setup GPS button
     setTimeout(() => {
@@ -1907,4 +1903,147 @@ function updateArchivedButtonText() {
         button.classList.remove('btn-outline-primary');
         button.classList.add('btn-outline-secondary');
     }
+}
+
+/**
+ * Quick edit hive strength from summary card
+ * Opens a prompt for entering new count and updates Firebase
+ */
+function quickEditHiveStrength(clusterId, state, currentValue) {
+    const cluster = clusters.find(c => c.id === clusterId);
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    // Prompt for new value
+    const newValueStr = prompt(`Update ${state} hives for ${cluster.name}:\n\nCurrent: ${currentValue}\n\nEnter new count:`, currentValue);
+    if (newValueStr === null) return; // User cancelled
+    
+    const newValue = parseInt(newValueStr) || 0;
+    
+    if (newValue < 0) {
+        beeMarshallAlert('Count cannot be negative', 'warning');
+        return;
+    }
+    
+    // Update cluster data
+    if (!cluster.hiveStrength) cluster.hiveStrength = {};
+    cluster.hiveStrength[state.toLowerCase()] = newValue;
+    
+    // Save to Firebase
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    database.ref(`${tenantPath}/${clusterId}`).update({
+        hiveStrength: cluster.hiveStrength,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser.username
+    }).then(() => {
+        // Update the display immediately
+        const elementId = state === 'NUC' ? `hiveNUC_${clusterId}` : `hive${state}_${clusterId}`;
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = newValue;
+        }
+        
+        // Log as action
+        const actionText = `Updated ${state} hives at ${cluster.name}: ${currentValue} → ${newValue}`;
+        const newAction = {
+            id: Date.now(),
+            clusterId: clusterId,
+            task: 'Hive State Update',
+            notes: actionText,
+            completedBy: currentUser.username,
+            completedAt: new Date().toISOString(),
+            date: new Date().toISOString().split('T')[0]
+        };
+        
+        actions.push(newAction);
+        
+        const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+        return database.ref(`${actionPath}/${newAction.id}`).set(newAction);
+    }).then(() => {
+        beeMarshallAlert(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`, 'success');
+    }).catch(error => {
+        console.error('Error updating hive strength:', error);
+        beeMarshallAlert(`❌ Error updating ${state} hive count: ${error.message}`, 'error');
+    });
+}
+
+/**
+ * Quick edit hive box count from summary card
+ * Opens a prompt for entering new count and updates Firebase
+ */
+function quickEditHiveBox(clusterId, boxType, currentValue) {
+    const cluster = clusters.find(c => c.id === clusterId);
+    if (!cluster) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    // Format the box type for display
+    const boxTypeLabel = boxType.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+    
+    // Prompt for new value
+    const newValueStr = prompt(`Update ${boxTypeLabel} for ${cluster.name}:\n\nCurrent: ${currentValue}\n\nEnter new count:`, currentValue);
+    if (newValueStr === null) return; // User cancelled
+    
+    const newValue = parseInt(newValueStr) || 0;
+    
+    if (newValue < 0) {
+        beeMarshallAlert('Count cannot be negative', 'warning');
+        return;
+    }
+    
+    // Update cluster data
+    if (!cluster.hiveStacks) cluster.hiveStacks = {};
+    cluster.hiveStacks[boxType] = newValue;
+    
+    // Recalculate total hive count (excluding empty)
+    cluster.hiveCount = (cluster.hiveStacks.doubles || 0) + 
+                       (cluster.hiveStacks.topSplits || 0) + 
+                       (cluster.hiveStacks.singles || 0) + 
+                       (cluster.hiveStacks.nucs || 0);
+    
+    // Save to Firebase
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    database.ref(`${tenantPath}/${clusterId}`).update({
+        hiveStacks: cluster.hiveStacks,
+        hiveCount: cluster.hiveCount,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser.username
+    }).then(() => {
+        // Update the display immediately
+        const elementId = `box${boxType.charAt(0).toUpperCase() + boxType.slice(1)}_${clusterId}`;
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.textContent = newValue;
+        }
+        
+        // Log as action
+        const actionText = `Updated ${boxTypeLabel} at ${cluster.name}: ${currentValue} → ${newValue}`;
+        const newAction = {
+            id: Date.now(),
+            clusterId: clusterId,
+            task: 'Hive Box Update',
+            notes: actionText,
+            completedBy: currentUser.username,
+            completedAt: new Date().toISOString(),
+            date: new Date().toISOString().split('T')[0]
+        };
+        
+        actions.push(newAction);
+        
+        const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+        return database.ref(`${actionPath}/${newAction.id}`).set(newAction);
+    }).then(() => {
+        beeMarshallAlert(`✅ ${boxTypeLabel} count updated: ${currentValue} → ${newValue}`, 'success');
+        
+        // Update dashboard statistics if we're on the dashboard
+        if (typeof updateDashboard === 'function') {
+            updateDashboard();
+        }
+    }).catch(error => {
+        console.error('Error updating hive box:', error);
+        beeMarshallAlert(`❌ Error updating ${boxTypeLabel} count: ${error.message}`, 'error');
+    });
 }
