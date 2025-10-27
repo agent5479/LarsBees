@@ -1865,7 +1865,7 @@
                         console.log(`🍯 Added ${siteHiveStrength} to ${honeyType} (total: ${honeyTypesMap[honeyType]})`);
                     });
                 } else {
-                    console.log(`🍯 Site ${cluster.name} has no honey potentials selected`);
+                    console.log(`🍯 Site ${site.name} has no honey potentials selected`);
                 }
             });
             
@@ -2125,24 +2125,24 @@
             title.textContent = `Sites with ${category.charAt(0).toUpperCase() + category.slice(1)} Hives (${siteList.length})`;
             
             let html = '<div class="row">';
-            siteList.forEach(cluster => {
+            siteList.forEach(site => {
                 const count = category === 'empty' 
-                    ? (cluster.hiveStacks?.empty || 0)
-                    : (cluster.hiveStrength?.[category] || 0);
+                    ? (site.hiveStacks?.empty || 0)
+                    : (site.hiveStrength?.[category] || 0);
                 
                 // Enhanced site details with full breakdown
-                const hiveStrength = cluster.hiveStrength || {};
-                const hiveStacks = cluster.hiveStacks || {};
+                const hiveStrength = site.hiveStrength || {};
+                const hiveStacks = site.hiveStacks || {};
                 
                 html += `
                     <div class="col-md-6 mb-3">
                         <div class="card">
                             <div class="card-body">
-                                <h6 class="card-title">${cluster.name}</h6>
+                                <h6 class="card-title">${site.name}</h6>
                                 <p class="card-text">
                                     <strong>${category.charAt(0).toUpperCase() + category.slice(1)} Hives:</strong> ${count}<br>
-                                    <strong>Total Hives:</strong> ${cluster.hiveCount || 0}<br>
-                                    <strong>Location:</strong> ${cluster.latitude}, ${cluster.longitude}
+                                    <strong>Total Hives:</strong> ${site.hiveCount || 0}<br>
+                                    <strong>Location:</strong> ${site.latitude}, ${site.longitude}
                                 </p>
                                 
                                 <!-- Enhanced Hive Breakdown -->
@@ -2173,10 +2173,10 @@
                                 </div>
                                 
                                 <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-primary" onclick="navigateToSpecificSite(${cluster.id})">
+                                    <button class="btn btn-sm btn-primary" onclick="navigateToSpecificSite(${site.id})">
                                         <i class="bi bi-arrow-right"></i> Go to Site
                                     </button>
-                                    <button class="btn btn-sm btn-success" onclick="scheduleTaskForSpecificSite(${cluster.id}, '${category}')">
+                                    <button class="btn btn-sm btn-success" onclick="scheduleTaskForSpecificSite(${site.id}, '${category}')">
                                         <i class="bi bi-calendar-plus"></i> Schedule Task
                                     </button>
                                 </div>
