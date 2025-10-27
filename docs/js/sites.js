@@ -597,8 +597,8 @@ function editSite(id) {
     
     document.getElementById('siteSugar').value = site.sugarRequirements || '';
     document.getElementById('siteNotes').value = site.notes || '';
-    document.getElementById('functionalClassification').value = site.functionalClassification || 'production';
-    document.getElementById('seasonalClassification').value = site.seasonalClassification || 'summer';
+    document.getElementById('functionalClassification').value = site.functionalClassification || site.siteType || 'production';
+    document.getElementById('seasonalClassification').value = site.seasonalClassification || site.site_type || 'summer';
     document.getElementById('landownerName').value = site.landownerName || '';
     document.getElementById('landownerPhone').value = site.landownerPhone || '';
     document.getElementById('landownerEmail').value = site.landownerEmail || '';
