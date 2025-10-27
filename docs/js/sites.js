@@ -403,13 +403,21 @@ function populateFunctionalClassificationDropdown() {
     const typeSelect = document.getElementById('functionalClassification');
     if (!typeSelect) return;
     
+    // Preserve current value if it exists
+    const currentValue = typeSelect.value;
+    
     const options = Object.entries(SITE_TYPES).map(([key, type]) => 
         `<option value="${key}" style="color: ${type.color}">
             <i class="bi ${type.icon}"></i> ${type.name}
         </option>`
     ).join('');
     
-    typeSelect.innerHTML = `<option value="production">Select functional classification...</option>${options}`;
+    typeSelect.innerHTML = `<option value="">Select functional classification...</option>${options}`;
+    
+    // Restore the value if it was set
+    if (currentValue) {
+        typeSelect.value = currentValue;
+    }
 }
 
 function handleSaveSite(e) {
@@ -561,6 +569,10 @@ function editSite(id) {
     hideAllViews();
     document.getElementById('siteFormView').classList.remove('hidden');
     document.getElementById('siteFormTitle').textContent = 'Edit: ' + site.name;
+    
+    // Populate functional classification dropdown BEFORE setting values
+    populateFunctionalClassificationDropdown();
+    
     document.getElementById('siteId').value = site.id;
     document.getElementById('siteName').value = site.name;
     document.getElementById('siteDescription').value = site.description || '';
@@ -646,9 +658,6 @@ function editSite(id) {
     
     document.getElementById('anomalySection')?.classList.remove('hidden');
     document.getElementById('mapPickerContainer').classList.add('hidden');
-    
-    // Populate functional classification dropdown
-    populateFunctionalClassificationDropdown();
     
     // Add event listeners for coordinate validation
     document.getElementById('siteLat').addEventListener('blur', validateCoordinates);
