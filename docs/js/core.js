@@ -305,13 +305,13 @@ function autoMigrateLarsData() {
     let migrationCount = 0;
     let totalMigrations = 5;
     
-    // Migrate clusters
-    database.ref('clusters').once('value', (snapshot) => {
+    // Migrate sites
+    database.ref('sites').once('value', (snapshot) => {
         const oldClusters = snapshot.val();
         if (oldClusters) {
-            console.log('📦 Auto-migrating clusters...');
+            console.log('📦 Auto-migrating sites...');
             migrationPromises.push(
-                database.ref(`tenants/lars/clusters`).set(oldClusters).then(() => {
+                database.ref(`tenants/lars/sites`).set(oldClusters).then(() => {
                     console.log('✅ Clusters migrated successfully');
                     migrationCount++;
                 })
@@ -476,11 +476,11 @@ window.checkDemoData = function() {
     const tenantId = 'demo';
     console.log('📊 Checking data for tenant:', tenantId);
     
-    // Check clusters
-    database.ref(`tenants/${tenantId}/clusters`).once('value', (snapshot) => {
+    // Check sites
+    database.ref(`tenants/${tenantId}/sites`).once('value', (snapshot) => {
         const data = snapshot.val();
-        console.log('📊 Demo clusters:', data ? Object.keys(data).length : 0, 'items');
-        console.log('📊 Demo clusters data:', data);
+        console.log('📊 Demo sites:', data ? Object.keys(data).length : 0, 'items');
+        console.log('📊 Demo sites data:', data);
     });
     
     // Check actions
@@ -1120,7 +1120,7 @@ function loadDataFromFirebase() {
     
     // Load tenant-specific data - simplified approach
     let dataLoadCount = 0;
-    const totalDataTypes = 5; // clusters, actions, individualHives, scheduledTasks, honeyTypes
+    const totalDataTypes = 5; // sites, actions, individualHives, scheduledTasks, honeyTypes
     
     function checkAllDataLoaded() {
         dataLoadCount++;
@@ -1158,22 +1158,22 @@ function loadDataFromFirebase() {
         }
     }
     
-    database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
+    database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
         const data = snapshot.val();
-        console.log('🔍 Raw clusters data for', currentTenantId + ':', data);
+        console.log('🔍 Raw sites data for', currentTenantId + ':', data);
         clusters = data ? Object.values(data) : [];
-        console.log('📊 Clusters loaded for', currentTenantId + ':', clusters.length);
-        console.log('📊 Clusters array:', clusters);
+        console.log('📊 Sites loaded for', currentTenantId + ':', clusters.length);
+        console.log('📊 Sites array:', clusters);
         
         if (clusters.length === 0) {
-            console.log('📭 No clusters found - starting fresh');
+            console.log('📭 No sites found - starting fresh');
             showSyncStatus('', 'success');
         } else {
             showSyncStatus('', 'success');
         }
         checkAllDataLoaded();
     }, (error) => {
-        console.log('❌ Tenant clusters access failed:', error.message);
+        console.log('❌ Tenant sites access failed:', error.message);
         showSyncStatus('', 'error');
         checkAllDataLoaded();
     });
@@ -1508,9 +1508,9 @@ function createGBTechTestData() {
     const tenantPath = `tenants/${currentTenantId}`;
     const batch = {};
     
-    // Add clusters
+    // Add sites
     testSites.forEach(site => {
-        batch[`${tenantPath}/clusters/${site.id}`] = {
+        batch[`${tenantPath}/sites/${site.id}`] = {
             ...site,
             createdDate: new Date().toISOString(),
             lastModified: new Date().toISOString(),
@@ -1576,9 +1576,9 @@ function undoGBTechTestData() {
     const tenantPath = `tenants/${currentTenantId}`;
     const batch = {};
     
-    // Remove test clusters (IDs 1001-1008)
+    // Remove test sites (IDs 1001-1008)
     for (let i = 1001; i <= 1008; i++) {
-        batch[`${tenantPath}/clusters/${i}`] = null;
+        batch[`${tenantPath}/sites/${i}`] = null;
     }
     
     // Remove test actions (IDs 2001-2010)

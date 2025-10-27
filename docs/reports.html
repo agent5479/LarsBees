@@ -914,22 +914,22 @@
             
             // Load tenant-specific data with comprehensive error handling
             try {
-                database.ref(`tenants/${currentTenantId}/clusters`).on('value', (snapshot) => {
-                    try {
-                        clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
-                        Logger.log('📊 Reports clusters loaded for', currentTenantId + ':', clusters.length);
+            database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
+                try {
+                    clusters = snapshot.val() ? Object.values(snapshot.val()) : [];
+                    Logger.log('📊 Reports sites loaded for', currentTenantId + ':', clusters.length);
                         updateHiveStrengthBreakdown();
                         checkAllDataLoaded();
                     } catch (error) {
-                        Logger.error('❌ Error processing clusters data:', error);
+                        Logger.error('❌ Error processing sites data:', error);
                     }
                 }, (error) => {
-                    Logger.error('❌ Error loading clusters:', error);
-                    showSyncError('Failed to load clusters');
+                    Logger.error('❌ Error loading sites:', error);
+                    showSyncError('Failed to load sites');
                     checkAllDataLoaded();
                 });
             } catch (error) {
-                Logger.error('❌ Error setting up clusters listener:', error);
+                Logger.error('❌ Error setting up sites listener:', error);
                 checkAllDataLoaded();
             }
             

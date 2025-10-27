@@ -97,7 +97,7 @@ function updateDashboard() {
         individualHives = [];
     }
     
-    // Filter out archived clusters for statistics
+    // Filter out archived sites for statistics
     const activeClusters = clusters.filter(c => !c.archived);
     
     const totalHives = activeClusters.reduce((sum, c) => sum + (c.hiveCount || 0), 0);
@@ -152,10 +152,10 @@ function updateDashboard() {
     today.setHours(0, 0, 0, 0);
     const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
     
-    const upcomingHarvests = clusters.filter(cluster => {
-        if (!cluster.harvestTimeline) return false;
+    const upcomingHarvests = clusters.filter(site => {
+        if (!site.harvestTimeline) return false;
         try {
-            const harvestDate = new Date(cluster.harvestTimeline);
+            const harvestDate = new Date(site.harvestTimeline);
             harvestDate.setHours(0, 0, 0, 0);
             return harvestDate >= today && harvestDate <= thirtyDaysFromNow;
         } catch (e) {
@@ -581,7 +581,7 @@ function makeDashboardCardsClickable() {
             // Navigate to appropriate section
             const target = this.dataset.target;
             switch(target) {
-                case 'clusters':
+                case 'sites':
                     setTimeout(() => showClusters(), 200);
                     break;
                 case 'actions':
@@ -613,8 +613,8 @@ function makeDashboardCardsClickable() {
             const target = this.dataset.target;
             let tooltipText = '';
             switch(target) {
-                case 'clusters':
-                    tooltipText = `View and manage all ${clusters.length} hive clusters`;
+                case 'sites':
+                    tooltipText = `View and manage all ${clusters.length} apiary sites`;
                     break;
                 case 'actions':
                     tooltipText = `View and manage all ${actions.length} logged actions`;
@@ -836,7 +836,7 @@ function handleHarvestAction(clusterId, harvestDate, markAddressed = false) {
         if (cluster) {
             cluster.harvestTimeline = '';
             
-            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
             database.ref(`${tenantPath}/${cluster.id}`).update({ harvestTimeline: '' })
                 .then(() => {
                     beeMarshallAlert('✅ Harvest marked as addressed', 'success');

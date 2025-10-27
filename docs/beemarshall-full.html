@@ -639,7 +639,7 @@
         }
         
         /* Specific card styling */
-        .clusters-card:hover {
+        .sites-card:hover {
             border-color: var(--primary-accent);
         }
         
@@ -1587,7 +1587,7 @@
                 <!-- Key Metrics Row - 4 Column Grid -->
                 <div class="row g-2 mb-4">
                     <div class="col-6 col-sm-3 mb-2">
-                        <div class="card dashboard-stat-card clusters-card" onclick="showClusters()" data-target="clusters">
+                        <div class="card dashboard-stat-card sites-card" onclick="showClusters()" data-target="sites">
                             <div class="card-body text-center position-relative">
                                 <div class="stat-icon-container">
                                     <i class="bi bi-geo-alt-fill text-primary"></i>
@@ -1601,7 +1601,7 @@
                         </div>
                     </div>
                     <div class="col-6 col-sm-3 mb-2">
-                        <div class="card dashboard-stat-card hives-card" onclick="showClusters()" data-target="clusters">
+                        <div class="card dashboard-stat-card hives-card" onclick="showClusters()" data-target="sites">
                             <div class="card-body text-center position-relative">
                                 <div class="stat-icon-container">
                                     <i class="bi bi-hexagon-fill text-warning"></i>
@@ -1772,7 +1772,7 @@
             </div>
 
             <!-- Clusters View -->
-            <div id="clustersView" class="hidden">
+            <div id="sitesView" class="hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="bi bi-geo-alt"></i> Apiary Sites</h2>
                     <div>
@@ -1785,9 +1785,9 @@
                     </div>
                 </div>
                 
-                <div id="clusterTypeFilter" class="mb-4"></div>
+                <div id="siteTypeFilter" class="mb-4"></div>
                 
-                <div class="row" id="clustersList">
+                <div class="row" id="sitesList">
                     <div class="text-center my-5">
                         <i class="bi bi-geo-alt" style="font-size: 3rem; color: #ccc;"></i>
                         <h5 class="mt-3 text-muted">No sites yet</h5>
@@ -2828,7 +2828,7 @@
                     window.beeMarshallMarkers.forEach(marker => marker.remove());
                     window.beeMarshallMarkers = [];
                 }
-                // Re-render clusters
+                // Re-render sites
                 renderClustersOnMap();
                 return;
             }
@@ -2878,7 +2878,7 @@
             }
         }
         
-        // Function to render clusters on map with proper marker management
+        // Function to render sites on map with proper marker management
         function renderClustersOnMap() {
             if (!window.beeMarshallMap) {
                 console.log('🗺️ Map not initialized, skipping marker rendering');
@@ -2894,9 +2894,9 @@
             // Initialize markers array
             window.beeMarshallMarkers = [];
             
-            // Add cluster markers
+            // Add site markers
             if (typeof clusters !== 'undefined' && clusters.length > 0) {
-                console.log(`📍 Rendering ${clusters.length} cluster markers...`);
+                console.log(`📍 Rendering ${clusters.length} site markers...`);
                 
                 clusters.forEach(cluster => {
                     // Use latitude/longitude instead of lat/lng
@@ -3020,9 +3020,9 @@
                     }
                 });
                 
-                console.log(`📍 Added ${window.beeMarshallMarkers.length} cluster markers`);
+                console.log(`📍 Added ${window.beeMarshallMarkers.length} site markers`);
             } else {
-                console.log('📍 No clusters to render on map');
+                console.log('📍 No sites to render on map');
             }
         }
         
@@ -3200,7 +3200,7 @@
                 };
             });
             
-            downloadCSV(csvData, `clusters_export_${new Date().toISOString().split('T')[0]}.csv`);
+            downloadCSV(csvData, `sites_export_${new Date().toISOString().split('T')[0]}.csv`);
         }
         
         function exportActionsCSV() {
@@ -3426,7 +3426,7 @@
                 `Export Date: ${new Date().toISOString()}`,
                 `Tenant: ${typeof currentTenantId !== 'undefined' && currentTenantId ? currentTenantId : 'N/A'}`,
                 `Total Records: ${data.length}`,
-                `Sites (Clusters): ${typeof clusters !== 'undefined' && clusters ? clusters.length : 0}`,
+                `Sites: ${typeof clusters !== 'undefined' && clusters ? clusters.length : 0}`,
                 `Actions: ${typeof actions !== 'undefined' && actions ? actions.length : 0}`,
                 `Scheduled Tasks: ${typeof scheduledTasks !== 'undefined' && scheduledTasks ? scheduledTasks.length : 0}`,
                 `Individual Hives: ${typeof individualHives !== 'undefined' && individualHives ? individualHives.length : 0}`,
@@ -3468,7 +3468,7 @@
             
             if (navigateToCluster) {
                 localStorage.removeItem('navigateToCluster');
-                // Navigate to clusters view and highlight specific cluster
+                // Navigate to sites view and highlight specific site
                 showClusters();
                 setTimeout(() => {
                     const clusterElement = document.querySelector(`[data-cluster-id="${navigateToCluster}"]`);

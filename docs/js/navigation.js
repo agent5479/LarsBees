@@ -4,7 +4,7 @@ function hideAllViews() {
     // List of all view containers
     const viewIds = [
         'dashboardView', 
-        'clustersView', 
+        'sitesView', 
         'clusterFormView', 
         'actionsView', 
         'logActionView', 
@@ -62,7 +62,7 @@ function showClusters() {
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
-        const view = document.getElementById('clustersView');
+        const view = document.getElementById('sitesView');
         if (view) {
             view.classList.remove('hidden');
         }

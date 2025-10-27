@@ -207,7 +207,7 @@ function renderClusters() {
         }).join('')
         : '<div class="col-12"><p class="text-center text-muted my-5">' + (showArchivedSites ? 'No archived sites.' : 'No sites found.') + '</p></div>';
     
-    document.getElementById('clustersList').innerHTML = html;
+    document.getElementById('sitesList').innerHTML = html;
     
     // Update the show archived button text
     updateArchivedButtonText();
@@ -531,12 +531,12 @@ function handleSaveCluster(e) {
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
     
     // Use tenant-specific path for data isolation
-    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
     database.ref(`${tenantPath}/${cluster.id}`).set(cluster)
         .then(() => {
             beeMarshallAlert(`✅ Site "${cluster.name}" has been saved successfully!`, 'success');
             showSyncStatus('<i class="bi bi-check"></i> Saved by ' + currentUser.username);
-            // Close the form and return to clusters view
+            // Close the form and return to sites view
             setTimeout(() => {
                 showClusters();
             }, 500);
@@ -1055,7 +1055,7 @@ function archiveCluster(id) {
     }
     
     if (confirm(`Archive "${cluster.name}"? This will:\n\n• Stop the site from appearing in hive/site counts\n• Keep historical harvest data\n• Make the site accessible only from "Show Archived Sites"\n\nYou can unarchive it later if needed.`)) {
-        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
         database.ref(`${tenantPath}/${id}`).update({
             archived: true,
             archivedDate: new Date().toISOString(),
@@ -1078,7 +1078,7 @@ function archiveCluster(id) {
             
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
             database.ref(`${actionPath}/${action.id}`).set(action).then(() => {
-                // Refresh the clusters list to update the UI
+                // Refresh the sites list to update the UI
                 renderClusters();
             });
         }).catch(error => {
@@ -1101,7 +1101,7 @@ function unarchiveCluster(id) {
     }
     
     if (confirm(`Unarchive "${cluster.name}"? This will restore it to active status and include it in hive/site counts.`)) {
-        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
         database.ref(`${tenantPath}/${id}`).update({
             archived: false,
             unarchivedDate: new Date().toISOString(),
@@ -1124,7 +1124,7 @@ function unarchiveCluster(id) {
             
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
             database.ref(`${actionPath}/${action.id}`).set(action).then(() => {
-                // Refresh the clusters list to update the UI
+                // Refresh the sites list to update the UI
                 renderClusters();
             });
         }).catch(error => {
@@ -1157,10 +1157,10 @@ function deleteCluster(id) {
     if (confirm(confirmMessage)) {
         // Double confirmation
         if (confirm('This is your last chance. Permanently delete this site? This action CANNOT be undone.')) {
-            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
             database.ref(`${tenantPath}/${id}`).remove().then(() => {
                 beeMarshallAlert(`🗑️ Site "${cluster.name}" has been permanently deleted`, 'success');
-                // Refresh the clusters list to update the UI
+                // Refresh the sites list to update the UI
                 renderClusters();
             }).catch(error => {
                 console.error('Error deleting cluster:', error);
@@ -1739,7 +1739,7 @@ function updateHiveCount(type) {
             cluster.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
             
             // Save to Firebase
-            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/clusters` : 'clusters';
+            const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
             database.ref(`${tenantPath}/${cluster.id}`).update({
                 hiveStacks: cluster.hiveStacks,
                 hiveCount: cluster.hiveCount,
@@ -1815,7 +1815,7 @@ function saveVisualHiveChanges() {
     cluster.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
     
     // Save to Firebase
-    const clusterRef = database.ref(`clusters/${cluster.id}`);
+    const clusterRef = database.ref(`sites/${cluster.id}`);
     clusterRef.update({
         hiveStacks: cluster.hiveStacks,
         hiveCount: cluster.hiveCount,
