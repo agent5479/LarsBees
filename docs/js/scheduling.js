@@ -32,6 +32,18 @@ function checkAndFlagOverdueTasks() {
 
 // Enhanced scheduling with timeline view and task completion
 
+// Simple site lookup function - only handles current siteId format
+function getSiteForTask(task) {
+    if (!task || !sites || sites.length === 0) return null;
+    
+    // Only look for siteId (current format)
+    if (task.siteId) {
+        return sites.find(s => s.id === task.siteId);
+    }
+    
+    return null;
+}
+
 function renderScheduledTasks() {
     console.log('🔄 renderScheduledTasks() called');
     console.log('📊 scheduledTasks available:', scheduledTasks ? scheduledTasks.length : 'undefined');
@@ -64,12 +76,16 @@ function renderScheduledTasks() {
             <button class="btn btn-outline-secondary ms-2" onclick="showSuggestedSchedule()">
                 <i class="bi bi-lightbulb"></i> Suggested Schedule
             </button>
+            <a href="schedule-migration.html" class="btn btn-outline-warning ms-2" title="Fix location display issues">
+                <i class="bi bi-tools"></i> Migration Tool
+            </a>
         </div>
     `;
     
     const pendingHtml = pending.length > 0
         ? pending.map(t => {
-            const site = sites.find(s => s.id === t.siteId);
+            // Use the enhanced site lookup function
+            const site = getSiteForTask(t);
             const hive = individualHives.find(h => h.id === t.individualHiveId);
             const task = tasks.find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
@@ -88,8 +104,9 @@ function renderScheduledTasks() {
                                     ${isOverdue ? '<span class="badge bg-danger">OVERDUE</span>' : ''}
                                 </h5>
                                 <p class="mb-1">
-                                    <i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}
+                                    <i class="bi bi-geo-alt"></i> ${site?.name || 'Site Not Found'}
                                     ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
+                                    ${!site ? ` <small class="text-warning">(ID: ${t.siteId || t.clusterId || 'N/A'})</small>` : ''}
                                 </p>
                                 <p class="mb-1">
                                     <i class="bi bi-calendar"></i> Due: ${dueDate.toLocaleDateString()}
@@ -124,7 +141,8 @@ function renderScheduledTasks() {
                 <h6><i class="bi bi-check-circle-fill text-success"></i> Recently Completed</h6>
                 <div class="accordion" id="completedTasksAccordion">
                     ${completed.slice(0, 10).map(t => {
-                        const site = sites.find(s => s.id === t.siteId);
+                        // Use the enhanced site lookup function
+                        const site = getSiteForTask(t);
                         const hive = individualHives.find(h => h.id === t.individualHiveId);
                         const task = tasks.find(tk => tk.id === t.taskId);
                         const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
@@ -135,13 +153,13 @@ function renderScheduledTasks() {
                                 <h2 class="accordion-header" id="heading${t.id}">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${t.id}">
                                         <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        ${displayTaskName} - ${site?.name || 'Unknown'}
+                                        ${displayTaskName} - ${site?.name || 'Site Not Found'}
                                         <span class="badge bg-success ms-2">Completed ${completedDate.toLocaleDateString()}</span>
                                     </button>
                                 </h2>
                                 <div id="collapse${t.id}" class="accordion-collapse collapse" data-bs-parent="#completedTasksAccordion">
                                     <div class="accordion-body">
-                                        <p><strong>Site:</strong> ${site?.name || 'Unknown'}</p>
+                                        <p><strong>Site:</strong> ${site?.name || 'Site Not Found'}</p>
                                         ${hive ? `<p><strong>Hive:</strong> ${hive.hiveName}</p>` : ''}
                                         <p><strong>Completed by:</strong> ${t.completedBy || 'Unknown'}</p>
                                         <p><strong>Completed on:</strong> ${completedDate.toLocaleString()}</p>
@@ -218,7 +236,8 @@ function renderScheduleTimeline() {
                 </h6>
                 <div class="timeline-tasks">
                     ${tasks.map(task => {
-                        const site = sites.find(s => s.id === task.siteId);
+                        // Use the enhanced site lookup function
+                        const site = getSiteForTask(task);
                         const hive = individualHives.find(h => h.id === task.individualHiveId);
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
@@ -270,7 +289,8 @@ function renderScheduleTimeline() {
         </h6>`;
         
         const taskList = tasks.map(task => {
-            const site = sites.find(s => s.id === task.siteId);
+            // Use the enhanced site lookup function
+            const site = getSiteForTask(task);
             const hive = individualHives.find(h => h.id === task.individualHiveId);
             const taskObj = tasks.find(tk => tk.id === task.taskId);
             const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
@@ -841,7 +861,8 @@ function generateEnhancedICS(tasks) {
     ];
     
     tasks.forEach(task => {
-        const site = sites.find(s => s.id === task.siteId);
+        // Use the enhanced site lookup function
+        const site = getSiteForTask(task);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         
@@ -902,7 +923,8 @@ function generateICS(tasks) {
     ];
     
     tasks.forEach(task => {
-        const site = sites.find(s => s.id === task.siteId);
+        // Use the enhanced site lookup function
+        const site = getSiteForTask(task);
         const taskObj = tasks.find(tk => tk.id === task.taskId);
         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
         
@@ -1166,7 +1188,8 @@ function initializeCalendar() {
         events: function(fetchInfo, successCallback, failureCallback) {
             // Convert scheduled tasks to FullCalendar events
             const events = scheduledTasks.map(task => {
-                const site = sites.find(s => s.id === task.siteId);
+                // Use the enhanced site lookup function
+                const site = getSiteForTask(task);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 const dueDate = new Date(task.dueDate);
                 const isOverdue = dueDate < new Date() && !task.completed;
@@ -1220,7 +1243,8 @@ function refreshCalendar() {
 }
 
 function showTaskDetails(task) {
-        const site = sites.find(s => s.id === task.siteId);
+        // Use the enhanced site lookup function
+        const site = getSiteForTask(task);
     const taskName = getTaskDisplayName(null, task.taskId);
     
     const modal = new bootstrap.Modal(document.createElement('div'));
