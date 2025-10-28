@@ -369,6 +369,46 @@ window.testBcrypt = function() {
     return typeof bcrypt !== 'undefined';
 }
 
+// Test admin password security
+window.testAdminPasswordSecurity = function() {
+    console.log('🔐 Admin Password Security Test:');
+    console.log('================================');
+    
+    // Check if admin accounts have passwordHash field
+    const adminAccounts = window.ADMIN_ACCOUNTS || {};
+    const accountNames = Object.keys(adminAccounts);
+    
+    console.log('Admin accounts found:', accountNames);
+    
+    accountNames.forEach(accountName => {
+        const account = adminAccounts[accountName];
+        console.log(`\n${accountName}:`);
+        console.log('  - Has passwordHash:', !!account.passwordHash);
+        console.log('  - Has plain password:', !!account.password);
+        console.log('  - PasswordHash type:', account.passwordHash ? typeof account.passwordHash : 'N/A');
+        console.log('  - PasswordHash starts with $2:', account.passwordHash ? account.passwordHash.startsWith('$2') : false);
+        
+        if (account.password) {
+            console.log('  ⚠️  SECURITY RISK: Plain text password detected!');
+        }
+        if (account.passwordHash && account.passwordHash.startsWith('$2')) {
+            console.log('  ✅ SECURE: bcrypt hash detected');
+        }
+    });
+    
+    return {
+        accounts: accountNames,
+        secureAccounts: accountNames.filter(name => {
+            const account = adminAccounts[name];
+            return account.passwordHash && account.passwordHash.startsWith('$2') && !account.password;
+        }),
+        insecureAccounts: accountNames.filter(name => {
+            const account = adminAccounts[name];
+            return account.password || !account.passwordHash;
+        })
+    };
+}
+
 // Security audit function
 window.securityAudit = function() {
     console.log('🔒 BeeMarshall Security Audit:');
@@ -376,6 +416,10 @@ window.securityAudit = function() {
     
     // Test bcrypt
     const bcryptAvailable = window.testBcrypt();
+    console.log('');
+    
+    // Test admin password security
+    const adminSecurity = window.testAdminPasswordSecurity();
     console.log('');
     
     // Test password hashing
@@ -400,10 +444,14 @@ window.securityAudit = function() {
     if (!bcryptAvailable) {
         console.log('  - bcrypt not available, using fallback hashing');
     }
+    if (adminSecurity.insecureAccounts.length > 0) {
+        console.log('  - Insecure admin accounts detected:', adminSecurity.insecureAccounts);
+    }
     
     console.log('✅ Security audit complete');
     return {
         bcryptAvailable,
+        adminSecurity,
         timestamp: new Date().toISOString()
     };
 }
@@ -737,9 +785,16 @@ function handleLogin(e) {
     // Check credentials against admin accounts
     // Security: Don't log sensitive authentication details
     
-    const adminAccount = Object.values(ADMIN_ACCOUNTS).find(account => 
-        account.username.toLowerCase() === username.toLowerCase() && account.password === password
-    );
+    // SECURITY: Admin accounts now use hashed passwords
+    const adminAccount = Object.values(ADMIN_ACCOUNTS).find(account => {
+        if (account.username.toLowerCase() === username.toLowerCase()) {
+            // Use the passwordHash field for secure comparison
+            if (account.passwordHash) {
+                return verifyPassword(password, account.passwordHash);
+            }
+        }
+        return false;
+    });
     
     console.log('🔍 Found admin account:', adminAccount);
     console.log('🔍 ADMIN_ACCOUNTS object:', ADMIN_ACCOUNTS);
@@ -860,6 +915,23 @@ function authenticateEmployee(employee, username, password, passwordHash) {
     // Check if using temporary password
     const isTemporaryPassword = employee.temporaryPassword && password === employee.temporaryPassword;
     const isRegularPassword = employee.passwordHash && verifyPassword(password, employee.passwordHash);
+    
+    // SECURITY: Auto-migrate legacy passwords to bcrypt
+    if (isRegularPassword && employee.passwordHash && !employee.passwordHash.startsWith('$2')) {
+        console.log('🔄 Auto-migrating legacy password to bcrypt...');
+        const newHash = secureHash(password);
+        const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+        
+        database.ref(`${employeePath}/${employee.id}`).update({
+            passwordHash: newHash,
+            passwordMigrated: true,
+            passwordMigrationDate: new Date().toISOString()
+        }).then(() => {
+            console.log('✅ Password migrated successfully');
+        }).catch(error => {
+            console.error('❌ Password migration failed:', error);
+        });
+    }
     
     // Debug logging (SECURITY: No sensitive data logged)
     console.log('🔍 Employee debug info:', {
@@ -1130,15 +1202,30 @@ function secureHash(password) {
     }
 }
 
-// Verify password against hash
+// Verify password against hash with migration support
 function verifyPassword(password, hash) {
     try {
-        if (typeof bcrypt !== 'undefined') {
-            return bcrypt.compareSync(password, hash);
+        // Check if this is a bcrypt hash (starts with $2a$, $2b$, $2y$)
+        if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
+            // This is a bcrypt hash - use bcrypt verification
+            if (typeof bcrypt !== 'undefined') {
+                return bcrypt.compareSync(password, hash);
+            } else {
+                console.warn('⚠️ bcrypt not available for verification');
+                return false;
+            }
         } else {
-            // Fallback verification
-            const hashedPassword = hashWithWebCrypto(password);
-            return hashedPassword === hash;
+            // This is likely an old simpleHash - verify and migrate
+            console.log('🔄 Detected legacy password hash, verifying with old system...');
+            const oldHash = simpleHash(password);
+            const isValid = oldHash === hash;
+            
+            if (isValid) {
+                console.log('✅ Legacy password verified - migration needed');
+                // Note: Migration will be handled by the calling function
+            }
+            
+            return isValid;
         }
     } catch (error) {
         console.error('❌ Password verification error:', error);

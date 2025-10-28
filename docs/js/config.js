@@ -36,13 +36,14 @@ class SecureConfig {
         // These should be set as GitHub Secrets in production
         const accounts = {};
         
+        // SECURITY: Hash admin passwords immediately when loaded
         // GBTech account
         if (window.ENV_GBTECH_USERNAME && window.ENV_GBTECH_PASSWORD && 
             window.ENV_GBTECH_USERNAME !== '[SET_YOUR_GBTECH_PASSWORD]' && 
             window.ENV_GBTECH_PASSWORD !== '[SET_YOUR_GBTECH_PASSWORD]') {
             accounts['GBTech'] = {
                 username: window.ENV_GBTECH_USERNAME,
-                password: window.ENV_GBTECH_PASSWORD,
+                passwordHash: this.hashPassword(window.ENV_GBTECH_PASSWORD),
                 tenantId: 'gbtech',
                 role: 'master_admin'
             };
@@ -56,7 +57,7 @@ class SecureConfig {
             window.ENV_LARS_PASSWORD !== '[SET_YOUR_LARS_PASSWORD]') {
             accounts['Lars'] = {
                 username: window.ENV_LARS_USERNAME,
-                password: window.ENV_LARS_PASSWORD,
+                passwordHash: this.hashPassword(window.ENV_LARS_PASSWORD),
                 tenantId: 'lars',
                 role: 'admin'
             };
@@ -64,15 +65,41 @@ class SecureConfig {
             console.warn('⚠️ Lars credentials not found in environment variables');
         }
         
-        // Demo account (can be hardcoded as it's for demo purposes)
+        // Demo account (also hash this for consistency)
         accounts['Demo'] = {
             username: 'Demo',
-            password: 'Password1!',
+            passwordHash: this.hashPassword('Password1!'),
             tenantId: 'demo',
             role: 'demo_admin'
         };
         
         return accounts;
+    }
+    
+    // SECURITY: Hash password using bcrypt or fallback
+    hashPassword(password) {
+        try {
+            // Use bcrypt if available (loaded via CDN)
+            if (typeof bcrypt !== 'undefined') {
+                return bcrypt.hashSync(password, 12);
+            } else {
+                // Fallback: Use Web Crypto API for client-side hashing
+                console.warn('⚠️ bcrypt not available, using Web Crypto API fallback for admin passwords');
+                return this.hashWithWebCrypto(password);
+            }
+        } catch (error) {
+            console.error('❌ Admin password hashing error:', error);
+            throw new Error('Admin password hashing failed');
+        }
+    }
+    
+    // Web Crypto API fallback for admin password hashing
+    async hashWithWebCrypto(password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(password);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
     loadFirebaseConfig() {
