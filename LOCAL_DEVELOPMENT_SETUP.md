@@ -18,9 +18,9 @@ Updated `docs/js/env-config.js` with working credentials for local development:
 ```javascript
 // Admin credentials for local development
 window.ENV_GBTECH_USERNAME = 'GBTech';
-window.ENV_GBTECH_PASSWORD = 'GBTech2024!'; // TEMPORARY for local development
+window.ENV_GBTECH_PASSWORD = '[SET_YOUR_GBTECH_PASSWORD]';
 window.ENV_LARS_USERNAME = 'Lars';
-window.ENV_LARS_PASSWORD = 'Lars2024!'; // TEMPORARY for local development
+window.ENV_LARS_PASSWORD = '[SET_YOUR_LARS_PASSWORD]';
 ```
 
 ### **2. Enhanced Debugging**
@@ -37,13 +37,13 @@ console.log('🔍 Looking for username:', username, 'password:', password);
 ### **Available Test Accounts:**
 1. **GBTech Account:**
    - **Username:** `GBTech`
-   - **Password:** `GBTech2024!`
+   - **Password:** `[Contact administrator for password]`
    - **Role:** Master Admin
    - **Tenant:** gbtech
 
 2. **Lars Account:**
    - **Username:** `Lars`
-   - **Password:** `Lars2024!`
+   - **Password:** `[Contact administrator for password]`
    - **Role:** Admin
    - **Tenant:** lars
 
@@ -104,7 +104,7 @@ window.ENV_FIREBASE_APP_ID = "YOUR_APP_ID";
 3. **Look for these messages:**
    - `✅ Admin accounts loaded from secure configuration`
    - `🔍 Available admin accounts: ['GBTech', 'Lars', 'Demo']`
-   - `🔍 Looking for username: Lars password: Lars2024!`
+   - `🔍 Looking for username: Lars password: [REDACTED]`
    - `✅ Admin login successful: Lars`
 
 ### **Common Issues:**
