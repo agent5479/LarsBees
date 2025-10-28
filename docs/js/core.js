@@ -999,16 +999,16 @@ function showChangePasswordModal() {
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Current Password</label>
-                        <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" required>
+                        <input type="password" class="form-control" id="currentPassword" placeholder="Enter your current password" autocomplete="current-password" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">New Password</label>
-                        <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min 6 characters)" required>
+                        <input type="password" class="form-control" id="newPassword" placeholder="Enter new password (min 6 characters)" autocomplete="new-password" required>
                         <small class="form-text text-muted">Password must be at least 6 characters long</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Confirm New Password</label>
-                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password" required>
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm new password" autocomplete="new-password" required>
                     </div>
                     <div id="passwordChangeMessage" class="alert d-none" role="alert"></div>
                 </div>
@@ -1693,11 +1693,11 @@ function showPasswordChangePrompt(employee) {
                     <form id="employeePasswordChangeForm">
                         <div class="mb-3">
                             <label for="employeeNewPassword" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="employeeNewPassword" required minlength="8">
+                            <input type="password" class="form-control" id="employeeNewPassword" autocomplete="new-password" required minlength="8">
                         </div>
                         <div class="mb-3">
                             <label for="employeeConfirmPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="employeeConfirmPassword" required minlength="8">
+                            <input type="password" class="form-control" id="employeeConfirmPassword" autocomplete="new-password" required minlength="8">
                         </div>
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i> Password must be at least 8 characters long.
