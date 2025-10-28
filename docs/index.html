@@ -149,6 +149,97 @@
             box-shadow: var(--shadow);
         }
 
+        /* Expandable Card Styles */
+        .expandable-card {
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition);
+        }
+
+        .expandable-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(218, 165, 32, 0.2);
+        }
+
+        .expand-indicator {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: var(--dark-yellow);
+            font-size: 1.2rem;
+            transition: transform var(--transition);
+        }
+
+        .expandable-card[aria-expanded="true"] .expand-indicator {
+            transform: rotate(180deg);
+        }
+
+        .card-details {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(218, 165, 32, 0.2);
+        }
+
+        .card-details h6 {
+            color: var(--dark-yellow);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-details ul {
+            margin-bottom: 0;
+            padding-left: 1.2rem;
+        }
+
+        .card-details li {
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .card-details strong {
+            color: var(--black);
+        }
+
+        /* Legal Section Styles */
+        .legal-section {
+            margin: 4rem 0;
+        }
+
+        .legal-card {
+            background: var(--white);
+            border: 2px solid var(--dark-yellow);
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            height: 100%;
+            transition: all var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .legal-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(218, 165, 32, 0.2);
+        }
+
+        .legal-icon {
+            font-size: 2.5rem;
+            color: var(--dark-yellow);
+            margin-bottom: 1rem;
+        }
+
+        .legal-card h5 {
+            color: var(--black);
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .legal-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
         .comparison-table th {
             background: var(--light-yellow);
             color: var(--black);
@@ -203,60 +294,156 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-4">
-                <div class="feature-card">
+                <div class="feature-card expandable-card" data-bs-toggle="collapse" data-bs-target="#siteManagementDetails" aria-expanded="false">
                     <div class="feature-icon">
                         <i class="bi bi-geo-alt-fill"></i>
                     </div>
                     <h4>Site Management</h4>
                     <p>Track multiple apiary sites with GPS coordinates, site classifications, and detailed site information. Interactive maps and site grouping for efficient management.</p>
+                    <div class="expand-indicator">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="collapse" id="siteManagementDetails">
+                        <div class="card-details">
+                            <h6>Key Features:</h6>
+                            <ul>
+                                <li><strong>GPS Integration:</strong> Precise location tracking with Google Maps integration</li>
+                                <li><strong>Site Classifications:</strong> Functional (Production, Nucleus, Queen Rearing) and Seasonal (Summer/Winter) classifications</li>
+                                <li><strong>Hive Inventory:</strong> Track individual hives with strength monitoring and stack configurations</li>
+                                <li><strong>Landowner Management:</strong> Store contact information and access permissions</li>
+                                <li><strong>Visual Hive Grid:</strong> Interactive grid system for hive layout management</li>
+                                <li><strong>Archive System:</strong> Hide inactive sites while preserving data</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="feature-card">
+                <div class="feature-card expandable-card" data-bs-toggle="collapse" data-bs-target="#analyticsDetails" aria-expanded="false">
                     <div class="feature-icon">
                         <i class="bi bi-graph-up-arrow"></i>
                     </div>
                     <h4>Performance Analytics</h4>
                     <p>Advanced reporting and analytics with real-time data visualization. Track hive strength, productivity, health metrics, and operational efficiency.</p>
+                    <div class="expand-indicator">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="collapse" id="analyticsDetails">
+                        <div class="card-details">
+                            <h6>Analytics Features:</h6>
+                            <ul>
+                                <li><strong>Hive Performance Charts:</strong> Visual tracking of hive strength over time</li>
+                                <li><strong>Health & Mortality Reports:</strong> Disease tracking and mortality analysis</li>
+                                <li><strong>Operations Summary:</strong> Task completion rates and efficiency metrics</li>
+                                <li><strong>Data Export:</strong> CSV export for external analysis and reporting</li>
+                                <li><strong>Real-time Updates:</strong> Live data synchronization across all reports</li>
+                                <li><strong>Mobile Responsive:</strong> Optimized charts for mobile and desktop viewing</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="feature-card">
+                <div class="feature-card expandable-card" data-bs-toggle="collapse" data-bs-target="#schedulingDetails" aria-expanded="false">
                     <div class="feature-icon">
                         <i class="bi bi-calendar-check"></i>
                     </div>
                     <h4>Task Scheduling</h4>
                     <p>Comprehensive task management with scheduling, reminders, and progress tracking. Seasonal requirements and automated task suggestions.</p>
+                    <div class="expand-indicator">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="collapse" id="schedulingDetails">
+                        <div class="card-details">
+                            <h6>Scheduling Capabilities:</h6>
+                            <ul>
+                                <li><strong>Task Categories:</strong> Inspection, Feeding, Treatment, Harvest, Maintenance, and more</li>
+                                <li><strong>Priority Levels:</strong> Normal, High, and Urgent task prioritization</li>
+                                <li><strong>Due Date Tracking:</strong> Visual calendar with overdue indicators</li>
+                                <li><strong>Bulk Operations:</strong> Schedule multiple tasks across sites efficiently</li>
+                                <li><strong>Task Templates:</strong> Pre-configured task sets for common operations</li>
+                                <li><strong>Progress Tracking:</strong> Mark tasks complete with timestamps and notes</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="row">
             <div class="col-lg-4">
-                <div class="feature-card">
+                <div class="feature-card expandable-card" data-bs-toggle="collapse" data-bs-target="#teamDetails" aria-expanded="false">
                     <div class="feature-icon">
                         <i class="bi bi-people-fill"></i>
                     </div>
                     <h4>Team Management</h4>
                     <p>Multi-user support with role-based permissions. Employee management, task assignment, and collaborative workflow management.</p>
+                    <div class="expand-indicator">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="collapse" id="teamDetails">
+                        <div class="card-details">
+                            <h6>Team Features:</h6>
+                            <ul>
+                                <li><strong>Role-Based Access:</strong> Admin and Employee roles with appropriate permissions</li>
+                                <li><strong>Employee Activation:</strong> Secure activation system with temporary passwords</li>
+                                <li><strong>Tenant Isolation:</strong> Multi-tenant architecture for data security</li>
+                                <li><strong>Permission Control:</strong> Employees can view/update but not delete critical data</li>
+                                <li><strong>Activity Tracking:</strong> Monitor who made changes and when</li>
+                                <li><strong>Secure Login:</strong> No hardcoded passwords - all credentials stored securely</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="feature-card">
+                <div class="feature-card expandable-card" data-bs-toggle="collapse" data-bs-target="#syncDetails" aria-expanded="false">
                     <div class="feature-icon">
                         <i class="bi bi-cloud-arrow-up"></i>
                     </div>
                     <h4>Real-time Sync</h4>
-                    <p>Cloud-based data synchronization across all devices. Access your data from anywhere with automatic backup and offline support.</p>
+                    <p>Firebase-powered real-time data synchronization across all devices. Offline support with automatic sync when connection is restored.</p>
+                    <div class="expand-indicator">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="collapse" id="syncDetails">
+                        <div class="card-details">
+                            <h6>Sync Features:</h6>
+                            <ul>
+                                <li><strong>Persistent Sync Status:</strong> Real-time overlay showing sync status and pending changes</li>
+                                <li><strong>Offline Support:</strong> Continue working without internet - changes queue locally</li>
+                                <li><strong>Automatic Reconnection:</strong> Queued changes sync when connection restored</li>
+                                <li><strong>Data Integrity:</strong> Conflict resolution and data validation</li>
+                                <li><strong>Multi-Device Sync:</strong> Changes appear instantly across all devices</li>
+                                <li><strong>Change Tracking:</strong> Detailed logging of all data modifications</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="feature-card">
+                <div class="feature-card expandable-card" data-bs-toggle="collapse" data-bs-target="#securityDetails" aria-expanded="false">
                     <div class="feature-icon">
                         <i class="bi bi-shield-check"></i>
                     </div>
-                    <h4>Compliance Tracking</h4>
-                    <p>Regulatory compliance monitoring with automated reporting, audit trails, and documentation management for professional beekeepers.</p>
+                    <h4>Data Security</h4>
+                    <p>Enterprise-grade security with encrypted data transmission and storage. Multi-tenant architecture for data isolation and privacy protection.</p>
+                    <div class="expand-indicator">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="collapse" id="securityDetails">
+                        <div class="card-details">
+                            <h6>Security Features:</h6>
+                            <ul>
+                                <li><strong>No Hardcoded Passwords:</strong> All credentials stored securely in GitHub Secrets</li>
+                                <li><strong>Firebase Security:</strong> Encrypted data transmission and storage</li>
+                                <li><strong>Multi-Tenant Architecture:</strong> Complete data isolation between organizations</li>
+                                <li><strong>Role-Based Permissions:</strong> Granular access control for different user types</li>
+                                <li><strong>Secure Authentication:</strong> Temporary passwords with device remembering</li>
+                                <li><strong>Open Source:</strong> Transparent, auditable codebase for security review</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -288,6 +475,46 @@
                     <div class="stat-item">
                         <div class="stat-number">100%</div>
                         <div>Secure</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Legal & Privacy Information -->
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="legal-section">
+                    <h2 class="text-center text-hive-primary mb-4">Legal & Privacy Information</h2>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="legal-card">
+                                <div class="legal-icon">
+                                    <i class="bi bi-shield-check"></i>
+                                </div>
+                                <h5>Terms of Use</h5>
+                                <p>By using BeeMarshall, you agree to our terms of service. This system is designed for professional apiary management and data security.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="legal-card">
+                                <div class="legal-icon">
+                                    <i class="bi bi-lock"></i>
+                                </div>
+                                <h5>Data Privacy</h5>
+                                <p>Your data is stored securely in Firebase cloud infrastructure. While encrypted in transit and at rest, data is not entirely hidden from advanced analysis.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="legal-card">
+                                <div class="legal-icon">
+                                    <i class="bi bi-code-slash"></i>
+                                </div>
+                                <h5>Open Source</h5>
+                                <p>BeeMarshall is built on open-source technologies. Source code and data structures are transparent and auditable.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
