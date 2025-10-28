@@ -624,6 +624,9 @@ function handleLogin(e) {
     );
     
     console.log('🔍 Found admin account:', adminAccount);
+    console.log('🔍 ADMIN_ACCOUNTS object:', ADMIN_ACCOUNTS);
+    console.log('🔍 ADMIN_ACCOUNTS keys:', Object.keys(ADMIN_ACCOUNTS));
+    console.log('🔍 ADMIN_ACCOUNTS values:', Object.values(ADMIN_ACCOUNTS));
     
     if (adminAccount) {
         console.log('✅ Admin login successful:', adminAccount.username);
