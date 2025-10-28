@@ -2546,6 +2546,14 @@
             <div id="employeesView" class="hidden">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="bi bi-people"></i> Team Management</h2>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-success" onclick="bulkActivateEmployees()">
+                            <i class="bi bi-check-circle"></i> Activate All Pending
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="bulkDeactivateEmployees()">
+                            <i class="bi bi-pause-circle"></i> Deactivate All Active
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="row">
@@ -2780,6 +2788,10 @@
     <!-- Form Validation System -->
     <script src="js/form-validation.js"></script>
     <!-- BeeMarshall JavaScript Modules -->
+    <!-- Environment Variables (injected at build time) -->
+    <script src="js/env-config.js"></script>
+    <!-- Secure Configuration (must load first) -->
+    <script src="js/config.js"></script>
     <script src="js/permissions.js"></script>
     <script src="js/scheduling.js"></script>
     <script src="js/compliance.js"></script>
@@ -2805,15 +2817,15 @@
     
     <!-- Firebase Configuration -->
     <script>
-        // Firebase configuration - Corrected to use LarsBees project
+        // Firebase configuration - Loaded from secure environment variables
         const firebaseConfig = {
-            apiKey: "AIzaSyBLqjik76P7c72rgrMvo1lw86G3MOIIuNA",
-            authDomain: "beemarshall-a311e.firebaseapp.com",
-            databaseURL: "https://beemarshall-a311e-default-rtdb.firebaseio.com",
-            projectId: "beemarshall-a311e",
-            storageBucket: "beemarshall-a311e.firebasestorage.app",
-            messagingSenderId: "502475319497",
-            appId: "1:502475319497:web:36e8120b0ca2c997870518",
+            apiKey: window.ENV_FIREBASE_API_KEY,
+            authDomain: window.ENV_FIREBASE_AUTH_DOMAIN,
+            databaseURL: window.ENV_FIREBASE_DATABASE_URL,
+            projectId: window.ENV_FIREBASE_PROJECT_ID,
+            storageBucket: window.ENV_FIREBASE_STORAGE_BUCKET,
+            messagingSenderId: window.ENV_FIREBASE_MESSAGING_SENDER_ID,
+            appId: window.ENV_FIREBASE_APP_ID,
             measurementId: "G-4WMTWPWWFD"
         };
         

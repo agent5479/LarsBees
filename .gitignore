@@ -36,6 +36,7 @@ venv.bak/
 
 # Environment variables
 .env
+docs/js/env-config.js
 
 # Database
 *.db

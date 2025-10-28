@@ -11,8 +11,7 @@ If you're having trouble logging in with the Lars account, follow these steps:
    - **Firefox:** Press `F12`
    - **Safari:** Enable Developer menu, then press `Cmd+Option+I`
 3. **Try to login:**
-   - Username: `Lars`
-   - Password: `LarsHoney2025!`
+   - Use your assigned username and password
    - Click Login
 4. **Look for console messages** - you should see:
    - "Login form submitted"
@@ -61,9 +60,9 @@ This will reset the master account and you can try logging in again.
 
 ### **Issue: "Invalid username or password"**
 **Solution:**
-1. Make sure you're using exactly: `Lars` (capital L)
-2. Make sure you're using exactly: `LarsHoney2025!` (with exclamation mark)
-3. Try the reset function: `resetMasterAccount()`
+1. Verify you're using the correct username and password
+2. Check for typos in your credentials
+3. Contact administrator if you need password reset
 
 ### **Issue: Page refreshes instead of showing dashboard**
 **Solution:**

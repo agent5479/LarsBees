@@ -103,13 +103,13 @@ Firebase Realtime Database allows your data to **sync across all browsers and de
    You'll see something like:
    ```javascript
    const firebaseConfig = {
-     apiKey: "AIzaSyABC123...XYZ",
-     authDomain: "larsbees-12345.firebaseapp.com",
-     databaseURL: "https://larsbees-12345-default-rtdb.firebaseio.com",
-     projectId: "larsbees-12345",
-     storageBucket: "larsbees-12345.appspot.com",
-     messagingSenderId: "123456789012",
-     appId: "1:123456789012:web:abc123def456"
+     apiKey: "[YOUR_FIREBASE_API_KEY]",
+     authDomain: "[YOUR_PROJECT_ID].firebaseapp.com",
+     databaseURL: "https://[YOUR_PROJECT_ID]-default-rtdb.firebaseio.com",
+     projectId: "[YOUR_PROJECT_ID]",
+     storageBucket: "[YOUR_PROJECT_ID].appspot.com",
+     messagingSenderId: "[YOUR_MESSAGING_SENDER_ID]",
+     appId: "[YOUR_APP_ID]"
    };
    ```
 
@@ -124,8 +124,8 @@ Firebase Realtime Database allows your data to **sync across all browsers and de
 2. **Find this section** (around line 400):
    ```javascript
    const firebaseConfig = {
-       apiKey: "YOUR_API_KEY",
-       authDomain: "your-app.firebaseapp.com",
+       apiKey: "[YOUR_FIREBASE_API_KEY]",
+       authDomain: "[YOUR_PROJECT_ID].firebaseapp.com",
        // ...
    };
    ```
@@ -133,13 +133,13 @@ Firebase Realtime Database allows your data to **sync across all browsers and de
 3. **Replace with YOUR config** from Firebase:
    ```javascript
    const firebaseConfig = {
-       apiKey: "AIzaSyABC123...XYZ",  // Your actual values
-       authDomain: "larsbees-12345.firebaseapp.com",
-       databaseURL: "https://larsbees-12345-default-rtdb.firebaseio.com",
-       projectId: "larsbees-12345",
-       storageBucket: "larsbees-12345.appspot.com",
-       messagingSenderId: "123456789012",
-       appId: "1:123456789012:web:abc123def456"
+       apiKey: "[YOUR_FIREBASE_API_KEY]",  // Your actual values
+       authDomain: "[YOUR_PROJECT_ID].firebaseapp.com",
+       databaseURL: "https://[YOUR_PROJECT_ID]-default-rtdb.firebaseio.com",
+       projectId: "[YOUR_PROJECT_ID]",
+       storageBucket: "[YOUR_PROJECT_ID].appspot.com",
+       messagingSenderId: "[YOUR_MESSAGING_SENDER_ID]",
+       appId: "[YOUR_APP_ID]"
    };
    ```
 

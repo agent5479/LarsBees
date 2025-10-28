@@ -195,7 +195,7 @@ def create_app(config_name='default'):
             test_user.set_password('admin123')
             db.session.add(test_user)
             db.session.commit()
-            print("DEBUG: Created test user - username: admin, password: admin123")
+            print("DEBUG: Created test user - username: admin, password: [REDACTED]")
     
     # Routes
     @app.route('/')

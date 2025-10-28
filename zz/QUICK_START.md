@@ -40,7 +40,7 @@ http://localhost:5000
 ### 6. Login
 Use the test account:
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** Contact administrator
 
 ## 🎯 First Steps
 

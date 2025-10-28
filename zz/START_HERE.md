@@ -135,7 +135,7 @@ When you start the app, you'll see:
 
 ### Use Test Account
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** Contact administrator
 
 ### Try These Features
 1. ✅ View the landing page

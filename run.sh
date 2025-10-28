@@ -39,7 +39,7 @@ fi
 echo "Starting LarsBees..."
 echo ""
 echo "Open your browser and go to: http://localhost:5000"
-echo "Test login - Username: admin, Password: admin123"
+echo "Test login - Username: admin, Password: [Contact administrator]"
 echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""

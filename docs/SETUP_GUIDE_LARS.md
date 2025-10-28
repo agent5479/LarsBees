@@ -51,8 +51,8 @@ https://agent5479.github.io/BeeMarshall/larsbees-full.html
 ```
 
 ### Step 2: Create Master Account
-- **Username:** `Lars` (or `admin`)
-- **Password:** Choose a strong password (e.g., `LarsHoney2025!`)
+- **Username:** Use your assigned username
+- **Password:** Use your assigned password
 - Click **Login**
 
 **✅ System will recognize this as first-time setup and create your master account!**

@@ -282,8 +282,8 @@ Migration script: `docs/migrate-data.html`
 ## Firebase Configuration
 
 ### Database URLs
-- **Production:** `https://beemarshall-a311e-default-rtdb.firebaseio.com/`
-- **Legacy:** `https://larsbees-378aa-default-rtdb.firebaseio.com/`
+- **Production:** `https://[YOUR_PROJECT_ID]-default-rtdb.firebaseio.com/`
+- **Legacy:** `https://[LEGACY_PROJECT_ID]-default-rtdb.firebaseio.com/`
 
 ### Firebase Rules (Recommended)
 ```json

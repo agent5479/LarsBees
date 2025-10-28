@@ -93,7 +93,7 @@ def main():
     print("3. Open browser: http://localhost:5000")
     print("4. Login with test account:")
     print("   Username: admin")
-    print("   Password: admin123")
+    print("   Password: [Contact administrator]")
     print("\n📖 Read README.md for more information")
     print("\nHappy Beekeeping! 🍯")
 

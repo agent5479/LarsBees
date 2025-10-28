@@ -165,10 +165,10 @@ https://agent5479.github.io/BeeMarshall/larsbees-pro.html
 ## 🔐 **How Team Login Works**
 
 ### **Setup (One Time):**
-1. **Lars creates password:** "HoneyTeam2025" (example)
-2. **Employee gets same password:** "HoneyTeam2025"
-3. **Lars logs in:** Name: "Lars", Password: "HoneyTeam2025"
-4. **Employee logs in:** Name: "John", Password: "HoneyTeam2025"
+1. **Lars creates password:** [Secure password assigned by administrator]
+2. **Employee gets same password:** [Same secure password]
+3. **Lars logs in:** Name: "Lars", Password: [Assigned password]
+4. **Employee logs in:** Name: "John", Password: [Same assigned password]
 
 ### **Result:**
 - ✅ Same data for both

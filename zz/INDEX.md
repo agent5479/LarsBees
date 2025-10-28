@@ -60,7 +60,7 @@ http://localhost:5000
 
 #### Test Login
 - Username: `admin`
-- Password: `admin123`
+- Password: Contact administrator
 
 ## 🎯 Feature Overview
 

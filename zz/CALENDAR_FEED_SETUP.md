@@ -88,7 +88,7 @@ const icsContent = generateICSCalendarFeed();
 Use Firebase Cloud Functions to serve ICS files:
 
 1. **Create Firebase Function**: Deploy a function that reads from Firebase and serves ICS
-2. **Function Endpoint**: `https://us-central1-beemarshall-a311e.cloudfunctions.net/calendarFeed/{tenantId}`
+2. **Function Endpoint**: `https://us-central1-[YOUR_PROJECT_ID].cloudfunctions.net/calendarFeed/{tenantId}`
 3. **Update Feed URL**: Point to the Firebase function URL
 
 **Advantages:**
@@ -158,7 +158,7 @@ Generate ICS files client-side and download:
 
 2. **Update Feed URL**:
    ```javascript
-   const feedUrl = `https://us-central1-beemarshall-a311e.cloudfunctions.net/calendarFeed/${tenantId}`;
+   const feedUrl = `https://us-central1-[YOUR_PROJECT_ID].cloudfunctions.net/calendarFeed/${tenantId}`;
    ```
 
 3. **Test Subscription**:

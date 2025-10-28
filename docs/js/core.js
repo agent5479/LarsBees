@@ -11,9 +11,8 @@ const VERSION_HISTORY = [
     { version: '0.96', date: '2024-12-19', changes: ['Added Demo user account for client demonstrations', 'Enhanced hive strength breakdown system', 'Improved site editing with detailed breakdowns', 'Updated reports with comprehensive data integration'] }
 ];
 
-// Master account credentials
-const MASTER_USERNAME = 'GBTech';
-const MASTER_PASSWORD = '1q2w3e!Q@W#E';
+// Master account credentials - now loaded from secure configuration
+// See config.js for secure credential management
 
 // Custom alert function with BeeMarshall branding
 function beeMarshallAlert(message, type = 'info') {
@@ -58,27 +57,19 @@ function beeMarshallAlert(message, type = 'info') {
 // Override default alert function
 window.alert = beeMarshallAlert;
 
-// Multi-tenant admin accounts with GBTech as master
-const ADMIN_ACCOUNTS = {
-    'GBTech': {
-        username: 'GBTech',
-        password: '1q2w3e!Q@W#E',
-        tenantId: 'gbtech',
-        role: 'master_admin'
-    },
-    'Lars': {
-        username: 'Lars',
-        password: 'LarsHoney2025!',
-        tenantId: 'lars',
-        role: 'admin'
-    },
-    'Demo': {
-        username: 'Demo',
-        password: 'Password1!',
-        tenantId: 'demo',
-        role: 'demo_admin'
+// Admin accounts are now loaded securely from environment variables
+// See config.js for configuration management
+let ADMIN_ACCOUNTS = {};
+
+// Initialize admin accounts from secure configuration
+function initializeAdminAccounts() {
+    if (window.SecureConfig) {
+        ADMIN_ACCOUNTS = window.SecureConfig.getAdminAccounts();
+        console.log('✅ Admin accounts loaded from secure configuration');
+    } else {
+        console.error('❌ SecureConfig not available. Admin accounts not loaded.');
     }
-};
+}
 
 // Global variables
 let currentUser = null;
@@ -160,6 +151,9 @@ let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category,
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOM Content Loaded - Initializing BeeMarshall...');
     console.log(`📦 BeeMarshall v${APP_VERSION} - Professional Apiary Management System`);
+    
+    // Initialize secure configuration and admin accounts
+    initializeAdminAccounts();
     
     // Update version display
     updateVersionDisplay();
@@ -269,33 +263,22 @@ function initializeMasterAccount() {
 window.resetMasterAccount = function() {
     console.log('🔄 Resetting master account...');
     initializeMasterAccount();
-    alert('Master account reset! Try logging in again with:\nUsername: Lars\nPassword: LarsHoney2025!');
+    alert('Master account reset! Please contact administrator for login credentials.');
 }
 
 // Debug function - call from browser console to test password hashing
 window.testPasswordHash = function() {
-    const testPassword = 'LarsHoney2025!';
+    const testPassword = 'TestPassword123!';
     const hash = simpleHash(testPassword);
     console.log('Test password:', testPassword);
     console.log('Generated hash:', hash);
-    console.log('Expected hash for LarsHoney2025!:', hash);
+    console.log('Expected hash for TestPassword123!:', hash);
     return hash;
 }
 
-// Test login functions for debugging
-window.testLarsLogin = function() {
-    console.log('🧪 Testing Lars login...');
-    document.getElementById('loginUsername').value = 'Lars';
-    document.getElementById('loginPassword').value = 'LarsHoney2025!';
-    handleLogin({ preventDefault: () => {} });
-};
-
-window.testGBTechLogin = function() {
-    console.log('🧪 Testing GBTech login...');
-    document.getElementById('loginUsername').value = 'GBTech';
-    document.getElementById('loginPassword').value = '1q2w3e!Q@W#E';
-    handleLogin({ preventDefault: () => {} });
-};
+// Test login functions for debugging - REMOVED FOR SECURITY
+// These functions have been removed to prevent credential exposure
+// Use the secure login system instead
 
 
 // Debug function - check Firebase connection
@@ -365,9 +348,8 @@ window.checkDemoData = function() {
 // Test login function for debugging
 window.testLogin = function() {
     console.log('🧪 Testing login system...');
-    document.getElementById('loginUsername').value = 'Lars';
-    document.getElementById('loginPassword').value = 'LarsHoney2025!';
-    console.log('✅ Test credentials set. Click login button to test.');
+    console.log('⚠️ Test login function removed for security. Use the secure login system.');
+    console.log('✅ Please use the login form with your actual credentials.');
 }
 
 
@@ -726,6 +708,13 @@ function validateLogin(username, password) {
             const employee = Object.values(employeesList).find(emp => 
                 emp.username.toLowerCase() === username.toLowerCase() && emp.passwordHash === passwordHash
             );
+            
+            // Check if employee is active
+            if (employee && !employee.isActive) {
+                console.log('❌ Employee account is not active');
+                beeMarshallAlert('Your account is not active yet. Please contact your administrator to activate your account.', 'warning');
+                return;
+            }
             
             if (employee) {
                 console.log('Employee login successful');

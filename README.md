@@ -167,7 +167,7 @@ The application includes several debug features when `DEBUG=True`:
 ### 1. Test User Account
 When running in debug mode, a test account is automatically created:
 - **Username:** `admin`
-- **Password:** `admin123`
+- **Password:** Contact administrator for password
 
 ### 2. Debug Endpoints
 

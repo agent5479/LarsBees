@@ -240,7 +240,7 @@ http://localhost:5000
 
 ### Test Account
 - Username: `admin`
-- Password: `admin123`
+- Password: Contact administrator
 
 ### Try These Features
 1. ✅ View landing page

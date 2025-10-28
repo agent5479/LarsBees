@@ -12,8 +12,7 @@
    - **Safari:** Enable Developer menu, then press `Cmd+Option+I`
 
 3. **Try to login:**
-   - Username: `Lars`
-   - Password: `LarsHoney2025!`
+   - Use your assigned username and password
    - Click Login
 
 4. **Look for console messages:**
@@ -28,8 +27,7 @@
 ## ✅ **What to Test:**
 
 ### **Test 1: Login (First Time)**
-- Username: `Lars`
-- Password: `LarsHoney2025!`
+- Use your assigned username and password
 - Should create master account
 - Should show dashboard
 
