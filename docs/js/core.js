@@ -269,7 +269,7 @@ function initializeMasterAccount() {
     
     const masterUser = {
         username: MASTER_USERNAME,
-        passwordHash: simpleHash(MASTER_PASSWORD),
+        passwordHash: secureHash(MASTER_PASSWORD),
         role: 'admin',
         createdAt: new Date().toISOString()
     };
@@ -279,7 +279,7 @@ function initializeMasterAccount() {
     }).then(() => {
         console.log('✅ Master account initialized successfully in tenant structure');
         console.log('Username:', MASTER_USERNAME);
-        console.log('Password hash:', simpleHash(MASTER_PASSWORD));
+        console.log('Password hash generated for master account');
     }).catch(error => {
         console.error('❌ Failed to initialize master account:', error);
     });
@@ -292,14 +292,120 @@ window.resetMasterAccount = function() {
     alert('Master account reset! Please contact administrator for login credentials.');
 }
 
-// Debug function - call from browser console to test password hashing
+// SECURITY DEBUGGING FUNCTIONS - Available in browser console (F12)
+
+// Test password hashing
 window.testPasswordHash = function() {
     const testPassword = 'TestPassword123!';
-    const hash = simpleHash(testPassword);
-    console.log('Test password:', testPassword);
-    console.log('Generated hash:', hash);
-    console.log('Expected hash for TestPassword123!:', hash);
+    const hash = secureHash(testPassword);
+    console.log('🔐 Password Hashing Test:');
+    console.log('  Test password:', testPassword);
+    console.log('  Generated hash:', hash);
+    console.log('  Hash length:', hash.length);
     return hash;
+}
+
+// Test password verification
+window.testPasswordVerification = function() {
+    const testPassword = 'TestPassword123!';
+    const hash = secureHash(testPassword);
+    const isValid = verifyPassword(testPassword, hash);
+    const isInvalid = verifyPassword('WrongPassword', hash);
+    
+    console.log('🔍 Password Verification Test:');
+    console.log('  Correct password verification:', isValid);
+    console.log('  Wrong password verification:', isInvalid);
+    return { correct: isValid, wrong: isInvalid };
+}
+
+// Test password strength validation
+window.testPasswordStrength = function(password = 'TestPassword123!') {
+    const validation = validatePasswordStrength(password);
+    console.log('💪 Password Strength Test:');
+    console.log('  Password:', password);
+    console.log('  Is valid:', validation.isValid);
+    console.log('  Strength score:', validation.strength + '/100');
+    console.log('  Errors:', validation.errors);
+    return validation;
+}
+
+// Test rate limiting
+window.testRateLimit = function(username = 'testuser') {
+    console.log('⏱️ Rate Limiting Test:');
+    console.log('  Testing username:', username);
+    
+    // Clear any existing attempts
+    loginAttempts.delete(username);
+    
+    // Test normal attempts
+    for (let i = 1; i <= 6; i++) {
+        const check = checkRateLimit(username);
+        console.log(`  Attempt ${i}:`, check.allowed ? '✅ Allowed' : '❌ Blocked');
+        if (!check.allowed) {
+            console.log('    Message:', check.message);
+            break;
+        }
+        recordLoginAttempt(username, false);
+    }
+    
+    // Test successful login reset
+    recordLoginAttempt(username, true);
+    const finalCheck = checkRateLimit(username);
+    console.log('  After successful login:', finalCheck.allowed ? '✅ Allowed' : '❌ Blocked');
+    
+    return loginAttempts.get(username);
+}
+
+// Test bcrypt availability
+window.testBcrypt = function() {
+    console.log('🔧 Bcrypt Availability Test:');
+    console.log('  bcrypt available:', typeof bcrypt !== 'undefined');
+    if (typeof bcrypt !== 'undefined') {
+        console.log('  bcrypt version:', bcrypt.version || 'Unknown');
+        const testHash = bcrypt.hashSync('test', 10);
+        console.log('  Test hash generated:', testHash);
+        console.log('  Test verification:', bcrypt.compareSync('test', testHash));
+    }
+    return typeof bcrypt !== 'undefined';
+}
+
+// Security audit function
+window.securityAudit = function() {
+    console.log('🔒 BeeMarshall Security Audit:');
+    console.log('================================');
+    
+    // Test bcrypt
+    const bcryptAvailable = window.testBcrypt();
+    console.log('');
+    
+    // Test password hashing
+    window.testPasswordHash();
+    console.log('');
+    
+    // Test password verification
+    window.testPasswordVerification();
+    console.log('');
+    
+    // Test password strength
+    window.testPasswordStrength('Weak123');
+    window.testPasswordStrength('StrongPassword123!@#');
+    console.log('');
+    
+    // Test rate limiting
+    window.testRateLimit();
+    console.log('');
+    
+    // Check for security warnings
+    console.log('⚠️ Security Warnings:');
+    if (!bcryptAvailable) {
+        console.log('  - bcrypt not available, using fallback hashing');
+    }
+    
+    console.log('✅ Security audit complete');
+    return {
+        bcryptAvailable,
+        timestamp: new Date().toISOString()
+    };
 }
 
 // Test login functions for debugging - REMOVED FOR SECURITY
@@ -602,6 +708,14 @@ function handleLogin(e) {
         loginButton: !!document.getElementById('loginButton')
     });
     
+    // SECURITY: Check rate limiting
+    const rateLimitCheck = checkRateLimit(username);
+    if (!rateLimitCheck.allowed) {
+        showLoginStatus('danger', rateLimitCheck.message, false);
+        updateDebugInfo('lastError', 'Rate limit exceeded');
+        return;
+    }
+    
     // Show loading state
     showLoginStatus('info', 'Authenticating...', true);
     updateDebugInfo('systemStatus', 'Authenticating user...');
@@ -609,6 +723,7 @@ function handleLogin(e) {
     if (!username || !password) {
         showLoginStatus('danger', 'Please enter both username and password', false);
         updateDebugInfo('lastError', 'Missing username or password');
+        recordLoginAttempt(username, false);
         return;
     }
     
@@ -617,7 +732,7 @@ function handleLogin(e) {
     updateDebugInfo('firebaseStatus', 'Using multi-tenant auth system');
     
     // Calculate password hash for employee authentication
-    const passwordHash = simpleHash(password);
+    const passwordHash = secureHash(password);
     
     // Check credentials against admin accounts
     // Security: Don't log sensitive authentication details
@@ -633,6 +748,7 @@ function handleLogin(e) {
     
     if (adminAccount) {
         console.log('✅ Admin login successful:', adminAccount.username);
+        recordLoginAttempt(username, true); // Record successful login
         showLoginStatus('success', `Login successful! Welcome ${adminAccount.username}!`, false);
         updateDebugInfo('systemStatus', 'Multi-tenant authentication successful');
         
@@ -743,18 +859,14 @@ function authenticateEmployee(employee, username, password, passwordHash) {
     
     // Check if using temporary password
     const isTemporaryPassword = employee.temporaryPassword && password === employee.temporaryPassword;
-    const isRegularPassword = employee.passwordHash && employee.passwordHash === passwordHash;
+    const isRegularPassword = employee.passwordHash && verifyPassword(password, employee.passwordHash);
     
-    // Debug logging
+    // Debug logging (SECURITY: No sensitive data logged)
     console.log('🔍 Employee debug info:', {
         username: employee.username,
         hasTemporaryPassword: !!employee.temporaryPassword,
-        temporaryPassword: employee.temporaryPassword,
-        enteredPassword: password,
         isTemporaryPassword: isTemporaryPassword,
         hasPasswordHash: !!employee.passwordHash,
-        passwordHash: employee.passwordHash,
-        enteredPasswordHash: passwordHash,
         isRegularPassword: isRegularPassword,
         tenantId: employee.tenantId,
         createdBy: employee.createdBy
@@ -762,6 +874,7 @@ function authenticateEmployee(employee, username, password, passwordHash) {
     
     if (!isTemporaryPassword && !isRegularPassword) {
         console.log('❌ Invalid password for employee');
+        recordLoginAttempt(username, false); // Record failed login attempt
         showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
         return;
     }
@@ -778,6 +891,7 @@ function authenticateEmployee(employee, username, password, passwordHash) {
     }
     
     console.log('Employee login successful');
+    recordLoginAttempt(username, true); // Record successful login
     showLoginStatus('success', 'Login successful! Welcome, ' + employee.username + '!', false);
     updateDebugInfo('systemStatus', 'Employee authentication successful');
     
@@ -825,7 +939,7 @@ function authenticateEmployee(employee, username, password, passwordHash) {
 function setupMasterUser(username, password) {
     const masterUser = {
         username: username,
-        passwordHash: simpleHash(password),
+        passwordHash: secureHash(password),
         role: 'admin',
         createdAt: new Date().toISOString()
     };
@@ -845,7 +959,7 @@ function setupMasterUser(username, password) {
 
 function validateLogin(username, password) {
     console.log('🔐 Validating login for:', username);
-    const passwordHash = simpleHash(password);
+    const passwordHash = secureHash(password);
     console.log('🔑 Password hash:', passwordHash);
     console.log('🔑 Password being checked:', password);
     
@@ -856,7 +970,7 @@ function validateLogin(username, password) {
         
         if (admin) {
             console.log('   - Username match:', admin.username.toLowerCase() === username.toLowerCase());
-            console.log('   - Password hash match:', admin.passwordHash === passwordHash);
+            console.log('   - Password verification:', verifyPassword(password, admin.passwordHash));
             console.log('   - Expected hash:', admin.passwordHash);
             console.log('   - Provided hash:', passwordHash);
             console.log('   - Admin username:', admin.username);
@@ -865,7 +979,7 @@ function validateLogin(username, password) {
             console.log('❌ No admin data found in Firebase');
         }
         
-        if (admin && admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash) {
+        if (admin && admin.username.toLowerCase() === username.toLowerCase() && verifyPassword(password, admin.passwordHash)) {
             console.log('✅ Admin login successful');
             showLoginStatus('success', 'Login successful! Welcome back, ' + admin.username + '!', false);
             updateDebugInfo('systemStatus', 'Authentication successful');
@@ -910,18 +1024,14 @@ function validateLogin(username, password) {
             
             // Check if using temporary password
             const isTemporaryPassword = employee.temporaryPassword && password === employee.temporaryPassword;
-            const isRegularPassword = employee.passwordHash && employee.passwordHash === passwordHash;
+            const isRegularPassword = employee.passwordHash && verifyPassword(password, employee.passwordHash);
             
-            // Debug logging
+            // Debug logging (SECURITY: No sensitive data logged)
             console.log('🔍 Employee debug info:', {
                 username: employee.username,
                 hasTemporaryPassword: !!employee.temporaryPassword,
-                temporaryPassword: employee.temporaryPassword,
-                enteredPassword: password,
                 isTemporaryPassword: isTemporaryPassword,
                 hasPasswordHash: !!employee.passwordHash,
-                passwordHash: employee.passwordHash,
-                enteredPasswordHash: passwordHash,
                 isRegularPassword: isRegularPassword
             });
             
@@ -1002,7 +1112,158 @@ function validateLogin(username, password) {
     });
 }
 
+// SECURITY: Secure password hashing using bcrypt
+// Note: In production, this should be done server-side
+function secureHash(password) {
+    try {
+        // Use bcrypt if available (loaded via CDN)
+        if (typeof bcrypt !== 'undefined') {
+            return bcrypt.hashSync(password, 12);
+        } else {
+            // Fallback: Use Web Crypto API for client-side hashing
+            console.warn('⚠️ bcrypt not available, using Web Crypto API fallback');
+            return hashWithWebCrypto(password);
+        }
+    } catch (error) {
+        console.error('❌ Password hashing error:', error);
+        throw new Error('Password hashing failed');
+    }
+}
+
+// Verify password against hash
+function verifyPassword(password, hash) {
+    try {
+        if (typeof bcrypt !== 'undefined') {
+            return bcrypt.compareSync(password, hash);
+        } else {
+            // Fallback verification
+            const hashedPassword = hashWithWebCrypto(password);
+            return hashedPassword === hash;
+        }
+    } catch (error) {
+        console.error('❌ Password verification error:', error);
+        return false;
+    }
+}
+
+// Web Crypto API fallback for password hashing
+async function hashWithWebCrypto(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// SECURITY: Password strength validation
+function validatePasswordStrength(password) {
+    const errors = [];
+    
+    if (password.length < 12) {
+        errors.push('Password must be at least 12 characters long');
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+        errors.push('Password must contain at least one uppercase letter');
+    }
+    
+    if (!/[a-z]/.test(password)) {
+        errors.push('Password must contain at least one lowercase letter');
+    }
+    
+    if (!/[0-9]/.test(password)) {
+        errors.push('Password must contain at least one number');
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        errors.push('Password must contain at least one special character');
+    }
+    
+    // Check for common passwords
+    const commonPasswords = ['password', '123456', 'password123', 'admin', 'qwerty', 'letmein'];
+    if (commonPasswords.some(common => password.toLowerCase().includes(common))) {
+        errors.push('Password contains common words and is not secure');
+    }
+    
+    return {
+        isValid: errors.length === 0,
+        errors: errors,
+        strength: calculatePasswordStrength(password)
+    };
+}
+
+// Calculate password strength score (0-100)
+function calculatePasswordStrength(password) {
+    let score = 0;
+    
+    // Length bonus
+    score += Math.min(password.length * 2, 40);
+    
+    // Character variety bonus
+    if (/[a-z]/.test(password)) score += 10;
+    if (/[A-Z]/.test(password)) score += 10;
+    if (/[0-9]/.test(password)) score += 10;
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) score += 20;
+    
+    // Pattern penalties
+    if (/(.)\1{2,}/.test(password)) score -= 10; // Repeated characters
+    if (/123|abc|qwe/i.test(password)) score -= 15; // Sequential patterns
+    
+    return Math.max(0, Math.min(100, score));
+}
+
+// SECURITY: Rate limiting for login attempts
+const loginAttempts = new Map();
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
+
+function checkRateLimit(username) {
+    const now = Date.now();
+    const attempts = loginAttempts.get(username) || { count: 0, lastAttempt: 0, lockedUntil: 0 };
+    
+    // Check if still locked out
+    if (attempts.lockedUntil > now) {
+        const remainingMinutes = Math.ceil((attempts.lockedUntil - now) / (60 * 1000));
+        return {
+            allowed: false,
+            message: `Too many failed attempts. Try again in ${remainingMinutes} minutes.`
+        };
+    }
+    
+    // Reset count if enough time has passed
+    if (now - attempts.lastAttempt > 5 * 60 * 1000) { // 5 minutes
+        attempts.count = 0;
+    }
+    
+    return {
+        allowed: attempts.count < MAX_ATTEMPTS,
+        message: attempts.count >= MAX_ATTEMPTS ? 'Too many failed attempts. Please wait before trying again.' : null
+    };
+}
+
+function recordLoginAttempt(username, success) {
+    const now = Date.now();
+    const attempts = loginAttempts.get(username) || { count: 0, lastAttempt: 0, lockedUntil: 0 };
+    
+    if (success) {
+        // Reset on successful login
+        attempts.count = 0;
+        attempts.lockedUntil = 0;
+    } else {
+        attempts.count++;
+        attempts.lastAttempt = now;
+        
+        if (attempts.count >= MAX_ATTEMPTS) {
+            attempts.lockedUntil = now + LOCKOUT_DURATION;
+        }
+    }
+    
+    loginAttempts.set(username, attempts);
+}
+
+// Legacy simpleHash for backward compatibility (DEPRECATED - SECURITY RISK)
 function simpleHash(str) {
+    console.warn('⚠️ SECURITY WARNING: Using deprecated simpleHash function. This is insecure!');
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
         hash = ((hash << 5) - hash) + str.charCodeAt(i);
@@ -1855,14 +2116,21 @@ function showPasswordChangePrompt(employee) {
                     <form id="employeePasswordChangeForm">
                         <div class="mb-3">
                             <label for="employeeNewPassword" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="employeeNewPassword" autocomplete="new-password" required minlength="8">
+                            <input type="password" class="form-control" id="employeeNewPassword" autocomplete="new-password" required minlength="12">
+                            <div id="passwordStrengthIndicator" class="mt-2"></div>
                         </div>
                         <div class="mb-3">
                             <label for="employeeConfirmPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="employeeConfirmPassword" autocomplete="new-password" required minlength="8">
+                            <input type="password" class="form-control" id="employeeConfirmPassword" autocomplete="new-password" required minlength="12">
                         </div>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i> Password must be at least 8 characters long.
+                        <div class="alert alert-warning">
+                            <i class="bi bi-shield-check"></i> <strong>Password Requirements:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>At least 12 characters long</li>
+                                <li>Uppercase and lowercase letters</li>
+                                <li>Numbers and special characters</li>
+                                <li>No common words or patterns</li>
+                            </ul>
                         </div>
                     </form>
                 </div>
@@ -1876,6 +2144,41 @@ function showPasswordChangePrompt(employee) {
     document.body.appendChild(modal);
     const bsModal = new bootstrap.Modal(modal);
     bsModal.show();
+    
+    // Add real-time password strength checking
+    const passwordInput = modal.querySelector('#employeeNewPassword');
+    const strengthIndicator = modal.querySelector('#passwordStrengthIndicator');
+    
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const validation = validatePasswordStrength(password);
+        
+        // Update strength indicator
+        let strengthClass = 'text-danger';
+        let strengthText = 'Very Weak';
+        
+        if (validation.strength >= 80) {
+            strengthClass = 'text-success';
+            strengthText = 'Very Strong';
+        } else if (validation.strength >= 60) {
+            strengthClass = 'text-warning';
+            strengthText = 'Strong';
+        } else if (validation.strength >= 40) {
+            strengthClass = 'text-warning';
+            strengthText = 'Medium';
+        } else if (validation.strength >= 20) {
+            strengthClass = 'text-danger';
+            strengthText = 'Weak';
+        }
+        
+        strengthIndicator.innerHTML = `
+            <div class="progress" style="height: 8px;">
+                <div class="progress-bar ${strengthClass.replace('text-', 'bg-')}" 
+                     style="width: ${validation.strength}%"></div>
+            </div>
+            <small class="${strengthClass}">${strengthText} (${validation.strength}/100)</small>
+        `;
+    });
     
     // Clean up when modal is hidden
     modal.addEventListener('hidden.bs.modal', () => {
@@ -1893,8 +2196,11 @@ function saveEmployeePasswordChange(employeeId) {
         return;
     }
     
-    if (newPassword.length < 8) {
-        beeMarshallAlert('Password must be at least 8 characters long', 'error');
+    // SECURITY: Validate password strength
+    const passwordValidation = validatePasswordStrength(newPassword);
+    if (!passwordValidation.isValid) {
+        const errorMessage = 'Password requirements not met:\n• ' + passwordValidation.errors.join('\n• ');
+        beeMarshallAlert(errorMessage, 'error');
         return;
     }
     
@@ -1905,7 +2211,7 @@ function saveEmployeePasswordChange(employeeId) {
     
     // Update employee password in Firebase
     const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
-    const passwordHash = simpleHash(newPassword);
+    const passwordHash = secureHash(newPassword);
     
     database.ref(`${employeePath}/${employeeId}`).update({
         passwordHash: passwordHash,

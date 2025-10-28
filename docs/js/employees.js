@@ -35,7 +35,7 @@ function handleAddEmployee(e) {
     const employee = {
         id: employeeId,
         username: name,
-        passwordHash: simpleHash(password),
+        passwordHash: secureHash(password),
         role: 'employee',
         isActive: false, // New employees start as inactive
         createdAt: new Date().toISOString(),
