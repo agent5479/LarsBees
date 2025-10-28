@@ -331,6 +331,12 @@ function toggleSiteFilter() {
 }
 
 function showAddSiteForm() {
+    // Check if user has permission to add sites
+    if (!isAdmin) {
+        beeMarshallAlert('Only administrators can add new sites. Contact your administrator to add new sites.', 'warning');
+        return;
+    }
+    
     hideAllViews();
     document.getElementById('siteFormView').classList.remove('hidden');
     document.getElementById('siteFormTitle').textContent = 'Add New Site';
@@ -563,6 +569,12 @@ function handleSaveSite(e) {
 }
 
 function editSite(id) {
+    // Check if user has permission to edit sites
+    if (!isAdmin) {
+        beeMarshallAlert('Only administrators can edit site details. You can update hive strength and hive boxes from the summary cards.', 'warning');
+        return;
+    }
+    
     const site = sites.find(c => c.id === id);
     if (!site) return;
     
@@ -1026,9 +1038,9 @@ function viewSiteDetails(id) {
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" onclick="editSite(${site.id}); bootstrap.Modal.getInstance(document.getElementById('siteDetailsModal')).hide();">
+                        ${isAdmin ? `<button type="button" class="btn btn-primary" onclick="editSite(${site.id}); bootstrap.Modal.getInstance(document.getElementById('siteDetailsModal')).hide();">
                             <i class="bi bi-pencil"></i> Edit Site
-                        </button>
+                        </button>` : ''}
                         <button type="button" class="btn btn-success" onclick="scheduleTaskForSite(${site.id}); bootstrap.Modal.getInstance(document.getElementById('siteDetailsModal')).hide();">
                             <i class="bi bi-calendar-plus"></i> Schedule Task
                         </button>
@@ -1405,9 +1417,9 @@ function initMap() {
                             <button class="btn btn-sm btn-success" onclick="scheduleTaskForSite(${site.id}); return false;">
                                 <i class="bi bi-calendar-plus"></i> Schedule Task
                             </button>
-                            <button class="btn btn-sm btn-outline-warning" onclick="editSite(${site.id}); return false;">
+                            ${isAdmin ? `<button class="btn btn-sm btn-outline-warning" onclick="editSite(${site.id}); return false;">
                                 <i class="bi bi-pencil"></i> Edit Site
-                            </button>
+                            </button>` : ''}
                             ${siteTasks.length > 0 ? `
                                 <button class="btn btn-sm btn-outline-info" onclick="showScheduledTasks(); return false;">
                                     <i class="bi bi-list-check"></i> View All Tasks
