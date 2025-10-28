@@ -24,6 +24,11 @@ jobs:
         # Remove existing env-config.js if it exists
         rm -f docs/js/env-config.js
         
+        # Debug: Check if secrets are available
+        echo "Checking secrets availability..."
+        echo "GBTECH_USERNAME: ${{ secrets.GBTECH_USERNAME }}"
+        echo "LARS_USERNAME: ${{ secrets.LARS_USERNAME }}"
+        
         # Create environment variables file for build
         cat > docs/js/env-config.js << EOF
         // Environment variables injected at build time
