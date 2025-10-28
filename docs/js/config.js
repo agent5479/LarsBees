@@ -1,6 +1,7 @@
 // BeeMarshall - Secure Configuration Module
 // This file handles secure loading of configuration from environment variables
 // Updated: 2025-01-28 - Enhanced for GitHub Secrets integration
+// Trigger: GitHub Actions workflow to inject secrets
 
 class SecureConfig {
     constructor() {
