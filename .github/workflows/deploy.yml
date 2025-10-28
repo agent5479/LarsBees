@@ -21,6 +21,9 @@ jobs:
         
     - name: Inject Environment Variables
       run: |
+        # Remove existing env-config.js if it exists
+        rm -f docs/js/env-config.js
+        
         # Create environment variables file for build
         cat > docs/js/env-config.js << EOF
         // Environment variables injected at build time
