@@ -66,6 +66,8 @@ function initializeAdminAccounts() {
     if (window.SecureConfig) {
         ADMIN_ACCOUNTS = window.SecureConfig.getAdminAccounts();
         console.log('✅ Admin accounts loaded from secure configuration');
+        console.log('🔍 Available admin accounts:', Object.keys(ADMIN_ACCOUNTS));
+        console.log('🔍 Admin accounts details:', ADMIN_ACCOUNTS);
     } else {
         console.error('❌ SecureConfig not available. Admin accounts not loaded.');
     }
@@ -589,9 +591,14 @@ function handleLogin(e) {
     updateDebugInfo('firebaseStatus', 'Using multi-tenant auth system');
     
     // Check credentials against admin accounts
+    console.log('🔍 Checking against admin accounts:', ADMIN_ACCOUNTS);
+    console.log('🔍 Looking for username:', username, 'password:', password);
+    
     const adminAccount = Object.values(ADMIN_ACCOUNTS).find(account => 
         account.username.toLowerCase() === username.toLowerCase() && account.password === password
     );
+    
+    console.log('🔍 Found admin account:', adminAccount);
     
     if (adminAccount) {
         console.log('✅ Admin login successful:', adminAccount.username);
