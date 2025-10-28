@@ -762,6 +762,19 @@ function validateLogin(username, password) {
             const isTemporaryPassword = employee.temporaryPassword && password === employee.temporaryPassword;
             const isRegularPassword = employee.passwordHash && employee.passwordHash === passwordHash;
             
+            // Debug logging
+            console.log('🔍 Employee debug info:', {
+                username: employee.username,
+                hasTemporaryPassword: !!employee.temporaryPassword,
+                temporaryPassword: employee.temporaryPassword,
+                enteredPassword: password,
+                isTemporaryPassword: isTemporaryPassword,
+                hasPasswordHash: !!employee.passwordHash,
+                passwordHash: employee.passwordHash,
+                enteredPasswordHash: passwordHash,
+                isRegularPassword: isRegularPassword
+            });
+            
             if (!isTemporaryPassword && !isRegularPassword) {
                 console.log('❌ Invalid password for employee');
                 showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
