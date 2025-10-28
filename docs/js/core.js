@@ -669,15 +669,24 @@ function handleLogin(e) {
     console.log('🔄 Checking employee authentication...');
     updateDebugInfo('firebaseStatus', 'Checking employee credentials');
     
-    // For employee authentication, we need to determine the tenant
-    // Since employees are created under the current admin's tenant, we'll check the 'lars' tenant first
-    // This is a temporary solution - in a full multi-tenant system, we'd need a different approach
-    const employeeTenantId = currentTenantId || 'lars'; // Default to 'lars' tenant for now
-    console.log('🔍 Using tenant for employee lookup:', employeeTenantId);
+    // For employee authentication, we need to find which tenant the employee belongs to
+    // We'll check all tenants to find the employee
+    console.log('🔍 Searching for employee across all tenants...');
     
-    // Check if employee (tenant-specific)
-    console.log('Checking employees for tenant:', employeeTenantId);
-    const employeePath = `tenants/${employeeTenantId}/employees`;
+    // First, let's check if we have a current tenant (from previous admin login)
+    if (currentTenantId) {
+        console.log('🔍 Checking current tenant first:', currentTenantId);
+        checkEmployeeInTenant(currentTenantId, username, password, passwordHash);
+    } else {
+        // If no current tenant, check common tenants
+        console.log('🔍 No current tenant, checking common tenants...');
+        checkEmployeeInTenant('lars', username, password, passwordHash);
+    }
+}
+
+function checkEmployeeInTenant(tenantId, username, password, passwordHash) {
+    console.log('🔍 Checking employees in tenant:', tenantId);
+    const employeePath = `tenants/${tenantId}/employees`;
     database.ref(employeePath).once('value', (empSnapshot) => {
         const employeesList = empSnapshot.val() || {};
         console.log('Employees:', employeesList);
@@ -686,12 +695,24 @@ function handleLogin(e) {
             emp.username.toLowerCase() === username.toLowerCase()
         );
         
-        // Check if employee exists
+        // Check if employee exists in this tenant
         if (!employee) {
-            console.log('❌ Employee not found');
-            showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+            console.log('❌ Employee not found in tenant:', tenantId);
+            // If we haven't checked 'lars' tenant yet, try that
+            if (tenantId !== 'lars') {
+                console.log('🔍 Trying lars tenant...');
+                checkEmployeeInTenant('lars', username, password, passwordHash);
+            } else {
+                // If we've checked both tenants and still not found, show error
+                console.log('❌ Employee not found in any tenant');
+                showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+            }
             return;
         }
+        
+        // Employee found! Set the tenant ID for this session
+        currentTenantId = tenantId;
+        console.log('✅ Employee found in tenant:', tenantId);
         
         // Check if employee is active
         if (!employee.isActive) {
@@ -770,6 +791,7 @@ function handleLogin(e) {
             isAdmin = false;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             localStorage.setItem('isAdmin', 'false');
+            localStorage.setItem('currentTenantId', currentTenantId);
             
             // Delay to show success message
             setTimeout(() => {
