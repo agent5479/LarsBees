@@ -2831,7 +2831,7 @@
         
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        window.database = firebase.database();
         
         // Map activation function
         function activateMap() {

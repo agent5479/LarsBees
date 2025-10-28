@@ -73,10 +73,22 @@ function initializeAdminAccounts() {
     }
 }
 
+// Initialize database reference
+function initializeDatabase() {
+    if (window.database) {
+        database = window.database;
+        console.log('✅ Database reference initialized');
+    } else {
+        console.warn('⚠️ Database not available yet, will retry...');
+        setTimeout(initializeDatabase, 100);
+    }
+}
+
 // Global variables
 let currentUser = null;
 let isAdmin = false;
 let currentTenantId = null; // For data isolation
+let database = null; // Will be set when Firebase initializes
 let sites = [];
 let actions = [];
 let individualHives = [];
@@ -156,6 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize secure configuration and admin accounts
     initializeAdminAccounts();
+    
+    // Initialize database reference
+    initializeDatabase();
     
     // Update version display
     updateVersionDisplay();
@@ -438,7 +453,7 @@ function updateSystemStatus() {
     updateDebugInfo('versionInfo', `v${APP_VERSION}`);
     
     // Check Firebase status
-    if (typeof database !== 'undefined') {
+    if (database) {
         updateDebugInfo('firebaseStatus', 'Connected');
         database.ref('master/initialized').once('value', (snapshot) => {
             if (snapshot.exists()) {
@@ -451,8 +466,10 @@ function updateSystemStatus() {
             updateDebugInfo('lastError', error.message);
         });
     } else {
-        updateDebugInfo('firebaseStatus', 'Not initialized');
-        updateDebugInfo('sessionInfo', 'Fallback mode available');
+        updateDebugInfo('firebaseStatus', 'Initializing...');
+        updateDebugInfo('sessionInfo', 'Waiting for Firebase...');
+        // Retry after a short delay
+        setTimeout(updateSystemStatus, 500);
     }
 }
 
