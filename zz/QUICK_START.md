@@ -77,7 +77,7 @@ http://localhost:5000/debug/create-sample-data
 
 ### Sample Data
 The `/debug/create-sample-data` endpoint creates:
-- Test user (testuser / test123)
+- Test user (testuser / [Contact administrator])
 - 3 sample clusters in New York area
 - Ready to explore!
 

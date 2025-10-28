@@ -42,7 +42,7 @@ http://localhost:5000
 
 ### 🔐 **User Authentication**
 - Secure login/registration
-- Test account: `admin` / `admin123`
+- Test account: `admin` / [Contact administrator]
 
 ### 📍 **Hive Management**
 - Track multiple locations with GPS

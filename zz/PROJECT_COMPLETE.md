@@ -563,7 +563,7 @@ http://localhost:5000
 
 # Login
 Username: admin
-Password: admin123
+Password: [Contact administrator]
 
 # Sample Data
 http://localhost:5000/debug/create-sample-data

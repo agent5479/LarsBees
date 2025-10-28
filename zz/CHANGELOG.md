@@ -135,7 +135,7 @@ All notable changes to BeeMarshall will be documented in this file.
 - `POST /action/log-quick` - Quick action logging
 
 #### Debug Features
-- Test account auto-creation (admin/admin123)
+- Test account auto-creation (admin/[Contact administrator])
 - Sample data generator endpoint
 - Database info endpoint
 - Debug mode indicators

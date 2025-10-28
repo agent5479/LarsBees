@@ -192,7 +192,7 @@ def create_app(config_name='default'):
         # Debug: Create a test user if none exists
         if app.config['DEBUG'] and User.query.count() == 0:
             test_user = User(username='admin', email='admin@larsbees.com')
-            test_user.set_password('admin123')
+            test_user.set_password('[REDACTED]')
             db.session.add(test_user)
             db.session.commit()
             print("DEBUG: Created test user - username: admin, password: [REDACTED]")
@@ -1509,7 +1509,7 @@ def create_app(config_name='default'):
             user = User.query.filter_by(username='testuser').first()
             if not user:
                 user = User(username='testuser', email='test@larsbees.com')
-                user.set_password('test123')
+                user.set_password('[REDACTED]')
                 db.session.add(user)
                 db.session.commit()
             
