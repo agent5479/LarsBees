@@ -741,14 +741,42 @@ function validateLogin(username, password) {
             console.log('Employees:', employeesList);
             
             const employee = Object.values(employeesList).find(emp => 
-                emp.username.toLowerCase() === username.toLowerCase() && emp.passwordHash === passwordHash
+                emp.username.toLowerCase() === username.toLowerCase()
             );
             
+            // Check if employee exists
+            if (!employee) {
+                console.log('❌ Employee not found');
+                showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+                return;
+            }
+            
             // Check if employee is active
-            if (employee && !employee.isActive) {
+            if (!employee.isActive) {
                 console.log('❌ Employee account is not active');
                 beeMarshallAlert('Your account is not active yet. Please contact your administrator to activate your account.', 'warning');
                 return;
+            }
+            
+            // Check if using temporary password
+            const isTemporaryPassword = employee.temporaryPassword && password === employee.temporaryPassword;
+            const isRegularPassword = employee.passwordHash && employee.passwordHash === passwordHash;
+            
+            if (!isTemporaryPassword && !isRegularPassword) {
+                console.log('❌ Invalid password for employee');
+                showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+                return;
+            }
+            
+            // Check if temporary password has expired
+            if (isTemporaryPassword && employee.temporaryPasswordExpiry) {
+                const expiryDate = new Date(employee.temporaryPasswordExpiry);
+                const now = new Date();
+                if (now > expiryDate) {
+                    console.log('❌ Temporary password expired');
+                    beeMarshallAlert('Your temporary password has expired. Please contact your administrator for a new password.', 'warning');
+                    return;
+                }
             }
             
             if (employee) {
@@ -756,6 +784,34 @@ function validateLogin(username, password) {
                 clearTimeout(firebaseTimeout); // Clear the fallback timeout
                 showLoginStatus('success', 'Login successful! Welcome, ' + employee.username + '!', false);
                 updateDebugInfo('systemStatus', 'Employee authentication successful');
+                
+                // Handle device remembering
+                const deviceKey = `device_remembered_${employee.id}`;
+                const isDeviceRemembered = localStorage.getItem(deviceKey) === 'true';
+                
+                // If using temporary password and device not remembered, show password change prompt
+                if (isTemporaryPassword && !isDeviceRemembered) {
+                    // Store device as remembered
+                    localStorage.setItem(deviceKey, 'true');
+                    
+                    // Update employee record
+                    const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+                    database.ref(`${employeePath}/${employee.id}`).update({
+                        deviceRemembered: true,
+                        lastLogin: new Date().toISOString()
+                    });
+                    
+                    // Show password change prompt
+                    setTimeout(() => {
+                        showPasswordChangePrompt(employee);
+                    }, 1000);
+                } else if (isTemporaryPassword && isDeviceRemembered) {
+                    // Device remembered, just update last login
+                    const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+                    database.ref(`${employeePath}/${employee.id}`).update({
+                        lastLogin: new Date().toISOString()
+                    });
+                }
                 
                 currentUser = employee;
                 isAdmin = false;
@@ -1616,4 +1672,97 @@ function undoGBTechTestData() {
             console.error('❌ Error removing test data:', error);
             beeMarshallAlert('Error removing test data: ' + error.message, 'error');
         });
+}
+
+// Show password change prompt for employees using temporary passwords
+function showPasswordChangePrompt(employee) {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'passwordChangePromptModal';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: var(--glass); backdrop-filter: blur(12px) saturate(1.1); border: 1px solid rgba(255,255,255,0.2);">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-shield-check"></i> Security Setup</h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> <strong>Important:</strong> 
+                        You're using a temporary password. For security, please set your own password.
+                    </div>
+                    <form id="employeePasswordChangeForm">
+                        <div class="mb-3">
+                            <label for="employeeNewPassword" class="form-label">New Password</label>
+                            <input type="password" class="form-control" id="employeeNewPassword" required minlength="8">
+                        </div>
+                        <div class="mb-3">
+                            <label for="employeeConfirmPassword" class="form-label">Confirm New Password</label>
+                            <input type="password" class="form-control" id="employeeConfirmPassword" required minlength="8">
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Password must be at least 8 characters long.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-primary" onclick="saveEmployeePasswordChange('${employee.id}')">Set Password</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+    
+    // Clean up when modal is hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+// Save employee password change
+function saveEmployeePasswordChange(employeeId) {
+    const newPassword = document.getElementById('employeeNewPassword').value;
+    const confirmPassword = document.getElementById('employeeConfirmPassword').value;
+    
+    if (!newPassword || !confirmPassword) {
+        beeMarshallAlert('Please enter both password fields', 'error');
+        return;
+    }
+    
+    if (newPassword.length < 8) {
+        beeMarshallAlert('Password must be at least 8 characters long', 'error');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        beeMarshallAlert('Passwords do not match', 'error');
+        return;
+    }
+    
+    // Update employee password in Firebase
+    const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+    const passwordHash = simpleHash(newPassword);
+    
+    database.ref(`${employeePath}/${employeeId}`).update({
+        passwordHash: passwordHash,
+        temporaryPassword: null, // Clear temporary password
+        temporaryPasswordExpiry: null, // Clear expiry
+        passwordChanged: true // Mark password as changed
+    })
+    .then(() => {
+        beeMarshallAlert('✅ Password updated successfully! Your device is now remembered for future logins.', 'success');
+        
+        // Close the modal
+        const modal = document.getElementById('passwordChangePromptModal');
+        if (modal) {
+            const bsModal = bootstrap.Modal.getInstance(modal);
+            bsModal.hide();
+        }
+    })
+    .catch(error => {
+        console.error('Error updating password:', error);
+        beeMarshallAlert('Failed to update password: ' + error.message, 'error');
+    });
 }

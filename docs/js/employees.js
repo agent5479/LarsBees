@@ -40,7 +40,12 @@ function handleAddEmployee(e) {
         isActive: false, // New employees start as inactive
         createdAt: new Date().toISOString(),
         createdBy: currentUser.username,
-        activationCode: generateActivationCode() // Generate unique activation code
+        activationCode: generateActivationCode(), // Generate unique activation code
+        temporaryPassword: null, // Will be set when activated
+        temporaryPasswordExpiry: null, // Will be set when activated
+        deviceRemembered: false, // Device remembering status
+        lastLogin: null, // Track last login
+        passwordChanged: false // Track if password has been changed from temporary
     };
     
     // Use tenant-specific path for data isolation
@@ -87,6 +92,11 @@ function renderEmployees() {
                                         <i class="bi bi-pause-circle"></i> Deactivate
                                     </button>`
                                 }
+                                ${emp.isActive ? 
+                                    `<button class="btn btn-sm btn-outline-primary me-2" onclick="regenerateTemporaryPassword('${emp.id}')">
+                                        <i class="bi bi-arrow-clockwise"></i> New Password
+                                    </button>` : ''
+                                }
                                 <button class="btn btn-sm btn-outline-info me-2" onclick="showEmployeeCredentials('${emp.id}')">
                                     <i class="bi bi-key"></i> Credentials
                                 </button>
@@ -109,6 +119,16 @@ function generateActivationCode() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+function generateTemporaryPassword() {
+    // Generate a secure temporary password: 8 characters with mix of letters and numbers
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 // Activate employee account
 function activateEmployee(id) {
     // Check permission
@@ -123,16 +143,73 @@ function activateEmployee(id) {
         return;
     }
     
+    // Generate temporary password (expires in 3 days)
+    const temporaryPassword = generateTemporaryPassword();
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3); // 3 days from now
+    
     // Use tenant-specific path for data isolation
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
-    database.ref(`${tenantPath}/${id}/isActive`).set(true)
+    const updates = {
+        isActive: true,
+        temporaryPassword: temporaryPassword,
+        temporaryPasswordExpiry: expiryDate.toISOString(),
+        deviceRemembered: false,
+        passwordChanged: false
+    };
+    
+    database.ref(`${tenantPath}/${id}`).update(updates)
         .then(() => {
-            beeMarshallAlert(`✅ Employee "${employee.username}" has been activated!\n\nThey can now login with their credentials.`, 'success');
+            beeMarshallAlert(`✅ Employee "${employee.username}" has been activated!\n\nTemporary Password: ${temporaryPassword}\nExpires: ${expiryDate.toLocaleDateString()}\n\nShare this password with the employee. They should change it on first login.`, 'success');
             loadEmployees();
         })
         .catch(error => {
             console.error('Error activating employee:', error);
             beeMarshallAlert('Failed to activate employee', 'error');
+        });
+}
+
+// Regenerate temporary password for employee
+function regenerateTemporaryPassword(id) {
+    // Check permission
+    if (!canManageEmployees()) {
+        showPermissionDeniedAlert('regenerate employee passwords');
+        return;
+    }
+    
+    const employee = employees.find(emp => emp.id === id);
+    if (!employee) {
+        beeMarshallAlert('Employee not found', 'error');
+        return;
+    }
+    
+    if (!employee.isActive) {
+        beeMarshallAlert('Employee must be active to regenerate password', 'error');
+        return;
+    }
+    
+    // Generate new temporary password (expires in 3 days)
+    const temporaryPassword = generateTemporaryPassword();
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3); // 3 days from now
+    
+    // Use tenant-specific path for data isolation
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+    const updates = {
+        temporaryPassword: temporaryPassword,
+        temporaryPasswordExpiry: expiryDate.toISOString(),
+        deviceRemembered: false, // Reset device remembering
+        passwordChanged: false // Reset password changed flag
+    };
+    
+    database.ref(`${tenantPath}/${id}`).update(updates)
+        .then(() => {
+            beeMarshallAlert(`✅ New temporary password generated for "${employee.username}"!\n\nNew Temporary Password: ${temporaryPassword}\nExpires: ${expiryDate.toLocaleDateString()}\n\nShare this new password with the employee.`, 'success');
+            loadEmployees();
+        })
+        .catch(error => {
+            console.error('Error regenerating password:', error);
+            beeMarshallAlert('Failed to regenerate password', 'error');
         });
 }
 
@@ -212,6 +289,21 @@ function showEmployeeCredentials(id) {
                             </button>
                         </div>
                     </div>
+                    ${employee.isActive && employee.temporaryPassword ? `
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Temporary Password:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="employeeTempPassword" value="${employee.temporaryPassword}" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('employeeTempPassword')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">
+                            Expires: ${employee.temporaryPasswordExpiry ? new Date(employee.temporaryPasswordExpiry).toLocaleDateString() : 'Unknown'}
+                            ${employee.deviceRemembered ? ' | Device Remembered' : ' | Device Not Remembered'}
+                        </small>
+                    </div>
+                    ` : ''}
                     ${employee.activationCode ? `
                     <div class="mb-3">
                         <label class="form-label fw-bold">Activation Code:</label>
