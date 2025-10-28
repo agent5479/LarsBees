@@ -778,7 +778,6 @@ function authenticateEmployee(employee, username, password, passwordHash) {
     }
     
     console.log('Employee login successful');
-    clearTimeout(firebaseTimeout); // Clear the fallback timeout
     showLoginStatus('success', 'Login successful! Welcome, ' + employee.username + '!', false);
     updateDebugInfo('systemStatus', 'Employee authentication successful');
     
@@ -868,7 +867,6 @@ function validateLogin(username, password) {
         
         if (admin && admin.username.toLowerCase() === username.toLowerCase() && admin.passwordHash === passwordHash) {
             console.log('✅ Admin login successful');
-            clearTimeout(firebaseTimeout); // Clear the fallback timeout
             showLoginStatus('success', 'Login successful! Welcome back, ' + admin.username + '!', false);
             updateDebugInfo('systemStatus', 'Authentication successful');
             
@@ -946,7 +944,6 @@ function validateLogin(username, password) {
             
             if (employee) {
                 console.log('Employee login successful');
-                clearTimeout(firebaseTimeout); // Clear the fallback timeout
                 showLoginStatus('success', 'Login successful! Welcome, ' + employee.username + '!', false);
                 updateDebugInfo('systemStatus', 'Employee authentication successful');
                 
