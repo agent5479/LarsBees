@@ -70,11 +70,16 @@ jobs:
         echo "File contents:"
         head -10 docs/js/env-config.js
         
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v4
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+      if: github.ref == 'refs/heads/main'
+      
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
       if: github.ref == 'refs/heads/main'
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs
-        keep_files: true
-        force_orphan: true
+        path: ./docs
+        
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
+      if: github.ref == 'refs/heads/main'
