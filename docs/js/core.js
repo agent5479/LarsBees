@@ -616,6 +616,9 @@ function handleLogin(e) {
     console.log('🔄 Using multi-tenant authentication system...');
     updateDebugInfo('firebaseStatus', 'Using multi-tenant auth system');
     
+    // Calculate password hash for employee authentication
+    const passwordHash = simpleHash(password);
+    
     // Check credentials against admin accounts
     // Security: Don't log sensitive authentication details
     
