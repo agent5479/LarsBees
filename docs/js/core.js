@@ -663,12 +663,125 @@ function handleLogin(e) {
         }, 1500);
         
         return;
-    } else {
-        console.log('❌ Invalid credentials');
-        showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
-        updateDebugInfo('lastError', 'Invalid username or password');
-        return;
     }
+    
+    // If not an admin account, check if it's an employee
+    console.log('🔄 Checking employee authentication...');
+    updateDebugInfo('firebaseStatus', 'Checking employee credentials');
+    
+    // For employee authentication, we need to determine the tenant
+    // Since employees are created under the current admin's tenant, we'll check the 'lars' tenant first
+    // This is a temporary solution - in a full multi-tenant system, we'd need a different approach
+    const employeeTenantId = currentTenantId || 'lars'; // Default to 'lars' tenant for now
+    console.log('🔍 Using tenant for employee lookup:', employeeTenantId);
+    
+    // Check if employee (tenant-specific)
+    console.log('Checking employees for tenant:', employeeTenantId);
+    const employeePath = `tenants/${employeeTenantId}/employees`;
+    database.ref(employeePath).once('value', (empSnapshot) => {
+        const employeesList = empSnapshot.val() || {};
+        console.log('Employees:', employeesList);
+        
+        const employee = Object.values(employeesList).find(emp => 
+            emp.username.toLowerCase() === username.toLowerCase()
+        );
+        
+        // Check if employee exists
+        if (!employee) {
+            console.log('❌ Employee not found');
+            showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+            return;
+        }
+        
+        // Check if employee is active
+        if (!employee.isActive) {
+            console.log('❌ Employee account is not active');
+            beeMarshallAlert('Your account is not active yet. Please contact your administrator to activate your account.', 'warning');
+            return;
+        }
+        
+        // Check if using temporary password
+        const isTemporaryPassword = employee.temporaryPassword && password === employee.temporaryPassword;
+        const isRegularPassword = employee.passwordHash && employee.passwordHash === passwordHash;
+        
+        // Debug logging
+        console.log('🔍 Employee debug info:', {
+            username: employee.username,
+            hasTemporaryPassword: !!employee.temporaryPassword,
+            temporaryPassword: employee.temporaryPassword,
+            enteredPassword: password,
+            isTemporaryPassword: isTemporaryPassword,
+            hasPasswordHash: !!employee.passwordHash,
+            passwordHash: employee.passwordHash,
+            enteredPasswordHash: passwordHash,
+            isRegularPassword: isRegularPassword
+        });
+        
+        if (!isTemporaryPassword && !isRegularPassword) {
+            console.log('❌ Invalid password for employee');
+            showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+            return;
+        }
+        
+        // Check if temporary password has expired
+        if (isTemporaryPassword && employee.temporaryPasswordExpiry) {
+            const expiryDate = new Date(employee.temporaryPasswordExpiry);
+            const now = new Date();
+            if (now > expiryDate) {
+                console.log('❌ Temporary password expired');
+                beeMarshallAlert('Your temporary password has expired. Please contact your administrator for a new password.', 'warning');
+                return;
+            }
+        }
+        
+        if (employee) {
+            console.log('Employee login successful');
+            clearTimeout(firebaseTimeout); // Clear the fallback timeout
+            showLoginStatus('success', 'Login successful! Welcome, ' + employee.username + '!', false);
+            updateDebugInfo('systemStatus', 'Employee authentication successful');
+            
+            // Handle device remembering
+            const deviceKey = `device_remembered_${employee.id}`;
+            const isDeviceRemembered = localStorage.getItem(deviceKey) === 'true';
+            
+            // If using temporary password and device not remembered, show password change prompt
+            if (isTemporaryPassword && !isDeviceRemembered) {
+                // Store device as remembered
+                localStorage.setItem(deviceKey, 'true');
+                
+                // Update employee record
+                database.ref(`${employeePath}/${employee.id}`).update({
+                    deviceRemembered: true,
+                    lastLogin: new Date().toISOString()
+                });
+                
+                // Show password change prompt
+                setTimeout(() => {
+                    showPasswordChangePrompt(employee);
+                }, 1000);
+            } else if (isTemporaryPassword && isDeviceRemembered) {
+                // Device remembered, just update last login
+                database.ref(`${employeePath}/${employee.id}`).update({
+                    lastLogin: new Date().toISOString()
+                });
+            }
+            
+            currentUser = employee;
+            isAdmin = false;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            localStorage.setItem('isAdmin', 'false');
+            
+            // Delay to show success message
+            setTimeout(() => {
+                showMainApp();
+                loadDataFromFirebase();
+            }, 1500);
+        }
+    }, (error) => {
+        console.error('❌ Error checking employees:', error);
+        showLoginStatus('danger', 'Authentication error. Please try again.', false);
+        updateDebugInfo('lastError', 'Employee lookup failed: ' + error.message);
+    });
 }
 
 function setupMasterUser(username, password) {
