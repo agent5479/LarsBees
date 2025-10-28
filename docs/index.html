@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BeeMarshall - Professional Apiary Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/brand.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #f39c12;
+            --secondary: #e67e22;
+            --success: #27ae60;
+            --info: #3498db;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hero-section {
+            padding: 100px 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .feature-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px) saturate(1.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-outline-light {
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-light:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+        }
+
+        .stats-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 3rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .comparison-table {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .comparison-table th {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+        }
+
+        .comparison-table td {
+            color: white;
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .footer {
+            background: rgba(0,0,0,0.2);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h1 class="hero-title">
+                        <i class="bi bi-hexagon-fill"></i> BeeMarshall
+                    </h1>
+                    <p class="hero-subtitle">
+                        Professional Apiary Management System
+                    </p>
+                    <p class="lead mb-4">
+                        Complete digital solution for modern beekeepers. Manage sites, track performance, 
+                        schedule tasks, and analyze data with real-time synchronization across all devices.
+                    </p>
+                    <div class="d-flex gap-3 justify-content-center flex-wrap">
+                        <a href="beemarshall-full.html" class="btn btn-primary btn-lg">
+                            <i class="bi bi-rocket-takeoff"></i> Launch Application
+                        </a>
+                        <a href="reports.html" class="btn btn-outline-light btn-lg">
+                            <i class="bi bi-graph-up"></i> View Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <h4>Site Management</h4>
+                    <p>Track multiple apiary sites with GPS coordinates, site classifications, and detailed site information. Interactive maps and site grouping for efficient management.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h4>Performance Analytics</h4>
+                    <p>Advanced reporting and analytics with real-time data visualization. Track hive strength, productivity, health metrics, and operational efficiency.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h4>Task Scheduling</h4>
+                    <p>Comprehensive task management with scheduling, reminders, and progress tracking. Seasonal requirements and automated task suggestions.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h4>Team Management</h4>
+                    <p>Multi-user support with role-based permissions. Employee management, task assignment, and collaborative workflow management.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                    <h4>Real-time Sync</h4>
+                    <p>Cloud-based data synchronization across all devices. Access your data from anywhere with automatic backup and offline support.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h4>Compliance Tracking</h4>
+                    <p>Regulatory compliance monitoring with automated reporting, audit trails, and documentation management for professional beekeepers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="container">
+        <div class="stats-section">
+            <div class="row text-center">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">50+</div>
+                        <div>Active Sites</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">1000+</div>
+                        <div>Hives Tracked</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div>Data Sync</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div>Secure</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Versions -->
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center text-white mb-4">Choose Your Version</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="feature-card">
+                    <h4><i class="bi bi-rocket-takeoff"></i> Full Application</h4>
+                    <p class="mb-3">Complete apiary management system with all features enabled.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Site management with GPS</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Task scheduling and tracking</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Team management</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Real-time data sync</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Advanced reporting</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Weather integration</li>
+                    </ul>
+                    <a href="beemarshall-full.html" class="btn btn-primary">
+                        <i class="bi bi-play-circle"></i> Launch Full App
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="feature-card">
+                    <h4><i class="bi bi-graph-up"></i> Reports & Analytics</h4>
+                    <p class="mb-3">Dedicated reporting dashboard for data analysis and insights.</p>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Performance analytics</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Health monitoring</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Operations analysis</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Data visualization</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Export capabilities</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Trend analysis</li>
+                    </ul>
+                    <a href="reports.html" class="btn btn-outline-light">
+                        <i class="bi bi-graph-up"></i> View Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Start Guide -->
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="feature-card">
+                    <h3 class="text-center mb-4"><i class="bi bi-lightning"></i> Quick Start Guide</h3>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="feature-icon">
+                                    <i class="bi bi-person-plus"></i>
+                                </div>
+                                <h5>1. Login</h5>
+                                <p>Use your assigned credentials to access the system. Contact administrator for login details.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="feature-icon">
+                                    <i class="bi bi-geo-alt"></i>
+                                </div>
+                                <h5>2. Add Sites</h5>
+                                <p>Create your first apiary site with GPS coordinates and site classifications.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center">
+                                <div class="feature-icon">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                                <h5>3. Track Progress</h5>
+                                <p>Monitor performance, schedule tasks, and analyze data with comprehensive reporting.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-hexagon-fill"></i> BeeMarshall</h5>
+                    <p>Professional Apiary Management System</p>
+                    <p>Made with <i class="bi bi-heart-fill text-danger"></i> for beekeepers</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h6>Quick Links</h6>
+                    <div class="d-flex flex-column flex-md-row justify-content-md-end gap-2">
+                        <a href="beemarshall-full.html" class="text-white text-decoration-none">Full Application</a>
+                        <a href="reports.html" class="text-white text-decoration-none">Reports</a>
+                        <a href="USER_GUIDE.md" class="text-white text-decoration-none">User Guide</a>
+                        <a href="LOGIN_TROUBLESHOOTING.md" class="text-white text-decoration-none">Support</a>
+                    </div>
+                </div>
+            </div>
+            <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2024 BeeMarshall. Professional Apiary Management System.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
