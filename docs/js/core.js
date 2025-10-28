@@ -79,8 +79,8 @@ function initializeDatabase() {
         database = window.database;
         console.log('✅ Database reference initialized');
     } else {
-        console.warn('⚠️ Database not available yet, will retry...');
-        setTimeout(initializeDatabase, 100);
+        console.warn('⚠️ Database not available - running in offline mode');
+        database = null;
     }
 }
 
@@ -248,6 +248,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Check if this is first time setup and initialize master account
 function checkFirstTimeSetup() {
+    if (!database) {
+        console.warn('⚠️ Database not available - skipping first time setup check');
+        return;
+    }
+    
     // Check if tenant structure exists for GBTech
     database.ref('tenants/gbtech/master/initialized').once('value', (snapshot) => {
         if (!snapshot.exists()) {
@@ -258,6 +263,11 @@ function checkFirstTimeSetup() {
 }
 
 function initializeMasterAccount() {
+    if (!database) {
+        console.warn('⚠️ Database not available - cannot initialize master account');
+        return;
+    }
+    
     const masterUser = {
         username: MASTER_USERNAME,
         passwordHash: simpleHash(MASTER_PASSWORD),

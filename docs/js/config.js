@@ -35,7 +35,9 @@ class SecureConfig {
         const accounts = {};
         
         // GBTech account
-        if (window.ENV_GBTECH_USERNAME && window.ENV_GBTECH_PASSWORD) {
+        if (window.ENV_GBTECH_USERNAME && window.ENV_GBTECH_PASSWORD && 
+            window.ENV_GBTECH_USERNAME !== '[SET_YOUR_GBTECH_PASSWORD]' && 
+            window.ENV_GBTECH_PASSWORD !== '[SET_YOUR_GBTECH_PASSWORD]') {
             accounts['GBTech'] = {
                 username: window.ENV_GBTECH_USERNAME,
                 password: window.ENV_GBTECH_PASSWORD,
@@ -47,7 +49,9 @@ class SecureConfig {
         }
         
         // Lars account
-        if (window.ENV_LARS_USERNAME && window.ENV_LARS_PASSWORD) {
+        if (window.ENV_LARS_USERNAME && window.ENV_LARS_PASSWORD && 
+            window.ENV_LARS_USERNAME !== '[SET_YOUR_LARS_PASSWORD]' && 
+            window.ENV_LARS_PASSWORD !== '[SET_YOUR_LARS_PASSWORD]') {
             accounts['Lars'] = {
                 username: window.ENV_LARS_USERNAME,
                 password: window.ENV_LARS_PASSWORD,
