@@ -66,8 +66,7 @@ function initializeAdminAccounts() {
     if (window.SecureConfig) {
         ADMIN_ACCOUNTS = window.SecureConfig.getAdminAccounts();
         console.log('✅ Admin accounts loaded from secure configuration');
-        console.log('🔍 Available admin accounts:', Object.keys(ADMIN_ACCOUNTS));
-        console.log('🔍 Admin accounts details:', ADMIN_ACCOUNTS);
+        // Security: Don't log account details in production
     } else {
         console.error('❌ SecureConfig not available. Admin accounts not loaded.');
     }
@@ -389,8 +388,8 @@ window.migrateData = function() {
         console.log('📦 Migrating Lars data...');
         autoMigrateLarsData();
     } else {
-        console.log('❌ Migration only available for Lars account');
-        console.log('Please log in as Lars first, then run: migrateData()');
+        console.log('❌ Migration only available for admin account');
+        console.log('Please log in as an administrator first, then run: migrateData()');
     }
 };
 
@@ -618,8 +617,7 @@ function handleLogin(e) {
     updateDebugInfo('firebaseStatus', 'Using multi-tenant auth system');
     
     // Check credentials against admin accounts
-    console.log('🔍 Checking against admin accounts:', ADMIN_ACCOUNTS);
-    console.log('🔍 Looking for username:', username, 'password:', password);
+    // Security: Don't log sensitive authentication details
     
     const adminAccount = Object.values(ADMIN_ACCOUNTS).find(account => 
         account.username.toLowerCase() === username.toLowerCase() && account.password === password
@@ -664,7 +662,7 @@ function handleLogin(e) {
         return;
     } else {
         console.log('❌ Invalid credentials');
-        showLoginStatus('danger', 'Invalid credentials. Available accounts: Lars, GBTech', false);
+        showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
         updateDebugInfo('lastError', 'Invalid username or password');
         return;
     }

@@ -9,135 +9,164 @@
     <link href="css/brand.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #f39c12;
-            --secondary: #e67e22;
-            --success: #27ae60;
-            --info: #3498db;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --light: #ecf0f1;
-            --dark: #2c3e50;
-            --glass: rgba(255, 255, 255, 0.1);
+            /* Hive Design System - Light Yellow, Dark Yellow, White, Black */
+            --light-yellow: #FFFACD;
+            --dark-yellow: #DAA520;
+            --gold: #FFD700;
+            --white: #FFFFFF;
+            --black: #000000;
+            --accent: #FFD700;
+            --bg: var(--light-yellow);
+            --glass: rgba(255, 250, 205, 0.95);
+            --shadow: 0 8px 32px rgba(218, 165, 32, 0.15);
+            --radius: 12px;
+            --transition: all .22s cubic-bezier(.4,0,.2,1);
+            
+            /* Hive Color Palette */
+            --primary-bg: var(--light-yellow);
+            --primary-accent: var(--dark-yellow);
+            --secondary-accent: var(--white);
+            --text-primary: var(--black);
+            --text-secondary: #666666;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
         }
 
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--white);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--black);
         }
 
         .hero-section {
             padding: 100px 0;
             text-align: center;
-            color: white;
+            background: linear-gradient(135deg, var(--light-yellow) 0%, var(--white) 100%);
+            color: var(--black);
+            border-bottom: 3px solid var(--dark-yellow);
         }
 
         .hero-title {
             font-size: 3.5rem;
             font-weight: 700;
             margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            color: var(--black);
+            text-shadow: 2px 2px 4px rgba(218, 165, 32, 0.2);
         }
 
         .hero-subtitle {
             font-size: 1.5rem;
             margin-bottom: 2rem;
-            opacity: 0.9;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
         .feature-card {
-            background: var(--glass);
-            backdrop-filter: blur(12px) saturate(1.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 15px;
+            background: var(--white);
+            border: 2px solid var(--dark-yellow);
+            border-radius: var(--radius);
             padding: 2rem;
             margin-bottom: 2rem;
-            transition: all 0.3s ease;
-            color: white;
+            transition: all var(--transition);
+            color: var(--black);
+            box-shadow: var(--shadow);
         }
 
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 25px rgba(218, 165, 32, 0.15);
+            border-color: var(--gold);
         }
 
         .feature-icon {
             font-size: 3rem;
             margin-bottom: 1rem;
-            color: var(--primary);
+            color: var(--dark-yellow);
         }
 
         .btn-primary {
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            border: none;
+            background: linear-gradient(135deg, var(--dark-yellow), var(--gold));
+            border: 2px solid var(--dark-yellow);
+            color: var(--black);
             padding: 12px 30px;
             border-radius: 25px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all var(--transition);
         }
 
         .btn-primary:hover {
+            background: linear-gradient(135deg, var(--gold), var(--dark-yellow));
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(218, 165, 32, 0.3);
+            color: var(--black);
         }
 
-        .btn-outline-light {
-            border: 2px solid rgba(255,255,255,0.3);
-            color: white;
+        .btn-outline-primary {
+            border: 2px solid var(--dark-yellow);
+            color: var(--black);
+            background: transparent;
             padding: 12px 30px;
             border-radius: 25px;
             font-weight: 600;
-            transition: all 0.3s ease;
+            transition: all var(--transition);
         }
 
-        .btn-outline-light:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.5);
-            color: white;
+        .btn-outline-primary:hover {
+            background: var(--dark-yellow);
+            color: var(--black);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(218, 165, 32, 0.3);
         }
 
         .stats-section {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
+            background: var(--light-yellow);
+            border: 2px solid var(--dark-yellow);
             border-radius: 20px;
             padding: 3rem;
             margin: 3rem 0;
+            box-shadow: var(--shadow);
         }
 
         .stat-item {
             text-align: center;
-            color: white;
+            color: var(--black);
         }
 
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--primary);
+            color: var(--dark-yellow);
         }
 
         .comparison-table {
-            background: var(--glass);
-            backdrop-filter: blur(12px);
+            background: var(--white);
+            border: 2px solid var(--dark-yellow);
             border-radius: 15px;
             overflow: hidden;
+            box-shadow: var(--shadow);
         }
 
         .comparison-table th {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            background: var(--light-yellow);
+            color: var(--black);
             border: none;
+            font-weight: 600;
         }
 
         .comparison-table td {
-            color: white;
-            border-color: rgba(255,255,255,0.1);
+            color: var(--black);
+            border-color: var(--dark-yellow);
         }
 
         .footer {
-            background: rgba(0,0,0,0.2);
-            color: white;
+            background: var(--light-yellow);
+            color: var(--black);
             padding: 2rem 0;
             margin-top: 4rem;
+            border-top: 3px solid var(--dark-yellow);
         }
     </style>
 </head>
@@ -161,7 +190,7 @@
                         <a href="beemarshall-full.html" class="btn btn-primary btn-lg">
                             <i class="bi bi-rocket-takeoff"></i> Launch Application
                         </a>
-                        <a href="reports.html" class="btn btn-outline-light btn-lg">
+                        <a href="reports.html" class="btn btn-outline-primary btn-lg">
                             <i class="bi bi-graph-up"></i> View Reports
                         </a>
                     </div>
@@ -269,7 +298,7 @@
     <div class="container">
         <div class="row">
             <div class="col-12">
-                <h2 class="text-center text-white mb-4">Choose Your Version</h2>
+                <h2 class="text-center text-hive-primary mb-4">Choose Your Version</h2>
             </div>
         </div>
         <div class="row">
@@ -302,7 +331,7 @@
                         <li><i class="bi bi-check-circle text-success"></i> Export capabilities</li>
                         <li><i class="bi bi-check-circle text-success"></i> Trend analysis</li>
                     </ul>
-                    <a href="reports.html" class="btn btn-outline-light">
+                    <a href="reports.html" class="btn btn-outline-primary">
                         <i class="bi bi-graph-up"></i> View Reports
                     </a>
                 </div>
@@ -362,14 +391,14 @@
                 <div class="col-md-6 text-md-end">
                     <h6>Quick Links</h6>
                     <div class="d-flex flex-column flex-md-row justify-content-md-end gap-2">
-                        <a href="beemarshall-full.html" class="text-white text-decoration-none">Full Application</a>
-                        <a href="reports.html" class="text-white text-decoration-none">Reports</a>
-                        <a href="USER_GUIDE.md" class="text-white text-decoration-none">User Guide</a>
-                        <a href="LOGIN_TROUBLESHOOTING.md" class="text-white text-decoration-none">Support</a>
+                        <a href="beemarshall-full.html" class="text-hive-primary text-decoration-none">Full Application</a>
+                        <a href="reports.html" class="text-hive-primary text-decoration-none">Reports</a>
+                        <a href="USER_GUIDE.md" class="text-hive-primary text-decoration-none">User Guide</a>
+                        <a href="LOGIN_TROUBLESHOOTING.md" class="text-hive-primary text-decoration-none">Support</a>
                     </div>
                 </div>
             </div>
-            <hr class="my-3" style="border-color: rgba(255,255,255,0.2);">
+            <hr class="my-3" style="border-color: var(--dark-yellow);">
             <div class="row">
                 <div class="col-12 text-center">
                     <p class="mb-0">&copy; 2024 BeeMarshall. Professional Apiary Management System.</p>
