@@ -409,6 +409,72 @@ window.testAdminPasswordSecurity = function() {
     };
 }
 
+// Test Firebase security rules
+window.testFirebaseSecurity = function() {
+    console.log('🔥 Firebase Security Rules Test:');
+    console.log('================================');
+    
+    if (!database) {
+        console.log('❌ Firebase database not available');
+        return { error: 'Database not available' };
+    }
+    
+    const tests = [];
+    
+    // Test 1: Try to read root level data (should fail)
+    database.ref('/').once('value')
+        .then(() => {
+            console.log('⚠️  WARNING: Root level data is readable (rules may be too permissive)');
+            tests.push({ test: 'root_read', result: 'WARNING', message: 'Root data readable' });
+        })
+        .catch(error => {
+            console.log('✅ Root level data access properly blocked');
+            tests.push({ test: 'root_read', result: 'PASS', message: 'Root data blocked' });
+        });
+    
+    // Test 2: Try to read tenant data
+    database.ref('tenants').once('value')
+        .then((snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                console.log('✅ Tenant data accessible:', Object.keys(data));
+                tests.push({ test: 'tenant_read', result: 'PASS', message: 'Tenant data accessible' });
+            } else {
+                console.log('⚠️  No tenant data found');
+                tests.push({ test: 'tenant_read', result: 'WARNING', message: 'No tenant data' });
+            }
+        })
+        .catch(error => {
+            console.log('❌ Tenant data access blocked:', error.message);
+            tests.push({ test: 'tenant_read', result: 'FAIL', message: error.message });
+        });
+    
+    // Test 3: Try to write test data
+    const testData = {
+        id: 'test_' + Date.now(),
+        name: 'Security Test',
+        timestamp: new Date().toISOString()
+    };
+    
+    database.ref('tenants/test_tenant/test_data').set(testData)
+        .then(() => {
+            console.log('✅ Test data write successful');
+            tests.push({ test: 'data_write', result: 'PASS', message: 'Data write allowed' });
+            
+            // Clean up test data
+            database.ref('tenants/test_tenant/test_data').remove();
+        })
+        .catch(error => {
+            console.log('❌ Test data write blocked:', error.message);
+            tests.push({ test: 'data_write', result: 'FAIL', message: error.message });
+        });
+    
+    return {
+        tests: tests,
+        timestamp: new Date().toISOString()
+    };
+}
+
 // Security audit function
 window.securityAudit = function() {
     console.log('🔒 BeeMarshall Security Audit:');
@@ -420,6 +486,10 @@ window.securityAudit = function() {
     
     // Test admin password security
     const adminSecurity = window.testAdminPasswordSecurity();
+    console.log('');
+    
+    // Test Firebase security
+    const firebaseSecurity = window.testFirebaseSecurity();
     console.log('');
     
     // Test password hashing
@@ -447,11 +517,18 @@ window.securityAudit = function() {
     if (adminSecurity.insecureAccounts.length > 0) {
         console.log('  - Insecure admin accounts detected:', adminSecurity.insecureAccounts);
     }
+    if (firebaseSecurity.tests) {
+        const failedTests = firebaseSecurity.tests.filter(t => t.result === 'FAIL');
+        if (failedTests.length > 0) {
+            console.log('  - Firebase security issues detected:', failedTests);
+        }
+    }
     
     console.log('✅ Security audit complete');
     return {
         bcryptAvailable,
         adminSecurity,
+        firebaseSecurity,
         timestamp: new Date().toISOString()
     };
 }
