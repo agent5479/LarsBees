@@ -548,24 +548,60 @@ function handleSaveSite(e) {
         }
     }
     
-    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', 'Saving site...');
+    }
     
     // Use tenant-specific path for data isolation
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${site.id}`).set(site)
-        .then(() => {
-            beeMarshallAlert(`✅ Site "${site.name}" has been saved successfully!`, 'success');
-            showSyncStatus('<i class="bi bi-check"></i> Saved by ' + currentUser.username);
-            // Close the form and return to sites view
-            setTimeout(() => {
-                showSites();
-            }, 500);
-        })
-        .catch(error => {
-            console.error('Error saving site:', error);
-            beeMarshallAlert('❌ Error saving site. Please try again.', 'error');
-            showSyncStatus('Error saving');
-        });
+    
+    // Check if we're online and can save directly
+    if (navigator.onLine && window.database) {
+        database.ref(`${tenantPath}/${site.id}`).set(site)
+            .then(() => {
+                beeMarshallAlert(`✅ Site "${site.name}" has been saved successfully!`, 'success');
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.updateSyncStatus('synced');
+                }
+                // Close the form and return to sites view
+                setTimeout(() => {
+                    showSites();
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error saving site:', error);
+                // Add to pending changes queue
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.addPendingChange({
+                        type: 'site_save',
+                        path: `${tenantPath}/${site.id}`,
+                        data: site,
+                        method: 'set'
+                    });
+                }
+                beeMarshallAlert('⚠️ Site saved locally. Will sync when connection is restored.', 'warning');
+                // Close the form and return to sites view
+                setTimeout(() => {
+                    showSites();
+                }, 500);
+            });
+    } else {
+        // Offline - add to pending changes
+        if (window.syncStatusManager) {
+            window.syncStatusManager.addPendingChange({
+                type: 'site_save',
+                path: `${tenantPath}/${site.id}`,
+                data: site,
+                method: 'set'
+            });
+        }
+        beeMarshallAlert('⚠️ Site saved locally. Will sync when connection is restored.', 'warning');
+        // Close the form and return to sites view
+        setTimeout(() => {
+            showSites();
+        }, 500);
+    }
 }
 
 function editSite(id) {
@@ -1765,23 +1801,46 @@ function updateHiveCount(type) {
             site.hiveStacks[type] = newValue;
             site.hiveCount = visualHiveData.doubles + visualHiveData.topSplits + visualHiveData.singles + visualHiveData.nucs;
             
-            // Save to Firebase
+            // Save to Firebase with sync status
             const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-            database.ref(`${tenantPath}/${site.id}`).update({
+            const updateData = {
                 hiveStacks: site.hiveStacks,
                 hiveCount: site.hiveCount,
                 lastModified: new Date().toISOString(),
                 lastModifiedBy: currentUser.username
-            }).then(() => {
-                // Log as action
-                const typeLabel = type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                const actionText = `Hive inventory updated at ${site.name}: ${typeLabel} changed from ${oldValue} to ${newValue}`;
-                logSiteVisitAction(site.id, actionText);
-                
-                console.log('✅ Hive inventory auto-saved:', typeLabel, oldValue, '→', newValue);
-            }).catch(error => {
-                console.error('Error auto-saving hive changes:', error);
-            });
+            };
+            
+            if (navigator.onLine && window.database) {
+                database.ref(`${tenantPath}/${site.id}`).update(updateData).then(() => {
+                    // Log as action
+                    const typeLabel = type.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    const actionText = `Hive inventory updated at ${site.name}: ${typeLabel} changed from ${oldValue} to ${newValue}`;
+                    logSiteVisitAction(site.id, actionText);
+                    
+                    console.log('✅ Hive inventory auto-saved:', typeLabel, oldValue, '→', newValue);
+                }).catch(error => {
+                    console.error('Error auto-saving hive changes:', error);
+                    // Add to pending changes
+                    if (window.syncStatusManager) {
+                        window.syncStatusManager.addPendingChange({
+                            type: 'hive_update',
+                            path: `${tenantPath}/${site.id}`,
+                            data: updateData,
+                            method: 'update'
+                        });
+                    }
+                });
+            } else {
+                // Offline - add to pending changes
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.addPendingChange({
+                        type: 'hive_update',
+                        path: `${tenantPath}/${site.id}`,
+                        data: updateData,
+                        method: 'update'
+                    });
+                }
+            }
         }
     }
 }

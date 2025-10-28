@@ -78,11 +78,14 @@ function handleLogAction(e) {
         return;
     }
     
-    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Logging actions...', 'syncing');
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', 'Logging actions...');
+    }
     
-    const promises = selectedTasks.map(taskId => {
+    const actions = selectedTasks.map(taskId => {
         const task = tasks.find(t => t.id === taskId);
-        const action = {
+        return {
             id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             siteId,
             individualHiveId,
@@ -95,17 +98,58 @@ function handleLogAction(e) {
             loggedBy: currentUser.username,
             createdAt: new Date().toISOString()
         };
-        // Use tenant-specific path for data isolation
-        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
-        return database.ref(`${tenantPath}/${action.id}`).set(action);
     });
     
-    Promise.all(promises).then(() => {
-        showSyncStatus(`<i class="bi bi-check"></i> ${selectedTasks.length} action(s) logged by ${currentUser.username}`);
+    // Use tenant-specific path for data isolation
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+    
+    if (navigator.onLine && window.database) {
+        const promises = actions.map(action => 
+            database.ref(`${tenantPath}/${action.id}`).set(action)
+        );
+        
+        Promise.all(promises).then(() => {
+            if (window.syncStatusManager) {
+                window.syncStatusManager.updateSyncStatus('synced');
+            }
+            document.getElementById('actionForm').reset();
+            document.getElementById('actionDate').valueAsDate = new Date();
+            showActions();
+        }).catch(error => {
+            console.error('Error logging actions:', error);
+            // Add to pending changes
+            actions.forEach(action => {
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.addPendingChange({
+                        type: 'action_log',
+                        path: `${tenantPath}/${action.id}`,
+                        data: action,
+                        method: 'set'
+                    });
+                }
+            });
+            beeMarshallAlert('⚠️ Actions saved locally. Will sync when connection is restored.', 'warning');
+            document.getElementById('actionForm').reset();
+            document.getElementById('actionDate').valueAsDate = new Date();
+            showActions();
+        });
+    } else {
+        // Offline - add to pending changes
+        actions.forEach(action => {
+            if (window.syncStatusManager) {
+                window.syncStatusManager.addPendingChange({
+                    type: 'action_log',
+                    path: `${tenantPath}/${action.id}`,
+                    data: action,
+                    method: 'set'
+                });
+            }
+        });
+        beeMarshallAlert('⚠️ Actions saved locally. Will sync when connection is restored.', 'warning');
         document.getElementById('actionForm').reset();
         document.getElementById('actionDate').valueAsDate = new Date();
         showActions();
-    });
+    }
 }
 
 function populateActionFilters() {
