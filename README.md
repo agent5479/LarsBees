@@ -22,6 +22,17 @@ A comprehensive, production-ready web-based apiary (beekeeping) management syste
 - **🌐 Real-time Sync** - Firebase-powered real-time data synchronization across devices
 - **📱 Mobile Responsive** - Fully responsive design optimized for mobile and desktop use
 
+## 🏷️ Version Information
+
+**Current Version: v1.3**
+
+### What's New in v1.3
+- **🔄 Persistent Sync Status Overlay** - Real-time sync status indicator with offline change queuing
+- **🔒 Enhanced Employee Restrictions** - Employees can only update from summary cards, not full site editing
+- **🌐 Offline-First Architecture** - Changes persist locally and sync when connection is restored
+- **📱 Improved Mobile Experience** - Better responsive design and touch interactions
+- **🛡️ Enhanced Security** - Improved tenant isolation and permission management
+
 ### Site Classifications
 - **Functional Classification** - Production, Nucleus, Queen Rearing, Research, Education, Quarantine, Backup, Custom
 - **Seasonal Classification** - Summer Site, Winter Site
