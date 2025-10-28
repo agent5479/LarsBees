@@ -40,6 +40,7 @@ function handleAddEmployee(e) {
         isActive: false, // New employees start as inactive
         createdAt: new Date().toISOString(),
         createdBy: currentUser.username,
+        tenantId: currentTenantId, // Store the tenant ID of the admin who created this employee
         activationCode: generateActivationCode(), // Generate unique activation code
         temporaryPassword: null, // Will be set when activated
         temporaryPasswordExpiry: null, // Will be set when activated
