@@ -1743,15 +1743,31 @@ function savePasswordChange() {
 }
 
 function showMainApp() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('mainApp').classList.remove('hidden');
-    document.getElementById('currentUserDisplay').textContent = currentUser.username;
+    const loginScreen = document.getElementById('loginScreen');
+    const mainApp = document.getElementById('mainApp');
+    const currentUserDisplay = document.getElementById('currentUserDisplay');
+    
+    // Check if we're on a page that has these elements
+    if (!loginScreen || !mainApp || !currentUserDisplay) {
+        console.log('ℹ️ showMainApp called on page without main app elements - skipping');
+        return;
+    }
+    
+    loginScreen.classList.add('hidden');
+    mainApp.classList.remove('hidden');
+    currentUserDisplay.textContent = currentUser.username;
     
     if (isAdmin) {
-        document.getElementById('adminBadge').classList.remove('hidden');
+        const adminBadge = document.getElementById('adminBadge');
+        if (adminBadge) {
+            adminBadge.classList.remove('hidden');
+        }
         document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('employee-hidden'));
     } else {
-        document.getElementById('adminBadge').classList.add('hidden');
+        const adminBadge = document.getElementById('adminBadge');
+        if (adminBadge) {
+            adminBadge.classList.add('hidden');
+        }
         document.querySelectorAll('.admin-only').forEach(el => el.classList.add('employee-hidden'));
     }
     
