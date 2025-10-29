@@ -112,6 +112,7 @@ const COMPREHENSIVE_TASKS = [
     { id: 'task_15', name: 'Hive Relocation', category: 'Management', description: 'Move hives to new locations' },
     { id: 'task_16', name: 'Equipment Sanitization', category: 'Health', description: 'Clean and sanitize hive equipment' },
     { id: 'task_17', name: 'Emergency Response', category: 'Emergency', description: 'Respond to hive emergencies' },
+    { id: 'site_visit_inventory', name: 'Site Visit & Inventory', category: 'Management', description: 'Site visit with hive count and inventory updates' },
     { id: 'task_18', name: 'Queen Replacement', category: 'Management', description: 'Replace failing or missing queens' },
     { id: 'task_19', name: 'Hive Monitoring', category: 'Inspection', description: 'Regular monitoring of hive activity' },
     // Feeding category tasks
