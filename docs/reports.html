@@ -710,6 +710,41 @@
     <!-- bcrypt for secure password hashing -->
     <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     
+    <!-- Sync Status Functions (must be defined before core.js) -->
+    <script>
+        function showSyncStatus(message, type = 'info', showTimestamp = false) {
+            // Use the syncTimestamp element that exists in reports.html
+            const syncTimestamp = document.getElementById('syncTimestamp');
+            
+            if (syncTimestamp) {
+                const iconClass = type === 'success' ? 'check-circle' : 
+                                 type === 'error' ? 'exclamation-triangle' : 
+                                 type === 'warning' ? 'exclamation-triangle' : 
+                                 'arrow-clockwise';
+                const textClass = type === 'success' ? 'text-success' : 
+                                 type === 'error' ? 'text-danger' : 
+                                 type === 'warning' ? 'text-warning' : 
+                                 'text-primary';
+                
+                syncTimestamp.innerHTML = `
+                    <small class="text-muted">
+                        <i class="bi bi-${iconClass} ${textClass} me-1"></i>
+                        ${message}
+                    </small>
+                `;
+            }
+        }
+        
+        function hideSyncStatus() {
+            // For reports.html, we don't need to hide anything
+            // The sync status is shown in the syncTimestamp element
+        }
+        
+        function showSyncError(message) {
+            showSyncStatus(message, 'error');
+        }
+    </script>
+    
     <!-- Core functionality -->
     <script src="js/core.js"></script>
     
@@ -718,9 +753,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     
     <script>
-        // Declare database globally to avoid scope issues
-        let database;
-        
         // Check if Firebase is already initialized to prevent double-loading
         if (typeof firebase === 'undefined' || firebase.apps.length === 0) {
             Logger.log('🔥 Initializing Firebase...');
@@ -940,39 +972,7 @@
             Logger.log('✅ Reports page initialization complete');
         });
         
-        // Sync Status Indicator Functions
-        function showSyncStatus(message, type = 'info', showTimestamp = false) {
-            // Use the syncTimestamp element that exists in reports.html
-            const syncTimestamp = document.getElementById('syncTimestamp');
-            
-            if (syncTimestamp) {
-                const iconClass = type === 'success' ? 'check-circle' : 
-                                 type === 'error' ? 'exclamation-triangle' : 
-                                 type === 'warning' ? 'exclamation-triangle' : 
-                                 'arrow-clockwise';
-                const textClass = type === 'success' ? 'text-success' : 
-                                 type === 'error' ? 'text-danger' : 
-                                 type === 'warning' ? 'text-warning' : 
-                                 'text-primary';
-                
-                syncTimestamp.innerHTML = `
-                    <small class="text-muted">
-                        <i class="bi bi-${iconClass} ${textClass} me-1"></i>
-                        ${message}
-                    </small>
-                `;
-            }
-        }
-        
-        function hideSyncStatus() {
-            // For reports.html, we don't need to hide anything
-            // The sync status is shown in the syncTimestamp element
-        }
-        
-        function showSyncError(message) {
-            showSyncStatus(message, 'error');
-        }
-        
+        // Additional sync functions for reports.html
         function showSyncSuccess(message) {
             showSyncStatus(message, 'success', true);
             // Auto-hide success messages after 5 seconds to show timestamp
