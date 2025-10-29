@@ -51,24 +51,32 @@ function updateActiveNav(section) {
 
 // Helper function to safely get task name (handles deleted tasks) - make globally accessible
 window.getTaskDisplayName = function(taskName, taskId) {
+    console.log(`🔍 getTaskDisplayName called with taskName: "${taskName}", taskId: "${taskId}"`);
+    
     // Check both window.tasks and global tasks
     const windowTasks = window.tasks || [];
     const globalTasks = (typeof tasks !== 'undefined') ? tasks : [];
     const tasksArray = [...windowTasks, ...globalTasks];
     
+    console.log(`📋 Available tasks: ${tasksArray.length} tasks`);
+    console.log(`📋 window.COMPREHENSIVE_TASKS available: ${typeof window.COMPREHENSIVE_TASKS !== 'undefined'}`);
+    
     // If task exists in current tasks, use it
     const currentTask = tasksArray.find(t => t.name === taskName || t.id === taskId);
     if (currentTask) {
+        console.log(`✅ Found in current tasks: ${currentTask.name}`);
         return currentTask.name;
     }
     
     // Check if it's a deleted task
     if (taskId && window.deletedTasks && window.deletedTasks[taskId]) {
+        console.log(`🗑️ Found in deleted tasks: ${window.deletedTasks[taskId].name}`);
         return `[Deleted: ${window.deletedTasks[taskId].name}]`;
     }
     
     // Fallback to the stored name with deleted indicator
     if (taskName) {
+        console.log(`📝 Using stored task name: ${taskName}`);
         return `[Deleted: ${taskName}]`;
     }
     
@@ -76,21 +84,21 @@ window.getTaskDisplayName = function(taskName, taskId) {
     if (typeof window.COMPREHENSIVE_TASKS !== 'undefined' && taskId) {
         const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
         if (comprehensiveTask) {
+            console.log(`✅ Found in COMPREHENSIVE_TASKS: ${comprehensiveTask.name}`);
             return comprehensiveTask.name;
+        } else {
+            console.log(`❌ Task ID "${taskId}" not found in COMPREHENSIVE_TASKS`);
+            console.log(`📋 Available task IDs in COMPREHENSIVE_TASKS:`, window.COMPREHENSIVE_TASKS.map(t => t.id).slice(0, 10));
         }
     }
     
     // If we have a taskId but no name, try to find it in COMPREHENSIVE_TASKS
     if (taskId) {
-        if (typeof window.COMPREHENSIVE_TASKS !== 'undefined') {
-            const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
-            if (comprehensiveTask) {
-                return comprehensiveTask.name;
-            }
-        }
+        console.log(`⚠️ Falling back to Task ID: ${taskId}`);
         return `[Task ID: ${taskId}]`;
     }
     
+    console.log(`❌ No task ID provided, returning Unknown Task`);
     return '[Unknown Task]';
 };
 
