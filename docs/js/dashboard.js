@@ -81,44 +81,44 @@ window.getTaskDisplayName = function(taskName, taskId) {
 function updateDashboard() {
     console.log('📊 Updating dashboard with data...');
     console.log('🔍 Current data state:', {
-        sites: sites ? sites.length : 'undefined',
-        actions: actions ? actions.length : 'undefined',
-        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-        individualHives: individualHives ? individualHives.length : 'undefined'
+        sites: window.sites ? window.sites.length : 'undefined',
+        actions: window.actions ? window.actions.length : 'undefined',
+        scheduledTasks: window.scheduledTasks ? window.scheduledTasks.length : 'undefined',
+        individualHives: window.individualHives ? window.individualHives.length : 'undefined'
     });
     
     // Check if data arrays are properly initialized
-    if (!sites) {
+    if (!window.sites) {
         console.error('❌ Sites array is undefined!');
-        sites = [];
+        window.sites = [];
     }
-    if (!actions) {
+    if (!window.actions) {
         console.error('❌ Actions array is undefined!');
-        actions = [];
+        window.actions = [];
     }
-    if (!scheduledTasks) {
+    if (!window.scheduledTasks) {
         console.error('❌ Scheduled tasks array is undefined!');
-        scheduledTasks = [];
+        window.scheduledTasks = [];
     }
-    if (!individualHives) {
+    if (!window.individualHives) {
         console.error('❌ Individual hives array is undefined!');
-        individualHives = [];
+        window.individualHives = [];
     }
     
     // Filter out archived sites for statistics
-    const activeSites = sites.filter(s => !s.archived);
+    const activeSites = window.sites.filter(s => !s.archived);
     
     const totalHives = activeSites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
     console.log('📊 Total hives calculated:', totalHives);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
-    const overdueTasksCount = scheduledTasks.filter(task => {
+    const overdueTasksCount = window.scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < new Date();
     }).length;
     
-    const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount;
+    const flaggedCount = window.actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount;
     console.log('📊 Flagged count calculated:', flaggedCount);
     
     // Make flaggedCount globally accessible
@@ -127,13 +127,13 @@ function updateDashboard() {
     // Set numbers directly without animation (active sites only)
     document.getElementById('statSites').textContent = activeSites.length;
     document.getElementById('statHives').textContent = totalHives;
-    document.getElementById('statActions').textContent = actions.length;
+    document.getElementById('statActions').textContent = window.actions.length;
     document.getElementById('statFlagged').textContent = flaggedCount;
     
     console.log('📊 Dashboard cards updated:', {
-        sites: sites.length,
+        sites: window.sites.length,
         hives: totalHives,
-        actions: actions.length,
+        actions: window.actions.length,
         flagged: flaggedCount
     });
     
@@ -149,8 +149,8 @@ function updateDashboard() {
     }, 1000);
     
     // Show flagged alert if any urgent actions, overdue tasks, or upcoming harvests
-    const urgentFlagged = actions.filter(a => a.flag === 'urgent');
-    const overdueTasksForAlert = scheduledTasks.filter(task => {
+    const urgentFlagged = window.actions.filter(a => a.flag === 'urgent');
+    const overdueTasksForAlert = window.scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < new Date();
     });
@@ -160,7 +160,7 @@ function updateDashboard() {
     today.setHours(0, 0, 0, 0);
     const thirtyDaysFromNow = new Date(today.getTime() + (30 * 24 * 60 * 60 * 1000));
     
-    const upcomingHarvests = sites.filter(site => {
+    const upcomingHarvests = window.sites.filter(site => {
         if (!site.harvestTimeline) return false;
         try {
             const harvestDate = new Date(site.harvestTimeline);
@@ -177,7 +177,7 @@ function updateDashboard() {
         // Add urgent actions
         if (urgentFlagged.length > 0) {
             flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
-                const site = sites.find(s => s.id === a.siteId);
+                const site = window.sites.find(s => s.id === a.siteId);
                 return `<div class="mb-2">
                     <strong>${site?.name || 'Unknown'}:</strong> ${a.taskName}
                     <br><small>${a.notes}</small>
@@ -197,7 +197,7 @@ function updateDashboard() {
         // Add overdue tasks
         if (overdueTasksForAlert.length > 0) {
             flaggedHtml += overdueTasksForAlert.slice(0, 3).map(task => {
-                const site = sites.find(s => s.id === task.siteId);
+                const site = window.sites.find(s => s.id === task.siteId);
                 const taskName = getTaskDisplayName(null, task.taskId);
                 return `
                     <div class="mb-2">
@@ -250,10 +250,10 @@ function updateDashboard() {
         initMap();
     }
     
-    const recentActions = [...actions].reverse().slice(0, 10);
+    const recentActions = [...window.actions].reverse().slice(0, 10);
     const recentHtml = recentActions.length > 0 
         ? recentActions.map(a => {
-                const site = sites.find(s => s.id === a.siteId);
+                const site = window.sites.find(s => s.id === a.siteId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
             return `
@@ -273,10 +273,10 @@ function updateDashboard() {
 }
 
 function updateScheduledTasksPreview() {
-    const pending = scheduledTasks.filter(t => !t.completed);
+    const pending = window.scheduledTasks.filter(t => !t.completed);
     const html = pending.length > 0
         ? pending.slice(0, 5).map(t => {
-                const site = sites.find(s => s.id === t.siteId);
+                const site = window.sites.find(s => s.id === t.siteId);
             const task = (window.tasks || tasks || []).find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
             const priorityBadge = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
@@ -311,7 +311,7 @@ function updateCalendarWidget() {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Start of today
     
-    const futureTasks = scheduledTasks.filter(task => {
+    const futureTasks = window.scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         taskDate.setHours(0, 0, 0, 0);
         return !task.completed && taskDate >= today;
@@ -364,7 +364,7 @@ function updateCalendarWidget() {
                 </div>
                 <div class="calendar-tasks">
                     ${tasks.map(task => {
-                        const site = sites.find(s => s.id === task.siteId);
+                        const site = window.sites.find(s => s.id === task.siteId);
                         const taskObj = tasks.find(tk => tk.id === task.taskId);
                         const displayTaskName = taskObj ? taskObj.name : getTaskDisplayName(null, task.taskId);
                         const priorityClass = task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'secondary';
@@ -448,7 +448,7 @@ function updateCalendarWidget() {
 
 function viewScheduledTask(taskId) {
     // Find the task and show its details
-    const task = scheduledTasks.find(t => t.id === taskId);
+    const task = window.scheduledTasks.find(t => t.id === taskId);
     if (task) {
         // You can implement a modal or redirect to the scheduled tasks view
         showScheduledTasks();
@@ -457,9 +457,9 @@ function viewScheduledTask(taskId) {
 
 function updateQuickStats() {
     console.log('📊 Updating Quick Stats...');
-    console.log('📊 Scheduled tasks available:', scheduledTasks ? scheduledTasks.length : 'undefined');
+    console.log('📊 Scheduled tasks available:', window.scheduledTasks ? window.scheduledTasks.length : 'undefined');
     
-    if (!scheduledTasks || scheduledTasks.length === 0) {
+    if (!window.scheduledTasks || window.scheduledTasks.length === 0) {
         console.log('⚠️ No scheduled tasks data available for Quick Stats');
         return;
     }
@@ -468,19 +468,19 @@ function updateQuickStats() {
     const thisWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
     
     // Calculate this week's tasks
-    const thisWeekTasks = scheduledTasks.filter(task => {
+    const thisWeekTasks = window.scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate >= today && taskDate <= thisWeek;
     }).length;
     
     // Calculate completed tasks
-    const completedTasks = scheduledTasks.filter(task => task.completed).length;
+    const completedTasks = window.scheduledTasks.filter(task => task.completed).length;
     
     // Calculate pending tasks
-    const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
+    const pendingTasks = window.scheduledTasks.filter(task => !task.completed).length;
     
     // Calculate overdue tasks
-    const overdueTasksForStats = scheduledTasks.filter(task => {
+    const overdueTasksForStats = window.scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < today;
     }).length;
@@ -543,7 +543,7 @@ function checkAndFlagOverdueTasks() {
     
     let hasUpdates = false;
     
-    scheduledTasks.forEach(task => {
+    window.scheduledTasks.forEach(task => {
         if (!task.completed) {
             const taskDate = new Date(task.dueDate);
             taskDate.setHours(0, 0, 0, 0);
@@ -622,10 +622,10 @@ function makeDashboardCardsClickable() {
             let tooltipText = '';
             switch(target) {
                 case 'sites':
-                    tooltipText = `View and manage all ${sites.length} apiary sites`;
+                    tooltipText = `View and manage all ${window.sites.length} apiary sites`;
                     break;
                 case 'actions':
-                    tooltipText = `View and manage all ${actions.length} logged actions`;
+                    tooltipText = `View and manage all ${window.actions.length} logged actions`;
                     break;
                 case 'flagged':
                     tooltipText = `View ${flaggedCount} flagged issues requiring attention`;
@@ -663,7 +663,7 @@ function makeRecentActionsClickable() {
         item.addEventListener('click', function() {
             const actionText = this.querySelector('strong').textContent;
             const siteName = actionText.split(' - ')[1];
-            const site = sites.find(s => s.name === siteName);
+            const site = window.sites.find(s => s.name === siteName);
             if (site) {
                 viewSiteDetails(site.id);
             }
@@ -675,10 +675,10 @@ function makeRecentActionsClickable() {
 window.forceDashboardRefresh = function() {
     console.log('🔄 Force refreshing dashboard...');
     console.log('📊 Current data state:', {
-        sites: sites ? sites.length : 'undefined',
-        actions: actions ? actions.length : 'undefined',
-        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-        individualHives: individualHives ? individualHives.length : 'undefined'
+        sites: window.sites ? window.sites.length : 'undefined',
+        actions: window.actions ? window.actions.length : 'undefined',
+        scheduledTasks: window.scheduledTasks ? window.scheduledTasks.length : 'undefined',
+        individualHives: window.individualHives ? window.individualHives.length : 'undefined'
     });
     
     updateDashboard();
@@ -820,7 +820,7 @@ function handleUrgentItemAction(action, itemId) {
         }
     } else if (action === 'action') {
         // For actions - open scheduling for follow-up
-        const actionObj = actions.find(a => a.id === itemId);
+        const actionObj = window.actions.find(a => a.id === itemId);
         if (actionObj && typeof showScheduleTaskModal === 'function') {
             showScheduleTaskModal();
         } else {
@@ -840,7 +840,7 @@ function handleHarvestAction(siteId, harvestDate, markAddressed = false) {
     
     if (markAddressed) {
         // Clear the harvest date to mark as addressed
-        const site = sites.find(s => s.id === siteId);
+        const site = window.sites.find(s => s.id === siteId);
         if (site) {
             site.harvestTimeline = '';
             
@@ -853,7 +853,7 @@ function handleHarvestAction(siteId, harvestDate, markAddressed = false) {
         }
     } else {
         // Schedule a harvest task
-        const site = sites.find(s => s.id === siteId);
+        const site = window.sites.find(s => s.id === siteId);
         if (site && typeof showScheduleTaskModal === 'function') {
             // Try to find a harvest task in the tasks list
             const harvestTask = tasks.find(t => 
