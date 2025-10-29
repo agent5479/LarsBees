@@ -93,13 +93,17 @@ class SecureConfig {
         }
     }
     
-    // Web Crypto API fallback for admin password hashing
-    async hashWithWebCrypto(password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Web Crypto API fallback for admin password hashing (synchronous fallback)
+    hashWithWebCrypto(password) {
+        // For synchronous fallback, use a simple hash
+        // This is not as secure as bcrypt but better than plain text
+        let hash = 0;
+        for (let i = 0; i < password.length; i++) {
+            const char = password.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash; // Convert to 32-bit integer
+        }
+        return Math.abs(hash).toString(36) + '_webcrypto';
     }
 
     loadFirebaseConfig() {

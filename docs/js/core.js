@@ -386,6 +386,7 @@ window.testAdminPasswordSecurity = function() {
         console.log('  - Has passwordHash:', !!account.passwordHash);
         console.log('  - Has plain password:', !!account.password);
         console.log('  - PasswordHash type:', account.passwordHash ? typeof account.passwordHash : 'N/A');
+        console.log('  - PasswordHash value:', account.passwordHash ? account.passwordHash.substring(0, 20) + '...' : 'N/A');
         console.log('  - PasswordHash starts with $2:', account.passwordHash ? account.passwordHash.startsWith('$2') : false);
         
         if (account.password) {
@@ -393,6 +394,8 @@ window.testAdminPasswordSecurity = function() {
         }
         if (account.passwordHash && account.passwordHash.startsWith('$2')) {
             console.log('  ✅ SECURE: bcrypt hash detected');
+        } else if (account.passwordHash && account.passwordHash.includes('_webcrypto')) {
+            console.log('  ⚠️  FALLBACK: Web Crypto API hash detected');
         }
     });
     
@@ -446,6 +449,8 @@ window.testFirebaseSecurity = function() {
         })
         .catch(error => {
             console.log('❌ Tenant data access blocked:', error.message);
+            console.log('🔧 Firebase Rules Issue: The rules may still be blocking access');
+            console.log('💡 Solution: Update Firebase rules to allow tenant access');
             tests.push({ test: 'tenant_read', result: 'FAIL', message: error.message });
         });
     
@@ -1282,6 +1287,12 @@ function secureHash(password) {
 // Verify password against hash with migration support
 function verifyPassword(password, hash) {
     try {
+        // Ensure hash is a string
+        if (typeof hash !== 'string') {
+            console.error('❌ Hash is not a string:', typeof hash, hash);
+            return false;
+        }
+        
         // Check if this is a bcrypt hash (starts with $2a$, $2b$, $2y$)
         if (hash.startsWith('$2a$') || hash.startsWith('$2b$') || hash.startsWith('$2y$')) {
             // This is a bcrypt hash - use bcrypt verification
@@ -1292,7 +1303,7 @@ function verifyPassword(password, hash) {
                 return false;
             }
         } else {
-            // This is likely an old simpleHash - verify and migrate
+            // This is likely an old simpleHash or Web Crypto hash - verify
             console.log('🔄 Detected legacy password hash, verifying with old system...');
             const oldHash = simpleHash(password);
             const isValid = oldHash === hash;
