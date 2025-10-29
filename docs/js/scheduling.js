@@ -1057,7 +1057,7 @@ function populateNextVisitTasks() {
     `).join('');
     
     document.getElementById('nextVisitTaskCheckboxes').innerHTML = `<div class="row">${html}</div>`;
-    filterNextVisitTasks('common');
+    filterNextVisitTasks('all');
 }
 
 function filterNextVisitTasks(filter) {
