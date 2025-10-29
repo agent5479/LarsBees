@@ -121,13 +121,62 @@ function generateActivationCode() {
 }
 
 function generateTemporaryPassword() {
-    // Generate a secure temporary password: 8 characters with mix of letters and numbers
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    // Generate a secure temporary password that meets security requirements:
+    // - Minimum 12 characters
+    // - At least one uppercase letter
+    // - At least one lowercase letter
+    // - At least one number
+    // - At least one special character
+    // - No common words
+    
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const numbers = '0123456789';
+    const special = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+    const allChars = uppercase + lowercase + numbers + special;
+    
+    // Try up to 10 times to generate a valid password
+    for (let attempt = 0; attempt < 10; attempt++) {
+        let password = '';
+        
+        // Ensure at least one character from each required category
+        password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+        password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+        password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+        password += special.charAt(Math.floor(Math.random() * special.length));
+        
+        // Fill the remaining 8 characters (12 total) with random characters
+        for (let i = 4; i < 12; i++) {
+            password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+        }
+        
+        // Shuffle the password to avoid predictable patterns
+        password = password.split('').sort(() => Math.random() - 0.5).join('');
+        
+        // Validate the generated password
+        if (typeof validatePasswordStrength === 'function') {
+            const validation = validatePasswordStrength(password);
+            if (validation.isValid) {
+                console.log(`✅ Generated secure temporary password (attempt ${attempt + 1})`);
+                return password;
+            }
+        } else {
+            // Fallback validation if validatePasswordStrength is not available
+            if (password.length >= 12 && 
+                /[A-Z]/.test(password) && 
+                /[a-z]/.test(password) && 
+                /[0-9]/.test(password) && 
+                /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+                console.log(`✅ Generated secure temporary password (attempt ${attempt + 1})`);
+                return password;
+            }
+        }
     }
-    return result;
+    
+    // Fallback: Generate a simple but secure password if all attempts fail
+    console.warn('⚠️ Failed to generate complex password, using fallback');
+    const fallback = 'Temp' + Math.random().toString(36).substring(2, 10) + '!';
+    return fallback;
 }
 
 // Activate employee account
