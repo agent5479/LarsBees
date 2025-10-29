@@ -5,12 +5,20 @@
 
 // Helper function to safely get task name (handles deleted tasks)
 function getTaskDisplayName(taskName, taskId) {
-    // Use window.tasks if available, fallback to tasks
-    const tasksArray = window.tasks || tasks || [];
+    // Check both window.tasks and global tasks
+    const windowTasks = window.tasks || [];
+    const globalTasks = tasks || [];
+    const tasksArray = [...windowTasks, ...globalTasks];
+    
+    console.log('🔍 getTaskDisplayName called with:', { taskName, taskId });
+    console.log('🔍 Available tasks:', tasksArray.length);
+    console.log('🔍 window.tasks:', windowTasks.length);
+    console.log('🔍 global tasks:', globalTasks.length);
     
     // If task exists in current tasks, use it
     const currentTask = tasksArray.find(t => t.name === taskName || t.id === taskId);
     if (currentTask) {
+        console.log('✅ Found task:', currentTask.name);
         return currentTask.name;
     }
     

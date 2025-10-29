@@ -84,8 +84,16 @@ function updateDashboard() {
         sites: window.sites ? window.sites.length : 'undefined',
         actions: window.actions ? window.actions.length : 'undefined',
         scheduledTasks: window.scheduledTasks ? window.scheduledTasks.length : 'undefined',
-        individualHives: window.individualHives ? window.individualHives.length : 'undefined'
+        individualHives: window.individualHives ? window.individualHives.length : 'undefined',
+        tasks: window.tasks ? window.tasks.length : 'undefined',
+        globalTasks: tasks ? tasks.length : 'undefined'
     });
+    
+    // Check if we have the essential data
+    if (!window.sites || !window.actions) {
+        console.log('⚠️ Essential data not loaded yet, skipping dashboard update');
+        return;
+    }
     
     // Check if data arrays are properly initialized
     if (!window.sites) {

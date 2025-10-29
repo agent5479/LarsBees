@@ -124,8 +124,10 @@ function renderSites() {
                                     const seasonalMap = {
                                         'summer': 'Summer Site',
                                         'winter': 'Winter Site',
+                                        'all-year': 'All Year Round',
                                         'Summer Site': 'Summer Site',
-                                        'Winter Site': 'Winter Site'
+                                        'Winter Site': 'Winter Site',
+                                        'All Year Round': 'All Year Round'
                                     };
                                     
                                     return seasonalMap[seasonalValue] || seasonalValue || 'Not specified';
@@ -462,8 +464,8 @@ function handleSaveSite(e) {
     const hiveCount = parseInt(hiveCountField.value);
     const seasonalClassification = document.getElementById('seasonalClassification').value;
     
-    // Allow 0 hives only for Summer Only and Winter Only sites
-    const isZeroHiveAllowed = seasonalClassification === 'summer-only' || seasonalClassification === 'winter-only';
+    // Allow 0 hives only for Summer Only, Winter Only, and All Year Round sites
+    const isZeroHiveAllowed = seasonalClassification === 'summer' || seasonalClassification === 'winter' || seasonalClassification === 'all-year';
     
     if (isNaN(hiveCount) || hiveCount < 0 || (!isZeroHiveAllowed && hiveCount <= 0)) {
         const message = isZeroHiveAllowed 

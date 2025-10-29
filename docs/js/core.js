@@ -2610,7 +2610,8 @@ function initializeDataLoading() {
         database.ref(`${tenantPath}/actions`).on('value', snapshot => {
             window.actions = snapshot.val() || [];
             console.log('🔄 Actions updated:', window.actions.length);
-            if (typeof updateDashboard === 'function') {
+            // Only update dashboard if tasks are loaded
+            if (typeof updateDashboard === 'function' && (window.tasks && window.tasks.length > 0)) {
                 updateDashboard();
             }
         });
