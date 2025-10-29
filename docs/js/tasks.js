@@ -16,13 +16,6 @@ function getTaskDisplayName(taskName, taskId) {
         return currentTask.name;
     }
     
-    // Debug logging for task lookup
-    console.log('🔍 getTaskDisplayName debug:', {
-        taskName,
-        taskId,
-        tasksArrayLength: tasksArray.length,
-        firstFewTasks: tasksArray.slice(0, 3).map(t => ({ id: t.id, name: t.name }))
-    });
     
     // Check if it's a deleted task
     if (taskId && window.deletedTasks && window.deletedTasks[taskId]) {
@@ -42,8 +35,14 @@ function getTaskDisplayName(taskName, taskId) {
         }
     }
     
-    // If we have a taskId but no name, display the ID for debugging
+    // If we have a taskId but no name, try to find it in COMPREHENSIVE_TASKS
     if (taskId) {
+        if (typeof COMPREHENSIVE_TASKS !== 'undefined') {
+            const comprehensiveTask = COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+            if (comprehensiveTask) {
+                return comprehensiveTask.name;
+            }
+        }
         return `[Task ID: ${taskId}]`;
     }
     

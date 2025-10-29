@@ -113,6 +113,8 @@ const COMPREHENSIVE_TASKS = [
     { id: 'task_16', name: 'Equipment Sanitization', category: 'Health', description: 'Clean and sanitize hive equipment' },
     { id: 'task_17', name: 'Emergency Response', category: 'Emergency', description: 'Respond to hive emergencies' },
     { id: 'site_visit_inventory', name: 'Site Visit & Inventory', category: 'Management', description: 'Site visit with hive count and inventory updates' },
+    { id: 'hive_state_update', name: 'Hive State Update', category: 'Management', description: 'Update hive strength and state information' },
+    { id: 'hive_box_update', name: 'Hive Box Update', category: 'Management', description: 'Update hive box counts and inventory' },
     { id: 'task_18', name: 'Queen Replacement', category: 'Management', description: 'Replace failing or missing queens' },
     { id: 'task_19', name: 'Hive Monitoring', category: 'Inspection', description: 'Regular monitoring of hive activity' },
     // Feeding category tasks
