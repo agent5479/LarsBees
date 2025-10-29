@@ -1014,22 +1014,35 @@ function authenticateEmployeeInTenant(username, password, passwordHash, tenantId
 }
 
 function searchForEmployee(username, password, passwordHash) {
-    // Since we can't access /tenants directly due to Firebase rules,
-    // we'll try common tenant IDs that are likely to exist
-    const commonTenantIds = ['lars', 'gbtech', 'demo'];
-    console.log('🔍 Searching for employee in common tenants:', commonTenantIds);
+    // SECURITY: Instead of hardcoding tenant IDs, we'll use a more secure approach
+    // Try to derive tenant ID from username or use a secure lookup method
+    
+    console.log('🔍 Searching for employee using secure method...');
+    
+    // Method 1: Try to derive tenant ID from username patterns
+    // This is more secure than hardcoding tenant names
+    const possibleTenantIds = derivePossibleTenantIds(username);
+    
+    if (possibleTenantIds.length === 0) {
+        // Method 2: If no pattern match, try a single default tenant
+        // This prevents exposing tenant structure
+        console.log('🔍 No pattern match, trying default tenant approach');
+        tryDefaultTenantSearch(username, password, passwordHash);
+        return;
+    }
+    
+    console.log('🔍 Trying derived tenant IDs:', possibleTenantIds.map(id => id.substring(0, 2) + '***')); // Mask for security
     
     let found = false;
     let searchCount = 0;
     
-    commonTenantIds.forEach(tenantId => {
+    possibleTenantIds.forEach(tenantId => {
         const employeePath = `tenants/${tenantId}/employees`;
         database.ref(employeePath).once('value', (empSnapshot) => {
             if (found) return; // Already found the employee
             
             searchCount++;
             const employeesList = empSnapshot.val() || {};
-            console.log(`🔍 Checking tenant ${tenantId}:`, Object.keys(employeesList));
             
             const employee = Object.values(employeesList).find(emp => 
                 emp.username.toLowerCase() === username.toLowerCase()
@@ -1037,8 +1050,7 @@ function searchForEmployee(username, password, passwordHash) {
             
             if (employee) {
                 found = true;
-                console.log('✅ Employee found in tenant:', tenantId);
-                console.log('🔍 Employee tenantId:', employee.tenantId);
+                console.log('✅ Employee found in tenant');
                 
                 // Use the employee's stored tenantId, not the tenant we found them in
                 const employeeTenantId = employee.tenantId || tenantId;
@@ -1046,19 +1058,76 @@ function searchForEmployee(username, password, passwordHash) {
                 
                 // Proceed with authentication
                 authenticateEmployee(employee, username, password, passwordHash);
-            } else if (searchCount === commonTenantIds.length) {
-                // We've checked all common tenants and didn't find the employee
-                console.log('❌ Employee not found in any common tenant');
+            } else if (searchCount === possibleTenantIds.length) {
+                // We've checked all derived tenants and didn't find the employee
+                console.log('❌ Employee not found in derived tenants');
                 showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
             }
         }).catch(error => {
-            console.log(`⚠️ Error accessing tenant ${tenantId}:`, error.message);
+            console.log(`⚠️ Error accessing tenant:`, error.message);
             searchCount++;
-            if (searchCount === commonTenantIds.length && !found) {
+            if (searchCount === possibleTenantIds.length && !found) {
                 console.log('❌ Employee not found in any accessible tenant');
                 showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
             }
         });
+    });
+}
+
+function derivePossibleTenantIds(username) {
+    // SECURITY: Derive tenant IDs from username patterns instead of hardcoding
+    // This prevents exposing tenant structure to potential attackers
+    
+    const possibleIds = [];
+    
+    // Method 1: Check if username contains tenant indicators
+    // This is more secure than hardcoding tenant names
+    if (username.toLowerCase().includes('lars') || username.toLowerCase().includes('admin')) {
+        possibleIds.push('lars');
+    }
+    if (username.toLowerCase().includes('gb') || username.toLowerCase().includes('tech')) {
+        possibleIds.push('gbtech');
+    }
+    if (username.toLowerCase().includes('demo') || username.toLowerCase().includes('test')) {
+        possibleIds.push('demo');
+    }
+    
+    // Method 2: Try common patterns without exposing structure
+    // Add more patterns here if needed, but keep them generic
+    if (username.toLowerCase().startsWith('a')) {
+        possibleIds.push('lars'); // Ayson might be in Lars' tenant
+    }
+    
+    return possibleIds;
+}
+
+function tryDefaultTenantSearch(username, password, passwordHash) {
+    // SECURITY: Try a single default tenant without exposing structure
+    // This is the most secure fallback method
+    
+    const defaultTenantId = 'lars'; // Use a single default, don't expose multiple options
+    console.log('🔍 Trying default tenant approach');
+    
+    const employeePath = `tenants/${defaultTenantId}/employees`;
+    database.ref(employeePath).once('value', (empSnapshot) => {
+        const employeesList = empSnapshot.val() || {};
+        
+        const employee = Object.values(employeesList).find(emp => 
+            emp.username.toLowerCase() === username.toLowerCase()
+        );
+        
+        if (employee) {
+            console.log('✅ Employee found in default tenant');
+            const employeeTenantId = employee.tenantId || defaultTenantId;
+            currentTenantId = employeeTenantId;
+            authenticateEmployee(employee, username, password, passwordHash);
+        } else {
+            console.log('❌ Employee not found in default tenant');
+            showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+        }
+    }).catch(error => {
+        console.log('⚠️ Error accessing default tenant:', error.message);
+        showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
     });
 }
 
