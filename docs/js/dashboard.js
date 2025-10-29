@@ -51,15 +51,20 @@ function updateActiveNav(section) {
 
 // Helper function to safely get task name (handles deleted tasks) - make globally accessible
 window.getTaskDisplayName = function(taskName, taskId) {
+    // Check both window.tasks and global tasks
+    const windowTasks = window.tasks || [];
+    const globalTasks = (typeof tasks !== 'undefined') ? tasks : [];
+    const tasksArray = [...windowTasks, ...globalTasks];
+    
     // If task exists in current tasks, use it
-    const currentTask = tasks.find(t => t.name === taskName || t.id === taskId);
+    const currentTask = tasksArray.find(t => t.name === taskName || t.id === taskId);
     if (currentTask) {
         return currentTask.name;
     }
     
     // Check if it's a deleted task
-    if (taskId && deletedTasks && deletedTasks[taskId]) {
-        return `[Deleted: ${deletedTasks[taskId].name}]`;
+    if (taskId && window.deletedTasks && window.deletedTasks[taskId]) {
+        return `[Deleted: ${window.deletedTasks[taskId].name}]`;
     }
     
     // Fallback to the stored name with deleted indicator

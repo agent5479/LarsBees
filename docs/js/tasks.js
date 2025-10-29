@@ -7,7 +7,7 @@
 function getTaskDisplayName(taskName, taskId) {
     // Check both window.tasks and global tasks
     const windowTasks = window.tasks || [];
-    const globalTasks = tasks || [];
+    const globalTasks = (typeof tasks !== 'undefined') ? tasks : [];
     const tasksArray = [...windowTasks, ...globalTasks];
     
     // If task exists in current tasks, use it
