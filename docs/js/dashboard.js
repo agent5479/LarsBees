@@ -138,19 +138,19 @@ function updateDashboard() {
     }
     
     // Filter out archived sites for statistics
-    const activeSites = window.sites.filter(s => !s.archived);
+    const activeSites = (window.sites && Array.isArray(window.sites)) ? window.sites.filter(s => !s.archived) : [];
     
     const totalHives = activeSites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
     console.log('📊 Total hives calculated:', totalHives);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
-    const overdueTasksCount = window.scheduledTasks.filter(task => {
+    const overdueTasksCount = (window.scheduledTasks && Array.isArray(window.scheduledTasks)) ? window.scheduledTasks.filter(task => {
         const taskDate = new Date(task.dueDate);
         return !task.completed && taskDate < new Date();
-    }).length;
+    }).length : 0;
     
-    const flaggedCount = window.actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount;
+    const flaggedCount = (window.actions && Array.isArray(window.actions)) ? window.actions.filter(a => a.flag && a.flag !== '').length + overdueTasksCount : overdueTasksCount;
     console.log('📊 Flagged count calculated:', flaggedCount);
     
     // Make flaggedCount globally accessible
@@ -159,13 +159,13 @@ function updateDashboard() {
     // Set numbers directly without animation (active sites only)
     document.getElementById('statSites').textContent = activeSites.length;
     document.getElementById('statHives').textContent = totalHives;
-    document.getElementById('statActions').textContent = window.actions.length;
+    document.getElementById('statActions').textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.length : 0;
     document.getElementById('statFlagged').textContent = flaggedCount;
     
     console.log('📊 Dashboard cards updated:', {
-        sites: window.sites.length,
+        sites: activeSites.length,
         hives: totalHives,
-        actions: window.actions.length,
+        actions: (window.actions && Array.isArray(window.actions)) ? window.actions.length : 0,
         flagged: flaggedCount
     });
     
@@ -671,7 +671,7 @@ function makeDashboardCardsClickable() {
                     tooltipText = `View and manage all ${window.actions.length} logged actions`;
                     break;
                 case 'flagged':
-                    tooltipText = `View ${flaggedCount} flagged issues requiring attention`;
+                    tooltipText = `View ${window.flaggedCount || 0} flagged issues requiring attention`;
                     break;
                 default:
                     tooltipText = 'Click to navigate to this section';

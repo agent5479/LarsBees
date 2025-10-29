@@ -2623,7 +2623,8 @@ function loadAllData() {
     // Load sites
     database.ref(`${tenantPath}/sites`).once('value')
         .then(snapshot => {
-            window.sites = snapshot.val() || [];
+            const data = snapshot.val();
+            window.sites = data ? Object.values(data) : [];
             console.log('✅ Sites loaded:', window.sites.length);
             
             
@@ -2639,7 +2640,8 @@ function loadAllData() {
     // Load actions
     database.ref(`${tenantPath}/actions`).once('value')
         .then(snapshot => {
-            window.actions = snapshot.val() || [];
+            const data = snapshot.val();
+            window.actions = data ? Object.values(data) : [];
             console.log('✅ Actions loaded:', window.actions.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2653,7 +2655,8 @@ function loadAllData() {
     // Load scheduled tasks
     database.ref(`${tenantPath}/scheduledTasks`).once('value')
         .then(snapshot => {
-            window.scheduledTasks = snapshot.val() || [];
+            const data = snapshot.val();
+            window.scheduledTasks = data ? Object.values(data) : [];
             console.log('✅ Scheduled tasks loaded:', window.scheduledTasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2667,7 +2670,8 @@ function loadAllData() {
     // Load individual hives
     database.ref(`${tenantPath}/individualHives`).once('value')
         .then(snapshot => {
-            window.individualHives = snapshot.val() || [];
+            const data = snapshot.val();
+            window.individualHives = data ? Object.values(data) : [];
             console.log('✅ Individual hives loaded:', window.individualHives.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2681,7 +2685,8 @@ function loadAllData() {
     // Load tasks
     database.ref(`${tenantPath}/tasks`).once('value')
         .then(snapshot => {
-            window.tasks = snapshot.val() || [];
+            const data = snapshot.val();
+            window.tasks = data ? Object.values(data) : [];
             console.log('✅ Tasks loaded:', window.tasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2695,7 +2700,8 @@ function loadAllData() {
     // Load deleted tasks
     database.ref(`${tenantPath}/deletedTasks`).once('value')
         .then(snapshot => {
-            window.deletedTasks = snapshot.val() || {};
+            const data = snapshot.val();
+            window.deletedTasks = data || {};
             console.log('✅ Deleted tasks loaded:', Object.keys(window.deletedTasks).length);
         })
         .catch(error => {
@@ -2717,7 +2723,8 @@ function initializeDataLoading() {
         
         // Real-time listeners for data updates
         database.ref(`${tenantPath}/sites`).on('value', snapshot => {
-            window.sites = snapshot.val() || [];
+            const data = snapshot.val();
+            window.sites = data ? Object.values(data) : [];
             console.log('🔄 Sites updated:', window.sites.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2725,7 +2732,8 @@ function initializeDataLoading() {
         });
         
         database.ref(`${tenantPath}/actions`).on('value', snapshot => {
-            window.actions = snapshot.val() || [];
+            const data = snapshot.val();
+            window.actions = data ? Object.values(data) : [];
             console.log('🔄 Actions updated:', window.actions.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2733,7 +2741,8 @@ function initializeDataLoading() {
         });
         
         database.ref(`${tenantPath}/scheduledTasks`).on('value', snapshot => {
-            window.scheduledTasks = snapshot.val() || [];
+            const data = snapshot.val();
+            window.scheduledTasks = data ? Object.values(data) : [];
             console.log('🔄 Scheduled tasks updated:', window.scheduledTasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2741,7 +2750,8 @@ function initializeDataLoading() {
         });
         
         database.ref(`${tenantPath}/individualHives`).on('value', snapshot => {
-            window.individualHives = snapshot.val() || [];
+            const data = snapshot.val();
+            window.individualHives = data ? Object.values(data) : [];
             console.log('🔄 Individual hives updated:', window.individualHives.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2749,7 +2759,8 @@ function initializeDataLoading() {
         });
         
         database.ref(`${tenantPath}/tasks`).on('value', snapshot => {
-            window.tasks = snapshot.val() || [];
+            const data = snapshot.val();
+            window.tasks = data ? Object.values(data) : [];
             console.log('🔄 Tasks updated:', window.tasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
@@ -2757,7 +2768,8 @@ function initializeDataLoading() {
         });
         
         database.ref(`${tenantPath}/deletedTasks`).on('value', snapshot => {
-            window.deletedTasks = snapshot.val() || {};
+            const data = snapshot.val();
+            window.deletedTasks = data || {};
             console.log('🔄 Deleted tasks updated:', Object.keys(window.deletedTasks).length);
         });
     }
