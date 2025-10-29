@@ -943,6 +943,9 @@ function handleLogin(e) {
         localStorage.setItem('isAdmin', 'true');
         localStorage.setItem('currentTenantId', currentTenantId);
         
+        // Clean up any incorrect employee listings (Lars should not be an employee)
+        cleanupIncorrectEmployeeListings();
+        
         // Initialize data for this tenant
         sites = [];
         actions = [];
@@ -1275,6 +1278,9 @@ function validateLogin(username, password) {
             isAdmin = true;
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             localStorage.setItem('isAdmin', 'true');
+            
+            // Clean up any incorrect employee listings (Lars should not be an employee)
+            cleanupIncorrectEmployeeListings();
             
             // Delay to show success message
             setTimeout(() => {
@@ -2423,6 +2429,46 @@ function undoGBTechTestData() {
 }
 
 // Password change functions removed - employees use admin-set passwords
+
+// Function to clean up incorrect employee listings (Lars should not be an employee)
+function cleanupIncorrectEmployeeListings() {
+    if (!database || !currentTenantId) {
+        console.log('⚠️ Cannot cleanup - database or tenant not available');
+        return;
+    }
+    
+    const employeePath = `tenants/${currentTenantId}/employees`;
+    database.ref(employeePath).once('value', (snapshot) => {
+        const employees = snapshot.val() || {};
+        const employeeKeys = Object.keys(employees);
+        
+        console.log('🔍 Checking employee listings for cleanup...');
+        
+        // Find and remove Lars from employee list (Lars is admin, not employee)
+        const larsEmployeeKeys = employeeKeys.filter(key => {
+            const employee = employees[key];
+            return employee.username && employee.username.toLowerCase() === 'lars';
+        });
+        
+        if (larsEmployeeKeys.length > 0) {
+            console.log('🧹 Found Lars incorrectly listed as employee, removing...');
+            
+            larsEmployeeKeys.forEach(key => {
+                database.ref(`${employeePath}/${key}`).remove()
+                    .then(() => {
+                        console.log(`✅ Removed Lars from employee list (key: ${key})`);
+                    })
+                    .catch(error => {
+                        console.error('❌ Error removing Lars from employee list:', error);
+                    });
+            });
+        } else {
+            console.log('✅ No incorrect employee listings found');
+        }
+    }).catch(error => {
+        console.error('❌ Error checking employee listings:', error);
+    });
+}
 /*
 function showPasswordChangePrompt(employee) {
     const modal = document.createElement('div');
