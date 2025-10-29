@@ -110,7 +110,16 @@ function renderSites() {
                             <!-- Seasonal Classification -->
                             <div class="mb-2">
                                 <i class="bi bi-sun text-muted me-1"></i>
-                                <strong>Seasonal Classification:</strong> ${c.seasonalClassification || c.seasonal_classification || 'Not specified'}
+                                <strong>Seasonal Classification:</strong> ${(() => {
+                                    console.log('🔍 Site seasonal data debug:', {
+                                        siteId: c.id,
+                                        siteName: c.name,
+                                        seasonalClassification: c.seasonalClassification,
+                                        seasonal_classification: c.seasonal_classification,
+                                        allKeys: Object.keys(c)
+                                    });
+                                    return c.seasonalClassification || c.seasonal_classification || 'Not specified';
+                                })()}
                             </div>
                             
                             <!-- Total Hive Count -->

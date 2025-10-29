@@ -2508,6 +2508,19 @@ function loadAllData() {
         .then(snapshot => {
             window.sites = snapshot.val() || [];
             console.log('✅ Sites loaded:', window.sites.length);
+            
+            // Debug: Check first site's seasonal classification
+            if (window.sites.length > 0) {
+                const firstSite = window.sites[0];
+                console.log('🔍 First site seasonal debug:', {
+                    siteId: firstSite.id,
+                    siteName: firstSite.name,
+                    seasonalClassification: firstSite.seasonalClassification,
+                    seasonal_classification: firstSite.seasonal_classification,
+                    allKeys: Object.keys(firstSite)
+                });
+            }
+            
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
