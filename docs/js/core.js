@@ -1200,29 +1200,15 @@ function authenticateEmployee(employee, username, password, passwordHash) {
     const deviceKey = `device_remembered_${employee.id}`;
     const isDeviceRemembered = localStorage.getItem(deviceKey) === 'true';
     
-    // If using temporary password and device not remembered, show password change prompt
-    if (isTemporaryPassword && !isDeviceRemembered) {
-        // Store device as remembered
-        localStorage.setItem(deviceKey, 'true');
-        
-        // Update employee record
-        const employeePath = `tenants/${currentTenantId}/employees`;
-        database.ref(`${employeePath}/${employee.id}`).update({
-            deviceRemembered: true,
-            lastLogin: new Date().toISOString()
-        });
-        
-        // Show password change prompt
-        setTimeout(() => {
-            showPasswordChangePrompt(employee);
-        }, 1000);
-    } else if (isTemporaryPassword && isDeviceRemembered) {
-        // Device remembered, just update last login
-        const employeePath = `tenants/${currentTenantId}/employees`;
-        database.ref(`${employeePath}/${employee.id}`).update({
-            lastLogin: new Date().toISOString()
-        });
-    }
+    // Store device as remembered and update last login
+    localStorage.setItem(deviceKey, 'true');
+    
+    // Update employee record
+    const employeePath = `tenants/${currentTenantId}/employees`;
+    database.ref(`${employeePath}/${employee.id}`).update({
+        deviceRemembered: true,
+        lastLogin: new Date().toISOString()
+    });
     
     currentUser = employee;
     isAdmin = false;
@@ -1362,29 +1348,15 @@ function validateLogin(username, password) {
                 const deviceKey = `device_remembered_${employee.id}`;
                 const isDeviceRemembered = localStorage.getItem(deviceKey) === 'true';
                 
-                // If using temporary password and device not remembered, show password change prompt
-                if (isTemporaryPassword && !isDeviceRemembered) {
-                    // Store device as remembered
-                    localStorage.setItem(deviceKey, 'true');
-                    
-                    // Update employee record
-                    const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
-                    database.ref(`${employeePath}/${employee.id}`).update({
-                        deviceRemembered: true,
-                        lastLogin: new Date().toISOString()
-                    });
-                    
-                    // Show password change prompt
-                    setTimeout(() => {
-                        showPasswordChangePrompt(employee);
-                    }, 1000);
-                } else if (isTemporaryPassword && isDeviceRemembered) {
-                    // Device remembered, just update last login
-                    const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
-                    database.ref(`${employeePath}/${employee.id}`).update({
-                        lastLogin: new Date().toISOString()
-                    });
-                }
+                // Store device as remembered and update last login
+                localStorage.setItem(deviceKey, 'true');
+                
+                // Update employee record
+                const employeePath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
+                database.ref(`${employeePath}/${employee.id}`).update({
+                    deviceRemembered: true,
+                    lastLogin: new Date().toISOString()
+                });
                 
                 currentUser = employee;
                 isAdmin = false;
@@ -2450,7 +2422,8 @@ function undoGBTechTestData() {
         });
 }
 
-// Show password change prompt for employees using temporary passwords
+// Password change functions removed - employees use admin-set passwords
+/*
 function showPasswordChangePrompt(employee) {
     const modal = document.createElement('div');
     modal.className = 'modal fade';
@@ -2538,8 +2511,10 @@ function showPasswordChangePrompt(employee) {
         document.body.removeChild(modal);
     });
 }
+*/
 
 // Save employee password change
+/*
 function saveEmployeePasswordChange(employeeId) {
     const newPassword = document.getElementById('employeeNewPassword').value;
     const confirmPassword = document.getElementById('employeeConfirmPassword').value;
@@ -2587,6 +2562,7 @@ function saveEmployeePasswordChange(employeeId) {
         beeMarshallAlert('Failed to update password: ' + error.message, 'error');
     });
 }
+*/
 
 // Global data arrays - Initialize as empty arrays if not already declared
 if (typeof sites === 'undefined') {
