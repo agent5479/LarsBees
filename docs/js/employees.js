@@ -24,26 +24,28 @@ function handleAddEmployee(e) {
     }
     
     const name = document.getElementById('newEmployeeName').value.trim();
-    const password = document.getElementById('newEmployeePassword').value;
     
-    if (!name || !password) {
-        alert('Please enter both name and password');
+    if (!name) {
+        beeMarshallAlert('Please enter employee name', 'warning');
         return;
     }
+    
+    // Generate a temporary password that meets security requirements
+    const temporaryPassword = generateTemporaryPassword();
     
     const employeeId = 'emp_' + Date.now();
     const employee = {
         id: employeeId,
         username: name,
-        passwordHash: secureHash(password),
+        passwordHash: secureHash(temporaryPassword),
         role: 'employee',
         isActive: false, // New employees start as inactive
         createdAt: new Date().toISOString(),
         createdBy: currentUser.username,
         tenantId: currentTenantId, // Store the tenant ID of the admin who created this employee
         activationCode: generateActivationCode(), // Generate unique activation code
-        temporaryPassword: null, // Will be set when activated
-        temporaryPasswordExpiry: null, // Will be set when activated
+        temporaryPassword: temporaryPassword, // Store the temporary password
+        temporaryPasswordExpiry: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
         deviceRemembered: false, // Device remembering status
         lastLogin: null, // Track last login
         passwordChanged: false // Track if password has been changed from temporary
@@ -53,7 +55,7 @@ function handleAddEmployee(e) {
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
     database.ref(`${tenantPath}/${employeeId}`).set(employee)
         .then(() => {
-            beeMarshallAlert(`✅ Employee "${name}" added successfully!\n\nStatus: Pending Activation\nUsername: ${name}\nPassword: [the password you set]\n\nClick "Activate" to enable login access.`, 'success');
+            beeMarshallAlert(`✅ Employee "${name}" added successfully!\n\nStatus: Pending Activation\nUsername: ${name}\nTemporary Password: ${temporaryPassword}\n\nClick "Activate" to enable login access.`, 'success');
             document.getElementById('addEmployeeForm').reset();
             loadEmployees();
         });
@@ -692,17 +694,4 @@ function togglePasswordVisibility() {
     }
 }
 
-function toggleEmployeePasswordVisibility() {
-    const passwordInput = document.getElementById('newEmployeePassword');
-    const icon = document.getElementById('employeePasswordToggleIcon');
-    
-    if (passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        icon.classList.remove('bi-eye');
-        icon.classList.add('bi-eye-slash');
-    } else {
-        passwordInput.type = 'password';
-        icon.classList.remove('bi-eye-slash');
-        icon.classList.add('bi-eye');
-    }
-}
+// Password toggle function removed - no longer needed for add employee form
