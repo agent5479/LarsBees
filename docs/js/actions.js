@@ -238,25 +238,35 @@ function showFlagged() {
 }
 
 function renderFlaggedItems() {
-    const flagged = actions.filter(a => a.flag && a.flag !== '');
+    console.log('🔍 Rendering flagged items...');
+    console.log('📊 Total actions:', window.actions ? window.actions.length : 0);
+    console.log('📊 Actions data:', window.actions);
+    
+    const flagged = window.actions.filter(a => a.flag && a.flag !== '');
+    console.log('🚩 Flagged actions found:', flagged.length);
+    console.log('🚩 Flagged actions:', flagged);
+    
     const html = flagged.reverse().length > 0
         ? flagged.map(a => {
-            const site = sites.find(s => s.id === a.siteId);
+            const site = window.sites.find(s => s.id === a.siteId);
             const flagClass = a.flag === 'urgent' ? 'danger' : a.flag === 'warning' ? 'warning' : 'info';
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : 'ℹ️';
             
             return `
-                <div class="card mb-3 border-${flagClass}">
+                <div class="card mb-3 border-${flagClass} flagged-item-card" style="cursor: pointer;" onclick="navigateToSite('${a.siteId}')">
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
-                            <div>
+                            <div class="flex-grow-1">
                                 <h5>${flagIcon} ${getTaskDisplayName(a.taskName, a.taskId)}</h5>
                                 <p class="mb-1"><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</p>
                                 <p class="mb-1"><small><i class="bi bi-calendar"></i> ${a.date} • <i class="bi bi-person"></i> ${a.loggedBy}</small></p>
                                 <span class="badge bg-${flagClass}">${a.flag.toUpperCase()}</span>
                                 ${a.notes ? `<p class="mt-2">${a.notes}</p>` : ''}
+                                <small class="text-muted"><i class="bi bi-hand-index"></i> Click to view site details</small>
                             </div>
-                            ${isAdmin ? `<button class="btn btn-sm btn-outline-secondary" onclick="unflagAction('${a.id}')"><i class="bi bi-flag"></i> Unflag</button>` : ''}
+                            <div class="ms-3">
+                                ${isAdmin ? `<button class="btn btn-sm btn-outline-secondary" onclick="event.stopPropagation(); unflagAction('${a.id}')"><i class="bi bi-flag"></i> Unflag</button>` : ''}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -267,8 +277,40 @@ function renderFlaggedItems() {
     document.getElementById('flaggedItemsList2').innerHTML = html;
 }
 
+function navigateToSite(siteId) {
+    // Navigate to sites view and highlight the specific site
+    showSites();
+    
+    // Scroll to the site card and highlight it
+    setTimeout(() => {
+        const siteElement = document.querySelector(`[data-site-id="${siteId}"]`);
+        if (siteElement) {
+            siteElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            siteElement.classList.add('highlighted');
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+                siteElement.classList.remove('highlighted');
+            }, 3000);
+        }
+    }, 100);
+}
+
 function unflagAction(id) {
+    console.log('🚩 Unflagging action:', id);
+    
     // Use tenant-specific path for data isolation
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
-    database.ref(`${tenantPath}/${id}/flag`).set('');
+    
+    database.ref(`${tenantPath}/${id}/flag`).set('')
+        .then(() => {
+            console.log('✅ Action unflagged successfully');
+            beeMarshallAlert('Action unflagged successfully', 'success');
+            // Refresh the flagged items list
+            renderFlaggedItems();
+        })
+        .catch(error => {
+            console.error('❌ Error unflagging action:', error);
+            beeMarshallAlert('Error unflagging action. Please try again.', 'error');
+        });
 }

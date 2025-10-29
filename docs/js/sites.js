@@ -89,7 +89,7 @@ function renderSites() {
             
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card site-card h-100" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
+                    <div class="card site-card h-100" data-site-id="${c.id}" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">
