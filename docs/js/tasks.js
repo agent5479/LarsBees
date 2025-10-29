@@ -16,6 +16,14 @@ function getTaskDisplayName(taskName, taskId) {
         return currentTask.name;
     }
     
+    // Debug logging for task lookup
+    console.log('🔍 getTaskDisplayName debug:', {
+        taskName,
+        taskId,
+        tasksArrayLength: tasksArray.length,
+        firstFewTasks: tasksArray.slice(0, 3).map(t => ({ id: t.id, name: t.name }))
+    });
+    
     // Check if it's a deleted task
     if (taskId && window.deletedTasks && window.deletedTasks[taskId]) {
         return `[Deleted: ${window.deletedTasks[taskId].name}]`;

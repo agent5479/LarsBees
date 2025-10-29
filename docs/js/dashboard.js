@@ -302,6 +302,15 @@ function updateScheduledTasksPreview() {
                 const site = window.sites.find(s => s.id === t.siteId);
             const task = (window.tasks || tasks || []).find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
+            
+            // Debug logging for task lookup
+            if (!task) {
+                console.log('🔍 Task lookup debug:', {
+                    taskId: t.taskId,
+                    availableTasks: (window.tasks || tasks || []).length,
+                    firstFewTaskIds: (window.tasks || tasks || []).slice(0, 3).map(t => t.id)
+                });
+            }
             const priorityBadge = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
             return `
                 <div class="scheduled-task p-2 mb-2 rounded">
