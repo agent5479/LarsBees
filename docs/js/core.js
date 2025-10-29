@@ -83,16 +83,16 @@ function initializeDatabase() {
     }
 }
 
-// Global variables
-let currentUser = null;
-let isAdmin = false;
-let currentTenantId = null; // For data isolation
-let database = null; // Will be set when Firebase initializes
-let sites = [];
-let actions = [];
-let individualHives = [];
-let scheduledTasks = [];
-let employees = [];
+// Global variables - explicitly initialize to prevent temporal dead zone issues
+var currentUser = null;
+var isAdmin = false;
+var currentTenantId = null; // For data isolation
+var database = null; // Will be set when Firebase initializes
+var sites = [];
+var actions = [];
+var individualHives = [];
+var scheduledTasks = [];
+var employees = [];
 // Comprehensive task list for the system
 const COMPREHENSIVE_TASKS = [
     { id: 'task_1', name: 'Hive Inspection', category: 'Inspection', description: 'Regular hive health and productivity check' },
@@ -968,13 +968,13 @@ function handleLogin(e) {
     updateDebugInfo('firebaseStatus', 'Checking employee credentials');
     
     // For employee authentication, try the current tenant first, then search all tenants if needed
-    const currentTenantId = localStorage.getItem('currentTenantId');
-    console.log('🔍 Current tenant ID from localStorage:', currentTenantId);
+    const storedTenantId = localStorage.getItem('currentTenantId');
+    console.log('🔍 Current tenant ID from localStorage:', storedTenantId);
     
-    if (currentTenantId) {
+    if (storedTenantId) {
         // Try to authenticate in the current tenant first
-        console.log('🔍 Trying authentication in current tenant:', currentTenantId);
-        authenticateEmployeeInTenant(username, password, passwordHash, currentTenantId);
+        console.log('🔍 Trying authentication in current tenant:', storedTenantId);
+        authenticateEmployeeInTenant(username, password, passwordHash, storedTenantId);
     } else {
         // No current tenant, search across all tenants
         console.log('🔍 No current tenant, searching across all tenants...');
