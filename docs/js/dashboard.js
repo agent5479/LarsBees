@@ -75,6 +75,11 @@ window.getTaskDisplayName = function(taskName, taskId) {
         }
     }
     
+    // If we have a taskId but no name, display the ID for debugging
+    if (taskId) {
+        return `[Task ID: ${taskId}]`;
+    }
+    
     return '[Unknown Task]';
 };
 

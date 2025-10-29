@@ -10,15 +10,9 @@ function getTaskDisplayName(taskName, taskId) {
     const globalTasks = tasks || [];
     const tasksArray = [...windowTasks, ...globalTasks];
     
-    console.log('🔍 getTaskDisplayName called with:', { taskName, taskId });
-    console.log('🔍 Available tasks:', tasksArray.length);
-    console.log('🔍 window.tasks:', windowTasks.length);
-    console.log('🔍 global tasks:', globalTasks.length);
-    
     // If task exists in current tasks, use it
     const currentTask = tasksArray.find(t => t.name === taskName || t.id === taskId);
     if (currentTask) {
-        console.log('✅ Found task:', currentTask.name);
         return currentTask.name;
     }
     
@@ -38,6 +32,11 @@ function getTaskDisplayName(taskName, taskId) {
         if (comprehensiveTask) {
             return comprehensiveTask.name;
         }
+    }
+    
+    // If we have a taskId but no name, display the ID for debugging
+    if (taskId) {
+        return `[Task ID: ${taskId}]`;
     }
     
     return '[Unknown Task]';
