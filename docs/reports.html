@@ -773,6 +773,11 @@
             // Auto-generate reports after data loads
             generateAllReports();
             
+            // Initialize data loading for reports
+            if (typeof initializeDataLoading === 'function') {
+                initializeDataLoading();
+            }
+            
             Logger.log('✅ Reports page initialization complete');
         });
         
