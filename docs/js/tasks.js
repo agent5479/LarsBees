@@ -128,10 +128,10 @@ window.renderTasksList = function(filterCategory = 'All') {
                                         : '<span class="badge bg-secondary">Full List</span>'}
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})" title="Edit">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editTask('${task.id}')" title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')" title="Delete">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </td>
@@ -179,10 +179,10 @@ window.renderTasksList = function(filterCategory = 'All') {
                                             : '<span class="badge bg-secondary">Full List</span>'}
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${task.id})" title="Edit">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editTask('${task.id}')" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
@@ -247,6 +247,8 @@ function handleAddTask() {
 }
 
 function editTask(taskId) {
+    console.log('🔧 editTask called with taskId:', taskId, 'type:', typeof taskId);
+    
     // Only allow this function when in the task management view
     const tasksView = document.getElementById('tasksView');
     if (!tasksView || tasksView.classList.contains('hidden')) {
@@ -257,8 +259,17 @@ function editTask(taskId) {
     }
     
     const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
+    console.log('🔧 Available tasks:', tasksToUse.length);
+    console.log('🔧 Task IDs:', tasksToUse.map(t => t.id));
+    
     const task = tasksToUse.find(t => t.id === taskId);
-    if (!task) return;
+    if (!task) {
+        console.log('❌ Task not found with ID:', taskId);
+        beeMarshallAlert('Task not found. Please refresh the page and try again.', 'error');
+        return;
+    }
+    
+    console.log('✅ Found task:', task);
     
     // Create a modal for better task editing experience
     const modalHtml = `

@@ -33,7 +33,7 @@ function populateActionForm() {
     `).join('');
     
     document.getElementById('taskCheckboxes').innerHTML = `<div class="row">${html}</div>`;
-    filterTaskCheckboxes('common');
+    filterTaskCheckboxes('all');
 }
 
 function filterTaskCheckboxes(filter) {
