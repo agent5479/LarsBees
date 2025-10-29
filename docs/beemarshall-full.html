@@ -3142,12 +3142,12 @@
         
         // CSV Export Functions
         function exportSitesCSV() {
-            if (!sites || sites.length === 0) {
+            if (!window.sites || window.sites.length === 0) {
                 beeMarshallAlert('No site data available to export.', 'info');
                 return;
             }
             
-            const csvData = sites.map(site => {
+            const csvData = window.sites.map(site => {
                 return {
                     'Site ID': site.id,
                     'Name': site.name,
@@ -3187,14 +3187,14 @@
         }
         
         function exportActionsCSV() {
-            if (!actions || actions.length === 0) {
+            if (!window.actions || window.actions.length === 0) {
                 beeMarshallAlert('No action data available to export.', 'info');
                 return;
             }
             
-            const csvData = actions.map(action => {
+            const csvData = window.actions.map(action => {
                 // Find site name from ID
-                const site = sites.find(s => s.id === action.siteId);
+                const site = window.sites.find(s => s.id === action.siteId);
                 const siteName = site ? site.name : '';
                 
                 return {
@@ -3219,18 +3219,18 @@
         }
         
         function exportScheduledTasksCSV() {
-            if (!scheduledTasks || scheduledTasks.length === 0) {
+            if (!window.scheduledTasks || window.scheduledTasks.length === 0) {
                 beeMarshallAlert('No scheduled task data available to export.', 'info');
                 return;
             }
             
-            const csvData = scheduledTasks.map(task => {
+            const csvData = window.scheduledTasks.map(task => {
                 // Find site name from ID
-                const site = sites.find(s => s.id === task.siteId);
+                const site = window.sites.find(s => s.id === task.siteId);
                 const siteName = site ? site.name : '';
                 
                 // Find task name from task ID
-                const taskObj = tasks.find(t => t.id === task.taskId);
+                const taskObj = window.tasks.find(t => t.id === task.taskId);
                 const taskName = taskObj ? taskObj.name : '';
                 const taskCategory = taskObj ? taskObj.category : '';
                 
@@ -3262,14 +3262,14 @@
         }
         
         function exportIndividualHivesCSV() {
-            if (!individualHives || individualHives.length === 0) {
+            if (!window.individualHives || window.individualHives.length === 0) {
                 beeMarshallAlert('No individual hive data available to export.', 'info');
                 return;
             }
             
-            const csvData = individualHives.map(hive => {
+            const csvData = window.individualHives.map(hive => {
                 // Find site name from ID
-                const site = sites.find(s => s.id === hive.siteId);
+                const site = window.sites.find(s => s.id === hive.siteId);
                 const siteName = site ? site.name : '';
                 
                 return {
@@ -3296,8 +3296,8 @@
             const allData = [];
             
             // Add sites data
-            if (sites && sites.length > 0) {
-                sites.forEach(site => {
+            if (window.sites && window.sites.length > 0) {
+                window.sites.forEach(site => {
                     allData.push({
                         'Data Type': 'Site',
                         'ID': site.id,
@@ -3336,10 +3336,10 @@
             }
             
             // Add actions data
-            if (actions && actions.length > 0) {
-                actions.forEach(action => {
+            if (window.actions && window.actions.length > 0) {
+                window.actions.forEach(action => {
                     // Find site name from ID
-                    const site = sites.find(s => s.id === action.siteId);
+                    const site = window.sites.find(s => s.id === action.siteId);
                     const siteName = site ? site.name : '';
                     
                     allData.push({
@@ -3369,10 +3369,10 @@
             }
             
             // Add scheduled tasks data
-            if (scheduledTasks && scheduledTasks.length > 0) {
-                scheduledTasks.forEach(task => {
+            if (window.scheduledTasks && window.scheduledTasks.length > 0) {
+                window.scheduledTasks.forEach(task => {
                     // Find site name from ID
-                    const site = sites.find(s => s.id === task.siteId);
+                    const site = window.sites.find(s => s.id === task.siteId);
                     const siteName = site ? site.name : '';
                     
                     allData.push({
@@ -3389,6 +3389,32 @@
                         'Created At': task.createdAt || '',
                         'Last Modified By': '',
                         'Last Modified At': ''
+                    });
+                });
+            }
+            
+            // Add individual hives data
+            if (window.individualHives && window.individualHives.length > 0) {
+                window.individualHives.forEach(hive => {
+                    // Find site name from ID
+                    const site = window.sites.find(s => s.id === hive.siteId);
+                    const siteName = site ? site.name : '';
+                    
+                    allData.push({
+                        'Data Type': 'Individual Hive',
+                        'ID': hive.id,
+                        'Name': hive.hiveName || '',
+                        'Description': hive.notes || '',
+                        'Site Name': siteName,
+                        'Hive Number': hive.hiveNumber || '',
+                        'Status': hive.status || '',
+                        'Queen Status': hive.queenStatus || '',
+                        'Brood Pattern': hive.broodPattern || '',
+                        'Food Stores': hive.foodStores || '',
+                        'Population': hive.population || '',
+                        'Created At': hive.createdAt || '',
+                        'Last Modified By': '',
+                        'Last Modified At': hive.lastModifiedAt || ''
                     });
                 });
             }
