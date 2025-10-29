@@ -277,7 +277,7 @@ function updateScheduledTasksPreview() {
     const html = pending.length > 0
         ? pending.slice(0, 5).map(t => {
                 const site = sites.find(s => s.id === t.siteId);
-            const task = tasks.find(tk => tk.id === t.taskId);
+            const task = (window.tasks || tasks || []).find(tk => tk.id === t.taskId);
             const displayTaskName = task ? task.name : getTaskDisplayName(null, t.taskId);
             const priorityBadge = t.priority === 'urgent' ? 'danger' : t.priority === 'high' ? 'warning' : 'secondary';
             return `

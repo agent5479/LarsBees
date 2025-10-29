@@ -5,15 +5,18 @@
 
 // Helper function to safely get task name (handles deleted tasks)
 function getTaskDisplayName(taskName, taskId) {
+    // Use window.tasks if available, fallback to tasks
+    const tasksArray = window.tasks || tasks || [];
+    
     // If task exists in current tasks, use it
-    const currentTask = tasks.find(t => t.name === taskName || t.id === taskId);
+    const currentTask = tasksArray.find(t => t.name === taskName || t.id === taskId);
     if (currentTask) {
         return currentTask.name;
     }
     
     // Check if it's a deleted task
-    if (taskId && deletedTasks && deletedTasks[taskId]) {
-        return `[Deleted: ${deletedTasks[taskId].name}]`;
+    if (taskId && window.deletedTasks && window.deletedTasks[taskId]) {
+        return `[Deleted: ${window.deletedTasks[taskId].name}]`;
     }
     
     // Fallback to the stored name with deleted indicator
