@@ -281,6 +281,11 @@ function updateDashboard() {
 }
 
 function updateScheduledTasksPreview() {
+    if (!window.scheduledTasks || !Array.isArray(window.scheduledTasks)) {
+        console.log('⚠️ window.scheduledTasks not available yet');
+        return;
+    }
+    
     const pending = window.scheduledTasks.filter(t => !t.completed);
     const html = pending.length > 0
         ? pending.slice(0, 5).map(t => {
@@ -314,6 +319,11 @@ function updateScheduledTasksPreview() {
 function updateCalendarWidget() {
     const calendarContainer = document.getElementById('calendarWidget');
     if (!calendarContainer) return;
+    
+    if (!window.scheduledTasks || !Array.isArray(window.scheduledTasks)) {
+        console.log('⚠️ window.scheduledTasks not available for calendar widget');
+        return;
+    }
     
     // Get all future scheduled tasks
     const today = new Date();

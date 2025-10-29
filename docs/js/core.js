@@ -1885,6 +1885,7 @@ function loadDataFromFirebase() {
         const data = snapshot.val();
         console.log('🔍 Raw sites data for', currentTenantId + ':', data);
         sites = data ? Object.values(data) : [];
+        window.sites = sites; // Also set window.sites
         console.log('📊 Sites loaded for', currentTenantId + ':', sites.length);
         console.log('📊 Sites array:', sites);
         
@@ -1905,6 +1906,7 @@ function loadDataFromFirebase() {
         const data = snapshot.val();
         console.log('🔍 Raw actions data for', currentTenantId + ':', data);
         actions = data ? Object.values(data) : [];
+        window.actions = actions; // Also set window.actions
         console.log('📊 Actions loaded for', currentTenantId + ':', actions.length);
         console.log('📊 Actions array:', actions);
         checkAllDataLoaded();
@@ -1928,6 +1930,7 @@ function loadDataFromFirebase() {
         console.log('📊 Snapshot keys:', snapshot.val() ? Object.keys(snapshot.val()) : 'null');
         
         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
+        window.scheduledTasks = scheduledTasks; // Also set window.scheduledTasks
         console.log('📊 Scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
         console.log('📊 Scheduled tasks data:', scheduledTasks);
         
@@ -2610,8 +2613,7 @@ function initializeDataLoading() {
         database.ref(`${tenantPath}/actions`).on('value', snapshot => {
             window.actions = snapshot.val() || [];
             console.log('🔄 Actions updated:', window.actions.length);
-            // Only update dashboard if tasks are loaded
-            if (typeof updateDashboard === 'function' && (window.tasks && window.tasks.length > 0)) {
+            if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         });
