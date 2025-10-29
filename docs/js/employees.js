@@ -55,7 +55,7 @@ function handleAddEmployee(e) {
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
     database.ref(`${tenantPath}/${employeeId}`).set(employee)
         .then(() => {
-            beeMarshallAlert(`✅ Employee "${name}" added successfully!\n\nStatus: Pending Activation\nUsername: ${name}\nTemporary Password: ${temporaryPassword}\n\nClick "Activate" to enable login access.`, 'success');
+            beeMarshallAlert(`✅ Employee "${name}" added successfully!\n\nStatus: Pending Activation\nUsername: ${name}\nPassword: ${temporaryPassword}\n\nClick "Activate" to enable login access.`, 'success');
             document.getElementById('addEmployeeForm').reset();
             loadEmployees();
         });
@@ -212,7 +212,7 @@ function activateEmployee(id) {
     
     database.ref(`${tenantPath}/${id}`).update(updates)
         .then(() => {
-            beeMarshallAlert(`✅ Employee "${employee.username}" has been activated!\n\nTemporary Password: ${temporaryPassword}\nExpires: ${expiryDate.toLocaleDateString()}\n\nShare this password with the employee. They should change it on first login.`, 'success');
+            beeMarshallAlert(`✅ Employee "${employee.username}" has been activated!\n\nPassword: ${temporaryPassword}\nExpires: ${expiryDate.toLocaleDateString()}\n\nShare this password with the employee.`, 'success');
             loadEmployees();
         })
         .catch(error => {
@@ -256,7 +256,7 @@ function regenerateTemporaryPassword(id) {
     
     database.ref(`${tenantPath}/${id}`).update(updates)
         .then(() => {
-            beeMarshallAlert(`✅ New temporary password generated for "${employee.username}"!\n\nNew Temporary Password: ${temporaryPassword}\nExpires: ${expiryDate.toLocaleDateString()}\n\nShare this new password with the employee.`, 'success');
+            beeMarshallAlert(`✅ New password generated for "${employee.username}"!\n\nNew Password: ${temporaryPassword}\nExpires: ${expiryDate.toLocaleDateString()}\n\nShare this new password with the employee.`, 'success');
             loadEmployees();
         })
         .catch(error => {
@@ -343,7 +343,7 @@ function showEmployeeCredentials(id) {
                     </div>
                     ${employee.isActive && employee.temporaryPassword ? `
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Temporary Password:</label>
+                        <label class="form-label fw-bold">Password:</label>
                         <div class="input-group">
                             <input type="text" class="form-control" id="employeeTempPassword" value="${employee.temporaryPassword}" readonly>
                             <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('employeeTempPassword')">
@@ -354,6 +354,9 @@ function showEmployeeCredentials(id) {
                             Expires: ${employee.temporaryPasswordExpiry ? new Date(employee.temporaryPasswordExpiry).toLocaleDateString() : 'Unknown'}
                             ${employee.deviceRemembered ? ' | Device Remembered' : ' | Device Not Remembered'}
                         </small>
+                        <div class="form-text text-info">
+                            <i class="bi bi-info-circle"></i> It is advisable to change the password regularly. Consult IT dept for best practices suggestions.
+                        </div>
                     </div>
                     ` : ''}
                     ${employee.activationCode ? `
