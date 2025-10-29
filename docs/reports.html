@@ -739,12 +739,12 @@
             
             // Initialize Firebase
             firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
+            window.database = firebase.database();
             
             Logger.log('✅ Firebase initialized successfully');
         } else {
             Logger.log('⚠️ Firebase already initialized, reusing existing instance');
-            database = firebase.database();
+            window.database = firebase.database();
         }
         
         // Global variables - Use window variables if available, otherwise initialize
@@ -926,6 +926,12 @@
                 initializeDataLoading();
             }
             
+            // Ensure database is available for core.js
+            if (window.database) {
+                // Make database available globally for core.js
+                window.database = window.database;
+            }
+            
             // Run integrity check after a short delay to ensure data is loaded
             setTimeout(() => {
                 performIntegrityCheck();
@@ -936,55 +942,31 @@
         
         // Sync Status Indicator Functions
         function showSyncStatus(message, type = 'info', showTimestamp = false) {
-            const syncIndicator = document.getElementById('syncIndicator');
-            const syncText = document.getElementById('syncText');
-            const syncIcon = document.getElementById('syncIcon');
+            // Use the syncTimestamp element that exists in reports.html
             const syncTimestamp = document.getElementById('syncTimestamp');
             
-            if (syncIndicator && syncText && syncIcon) {
-                syncText.textContent = message;
-                syncIndicator.className = `sync-indicator ${type}`;
-                syncIndicator.classList.remove('hidden');
+            if (syncTimestamp) {
+                const iconClass = type === 'success' ? 'check-circle' : 
+                                 type === 'error' ? 'exclamation-triangle' : 
+                                 type === 'warning' ? 'exclamation-triangle' : 
+                                 'arrow-clockwise';
+                const textClass = type === 'success' ? 'text-success' : 
+                                 type === 'error' ? 'text-danger' : 
+                                 type === 'warning' ? 'text-warning' : 
+                                 'text-primary';
                 
-                // Update icon based on type
-                if (type === 'success') {
-                    syncIcon.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
-                    syncIcon.style.color = '#28a745';
-                } else if (type === 'error') {
-                    syncIcon.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i>';
-                    syncIcon.style.color = '#dc3545';
-                } else if (type === 'loading') {
-                    syncIcon.innerHTML = '<i class="bi bi-arrow-clockwise"></i>';
-                    syncIcon.style.color = '#007bff';
-                    syncIcon.style.animation = 'spin 1s linear infinite';
-                } else {
-                    syncIcon.innerHTML = '<i class="bi bi-info-circle-fill"></i>';
-                    syncIcon.style.color = '#17a2b8';
-                }
-                
-                // Show timestamp if requested
-                if (showTimestamp && syncTimestamp) {
-                    const now = new Date();
-                    syncTimestamp.textContent = `Last updated: ${now.toLocaleTimeString()}`;
-                    syncTimestamp.style.display = 'block';
-                } else if (syncTimestamp) {
-                    syncTimestamp.style.display = 'none';
-                }
-                
-                // Auto-hide after 3 seconds for info messages
-                if (type === 'info') {
-                    setTimeout(() => {
-                        hideSyncStatus();
-                    }, 3000);
-                }
+                syncTimestamp.innerHTML = `
+                    <small class="text-muted">
+                        <i class="bi bi-${iconClass} ${textClass} me-1"></i>
+                        ${message}
+                    </small>
+                `;
             }
         }
         
         function hideSyncStatus() {
-            const syncIndicator = document.getElementById('syncIndicator');
-            if (syncIndicator) {
-                syncIndicator.classList.add('hidden');
-            }
+            // For reports.html, we don't need to hide anything
+            // The sync status is shown in the syncTimestamp element
         }
         
         function showSyncError(message) {
@@ -1100,7 +1082,7 @@
             
             // Load tenant-specific data with comprehensive error handling
             try {
-            database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
+            window.database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
                 try {
                     window.sites = snapshot.val() ? Object.values(snapshot.val()) : [];
                     Logger.log('📊 Reports sites loaded for', currentTenantId + ':', window.sites.length);
@@ -1120,7 +1102,7 @@
             }
             
             try {
-                database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
+                window.database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
                     try {
                         actions = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports actions loaded for', currentTenantId + ':', actions.length);
@@ -1139,7 +1121,7 @@
             }
             
             try {
-                database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
+                window.database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
                     try {
                         scheduledTasks = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports scheduled tasks loaded for', currentTenantId + ':', scheduledTasks.length);
@@ -1159,7 +1141,7 @@
             
             // Load additional data types for comprehensive reporting
             try {
-                database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
+                window.database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
                     try {
                         const individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports individual hives loaded for', currentTenantId + ':', individualHives.length);
@@ -1177,7 +1159,7 @@
             }
             
             try {
-                database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
+                window.database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
                     try {
                         const employees = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports employees loaded for', currentTenantId + ':', employees.length);
@@ -1195,7 +1177,7 @@
             }
             
             try {
-                database.ref(`tenants/${currentTenantId}/tasks`).on('value', (snapshot) => {
+                window.database.ref(`tenants/${currentTenantId}/tasks`).on('value', (snapshot) => {
                     try {
                         const tasks = snapshot.val() ? Object.values(snapshot.val()) : [];
                         Logger.log('📊 Reports tasks loaded for', currentTenantId + ':', tasks.length);
