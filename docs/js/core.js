@@ -964,12 +964,53 @@ function handleLogin(e) {
     console.log('🔄 Checking employee authentication...');
     updateDebugInfo('firebaseStatus', 'Checking employee credentials');
     
-    // For employee authentication, we need to find which tenant the employee belongs to
-    // We'll search across all tenants to find the employee and use their tenantId
-    console.log('🔍 Searching for employee across all tenants...');
+    // For employee authentication, try the current tenant first, then search all tenants if needed
+    const currentTenantId = localStorage.getItem('currentTenantId');
+    console.log('🔍 Current tenant ID from localStorage:', currentTenantId);
     
-    // Search for employee in all tenants
-    searchForEmployee(username, password, passwordHash);
+    if (currentTenantId) {
+        // Try to authenticate in the current tenant first
+        console.log('🔍 Trying authentication in current tenant:', currentTenantId);
+        authenticateEmployeeInTenant(username, password, passwordHash, currentTenantId);
+    } else {
+        // No current tenant, search across all tenants
+        console.log('🔍 No current tenant, searching across all tenants...');
+        searchForEmployee(username, password, passwordHash);
+    }
+}
+
+function authenticateEmployeeInTenant(username, password, passwordHash, tenantId) {
+    console.log(`🔍 Authenticating employee "${username}" in tenant "${tenantId}"`);
+    
+    const employeePath = `tenants/${tenantId}/employees`;
+    database.ref(employeePath).once('value', (empSnapshot) => {
+        const employeesList = empSnapshot.val() || {};
+        console.log(`🔍 Found ${Object.keys(employeesList).length} employees in tenant ${tenantId}`);
+        
+        const employee = Object.values(employeesList).find(emp => 
+            emp.username.toLowerCase() === username.toLowerCase()
+        );
+        
+        if (employee) {
+            console.log('✅ Employee found in current tenant:', employee.username);
+            console.log('🔍 Employee tenantId:', employee.tenantId);
+            
+            // Use the employee's stored tenantId, not the tenant we found them in
+            const employeeTenantId = employee.tenantId || tenantId;
+            console.log('🔍 Using tenant ID:', employeeTenantId);
+            
+            // Proceed with authentication
+            authenticateEmployee(employee, username, password, passwordHash);
+        } else {
+            console.log('❌ Employee not found in current tenant, trying other tenants...');
+            // Fall back to searching all tenants
+            searchForEmployee(username, password, passwordHash);
+        }
+    }).catch(error => {
+        console.error('❌ Error accessing employee data in tenant:', error);
+        // Fall back to searching all tenants
+        searchForEmployee(username, password, passwordHash);
+    });
 }
 
 function searchForEmployee(username, password, passwordHash) {
