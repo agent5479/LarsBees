@@ -305,6 +305,39 @@ window.testPasswordHash = function() {
     return hash;
 }
 
+// Test password hashing consistency between config and core
+window.testPasswordConsistency = function() {
+    const testPassword = 'LarsHoney2025!';
+    
+    console.log('🔄 Password Hashing Consistency Test:');
+    console.log('=====================================');
+    console.log('Test password:', testPassword);
+    
+    // Test core.js secureHash
+    const coreHash = secureHash(testPassword);
+    console.log('Core.js hash:', coreHash);
+    
+    // Test config.js hashPassword (simulate)
+    const configHash = simpleHash(testPassword) + '_secure';
+    console.log('Config.js hash:', configHash);
+    
+    // Test verification
+    const verification = verifyPassword(testPassword, coreHash);
+    console.log('Verification result:', verification);
+    
+    // Test with config hash
+    const configVerification = verifyPassword(testPassword, configHash);
+    console.log('Config hash verification:', configVerification);
+    
+    return {
+        coreHash,
+        configHash,
+        verification,
+        configVerification,
+        consistent: coreHash === configHash
+    };
+}
+
 // Test password verification
 window.testPasswordVerification = function() {
     const testPassword = 'TestPassword123!';
@@ -1274,9 +1307,9 @@ function secureHash(password) {
         if (typeof bcrypt !== 'undefined') {
             return bcrypt.hashSync(password, 12);
         } else {
-            // Fallback: Use Web Crypto API for client-side hashing
-            console.warn('⚠️ bcrypt not available, using Web Crypto API fallback');
-            return hashWithWebCrypto(password);
+            // Fallback: Use simpleHash for consistency with config.js
+            console.warn('⚠️ bcrypt not available, using simpleHash fallback');
+            return simpleHash(password) + '_secure';
         }
     } catch (error) {
         console.error('❌ Password hashing error:', error);
@@ -1303,8 +1336,20 @@ function verifyPassword(password, hash) {
                 return false;
             }
         } else {
-            // This is likely an old simpleHash or Web Crypto hash - verify
-            console.log('🔄 Detected legacy password hash, verifying with old system...');
+            // This is likely a simpleHash or Web Crypto hash - verify
+            console.log('🔄 Detected fallback password hash, verifying...');
+            
+            // Check if it's the new secure format
+            if (hash.endsWith('_secure')) {
+                const expectedHash = simpleHash(password) + '_secure';
+                const isValid = expectedHash === hash;
+                if (isValid) {
+                    console.log('✅ Secure fallback password verified');
+                }
+                return isValid;
+            }
+            
+            // Check if it's the old simpleHash format
             const oldHash = simpleHash(password);
             const isValid = oldHash === hash;
             

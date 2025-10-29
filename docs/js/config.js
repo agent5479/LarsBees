@@ -95,7 +95,7 @@ class SecureConfig {
     
     // Web Crypto API fallback for admin password hashing (synchronous fallback)
     hashWithWebCrypto(password) {
-        // For synchronous fallback, use a simple hash
+        // Use the same simpleHash function as core.js for consistency
         // This is not as secure as bcrypt but better than plain text
         let hash = 0;
         for (let i = 0; i < password.length; i++) {
@@ -103,7 +103,7 @@ class SecureConfig {
             hash = ((hash << 5) - hash) + char;
             hash = hash & hash; // Convert to 32-bit integer
         }
-        return Math.abs(hash).toString(36) + '_webcrypto';
+        return Math.abs(hash).toString(36) + '_secure';
     }
 
     loadFirebaseConfig() {
