@@ -660,73 +660,7 @@ function smsMessage() {
     window.open(smsLink);
 }
 
-// Bulk activate all pending employees
-function bulkActivateEmployees() {
-    // Check permission
-    if (!canManageEmployees()) {
-        showPermissionDeniedAlert('bulk activate employees');
-        return;
-    }
-    
-    const pendingEmployees = employees.filter(emp => !emp.isActive);
-    if (pendingEmployees.length === 0) {
-        beeMarshallAlert('No pending employees to activate.', 'info');
-        return;
-    }
-    
-    if (confirm(`Activate ${pendingEmployees.length} pending employee(s)?\n\nThis will enable login access for all pending employees.`)) {
-        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
-        const updates = {};
-        
-        pendingEmployees.forEach(emp => {
-            updates[`${emp.id}/isActive`] = true;
-        });
-        
-        database.ref(tenantPath).update(updates)
-            .then(() => {
-                beeMarshallAlert(`✅ ${pendingEmployees.length} employee(s) activated successfully!\n\nAll employees can now login with their credentials.`, 'success');
-                loadEmployees();
-            })
-            .catch(error => {
-                console.error('Error bulk activating employees:', error);
-                beeMarshallAlert('Failed to activate some employees', 'error');
-            });
-    }
-}
-
-// Bulk deactivate all active employees
-function bulkDeactivateEmployees() {
-    // Check permission
-    if (!canManageEmployees()) {
-        showPermissionDeniedAlert('bulk deactivate employees');
-        return;
-    }
-    
-    const activeEmployees = employees.filter(emp => emp.isActive);
-    if (activeEmployees.length === 0) {
-        beeMarshallAlert('No active employees to deactivate.', 'info');
-        return;
-    }
-    
-    if (confirm(`Deactivate ${activeEmployees.length} active employee(s)?\n\nThis will disable login access for all active employees.`)) {
-        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/employees` : 'employees';
-        const updates = {};
-        
-        activeEmployees.forEach(emp => {
-            updates[`${emp.id}/isActive`] = false;
-        });
-        
-        database.ref(tenantPath).update(updates)
-            .then(() => {
-                beeMarshallAlert(`${activeEmployees.length} employee(s) deactivated successfully!`, 'info');
-                loadEmployees();
-            })
-            .catch(error => {
-                console.error('Error bulk deactivating employees:', error);
-                beeMarshallAlert('Failed to deactivate some employees', 'error');
-            });
-    }
-}
+// Bulk activation/deactivation functions removed - individual employee management is more appropriate
 
 function removeEmployee(id) {
     // Check permission
