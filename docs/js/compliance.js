@@ -219,34 +219,63 @@ function renderStatusItem(label, completed) {
  * Render all obligations
  */
 function renderAllObligations() {
+    const currentYear = new Date().getFullYear();
+    const profile = getUserProfile();
+    const complianceStatus = profile?.compliance?.[currentYear] || {};
+    
     const obligations = [
         {
             period: '31 March',
             deadline: '1 June',
             obligations: [
-                { name: 'Annual Disease Return (ADR)', description: 'Complete ADR even if no bees', required: true },
-                { name: 'Colony Return', description: 'Declare colony count as at 31 March', required: true }
+                { 
+                    name: 'Annual Disease Return (ADR)', 
+                    description: 'Complete ADR even if no bees', 
+                    required: true,
+                    key: 'adrCompleted'
+                },
+                { 
+                    name: 'Colony Return', 
+                    description: 'Declare colony count as at 31 March', 
+                    required: true,
+                    key: 'colonyReturnCompleted'
+                }
             ]
         },
         {
             period: '1 April',
             deadline: '1 June',
             obligations: [
-                { name: 'Levy Payment', description: 'Pay levy invoice', required: true }
+                { 
+                    name: 'Levy Payment', 
+                    description: 'Pay levy invoice', 
+                    required: true,
+                    key: 'levyPaid'
+                }
             ]
         },
         {
             period: '1 Aug - 30 Nov',
             deadline: '30 Nov',
             obligations: [
-                { name: 'Certificate of Inspection (COI)', description: 'Required if no DECA', required: false }
+                { 
+                    name: 'Certificate of Inspection (COI)', 
+                    description: 'Required if no DECA', 
+                    required: false,
+                    key: 'coiCompleted'
+                }
             ]
         },
         {
             period: 'On Detection',
             deadline: '7 Days',
             obligations: [
-                { name: 'AFB Reporting', description: 'Report within 7 days of detection', required: true }
+                { 
+                    name: 'AFB Reporting', 
+                    description: 'Report within 7 days of detection', 
+                    required: true,
+                    key: 'afbReported'
+                }
             ]
         }
     ];
@@ -257,13 +286,34 @@ function renderAllObligations() {
                 <strong>${period.period} → Due: ${period.deadline}</strong>
             </div>
             <div class="card-body">
-                ${period.obligations.map(obligation => `
-                    <div class="mb-2">
-                        <strong>${obligation.name}</strong>
-                        ${!obligation.required ? '<span class="badge bg-secondary ms-2">Conditional</span>' : ''}
-                        <br><small class="text-muted">${obligation.description}</small>
-                    </div>
-                `).join('')}
+                ${period.obligations.map(obligation => {
+                    const isCompleted = complianceStatus[obligation.key] || false;
+                    const completionDate = complianceStatus[`${obligation.key}Date`];
+                    
+                    return `
+                        <div class="card mb-2 ${isCompleted ? 'border-success' : 'border-light'}">
+                            <div class="card-body py-2">
+                                <div class="form-check d-flex align-items-center">
+                                    <input class="form-check-input me-3" 
+                                           type="checkbox" 
+                                           id="compliance_${obligation.key}" 
+                                           ${isCompleted ? 'checked' : ''}
+                                           onchange="toggleComplianceStatus('${obligation.key}', ${currentYear})"
+                                           style="transform: scale(1.2);">
+                                    <div class="flex-grow-1">
+                                        <label class="form-check-label" for="compliance_${obligation.key}">
+                                            <strong class="${isCompleted ? 'text-success' : ''}">${obligation.name}</strong>
+                                            ${!obligation.required ? '<span class="badge bg-secondary ms-2">Conditional</span>' : ''}
+                                            ${isCompleted ? '<span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> Completed</span>' : ''}
+                                        </label>
+                                        <br><small class="text-muted">${obligation.description}</small>
+                                        ${completionDate ? `<br><small class="text-success"><i class="bi bi-calendar-check"></i> Completed: ${formatDate(new Date(completionDate))}</small>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
             </div>
         </div>
     `).join('');
@@ -396,7 +446,53 @@ function saveComplianceSettings() {
 }
 
 /**
- * Mark obligation as completed
+ * Toggle compliance status for a specific obligation
+ */
+function toggleComplianceStatus(obligationKey, year) {
+    const checkbox = document.getElementById(`compliance_${obligationKey}`);
+    const isCompleted = checkbox.checked;
+    
+    const profile = getUserProfile();
+    
+    if (!profile.compliance) {
+        profile.compliance = {};
+    }
+    if (!profile.compliance[year]) {
+        profile.compliance[year] = {};
+    }
+    
+    profile.compliance[year][obligationKey] = isCompleted;
+    
+    if (isCompleted) {
+        profile.compliance[year][`${obligationKey}Date`] = new Date().toISOString();
+    } else {
+        delete profile.compliance[year][`${obligationKey}Date`];
+    }
+    
+    showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
+    
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/users/${currentUser.uid}` : `users/${currentUser.uid}`;
+    
+    database.ref(tenantPath).update({ complianceProfile: profile })
+        .then(() => {
+            const statusText = isCompleted ? 'marked as completed' : 'marked as pending';
+            showSyncStatus(`<i class="bi bi-check"></i> ${obligationKey} ${statusText}!`, 'success');
+            currentUser.complianceProfile = profile;
+            
+            // Update the compliance status display
+            renderComplianceStatus();
+        })
+        .catch(error => {
+            showSyncStatus('<i class="bi bi-x"></i> Save failed', 'error');
+            console.error('Error updating compliance status:', error);
+            
+            // Revert checkbox state
+            checkbox.checked = !isCompleted;
+        });
+}
+
+/**
+ * Mark obligation as completed (legacy function for backward compatibility)
  */
 function markObligationCompleted(obligationType, year) {
     const profile = getUserProfile();
