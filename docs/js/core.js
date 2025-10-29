@@ -1014,52 +1014,50 @@ function authenticateEmployeeInTenant(username, password, passwordHash, tenantId
 }
 
 function searchForEmployee(username, password, passwordHash) {
-    // Get a list of all tenants by checking the tenants node
-    database.ref('tenants').once('value', (tenantsSnapshot) => {
-        const tenants = tenantsSnapshot.val() || {};
-        const tenantIds = Object.keys(tenants);
-        console.log('🔍 Found tenants:', tenantIds);
-        
-        if (tenantIds.length === 0) {
-            console.log('❌ No tenants found');
-            showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
-        return;
-    }
-        
-        // Search through each tenant for the employee
-        let found = false;
-        let searchCount = 0;
-        
-        tenantIds.forEach(tenantId => {
-            const employeePath = `tenants/${tenantId}/employees`;
-            database.ref(employeePath).once('value', (empSnapshot) => {
-                if (found) return; // Already found the employee
+    // Since we can't access /tenants directly due to Firebase rules,
+    // we'll try common tenant IDs that are likely to exist
+    const commonTenantIds = ['lars', 'gbtech', 'demo'];
+    console.log('🔍 Searching for employee in common tenants:', commonTenantIds);
+    
+    let found = false;
+    let searchCount = 0;
+    
+    commonTenantIds.forEach(tenantId => {
+        const employeePath = `tenants/${tenantId}/employees`;
+        database.ref(employeePath).once('value', (empSnapshot) => {
+            if (found) return; // Already found the employee
+            
+            searchCount++;
+            const employeesList = empSnapshot.val() || {};
+            console.log(`🔍 Checking tenant ${tenantId}:`, Object.keys(employeesList));
+            
+            const employee = Object.values(employeesList).find(emp => 
+                emp.username.toLowerCase() === username.toLowerCase()
+            );
+            
+            if (employee) {
+                found = true;
+                console.log('✅ Employee found in tenant:', tenantId);
+                console.log('🔍 Employee tenantId:', employee.tenantId);
                 
-                searchCount++;
-                const employeesList = empSnapshot.val() || {};
-                console.log(`🔍 Checking tenant ${tenantId}:`, Object.keys(employeesList));
+                // Use the employee's stored tenantId, not the tenant we found them in
+                const employeeTenantId = employee.tenantId || tenantId;
+                currentTenantId = employeeTenantId;
                 
-                const employee = Object.values(employeesList).find(emp => 
-                    emp.username.toLowerCase() === username.toLowerCase()
-                );
-                
-                if (employee) {
-                    found = true;
-                    console.log('✅ Employee found in tenant:', tenantId);
-                    console.log('🔍 Employee tenantId:', employee.tenantId);
-                    
-                    // Use the employee's stored tenantId, not the tenant we found them in
-                    const employeeTenantId = employee.tenantId || tenantId;
-                    currentTenantId = employeeTenantId;
-                    
-                    // Proceed with authentication
-                    authenticateEmployee(employee, username, password, passwordHash);
-                } else if (searchCount === tenantIds.length) {
-                    // We've checked all tenants and didn't find the employee
-                    console.log('❌ Employee not found in any tenant');
-                    showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
-                }
-            });
+                // Proceed with authentication
+                authenticateEmployee(employee, username, password, passwordHash);
+            } else if (searchCount === commonTenantIds.length) {
+                // We've checked all common tenants and didn't find the employee
+                console.log('❌ Employee not found in any common tenant');
+                showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+            }
+        }).catch(error => {
+            console.log(`⚠️ Error accessing tenant ${tenantId}:`, error.message);
+            searchCount++;
+            if (searchCount === commonTenantIds.length && !found) {
+                console.log('❌ Employee not found in any accessible tenant');
+                showLoginStatus('danger', 'Invalid username or password. Please check your credentials and try again.', false);
+            }
         });
     });
 }
