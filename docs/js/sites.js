@@ -25,8 +25,15 @@ function renderSites() {
         }
     });
     
-    const html = visibleSites.length > 0
-        ? visibleSites.map(c => {
+    // Sort sites alphabetically by name
+    const sortedSites = visibleSites.sort((a, b) => {
+        const nameA = (a.name || '').toLowerCase();
+        const nameB = (b.name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+    });
+    
+    const html = sortedSites.length > 0
+        ? sortedSites.map(c => {
             // Archive button for admins only (shown on active sites)
             const archiveBtn = (isAdmin && !c.archived) ? `
                 <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
