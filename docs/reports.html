@@ -728,10 +728,16 @@
             database = firebase.database();
         }
         
-        // Global variables
-        let sites = [];
-        let actions = [];
-        let scheduledTasks = [];
+        // Global variables - Use window variables if available, otherwise initialize
+        if (typeof window.sites === 'undefined') {
+            window.sites = [];
+        }
+        if (typeof window.actions === 'undefined') {
+            window.actions = [];
+        }
+        if (typeof window.scheduledTasks === 'undefined') {
+            window.scheduledTasks = [];
+        }
         
         // Initialize page
         
@@ -949,8 +955,8 @@
             try {
             database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
                 try {
-                    sites = snapshot.val() ? Object.values(snapshot.val()) : [];
-                    Logger.log('📊 Reports sites loaded for', currentTenantId + ':', sites.length);
+                    window.sites = snapshot.val() ? Object.values(snapshot.val()) : [];
+                    Logger.log('📊 Reports sites loaded for', currentTenantId + ':', window.sites.length);
                         updateHiveStrengthBreakdown();
                         checkAllDataLoaded();
                     } catch (error) {

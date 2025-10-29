@@ -2471,13 +2471,25 @@ function saveEmployeePasswordChange(employeeId) {
     });
 }
 
-// Global data arrays - Initialize as empty arrays
-let sites = [];
-let actions = [];
-let scheduledTasks = [];
-let individualHives = [];
-let tasks = [];
-let deletedTasks = {};
+// Global data arrays - Initialize as empty arrays if not already declared
+if (typeof sites === 'undefined') {
+    window.sites = [];
+}
+if (typeof actions === 'undefined') {
+    window.actions = [];
+}
+if (typeof scheduledTasks === 'undefined') {
+    window.scheduledTasks = [];
+}
+if (typeof individualHives === 'undefined') {
+    window.individualHives = [];
+}
+if (typeof tasks === 'undefined') {
+    window.tasks = [];
+}
+if (typeof deletedTasks === 'undefined') {
+    window.deletedTasks = {};
+}
 
 // Load all data from Firebase
 function loadAllData() {
@@ -2494,82 +2506,82 @@ function loadAllData() {
     // Load sites
     database.ref(`${tenantPath}/sites`).once('value')
         .then(snapshot => {
-            sites = snapshot.val() || [];
-            console.log('✅ Sites loaded:', sites.length);
+            window.sites = snapshot.val() || [];
+            console.log('✅ Sites loaded:', window.sites.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         })
         .catch(error => {
             console.error('❌ Error loading sites:', error);
-            sites = [];
+            window.sites = [];
         });
     
     // Load actions
     database.ref(`${tenantPath}/actions`).once('value')
         .then(snapshot => {
-            actions = snapshot.val() || [];
-            console.log('✅ Actions loaded:', actions.length);
+            window.actions = snapshot.val() || [];
+            console.log('✅ Actions loaded:', window.actions.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         })
         .catch(error => {
             console.error('❌ Error loading actions:', error);
-            actions = [];
+            window.actions = [];
         });
     
     // Load scheduled tasks
     database.ref(`${tenantPath}/scheduledTasks`).once('value')
         .then(snapshot => {
-            scheduledTasks = snapshot.val() || [];
-            console.log('✅ Scheduled tasks loaded:', scheduledTasks.length);
+            window.scheduledTasks = snapshot.val() || [];
+            console.log('✅ Scheduled tasks loaded:', window.scheduledTasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         })
         .catch(error => {
             console.error('❌ Error loading scheduled tasks:', error);
-            scheduledTasks = [];
+            window.scheduledTasks = [];
         });
     
     // Load individual hives
     database.ref(`${tenantPath}/individualHives`).once('value')
         .then(snapshot => {
-            individualHives = snapshot.val() || [];
-            console.log('✅ Individual hives loaded:', individualHives.length);
+            window.individualHives = snapshot.val() || [];
+            console.log('✅ Individual hives loaded:', window.individualHives.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         })
         .catch(error => {
             console.error('❌ Error loading individual hives:', error);
-            individualHives = [];
+            window.individualHives = [];
         });
     
     // Load tasks
     database.ref(`${tenantPath}/tasks`).once('value')
         .then(snapshot => {
-            tasks = snapshot.val() || [];
-            console.log('✅ Tasks loaded:', tasks.length);
+            window.tasks = snapshot.val() || [];
+            console.log('✅ Tasks loaded:', window.tasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         })
         .catch(error => {
             console.error('❌ Error loading tasks:', error);
-            tasks = [];
+            window.tasks = [];
         });
     
     // Load deleted tasks
     database.ref(`${tenantPath}/deletedTasks`).once('value')
         .then(snapshot => {
-            deletedTasks = snapshot.val() || {};
-            console.log('✅ Deleted tasks loaded:', Object.keys(deletedTasks).length);
+            window.deletedTasks = snapshot.val() || {};
+            console.log('✅ Deleted tasks loaded:', Object.keys(window.deletedTasks).length);
         })
         .catch(error => {
             console.error('❌ Error loading deleted tasks:', error);
-            deletedTasks = {};
+            window.deletedTasks = {};
         });
 }
 
@@ -2586,48 +2598,48 @@ function initializeDataLoading() {
         
         // Real-time listeners for data updates
         database.ref(`${tenantPath}/sites`).on('value', snapshot => {
-            sites = snapshot.val() || [];
-            console.log('🔄 Sites updated:', sites.length);
+            window.sites = snapshot.val() || [];
+            console.log('🔄 Sites updated:', window.sites.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         });
         
         database.ref(`${tenantPath}/actions`).on('value', snapshot => {
-            actions = snapshot.val() || [];
-            console.log('🔄 Actions updated:', actions.length);
+            window.actions = snapshot.val() || [];
+            console.log('🔄 Actions updated:', window.actions.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         });
         
         database.ref(`${tenantPath}/scheduledTasks`).on('value', snapshot => {
-            scheduledTasks = snapshot.val() || [];
-            console.log('🔄 Scheduled tasks updated:', scheduledTasks.length);
+            window.scheduledTasks = snapshot.val() || [];
+            console.log('🔄 Scheduled tasks updated:', window.scheduledTasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         });
         
         database.ref(`${tenantPath}/individualHives`).on('value', snapshot => {
-            individualHives = snapshot.val() || [];
-            console.log('🔄 Individual hives updated:', individualHives.length);
+            window.individualHives = snapshot.val() || [];
+            console.log('🔄 Individual hives updated:', window.individualHives.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         });
         
         database.ref(`${tenantPath}/tasks`).on('value', snapshot => {
-            tasks = snapshot.val() || [];
-            console.log('🔄 Tasks updated:', tasks.length);
+            window.tasks = snapshot.val() || [];
+            console.log('🔄 Tasks updated:', window.tasks.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
         });
         
         database.ref(`${tenantPath}/deletedTasks`).on('value', snapshot => {
-            deletedTasks = snapshot.val() || {};
-            console.log('🔄 Deleted tasks updated:', Object.keys(deletedTasks).length);
+            window.deletedTasks = snapshot.val() || {};
+            console.log('🔄 Deleted tasks updated:', Object.keys(window.deletedTasks).length);
         });
     }
 }
