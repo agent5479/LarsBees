@@ -20,7 +20,7 @@
 
 **Best for:** Professional beekeepers, multi-device use, comprehensive management
 
-[**🔐 Security Setup Guide**](../SECURITY_SETUP.md) | [**📊 Firebase Configuration**](../FIREBASE_SECRETS_SETUP.md)
+[**🔐 Security Setup Guide**](../SECURITY_SETUP.md) | [**📊 Firebase Configuration**](../FIREBASE_SECRETS_SETUP.md) | [**🔧 Task ID Display System**](TASK_ID_DISPLAY_SYSTEM.md)
 
 ---
 
