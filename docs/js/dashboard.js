@@ -197,7 +197,7 @@ function updateDashboard() {
             flaggedHtml += urgentFlagged.slice(0, 3).map(a => {
                 const site = window.sites.find(s => s.id === a.siteId);
                 return `<div class="mb-2">
-                    <strong>${site?.name || 'Unknown'}:</strong> ${a.taskName}
+                    <strong>${site?.name || 'Unknown'}:</strong> ${getTaskDisplayName(a.taskName, a.taskId)}
                     <br><small>${a.notes}</small>
                     <br>
                     <div class="mt-1">

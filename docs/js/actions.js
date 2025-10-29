@@ -250,7 +250,7 @@ function renderFlaggedItems() {
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h5>${flagIcon} ${a.taskName}</h5>
+                                <h5>${flagIcon} ${getTaskDisplayName(a.taskName, a.taskId)}</h5>
                                 <p class="mb-1"><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</p>
                                 <p class="mb-1"><small><i class="bi bi-calendar"></i> ${a.date} • <i class="bi bi-person"></i> ${a.loggedBy}</small></p>
                                 <span class="badge bg-${flagClass}">${a.flag.toUpperCase()}</span>
