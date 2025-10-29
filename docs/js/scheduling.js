@@ -351,7 +351,7 @@ function handleScheduleTask(e) {
     e.preventDefault();
     
     const siteId = parseInt(document.getElementById('scheduleSite').value);
-    const taskId = parseInt(document.getElementById('scheduleTask').value);
+    const taskId = document.getElementById('scheduleTask').value;
     const dueDate = document.getElementById('scheduleDueDate').value;
     const scheduledTime = document.getElementById('scheduleTime').value;
     const priority = document.getElementById('schedulePriority').value;
@@ -471,7 +471,7 @@ function editScheduledTask(id) {
 
 function updateScheduledTask(id) {
     const siteId = parseInt(document.getElementById('scheduleSite').value);
-    const taskId = parseInt(document.getElementById('scheduleTask').value);
+    const taskId = document.getElementById('scheduleTask').value;
     const dueDate = document.getElementById('scheduleDueDate').value;
     const scheduledTime = document.getElementById('scheduleTime').value;
     const priority = document.getElementById('schedulePriority').value;

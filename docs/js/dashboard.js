@@ -73,8 +73,8 @@ window.getTaskDisplayName = function(taskName, taskId) {
     }
     
     // Try to find in COMPREHENSIVE_TASKS if available
-    if (typeof COMPREHENSIVE_TASKS !== 'undefined' && taskId) {
-        const comprehensiveTask = COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+    if (typeof window.COMPREHENSIVE_TASKS !== 'undefined' && taskId) {
+        const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
         if (comprehensiveTask) {
             return comprehensiveTask.name;
         }
@@ -82,8 +82,8 @@ window.getTaskDisplayName = function(taskName, taskId) {
     
     // If we have a taskId but no name, try to find it in COMPREHENSIVE_TASKS
     if (taskId) {
-        if (typeof COMPREHENSIVE_TASKS !== 'undefined') {
-            const comprehensiveTask = COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+        if (typeof window.COMPREHENSIVE_TASKS !== 'undefined') {
+            const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
             if (comprehensiveTask) {
                 return comprehensiveTask.name;
             }

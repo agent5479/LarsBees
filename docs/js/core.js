@@ -135,6 +135,9 @@ const COMPREHENSIVE_TASKS = [
     { id: 'task_33', name: 'Site Visit & Inventory', category: 'Inspection', description: 'Conduct a site visit and update inventory records' }
 ];
 
+// Make COMPREHENSIVE_TASKS globally accessible
+window.COMPREHENSIVE_TASKS = COMPREHENSIVE_TASKS;
+
 // Honey types list - editable by admins
 let HONEY_TYPES = [
     'Manuka',
