@@ -1072,6 +1072,11 @@
                 
                 if (dataLoadCount >= totalDataTypes) {
                     Logger.log('✅ All reports data loaded successfully');
+                    Logger.log('📊 Data validation:', {
+                        sites: window.sites ? (Array.isArray(window.sites) ? window.sites.length : 'not array') : 'undefined',
+                        actions: window.actions ? (Array.isArray(window.actions) ? window.actions.length : 'not array') : 'undefined',
+                        scheduledTasks: window.scheduledTasks ? (Array.isArray(window.scheduledTasks) ? window.scheduledTasks.length : 'not array') : 'undefined'
+                    });
                     updateSyncTimestamp();
                     updateMetrics();
                 }
@@ -1195,6 +1200,16 @@
         // Update key metrics with error handling
         function updateMetrics() {
             try {
+                // Validate data before proceeding
+                if (!window.sites || !Array.isArray(window.sites)) {
+                    Logger.log('⚠️ Sites data not ready for metrics update');
+                    return;
+                }
+                if (!window.actions || !Array.isArray(window.actions)) {
+                    Logger.log('⚠️ Actions data not ready for metrics update');
+                    return;
+                }
+                
                 // Safely update metrics with fallback values
                 const totalSitesEl = document.getElementById('totalSites');
                 const totalHivesEl = document.getElementById('totalHives');
@@ -1202,19 +1217,19 @@
                 const flaggedIssuesEl = document.getElementById('flaggedIssues');
                 
                 if (totalSitesEl) {
-                    totalSitesEl.textContent = window.sites ? window.sites.length : 0;
+                    totalSitesEl.textContent = (window.sites && Array.isArray(window.sites)) ? window.sites.length : 0;
                 }
                 
                 if (totalHivesEl) {
-                    totalHivesEl.textContent = window.sites ? window.sites.reduce((sum, c) => sum + (c.hiveCount || 0), 0) : 0;
+                    totalHivesEl.textContent = (window.sites && Array.isArray(window.sites)) ? window.sites.reduce((sum, c) => sum + (c.hiveCount || 0), 0) : 0;
                 }
                 
                 if (totalActionsEl) {
-                    totalActionsEl.textContent = actions ? actions.length : 0;
+                    totalActionsEl.textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.length : 0;
                 }
                 
                 if (flaggedIssuesEl) {
-                    flaggedIssuesEl.textContent = actions ? actions.filter(a => a.flag && a.flag !== 'normal').length : 0;
+                    flaggedIssuesEl.textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.filter(a => a.flag && a.flag !== 'normal').length : 0;
                 }
                 
                 Logger.log('📊 Metrics updated:', {
