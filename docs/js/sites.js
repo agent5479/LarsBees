@@ -111,14 +111,17 @@ function renderSites() {
                             <div class="mb-2">
                                 <i class="bi bi-sun text-muted me-1"></i>
                                 <strong>Seasonal Classification:</strong> ${(() => {
-                                    console.log('🔍 Site seasonal data debug:', {
-                                        siteId: c.id,
-                                        siteName: c.name,
-                                        seasonalClassification: c.seasonalClassification,
-                                        seasonal_classification: c.seasonal_classification,
-                                        allKeys: Object.keys(c)
-                                    });
-                                    return c.seasonalClassification || c.seasonal_classification || 'Not specified';
+                                    const seasonalValue = c.seasonalClassification || c.seasonal_classification;
+                                    
+                                    // Map stored values to display text
+                                    const seasonalMap = {
+                                        'summer': 'Summer Site',
+                                        'winter': 'Winter Site',
+                                        'Summer Site': 'Summer Site',
+                                        'Winter Site': 'Winter Site'
+                                    };
+                                    
+                                    return seasonalMap[seasonalValue] || seasonalValue || 'Not specified';
                                 })()}
                             </div>
                             
