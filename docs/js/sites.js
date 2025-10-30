@@ -2126,45 +2126,89 @@ function quickEditHiveStrength(siteId, state, currentValue) {
     if (!site.hiveStrength) site.hiveStrength = {};
     site.hiveStrength[state.toLowerCase()] = newValue;
     
-    // Save to Firebase
+    // Prepare references and payloads
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${siteId}`).update({
+    const updateData = {
         hiveStrength: site.hiveStrength,
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser.username
-    }).then(() => {
-        // Update the display immediately
-        const elementId = state === 'NUC' ? `hiveNUC_${siteId}` : `hive${state}_${siteId}`;
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.textContent = newValue;
+    };
+    const elementId = state === 'NUC' ? `hiveNUC_${siteId}` : `hive${state}_${siteId}`;
+    const element = document.getElementById(elementId);
+    const actionText = `Updated ${state} hives at ${site.name}: ${currentValue} → ${newValue}`;
+    const newAction = {
+        id: Date.now(),
+        siteId: siteId,
+        task: 'Hive State Update',
+        taskName: 'Hive State Update',
+        taskId: 'hive_state_update',
+        taskCategory: 'Management',
+        notes: actionText,
+        completedBy: currentUser.username,
+        completedAt: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0]
+    };
+    const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', 'Saving hive update...');
+    }
+
+    if (navigator.onLine && window.database) {
+        database.ref(`${tenantPath}/${siteId}`).update(updateData)
+            .then(() => database.ref(`${actionPath}/${newAction.id}`).set(newAction))
+            .then(() => {
+                if (element) element.textContent = newValue;
+                actions.push(newAction);
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.updateSyncStatus('synced');
+                }
+                beeMarshallAlert(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`, 'success');
+            })
+            .catch(error => {
+                console.error('Error updating hive strength (online path):', error);
+                // Queue for later sync
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.addPendingChange({
+                        type: 'hive_update',
+                        path: `${tenantPath}/${siteId}`,
+                        data: updateData,
+                        method: 'update'
+                    });
+                    window.syncStatusManager.addPendingChange({
+                        type: 'action_log',
+                        path: `${actionPath}/${newAction.id}`,
+                        data: newAction,
+                        method: 'set'
+                    });
+                    window.syncStatusManager.updateSyncStatus('offline', 'Saved locally, will sync later');
+                }
+                if (element) element.textContent = newValue;
+                actions.push(newAction);
+                beeMarshallAlert('⚠️ Saved locally. Will sync when connection is restored.', 'warning');
+            });
+    } else {
+        // Offline: queue changes and update UI immediately
+        if (window.syncStatusManager) {
+            window.syncStatusManager.addPendingChange({
+                type: 'hive_update',
+                path: `${tenantPath}/${siteId}`,
+                data: updateData,
+                method: 'update'
+            });
+            window.syncStatusManager.addPendingChange({
+                type: 'action_log',
+                path: `${actionPath}/${newAction.id}`,
+                data: newAction,
+                method: 'set'
+            });
+            window.syncStatusManager.updateSyncStatus('offline', 'Saved locally, will sync later');
         }
-        
-        // Log as action
-        const actionText = `Updated ${state} hives at ${site.name}: ${currentValue} → ${newValue}`;
-        const newAction = {
-            id: Date.now(),
-            siteId: siteId,
-            task: 'Hive State Update',
-            taskName: 'Hive State Update',
-            taskId: 'hive_state_update',
-            taskCategory: 'Management',
-            notes: actionText,
-            completedBy: currentUser.username,
-            completedAt: new Date().toISOString(),
-            date: new Date().toISOString().split('T')[0]
-        };
-        
+        if (element) element.textContent = newValue;
         actions.push(newAction);
-        
-        const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
-        return database.ref(`${actionPath}/${newAction.id}`).set(newAction);
-    }).then(() => {
-        beeMarshallAlert(`✅ ${state} hive count updated: ${currentValue} → ${newValue}`, 'success');
-    }).catch(error => {
-        console.error('Error updating hive strength:', error);
-        beeMarshallAlert(`❌ Error updating ${state} hive count: ${error.message}`, 'error');
-    });
+        beeMarshallAlert('⚠️ Saved locally. Will sync when connection is restored.', 'warning');
+    }
 }
 
 /**
@@ -2202,49 +2246,97 @@ function quickEditHiveBox(siteId, boxType, currentValue) {
                        (site.hiveStacks.singles || 0) + 
                        (site.hiveStacks.nucs || 0);
     
-    // Save to Firebase
+    // Prepare references and payloads
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
-    database.ref(`${tenantPath}/${siteId}`).update({
+    const updateData = {
         hiveStacks: site.hiveStacks,
         hiveCount: site.hiveCount,
         lastModified: new Date().toISOString(),
         lastModifiedBy: currentUser.username
-    }).then(() => {
-        // Update the display immediately
-        const elementId = `box${boxType.charAt(0).toUpperCase() + boxType.slice(1)}_${siteId}`;
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.textContent = newValue;
+    };
+    const elementId = `box${boxType.charAt(0).toUpperCase() + boxType.slice(1)}_${siteId}`;
+    const element = document.getElementById(elementId);
+    const actionText = `Updated ${boxTypeLabel} at ${site.name}: ${currentValue} → ${newValue}`;
+    const newAction = {
+        id: Date.now(),
+        siteId: siteId,
+        task: 'Hive Box Update',
+        taskName: 'Hive Box Update',
+        taskId: 'hive_box_update',
+        taskCategory: 'Management',
+        notes: actionText,
+        completedBy: currentUser.username,
+        completedAt: new Date().toISOString(),
+        date: new Date().toISOString().split('T')[0]
+    };
+    const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
+
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', 'Saving hive update...');
+    }
+
+    if (navigator.onLine && window.database) {
+        database.ref(`${tenantPath}/${siteId}`).update(updateData)
+            .then(() => database.ref(`${actionPath}/${newAction.id}`).set(newAction))
+            .then(() => {
+                if (element) element.textContent = newValue;
+                actions.push(newAction);
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.updateSyncStatus('synced');
+                }
+                beeMarshallAlert(`✅ ${boxTypeLabel} count updated: ${currentValue} → ${newValue}`, 'success');
+                if (typeof updateDashboard === 'function') {
+                    updateDashboard();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating hive box (online path):', error);
+                // Queue for later sync
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.addPendingChange({
+                        type: 'hive_update',
+                        path: `${tenantPath}/${siteId}`,
+                        data: updateData,
+                        method: 'update'
+                    });
+                    window.syncStatusManager.addPendingChange({
+                        type: 'action_log',
+                        path: `${actionPath}/${newAction.id}`,
+                        data: newAction,
+                        method: 'set'
+                    });
+                    window.syncStatusManager.updateSyncStatus('offline', 'Saved locally, will sync later');
+                }
+                if (element) element.textContent = newValue;
+                actions.push(newAction);
+                beeMarshallAlert('⚠️ Saved locally. Will sync when connection is restored.', 'warning');
+                if (typeof updateDashboard === 'function') {
+                    updateDashboard();
+                }
+            });
+    } else {
+        // Offline: queue changes and update UI immediately
+        if (window.syncStatusManager) {
+            window.syncStatusManager.addPendingChange({
+                type: 'hive_update',
+                path: `${tenantPath}/${siteId}`,
+                data: updateData,
+                method: 'update'
+            });
+            window.syncStatusManager.addPendingChange({
+                type: 'action_log',
+                path: `${actionPath}/${newAction.id}`,
+                data: newAction,
+                method: 'set'
+            });
+            window.syncStatusManager.updateSyncStatus('offline', 'Saved locally, will sync later');
         }
-        
-        // Log as action
-        const actionText = `Updated ${boxTypeLabel} at ${site.name}: ${currentValue} → ${newValue}`;
-        const newAction = {
-            id: Date.now(),
-            siteId: siteId,
-            task: 'Hive Box Update',
-            taskName: 'Hive Box Update',
-            taskId: 'hive_box_update',
-            taskCategory: 'Management',
-            notes: actionText,
-            completedBy: currentUser.username,
-            completedAt: new Date().toISOString(),
-            date: new Date().toISOString().split('T')[0]
-        };
-        
+        if (element) element.textContent = newValue;
         actions.push(newAction);
-        
-        const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
-        return database.ref(`${actionPath}/${newAction.id}`).set(newAction);
-    }).then(() => {
-        beeMarshallAlert(`✅ ${boxTypeLabel} count updated: ${currentValue} → ${newValue}`, 'success');
-        
-        // Update dashboard statistics if we're on the dashboard
+        beeMarshallAlert('⚠️ Saved locally. Will sync when connection is restored.', 'warning');
         if (typeof updateDashboard === 'function') {
             updateDashboard();
         }
-    }).catch(error => {
-        console.error('Error updating hive box:', error);
-        beeMarshallAlert(`❌ Error updating ${boxTypeLabel} count: ${error.message}`, 'error');
-    });
+    }
 }
