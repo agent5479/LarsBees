@@ -3664,11 +3664,17 @@
         // Data Integrity Check Functions
         function showIntegrityCheck() {
             hideAllViews();
-            document.getElementById('integrityCheckView').classList.remove('hidden');
-            if (typeof updateActiveNav === 'function') {
-                updateActiveNav('Data Integrity');
-            }
-            runIntegrityCheck();
+            setTimeout(() => {
+                const view = document.getElementById('integrityCheckView');
+                if (view) {
+                    view.classList.remove('hidden');
+                    view.style.display = ''; // Restore display to override hideAllViews display:none
+                }
+                if (typeof updateActiveNav === 'function') {
+                    updateActiveNav('Data Integrity');
+                }
+                runIntegrityCheck();
+            }, 50); // Ensure hideAllViews completes first
         }
 
         function runIntegrityCheck() {

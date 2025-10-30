@@ -17,16 +17,26 @@ function hideAllViews() {
         'tasksView',
         'seasonalRequirementsView', 
         'suggestedScheduleView',
-        'complianceView'
+        'complianceView',
+        'integrityCheckView'
     ];
     
-    // Hide all views with forced reflow
+    // Hide all views with forced reflow and display:none to prevent carryover
     viewIds.forEach(id => {
         const view = document.getElementById(id);
         if (view) {
             view.classList.add('hidden');
+            view.style.display = 'none'; // Double-hide to prevent carryover
             // Force browser reflow to ensure the hidden class is applied
             void view.offsetHeight;
+        }
+    });
+    
+    // Also hide any lingering scheduled/timeline panels that might be orphaned
+    ['scheduledTasksList', 'scheduleTimeline'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.closest('.hidden') === null) {
+            el.style.display = 'none';
         }
     });
     
@@ -42,6 +52,7 @@ function showDashboard() {
         const view = document.getElementById('dashboardView');
         if (view) {
             view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
         if (typeof updateActiveNav === 'function') {
@@ -65,6 +76,7 @@ function showSites() {
         const view = document.getElementById('sitesView');
         if (view) {
             view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
         if (typeof updateActiveNav === 'function') {
@@ -92,6 +104,7 @@ function showActions() {
         const view = document.getElementById('actionsView');
         if (view) {
             view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
         if (typeof updateActiveNav === 'function') {
@@ -113,6 +126,7 @@ function showLogActionForm() {
         const view = document.getElementById('logActionView');
         if (view) {
             view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
         if (typeof populateActionForm === 'function') {
@@ -137,6 +151,7 @@ function showScheduledTasks() {
         const view = document.getElementById('scheduledView');
         if (view) {
             view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
         if (typeof updateActiveNav === 'function') {
@@ -155,8 +170,14 @@ function showScheduledTasks() {
 
 function showFlagged() {
     hideAllViews();
-    document.getElementById('flaggedView').classList.remove('hidden');
-    renderFlaggedItems();
+    setTimeout(() => {
+        const view = document.getElementById('flaggedView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
+        }
+        renderFlaggedItems();
+    }, 50); // Ensure hideAllViews completes first
 }
 
 function showEmployees() {
@@ -165,11 +186,17 @@ function showEmployees() {
         return;
     }
     hideAllViews();
-    document.getElementById('employeesView').classList.remove('hidden');
-    if (typeof updateActiveNav === 'function') {
-        updateActiveNav('Team');
-    }
-    renderEmployees();
+    setTimeout(() => {
+        const view = document.getElementById('employeesView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
+        }
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Team');
+        }
+        renderEmployees();
+    }, 50); // Ensure hideAllViews completes first
 }
 
 function showManageTasks() {
@@ -178,8 +205,14 @@ function showManageTasks() {
         return;
     }
     hideAllViews();
-    document.getElementById('manageTasksView').classList.remove('hidden');
-    renderTasksList();
+    setTimeout(() => {
+        const view = document.getElementById('manageTasksView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
+        }
+        renderTasksList();
+    }, 50);
 }
 
 function showSeasonalRequirements() {
@@ -188,16 +221,28 @@ function showSeasonalRequirements() {
         return;
     }
     hideAllViews();
-    document.getElementById('seasonalRequirementsView').classList.remove('hidden');
-    populateSiteCheckboxes();
-    renderSeasonalRequirements();
-    renderComplianceStatus();
+    setTimeout(() => {
+        const view = document.getElementById('seasonalRequirementsView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
+        }
+        populateSiteCheckboxes();
+        renderSeasonalRequirements();
+        renderComplianceStatus();
+    }, 50);
 }
 
 function showSuggestedSchedule() {
     hideAllViews();
-    document.getElementById('suggestedScheduleView').classList.remove('hidden');
-    renderSuggestedSchedule();
+    setTimeout(() => {
+        const view = document.getElementById('suggestedScheduleView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
+        }
+        renderSuggestedSchedule();
+    }, 50);
 }
 
 function showReports() {

@@ -96,6 +96,7 @@ function showTasks() {
         const view = document.getElementById('tasksView');
         if (view) {
             view.classList.remove('hidden');
+            view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
         if (typeof updateActiveNav === 'function') {
