@@ -155,21 +155,26 @@ function handleLogAction(e) {
 function populateActionFilters() {
     const siteFilter = document.getElementById('filterSite');
     siteFilter.innerHTML = '<option value="">All Sites</option>' +
-        window.sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        (Array.isArray(window.sites) ? window.sites : []).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
-    const categories = [...new Set(window.tasks.map(t => t.category))].sort();
+    const categories = [...new Set((Array.isArray(window.tasks) ? window.tasks : []).map(t => t.category).filter(Boolean))].sort();
     document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     
     // Get employee names from both actions and current employees list
-    const actionEmployeeNames = [...new Set(window.actions.map(a => a.loggedBy))].filter(Boolean);
-    const currentEmployeeNames = window.employees ? window.employees.map(emp => emp.username) : [];
+    const actionEmployeeNames = [...new Set((Array.isArray(window.actions) ? window.actions : []).map(a => a.loggedBy))].filter(Boolean);
+    const currentEmployeeNames = Array.isArray(window.employees) ? window.employees.map(emp => emp.username) : [];
     
     // Combine and deduplicate employee names
     const allEmployeeNames = [...new Set([...actionEmployeeNames, ...currentEmployeeNames])].sort();
     
     document.getElementById('filterEmployee').innerHTML = '<option value="">All Employees</option>' +
         allEmployeeNames.map(name => `<option value="${name}">${name}</option>`).join('');
+
+    // Default filters to "All"
+    document.getElementById('filterSite').value = '';
+    document.getElementById('filterCategory').value = '';
+    document.getElementById('filterEmployee').value = '';
 }
 
 function renderActions() {
@@ -187,11 +192,18 @@ function renderActions() {
     const hideStackUpdates = document.getElementById('hideStackUpdates')?.checked || false;
     const hideStrengthUpdates = document.getElementById('hideStrengthUpdates')?.checked || false;
     
-    let filtered = [...window.actions];
+    const actionsArray = Array.isArray(window.actions) ? window.actions : [];
+    let filtered = [...actionsArray];
     console.log('🔍 filtered actions before filtering:', filtered.length);
     if (siteFilter) filtered = filtered.filter(a => a.siteId == siteFilter);
-    if (categoryFilter) filtered = filtered.filter(a => a.taskCategory === categoryFilter);
-    if (employeeFilter) filtered = filtered.filter(a => a.loggedBy === employeeFilter);
+    if (categoryFilter) filtered = filtered.filter(a => {
+        const cat = a.taskCategory || a.category || '';
+        return cat === categoryFilter;
+    });
+    if (employeeFilter) filtered = filtered.filter(a => {
+        const by = (a.loggedBy || '').toString().trim().toLowerCase();
+        return by === employeeFilter.toString().trim().toLowerCase();
+    });
     
     // Apply action type filters
     if (hideDeletes) {
@@ -213,8 +225,8 @@ function renderActions() {
         );
     }
     
-    const html = filtered.reverse().length > 0
-        ? filtered.map(a => {
+    const html = filtered.length > 0
+        ? filtered.slice().reverse().map(a => {
             const site = window.sites.find(s => s.id === a.siteId);
             const hive = window.individualHives.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
@@ -224,7 +236,7 @@ function renderActions() {
                 </button>
             ` : '';
             
-            const displayTaskName = window.getTaskDisplayName(a.taskName, a.taskId);
+            const displayTaskName = window.getTaskDisplayName(a.taskName || a.task || a.name || '', a.taskId);
             const isDeletedTask = displayTaskName.startsWith('[Deleted:');
             
             return `
@@ -232,14 +244,14 @@ function renderActions() {
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="mb-1">
-                                ${flagIcon} <span class="badge bg-secondary">${a.taskCategory || 'Task'}</span>
+                                ${flagIcon} <span class="badge bg-secondary">${a.taskCategory || a.category || 'Task'}</span>
                                 <strong class="${isDeletedTask ? 'text-muted' : ''}">${displayTaskName}</strong>
                             </div>
                             <div class="text-muted small">
                                 <i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}
-                                ${hive ? ` • <i class="bi bi-hexagon"></i> ${hive.hiveName}` : ''}
+                                ${hive ? ` • <i class=\"bi bi-hexagon\"></i> ${hive.hiveName || hive.hiveNumber || ''}` : ''}
                                 <br>
-                                <i class="bi bi-calendar"></i> ${a.date} • 
+                                <i class="bi bi-calendar"></i> ${a.date || ''} • 
                                 <i class="bi bi-person"></i> ${a.loggedBy || 'Unknown'}
                             </div>
                             ${a.notes ? `<p class="mb-0 mt-2"><small><strong>Notes:</strong> ${a.notes}</small></p>` : ''}
