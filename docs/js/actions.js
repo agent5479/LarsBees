@@ -225,10 +225,13 @@ function renderActions() {
         );
     }
     
+    const sitesArray = Array.isArray(window.sites) ? window.sites : [];
+    const hivesArray = Array.isArray(window.individualHives) ? window.individualHives : [];
+
     const html = filtered.length > 0
         ? filtered.slice().reverse().map(a => {
-            const site = window.sites.find(s => s.id === a.siteId);
-            const hive = window.individualHives.find(h => h.id === a.individualHiveId);
+            const site = sitesArray.find(s => s.id === a.siteId);
+            const hive = hivesArray.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const deleteBtn = canDeleteAction() ? `
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteAction('${a.id}')">
@@ -261,7 +264,9 @@ function renderActions() {
                 </div>
             `;
         }).join('')
-        : '<p class="text-center text-muted my-5">No actions found.</p>';
+        : (actionsArray.length > 0
+            ? '<div class="text-center text-muted my-5"><i class="bi bi-funnel"></i> No actions match current filters. Try clearing filters.</div>'
+            : '<p class="text-center text-muted my-5">No actions found.</p>');
     
     console.log('🔍 Final HTML length:', html.length);
     console.log('🔍 actionsList element:', document.getElementById('actionsList'));
