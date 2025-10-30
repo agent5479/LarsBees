@@ -2694,6 +2694,20 @@ function loadAllData() {
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
+            // If Actions view is currently visible, refresh it
+            try {
+                const actionsView = document.getElementById('actionsView');
+                if (actionsView && !actionsView.classList.contains('hidden')) {
+                    if (typeof populateActionFilters === 'function') {
+                        populateActionFilters();
+                    }
+                    if (typeof renderActions === 'function') {
+                        renderActions();
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Unable to refresh Actions view after initial load:', e);
+            }
         })
         .catch(error => {
             console.error('❌ Error loading actions:', error);
@@ -2785,6 +2799,20 @@ function initializeDataLoading() {
             console.log('🔄 Actions updated:', window.actions.length);
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
+            }
+            // If Actions view is currently visible, refresh it
+            try {
+                const actionsView = document.getElementById('actionsView');
+                if (actionsView && !actionsView.classList.contains('hidden')) {
+                    if (typeof populateActionFilters === 'function') {
+                        populateActionFilters();
+                    }
+                    if (typeof renderActions === 'function') {
+                        renderActions();
+                    }
+                }
+            } catch (e) {
+                console.warn('⚠️ Unable to refresh Actions view on data update:', e);
             }
         });
         
