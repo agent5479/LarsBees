@@ -3868,19 +3868,51 @@
                 if (issues.overdueCompliance.length > 0) tocItems.push(`<li><a href="#integrity-overdue-compliance" class="link-warning text-decoration-none">Overdue Compliance (${issues.overdueCompliance.length})</a></li>`);
                 const tocEl = document.getElementById('integrityTOC');
                 if (tocEl) {
-                    tocEl.innerHTML = tocItems.length > 0 ? `
-                        <div id="integrity-top"></div>
-                        <div class="card mb-3 border-warning" style="position: sticky; top: 0; z-index: 5;">
-                            <div class="card-header bg-warning text-dark">
-                                <i class="bi bi-list-ul"></i> Jump to Issue Category
+                    if (tocItems.length > 0) {
+                        tocEl.innerHTML = `
+                            <div id="integrity-top"></div>
+                            <div class="card mb-3 border-warning" style="position: sticky; top: 0; z-index: 5;">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="bi bi-list-ul"></i> Jump to Issue Category
+                                </div>
+                                <div class="card-body py-2">
+                                    <ul class="mb-0" style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+                                        ${tocItems.join('')}
+                                    </ul>
+                                </div>
                             </div>
-                            <div class="card-body py-2">
-                                <ul class="mb-0" style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
-                                    ${tocItems.join('')}
-                                </ul>
+                        `;
+                    } else {
+                        // Alternative quicklinks menu (shown even when no categories render)
+                        tocEl.innerHTML = `
+                            <div id="integrity-top"></div>
+                            <div class="card mb-3 border-light">
+                                <div class="card-header bg-light">
+                                    <i class="bi bi-list-ul"></i> Quick Links
+                                </div>
+                                <div class="card-body py-2">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        ${[
+                                            { id: 'integrity-hive-mismatch', label: 'Hive Count Mismatches', count: issues.hiveCountMismatches.length },
+                                            { id: 'integrity-missing-landowner', label: 'Missing Landowner', count: issues.missingLandownerInfo.length },
+                                            { id: 'integrity-missing-access', label: 'Missing Access', count: issues.missingAccessInfo.length },
+                                            { id: 'integrity-missing-gps', label: 'Missing GPS', count: issues.missingGPS.length },
+                                            { id: 'integrity-missing-contact', label: 'Missing Contact', count: issues.missingContactDetails.length },
+                                            { id: 'integrity-invalid-phone', label: 'Invalid Phone', count: issues.invalidPhoneNumbers ? issues.invalidPhoneNumbers.length : 0 },
+                                            { id: 'integrity-missing-honey', label: 'Missing Honey Types', count: issues.missingHoneyTypes.length },
+                                            { id: 'integrity-overdue-compliance', label: 'Overdue Compliance', count: issues.overdueCompliance.length }
+                                        ].map(item => {
+                                            const disabled = item.count === 0;
+                                            const cls = disabled ? 'btn btn-sm btn-outline-secondary disabled' : 'btn btn-sm btn-outline-warning';
+                                            const title = disabled ? 'No issues in this category' : `View ${item.label}`;
+                                            const href = disabled ? 'javascript:void(0);' : `#${item.id}`;
+                                            return `<a href="${href}" class="${cls}" title="${title}">${item.label} (${item.count})</a>`;
+                                        }).join('')}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ` : '';
+                        `;
+                    }
                     // Ensure visible and conditionally auto-hide on small screens only
                     const tocCard = tocEl.querySelector('.card');
                     if (tocCard) {
