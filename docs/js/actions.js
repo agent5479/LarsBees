@@ -196,10 +196,16 @@ function renderActions() {
         filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('move'));
     }
     if (hideStackUpdates) {
-        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('stack') && !a.taskName?.toLowerCase().includes('box'));
+        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('inventory'));
     }
     if (hideStrengthUpdates) {
-        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('strength') && !a.taskName?.toLowerCase().includes('hive count'));
+        filtered = filtered.filter(a => 
+            !a.taskName?.toLowerCase().includes('strong') && 
+            !a.taskName?.toLowerCase().includes('medium') && 
+            !a.taskName?.toLowerCase().includes('weak') &&
+            !a.taskName?.toLowerCase().includes('nuc') &&
+            !a.taskName?.toLowerCase().includes('dead')
+        );
     }
     
     const html = filtered.reverse().length > 0
