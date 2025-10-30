@@ -166,6 +166,9 @@ function showEmployees() {
     }
     hideAllViews();
     document.getElementById('employeesView').classList.remove('hidden');
+    if (typeof updateActiveNav === 'function') {
+        updateActiveNav('Team');
+    }
     renderEmployees();
 }
 
