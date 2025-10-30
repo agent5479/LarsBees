@@ -254,27 +254,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Note: GPS button listener added when form is shown
 });
 
-// Global Quick Links (sticky across all views)
-function initializeGlobalQuickLinks() {
-    const bar = document.getElementById('globalQuickLinksBar');
-    if (!bar) return;
-    const links = [
-        { label: 'Dashboard', action: 'showDashboard', icon: 'bi-speedometer' },
-        { label: 'Sites', action: 'showSites', icon: 'bi-geo' },
-        { label: 'Actions', action: 'showActions', icon: 'bi-list-check' },
-        { label: 'Scheduled', action: 'showScheduledTasks', icon: 'bi-calendar-event' },
-        { label: 'Tasks', action: 'showManageTasks', icon: 'bi-wrench' },
-        { label: 'Compliance', action: 'showComplianceView', icon: 'bi-shield-check' },
-        { label: 'Data Integrity', action: 'showIntegrityCheck', icon: 'bi-clipboard-data' }
-    ];
-    bar.innerHTML = `
-        <div class="d-flex flex-wrap align-items-center gap-2">
-            ${links.map(l => `<button class="btn btn-sm btn-outline-secondary" onclick="${l.action}()"><i class="bi ${l.icon}"></i> ${l.label}</button>`).join('')}
-        </div>
-    `;
-    bar.classList.remove('hidden');
-}
-
 // Check if this is first time setup and initialize master account
 function checkFirstTimeSetup() {
     if (!database) {
