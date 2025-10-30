@@ -3503,6 +3503,11 @@
                         siteElement.scrollIntoView({ behavior: 'smooth' });
                         siteElement.style.border = '2px solid var(--accent)';
                         siteElement.style.boxShadow = '0 0 20px rgba(255, 193, 7, 0.5)';
+                        
+                        // Automatically open edit form for the site
+                        setTimeout(() => {
+                            editSite(navigateToSite);
+                        }, 500);
                     }
                 }, 1000);
             }
