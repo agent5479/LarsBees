@@ -2451,6 +2451,7 @@
                         <i class="bi bi-arrow-left"></i> Back to Schedule
                     </button>
                 </div>
+                <div id="integrityTOC" class="mb-3"></div>
                 
                 <div class="card">
                     <div class="card-header">
@@ -3855,11 +3856,37 @@
                         <p class="mb-0 mt-2">The following data inconsistencies and missing information have been detected across your sites:</p>
                     </div>
                 `;
+                // Table of Contents (internal bookmarks)
+                const tocItems = [];
+                if (issues.hiveCountMismatches.length > 0) tocItems.push(`<li><a href="#integrity-hive-mismatch" class="link-warning text-decoration-none">Hive Count Mismatches (${issues.hiveCountMismatches.length})</a></li>`);
+                if (issues.missingLandownerInfo.length > 0) tocItems.push(`<li><a href="#integrity-missing-landowner" class="link-warning text-decoration-none">Missing Landowner Information (${issues.missingLandownerInfo.length})</a></li>`);
+                if (issues.missingAccessInfo.length > 0) tocItems.push(`<li><a href="#integrity-missing-access" class="link-warning text-decoration-none">Missing Access Information (${issues.missingAccessInfo.length})</a></li>`);
+                if (issues.missingGPS.length > 0) tocItems.push(`<li><a href="#integrity-missing-gps" class="link-warning text-decoration-none">Missing GPS Coordinates (${issues.missingGPS.length})</a></li>`);
+                if (issues.missingContactDetails.length > 0) tocItems.push(`<li><a href="#integrity-missing-contact" class="link-warning text-decoration-none">Missing Contact Details (${issues.missingContactDetails.length})</a></li>`);
+                if (issues.invalidPhoneNumbers && issues.invalidPhoneNumbers.length > 0) tocItems.push(`<li><a href="#integrity-invalid-phone" class="link-warning text-decoration-none">Invalid Phone Numbers (${issues.invalidPhoneNumbers.length})</a></li>`);
+                if (issues.missingHoneyTypes.length > 0) tocItems.push(`<li><a href="#integrity-missing-honey" class="link-warning text-decoration-none">Missing Honey Types (${issues.missingHoneyTypes.length})</a></li>`);
+                if (issues.overdueCompliance.length > 0) tocItems.push(`<li><a href="#integrity-overdue-compliance" class="link-warning text-decoration-none">Overdue Compliance (${issues.overdueCompliance.length})</a></li>`);
+                const tocEl = document.getElementById('integrityTOC');
+                if (tocEl) {
+                    tocEl.innerHTML = tocItems.length > 0 ? `
+                        <div id="integrity-top"></div>
+                        <div class="card mb-3 border-warning" style="position: sticky; top: 0; z-index: 5;">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-list-ul"></i> Jump to Issue Category
+                            </div>
+                            <div class="card-body py-2">
+                                <ul class="mb-0" style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+                                    ${tocItems.join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    ` : '';
+                }
                 
                 // Hive count mismatches
                 if (issues.hiveCountMismatches.length > 0) {
                     html += `
-                        <div class="card mb-3 border-danger">
+                        <div id="integrity-hive-mismatch" class="card mb-3 border-danger">
                             <div class="card-header bg-danger text-white">
                                 <i class="bi bi-exclamation-triangle"></i> Hive Count Mismatches (${issues.hiveCountMismatches.length})
                             </div>
@@ -3891,7 +3918,7 @@
                 // Missing landowner info
                 if (issues.missingLandownerInfo.length > 0) {
                     html += `
-                        <div class="card mb-3 border-warning">
+                        <div id="integrity-missing-landowner" class="card mb-3 border-warning">
                             <div class="card-header bg-warning text-dark">
                                 <i class="bi bi-person-x"></i> Missing Landowner Information (${issues.missingLandownerInfo.length})
                             </div>
@@ -3919,7 +3946,7 @@
                 // Missing access info
                 if (issues.missingAccessInfo.length > 0) {
                     html += `
-                        <div class="card mb-3 border-warning">
+                        <div id="integrity-missing-access" class="card mb-3 border-warning">
                             <div class="card-header bg-warning text-dark">
                                 <i class="bi bi-signpost"></i> Missing Access Information (${issues.missingAccessInfo.length})
                             </div>
@@ -3947,7 +3974,7 @@
                 // Missing GPS
                 if (issues.missingGPS.length > 0) {
                     html += `
-                        <div class="card mb-3 border-danger">
+                        <div id="integrity-missing-gps" class="card mb-3 border-danger">
                             <div class="card-header bg-danger text-white">
                                 <i class="bi bi-geo-alt"></i> Missing GPS Coordinates (${issues.missingGPS.length})
                             </div>
@@ -3975,7 +4002,7 @@
                 // Missing contact details
                 if (issues.missingContactDetails.length > 0) {
                     html += `
-                        <div class="card mb-3 border-info">
+                        <div id="integrity-missing-contact" class="card mb-3 border-info">
                             <div class="card-header bg-info text-white">
                                 <i class="bi bi-telephone-x"></i> Missing Contact Details (${issues.missingContactDetails.length})
                             </div>
@@ -4003,7 +4030,7 @@
                 // Invalid phone numbers
                 if (issues.invalidPhoneNumbers.length > 0) {
                     html += `
-                        <div class="card mb-3 border-info">
+                        <div id="integrity-invalid-phone" class="card mb-3 border-info">
                             <div class="card-header bg-info text-white">
                                 <i class="bi bi-telephone-inbound"></i> Invalid Phone Numbers (${issues.invalidPhoneNumbers.length})
                             </div>
@@ -4032,7 +4059,7 @@
                 // Missing honey types
                 if (issues.missingHoneyTypes.length > 0) {
                     html += `
-                        <div class="card mb-3 border-warning">
+                        <div id="integrity-missing-honey" class="card mb-3 border-warning">
                             <div class="card-header bg-warning text-dark">
                                 <i class="bi bi-flower1"></i> Missing Honey Types (${issues.missingHoneyTypes.length})
                             </div>
@@ -4060,7 +4087,7 @@
                 // Overdue compliance requirements
                 if (issues.overdueCompliance.length > 0) {
                     html += `
-                        <div class="card mb-3 border-danger">
+                        <div id="integrity-overdue-compliance" class="card mb-3 border-danger">
                             <div class="card-header bg-danger text-white">
                                 <i class="bi bi-exclamation-triangle"></i> Overdue Compliance Requirements (${issues.overdueCompliance.length})
                             </div>
