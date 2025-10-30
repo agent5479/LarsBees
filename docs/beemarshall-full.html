@@ -2635,6 +2635,7 @@
                         <small class="text-muted">Identify data inconsistencies and missing information across sites</small>
                     </div>
                     <div class="card-body">
+                        <div id="integrityTOCInCard" class="mb-3"></div>
                         <div id="integrityCheckSection">
                             <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
                                 <div class="text-center">
@@ -3866,7 +3867,8 @@
                 if (issues.invalidPhoneNumbers && issues.invalidPhoneNumbers.length > 0) tocItems.push(`<li><a href="#integrity-invalid-phone" class="link-warning text-decoration-none">Invalid Phone Numbers (${issues.invalidPhoneNumbers.length})</a></li>`);
                 if (issues.missingHoneyTypes.length > 0) tocItems.push(`<li><a href="#integrity-missing-honey" class="link-warning text-decoration-none">Missing Honey Types (${issues.missingHoneyTypes.length})</a></li>`);
                 if (issues.overdueCompliance.length > 0) tocItems.push(`<li><a href="#integrity-overdue-compliance" class="link-warning text-decoration-none">Overdue Compliance (${issues.overdueCompliance.length})</a></li>`);
-                const tocEl = document.getElementById('integrityTOC');
+                // Prefer injecting inside the Analysis card; fallback to legacy placeholder if present
+                const tocEl = document.getElementById('integrityTOCInCard') || document.getElementById('integrityTOC');
                 if (tocEl) {
                     if (tocItems.length > 0) {
                         tocEl.innerHTML = `
