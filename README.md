@@ -82,16 +82,15 @@ A comprehensive, production-ready web-based apiary (beekeeping) management syste
 The system uses GitHub Secrets for secure configuration:
 
 **Required Secrets:**
-- `GBTECH_USERNAME` - Admin username
-- `GBTECH_PASSWORD` - Admin password (hashed)
+- `****_USERNAME` - Admin username
+- `****_PASSWORD` - Admin password (hashed)
 - `FIREBASE_API_KEY` - Firebase API key
 - `FIREBASE_AUTH_DOMAIN` - Firebase auth domain
 - `FIREBASE_PROJECT_ID` - Firebase project ID
 - `FIREBASE_STORAGE_BUCKET` - Firebase storage bucket
 - `FIREBASE_MESSAGING_SENDER_ID` - Firebase messaging sender ID
 - `FIREBASE_APP_ID` - Firebase app ID
-- `GOOGLE_MAPS_API_KEY` - Google Maps API key
-- `OPENWEATHER_API_KEY` - OpenWeatherMap API key
+
 
 ### Firebase Security Rules
 ```javascript
@@ -99,10 +98,24 @@ The system uses GitHub Secrets for secure configuration:
   "rules": {
     "tenants": {
       "$tenantId": {
-        ".read": "auth != null && (auth.uid == $tenantId || root.child('tenants').child($tenantId).child('employees').child(auth.uid).exists())",
-        ".write": "auth != null && (auth.uid == $tenantId || root.child('tenants').child($tenantId).child('employees').child(auth.uid).exists())"
+        ".read": true,
+        ".write": true
       }
-    }
+    },
+    "tasks": {
+      ".read": true,
+      ".write": true
+    },
+    "deletedTasks": {
+      ".read": true,
+      ".write": true
+    },
+    "seasonalRequirements": {
+      ".read": true,
+      ".write": true
+    },
+    ".read": false,
+    ".write": false
   }
 }
 ```
