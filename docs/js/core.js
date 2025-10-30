@@ -1882,6 +1882,32 @@ function showMainApp() {
     }, 1000);
 }
 
+// Hide all views
+function hideAllViews() {
+    const views = [
+        'dashboardView',
+        'sitesView', 
+        'siteFormView',
+        'actionsView',
+        'logActionView',
+        'scheduledView',
+        'scheduleForNextVisitView',
+        'suggestedScheduleView',
+        'tasksView',
+        'flaggedView',
+        'employeesView',
+        'complianceView',
+        'integrityCheckView'
+    ];
+    
+    views.forEach(viewId => {
+        const element = document.getElementById(viewId);
+        if (element) {
+            element.classList.add('hidden');
+        }
+    });
+}
+
 // Show dashboard without initializing map (for initial load)
 function showDashboardWithoutMap() {
     hideAllViews();

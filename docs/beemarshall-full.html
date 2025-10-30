@@ -1464,6 +1464,11 @@
                                 <i class="bi bi-shield-check"></i> Compliance
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showIntegrityCheck()">
+                                <i class="bi bi-clipboard-data"></i> Data Integrity
+                            </a>
+                        </li>
                         <li class="nav-item admin-only">
                             <a class="nav-link" href="#" onclick="showEmployees()">
                                 <i class="bi bi-people"></i> Team
@@ -2565,6 +2570,37 @@
                 </div>
             </div>
 
+            <!-- Data Integrity Check View -->
+            <div id="integrityCheckView" class="hidden">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-clipboard-data"></i> Data Integrity Check</h2>
+                    <button class="btn btn-primary" onclick="runIntegrityCheck()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Check
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-shield-check"></i> Data Integrity Analysis
+                        </h5>
+                        <small class="text-muted">Identify data inconsistencies and missing information across sites</small>
+                    </div>
+                    <div class="card-body">
+                        <div id="integrityCheckSection">
+                            <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                                <div class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-3 text-muted">Analyzing data integrity...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <!-- Schedule Task Modal -->
@@ -3488,6 +3524,428 @@
         }
         
         
+        // Data Integrity Check Functions
+        function showIntegrityCheck() {
+            hideAllViews();
+            document.getElementById('integrityCheckView').classList.remove('hidden');
+            runIntegrityCheck();
+        }
+
+        function runIntegrityCheck() {
+            console.log('🔍 Running data integrity check...');
+            
+            // Show loading state
+            const section = document.getElementById('integrityCheckSection');
+            section.innerHTML = `
+                <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Analyzing data integrity...</p>
+                    </div>
+                </div>
+            `;
+            
+            // Run the check after a short delay to show loading
+            setTimeout(() => {
+                generateDataIntegrityCheck();
+            }, 500);
+        }
+
+        function generateDataIntegrityCheck(sitesData = window.sites) {
+            console.log('🔍 generateDataIntegrityCheck called');
+            console.log('🔍 sites data passed:', sitesData);
+            console.log('🔍 global sites:', window.sites);
+            console.log('🔍 integrityCheckSection element:', document.getElementById('integrityCheckSection'));
+            
+            if (!sitesData || sitesData.length === 0) {
+                console.log('🔍 No sites found, showing no sites message');
+                const section = document.getElementById('integrityCheckSection');
+                if (section) {
+                    section.innerHTML = `
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> No sites found. Add sites to perform data integrity checks.
+                        </div>
+                    `;
+                } else {
+                    console.error('❌ integrityCheckSection element not found!');
+                }
+                return;
+            }
+            
+            console.log('🔍 Running data integrity check on', sitesData.length, 'sites...');
+            
+            const issues = {
+                hiveCountMismatches: [],
+                missingLandownerInfo: [],
+                missingAccessInfo: [],
+                missingGPS: [],
+                missingContactDetails: [],
+                missingHoneyTypes: [],
+                overdueCompliance: []
+            };
+            
+            // Check each site for data integrity issues
+            sitesData.forEach(site => {
+                // Check 1: Hive count consistency
+                if (site.hiveStrength && site.hiveStacks) {
+                    const hiveStrengthTotal = (site.hiveStrength.strong || 0) + 
+                                             (site.hiveStrength.medium || 0) + 
+                                             (site.hiveStrength.weak || 0) + 
+                                             (site.hiveStrength.nuc || 0) + 
+                                             (site.hiveStrength.dead || 0);
+                    
+                    const hiveBoxTotal = (site.hiveStacks.doubles || 0) * 2 +
+                                        (site.hiveStacks.topSplits || 0) +
+                                        (site.hiveStacks.singles || 0) +
+                                        (site.hiveStacks.nucs || 0) +
+                                        (site.hiveStacks.empty || 0);
+                    
+                    if (hiveStrengthTotal !== hiveBoxTotal && site.hiveCount > 0) {
+                        issues.hiveCountMismatches.push({
+                            siteName: site.name,
+                            siteId: site.id,
+                            strengthTotal: hiveStrengthTotal,
+                            boxTotal: hiveBoxTotal,
+                            difference: Math.abs(hiveStrengthTotal - hiveBoxTotal)
+                        });
+                    }
+                }
+                
+                // Check 2: Missing landowner information
+                if (!site.landownerName || !site.landownerName.trim()) {
+                    issues.missingLandownerInfo.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Landowner Name'
+                    });
+                }
+                
+                // Check 3: Missing access information
+                if (!site.accessType || !site.accessType.trim()) {
+                    issues.missingAccessInfo.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Access Type'
+                    });
+                }
+                
+                // Check 4: Missing GPS coordinates
+                if (!site.latitude || !site.longitude || 
+                    site.latitude === 0 || site.longitude === 0) {
+                    issues.missingGPS.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+                
+                // Check 5: Missing contact details
+                const hasPhone = site.landownerPhone && site.landownerPhone.trim();
+                const hasEmail = site.landownerEmail && site.landownerEmail.trim();
+                if (!hasPhone && !hasEmail) {
+                    issues.missingContactDetails.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+                
+                // Check 6: Missing honey types
+                if (!site.honeyPotentials || !Array.isArray(site.honeyPotentials) || site.honeyPotentials.length === 0) {
+                    issues.missingHoneyTypes.push({
+                        siteName: site.name,
+                        siteId: site.id
+                    });
+                }
+            });
+            
+            // Check 7: Overdue compliance requirements
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            
+            // Check for overdue Annual Disease Return (due by 1 June)
+            const adrDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > adrDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Annual Disease Return (ADR)',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Annual Disease Return was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Check for overdue Colony Return (due by 1 June)
+            const colonyReturnDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > colonyReturnDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Colony Return',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Colony Return was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Check for overdue Certificate of Inspection (COI) window (1 Aug - 30 Nov)
+            const coiStart = new Date(currentYear, 7, 1); // August 1st
+            const coiEnd = new Date(currentYear, 10, 30); // November 30th
+            if (currentDate > coiEnd) {
+                issues.overdueCompliance.push({
+                    requirement: 'Certificate of Inspection (COI)',
+                    deadline: '30 November ' + currentYear,
+                    status: 'Overdue',
+                    description: 'COI window closed on 30 November ' + currentYear
+                });
+            } else if (currentDate >= coiStart && currentDate <= coiEnd) {
+                issues.overdueCompliance.push({
+                    requirement: 'Certificate of Inspection (COI)',
+                    deadline: '30 November ' + currentYear,
+                    status: 'Due Soon',
+                    description: 'COI window is open until 30 November ' + currentYear
+                });
+            }
+            
+            // Check for overdue levies and payments (due 1 June)
+            const levyDeadline = new Date(currentYear, 5, 1); // June 1st
+            if (currentDate > levyDeadline) {
+                issues.overdueCompliance.push({
+                    requirement: 'Levy Payment',
+                    deadline: '1 June ' + currentYear,
+                    status: 'Overdue',
+                    description: 'Annual levy payment was due by 1 June ' + currentYear
+                });
+            }
+            
+            // Calculate total issues
+            const totalIssues = issues.hiveCountMismatches.length + 
+                              issues.missingLandownerInfo.length + 
+                              issues.missingAccessInfo.length + 
+                              issues.missingGPS.length + 
+                              issues.missingContactDetails.length +
+                              issues.missingHoneyTypes.length +
+                              issues.overdueCompliance.length;
+            
+            // Generate HTML report
+            let html = '';
+            
+            if (totalIssues === 0) {
+                html = `
+                    <div class="alert alert-success">
+                        <i class="bi bi-check-circle-fill"></i> <strong>Data Integrity: Excellent!</strong>
+                        <p class="mb-0 mt-2">All sites have complete and consistent data. No issues detected.</p>
+                    </div>
+                `;
+            } else {
+                html = `
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i> <strong>Data Integrity Issues Found: ${totalIssues}</strong>
+                        <p class="mb-0 mt-2">The following data inconsistencies and missing information have been detected across your sites:</p>
+                    </div>
+                `;
+                
+                // Hive count mismatches
+                if (issues.hiveCountMismatches.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-exclamation-triangle"></i> Hive Count Mismatches (${issues.hiveCountMismatches.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites where hive strength counts don't match hive box counts:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.hiveCountMismatches.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <br>
+                                <small class="text-danger">
+                                    Strength Total: ${issue.strengthTotal} | Box Total: ${issue.boxTotal} | Difference: ${issue.difference}
+                                </small>
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing landowner info
+                if (issues.missingLandownerInfo.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-person-x"></i> Missing Landowner Information (${issues.missingLandownerInfo.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites missing landowner name:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingLandownerInfo.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing access info
+                if (issues.missingAccessInfo.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-signpost"></i> Missing Access Information (${issues.missingAccessInfo.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites missing access type:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingAccessInfo.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing GPS
+                if (issues.missingGPS.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-geo-alt"></i> Missing GPS Coordinates (${issues.missingGPS.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites without GPS coordinates:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingGPS.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing contact details
+                if (issues.missingContactDetails.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-info">
+                            <div class="card-header bg-info text-white">
+                                <i class="bi bi-telephone-x"></i> Missing Contact Details (${issues.missingContactDetails.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites without phone or email contact:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingContactDetails.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing honey types
+                if (issues.missingHoneyTypes.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-warning">
+                            <div class="card-header bg-warning text-dark">
+                                <i class="bi bi-flower1"></i> Missing Honey Types (${issues.missingHoneyTypes.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites without honey type information:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingHoneyTypes.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite('${issue.siteId}')">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Overdue compliance requirements
+                if (issues.overdueCompliance.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-exclamation-triangle"></i> Overdue Compliance Requirements (${issues.overdueCompliance.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Regulatory compliance items requiring attention:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.overdueCompliance.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.requirement}</strong><br>
+                                <small class="text-${issue.status === 'Overdue' ? 'danger' : 'warning'}">${issue.status} - ${issue.deadline}</small><br>
+                                <small class="text-muted">${issue.description}</small>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            
+            document.getElementById('integrityCheckSection').innerHTML = html;
+            console.log('✅ Data integrity check completed:', { totalIssues });
+        }
+
         // Handle navigation from reports
         function handleReportsNavigation() {
             const navigateToSite = localStorage.getItem('navigateToSite');
