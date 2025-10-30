@@ -246,7 +246,17 @@ function renderFlaggedItems() {
     console.log('🚩 Flagged actions found:', flagged.length);
     console.log('🚩 Flagged actions:', flagged);
     
-    const html = flagged.reverse().length > 0
+    // Get overdue tasks
+    const overdueTasks = (window.scheduledTasks && Array.isArray(window.scheduledTasks)) ? 
+        window.scheduledTasks.filter(task => {
+            const taskDate = new Date(task.dueDate);
+            return !task.completed && taskDate < new Date();
+        }) : [];
+    console.log('🚩 Overdue tasks found:', overdueTasks.length);
+    console.log('🚩 Overdue tasks:', overdueTasks);
+    
+    // Create HTML for flagged actions
+    const flaggedHtml = flagged.reverse().length > 0
         ? flagged.map(a => {
             const site = window.sites.find(s => s.id === a.siteId);
             const flagClass = a.flag === 'urgent' ? 'danger' : a.flag === 'warning' ? 'warning' : 'info';
@@ -272,9 +282,44 @@ function renderFlaggedItems() {
                 </div>
             `;
         }).join('')
-        : '<p class="text-center text-muted my-5">No flagged items. Flag important events for team visibility!</p>';
+        : '';
     
-    document.getElementById('flaggedItemsList2').innerHTML = html;
+    // Create HTML for overdue tasks
+    const overdueHtml = overdueTasks.length > 0
+        ? overdueTasks.map(task => {
+            const site = window.sites.find(s => s.id === task.siteId);
+            const taskName = getTaskDisplayName(null, task.taskId);
+            
+            return `
+                <div class="card mb-3 border-danger flagged-item-card" style="cursor: pointer;" onclick="navigateToSite('${task.siteId}')">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div class="flex-grow-1">
+                                <h5>🚨 OVERDUE: ${taskName}</h5>
+                                <p class="mb-1"><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</p>
+                                <p class="mb-1"><small><i class="bi bi-calendar"></i> Due: ${new Date(task.dueDate).toLocaleDateString()}</small></p>
+                                <span class="badge bg-danger">OVERDUE</span>
+                                ${task.notes ? `<p class="mt-2">${task.notes}</p>` : ''}
+                                <small class="text-muted"><i class="bi bi-hand-index"></i> Click to view site details</small>
+                            </div>
+                            <div class="ms-3">
+                                ${isAdmin ? `<button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); rescheduleTask('${task.id}')"><i class="bi bi-calendar-plus"></i> Reschedule</button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('')
+        : '';
+    
+    // Combine flagged actions and overdue tasks
+    const combinedHtml = flaggedHtml + overdueHtml;
+    
+    const finalHtml = combinedHtml.length > 0
+        ? combinedHtml
+        : '<p class="text-center text-muted my-5">No flagged items or overdue tasks. Flag important events for team visibility!</p>';
+    
+    document.getElementById('flaggedItemsList2').innerHTML = finalHtml;
 }
 
 function navigateToSite(siteId) {
@@ -294,6 +339,22 @@ function navigateToSite(siteId) {
             }, 3000);
         }
     }, 100);
+}
+
+function rescheduleTask(taskId) {
+    console.log('📅 Rescheduling task:', taskId);
+    
+    // Navigate to scheduling view and open reschedule modal
+    showScheduling();
+    
+    // Store task ID for rescheduling
+    setTimeout(() => {
+        const task = window.scheduledTasks.find(t => t.id === taskId);
+        if (task) {
+            // Open the reschedule modal or form
+            beeMarshallAlert(`Reschedule task: ${getTaskDisplayName(null, task.taskId)}\n\nDue: ${new Date(task.dueDate).toLocaleDateString()}\n\nUse the scheduling section to reschedule this task.`, 'info');
+        }
+    }, 500);
 }
 
 function unflagAction(id) {

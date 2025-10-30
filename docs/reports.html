@@ -1228,7 +1228,17 @@
                 }
                 
                 if (flaggedIssuesEl) {
-                    flaggedIssuesEl.textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.filter(a => a.flag && a.flag !== 'normal').length : 0;
+                    // Calculate flagged count to match dashboard logic
+                    const flaggedActions = (window.actions && Array.isArray(window.actions)) ? 
+                        window.actions.filter(a => a.flag && a.flag !== '').length : 0;
+                    
+                    const overdueTasks = (window.scheduledTasks && Array.isArray(window.scheduledTasks)) ? 
+                        window.scheduledTasks.filter(task => {
+                            const taskDate = new Date(task.dueDate);
+                            return !task.completed && taskDate < new Date();
+                        }).length : 0;
+                    
+                    flaggedIssuesEl.textContent = flaggedActions + overdueTasks;
                 }
                 
                 Logger.log('📊 Metrics updated:', {
