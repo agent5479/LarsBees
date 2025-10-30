@@ -3881,6 +3881,13 @@
                             </div>
                         </div>
                     ` : '';
+                    // Auto-hide the TOC slightly faster
+                    const tocCard = tocEl.querySelector('.card');
+                    if (tocCard) {
+                        setTimeout(() => {
+                            tocCard.style.display = 'none';
+                        }, 4000); // hide after 4s
+                    }
                 }
                 
                 // Hive count mismatches
