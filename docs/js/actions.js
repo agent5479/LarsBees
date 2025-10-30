@@ -219,7 +219,7 @@ function renderActions() {
                 </button>
             ` : '';
             
-            const displayTaskName = getTaskDisplayName(a.taskName, a.taskId);
+            const displayTaskName = window.getTaskDisplayName(a.taskName, a.taskId);
             const isDeletedTask = displayTaskName.startsWith('[Deleted:');
             
             return `
@@ -299,7 +299,7 @@ function renderFlaggedItems() {
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div class="flex-grow-1">
-                                <h5>${flagIcon} ${getTaskDisplayName(a.taskName, a.taskId)}</h5>
+                                <h5>${flagIcon} ${window.getTaskDisplayName(a.taskName, a.taskId)}</h5>
                                 <p class="mb-1"><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</p>
                                 <p class="mb-1"><small><i class="bi bi-calendar"></i> ${a.date} • <i class="bi bi-person"></i> ${a.loggedBy}</small></p>
                                 <span class="badge bg-${flagClass}">${a.flag.toUpperCase()}</span>
@@ -320,7 +320,7 @@ function renderFlaggedItems() {
     const overdueHtml = overdueTasks.length > 0
         ? overdueTasks.map(task => {
             const site = window.sites.find(s => s.id === task.siteId);
-            const taskName = getTaskDisplayName(null, task.taskId);
+            const taskName = window.getTaskDisplayName(null, task.taskId);
             
             return `
                 <div class="card mb-3 border-danger flagged-item-card" style="cursor: pointer;" onclick="navigateToSite('${task.siteId}')">
@@ -387,7 +387,7 @@ function rescheduleTask(taskId) {
         const task = window.scheduledTasks.find(t => t.id === taskId);
         if (task) {
             // Open the reschedule modal or form
-            beeMarshallAlert(`Reschedule task: ${getTaskDisplayName(null, task.taskId)}\n\nDue: ${new Date(task.dueDate).toLocaleDateString()}\n\nUse the scheduling section to reschedule this task.`, 'info');
+            beeMarshallAlert(`Reschedule task: ${window.getTaskDisplayName(null, task.taskId)}\n\nDue: ${new Date(task.dueDate).toLocaleDateString()}\n\nUse the scheduling section to reschedule this task.`, 'info');
         }
     }, 500);
 }
@@ -402,7 +402,7 @@ function completeTask(taskId) {
     }
     
     // Confirm completion
-    if (confirm(`Mark task as complete?\n\nTask: ${getTaskDisplayName(null, task.taskId)}\nSite: ${window.sites.find(s => s.id === task.siteId)?.name || 'Unknown'}\nDue: ${new Date(task.dueDate).toLocaleDateString()}`)) {
+    if (confirm(`Mark task as complete?\n\nTask: ${window.getTaskDisplayName(null, task.taskId)}\nSite: ${window.sites.find(s => s.id === task.siteId)?.name || 'Unknown'}\nDue: ${new Date(task.dueDate).toLocaleDateString()}`)) {
         // Use tenant-specific path for data isolation
         const tenantPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
         
@@ -415,7 +415,7 @@ function completeTask(taskId) {
         database.ref(`${tenantPath}/${taskId}`).update(updates)
             .then(() => {
                 console.log('✅ Task completed successfully');
-                beeMarshallAlert(`Task completed successfully!\n\nTask: ${getTaskDisplayName(null, task.taskId)}\nCompleted by: ${currentUser ? currentUser.username : 'Unknown'}`, 'success');
+                beeMarshallAlert(`Task completed successfully!\n\nTask: ${window.getTaskDisplayName(null, task.taskId)}\nCompleted by: ${currentUser ? currentUser.username : 'Unknown'}`, 'success');
                 // Refresh the flagged items list
                 renderFlaggedItems();
             })
