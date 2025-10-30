@@ -155,15 +155,21 @@ function handleLogAction(e) {
 function populateActionFilters() {
     const siteFilter = document.getElementById('filterSite');
     siteFilter.innerHTML = '<option value="">All Sites</option>' +
-        sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        window.sites.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     
-    const categories = [...new Set(tasks.map(t => t.category))].sort();
+    const categories = [...new Set(window.tasks.map(t => t.category))].sort();
     document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     
-    const employeeNames = [...new Set(actions.map(a => a.loggedBy))].filter(Boolean);
+    // Get employee names from both actions and current employees list
+    const actionEmployeeNames = [...new Set(window.actions.map(a => a.loggedBy))].filter(Boolean);
+    const currentEmployeeNames = window.employees ? window.employees.map(emp => emp.username) : [];
+    
+    // Combine and deduplicate employee names
+    const allEmployeeNames = [...new Set([...actionEmployeeNames, ...currentEmployeeNames])].sort();
+    
     document.getElementById('filterEmployee').innerHTML = '<option value="">All Employees</option>' +
-        employeeNames.map(name => `<option value="${name}">${name}</option>`).join('');
+        allEmployeeNames.map(name => `<option value="${name}">${name}</option>`).join('');
 }
 
 function renderActions() {
@@ -171,15 +177,35 @@ function renderActions() {
     const categoryFilter = document.getElementById('filterCategory')?.value;
     const employeeFilter = document.getElementById('filterEmployee')?.value;
     
-    let filtered = [...actions];
+    // Get action type filter checkboxes
+    const hideDeletes = document.getElementById('hideDeletes')?.checked || false;
+    const hideMoves = document.getElementById('hideMoves')?.checked || false;
+    const hideStackUpdates = document.getElementById('hideStackUpdates')?.checked || false;
+    const hideStrengthUpdates = document.getElementById('hideStrengthUpdates')?.checked || false;
+    
+    let filtered = [...window.actions];
     if (siteFilter) filtered = filtered.filter(a => a.siteId == siteFilter);
     if (categoryFilter) filtered = filtered.filter(a => a.taskCategory === categoryFilter);
     if (employeeFilter) filtered = filtered.filter(a => a.loggedBy === employeeFilter);
     
+    // Apply action type filters
+    if (hideDeletes) {
+        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('delete'));
+    }
+    if (hideMoves) {
+        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('move'));
+    }
+    if (hideStackUpdates) {
+        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('stack') && !a.taskName?.toLowerCase().includes('box'));
+    }
+    if (hideStrengthUpdates) {
+        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('strength') && !a.taskName?.toLowerCase().includes('hive count'));
+    }
+    
     const html = filtered.reverse().length > 0
         ? filtered.map(a => {
-            const site = sites.find(s => s.id === a.siteId);
-            const hive = individualHives.find(h => h.id === a.individualHiveId);
+            const site = window.sites.find(s => s.id === a.siteId);
+            const hive = window.individualHives.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
             const deleteBtn = canDeleteAction() ? `
                 <button class="btn btn-sm btn-outline-danger" onclick="deleteAction('${a.id}')">

@@ -2160,6 +2160,53 @@
                     </div>
                 </div>
                 
+                <!-- Action Type Filters -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="bi bi-funnel"></i> Hide Action Types</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="hideDeletes" onchange="renderActions()">
+                                            <label class="form-check-label" for="hideDeletes">
+                                                <i class="bi bi-trash text-danger"></i> Hide Deletes
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="hideMoves" onchange="renderActions()">
+                                            <label class="form-check-label" for="hideMoves">
+                                                <i class="bi bi-arrow-right text-info"></i> Hide Moves
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="hideStackUpdates" onchange="renderActions()">
+                                            <label class="form-check-label" for="hideStackUpdates">
+                                                <i class="bi bi-stack text-warning"></i> Hide Stack Updates
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="hideStrengthUpdates" onchange="renderActions()">
+                                            <label class="form-check-label" for="hideStrengthUpdates">
+                                                <i class="bi bi-hexagon text-success"></i> Hide Strength Updates
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div id="actionsList">
                     <div class="text-center my-5">
                         <i class="bi bi-list-check" style="font-size: 3rem; color: #ccc;"></i>
