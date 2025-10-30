@@ -133,6 +133,16 @@
             padding-bottom: 6px;
             border-bottom: 1px solid #eee;
         }
+
+        /* Sticky bookmarks/controls bar (filters/quick links) */
+        .sticky-bookmarks {
+            position: sticky;
+            top: 56px; /* under navbar */
+            z-index: 1009;
+            background: #fff;
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
         
         .btn-primary {
             background: linear-gradient(135deg, var(--dark-yellow), var(--accent));
@@ -2150,7 +2160,7 @@
                     </div>
                 </div>
                 
-                <div class="row mb-4">
+                <div class="row mb-4 sticky-bookmarks">
                     <div class="col-md-3">
                         <select class="form-select" id="filterSite">
                             <option value="">All Sites</option>
@@ -2648,7 +2658,7 @@
                         <small class="text-muted">Identify data inconsistencies and missing information across sites</small>
                     </div>
                     <div class="card-body">
-                        <div id="integrityTOCInCard" class="mb-3"></div>
+                        <div id="integrityTOCInCard" class="mb-3 sticky-bookmarks"></div>
                         <div id="integrityCheckSection">
                             <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
                                 <div class="text-center">
