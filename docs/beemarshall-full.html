@@ -3881,12 +3881,16 @@
                             </div>
                         </div>
                     ` : '';
-                    // Auto-hide the TOC slightly faster
+                    // Ensure visible and conditionally auto-hide on small screens only
                     const tocCard = tocEl.querySelector('.card');
                     if (tocCard) {
-                        setTimeout(() => {
-                            tocCard.style.display = 'none';
-                        }, 4000); // hide after 4s
+                        tocCard.style.display = '';
+                        console.log('🧭 Integrity TOC rendered with', tocItems.length, 'items');
+                        if (window.innerWidth <= 576) {
+                            setTimeout(() => {
+                                tocCard.style.display = 'none';
+                            }, 4000); // auto-hide on phones
+                        }
                     }
                 }
                 
