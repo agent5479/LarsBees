@@ -123,7 +123,7 @@ function renderSites() {
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title">
                                     <i class="bi ${typeInfo.icon}" style="color: ${typeInfo.color}"></i> 
-                                    ${c.name}
+                                    <strong>${c.name}</strong>
                                     ${archivedBadge}
                                 </h5>
                                 <div>
