@@ -303,7 +303,10 @@ function renderFlaggedItems() {
                                 <small class="text-muted"><i class="bi bi-hand-index"></i> Click to view site details</small>
                             </div>
                             <div class="ms-3">
-                                ${isAdmin ? `<button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); rescheduleTask('${task.id}')"><i class="bi bi-calendar-plus"></i> Reschedule</button>` : ''}
+                                ${isAdmin ? `
+                                    <button class="btn btn-sm btn-outline-primary me-2" onclick="event.stopPropagation(); rescheduleTask('${task.id}')"><i class="bi bi-calendar-plus"></i> Reschedule</button>
+                                    <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); completeTask('${task.id}')"><i class="bi bi-check"></i> Mark Complete</button>
+                                ` : ''}
                             </div>
                         </div>
                     </div>
@@ -355,6 +358,40 @@ function rescheduleTask(taskId) {
             beeMarshallAlert(`Reschedule task: ${getTaskDisplayName(null, task.taskId)}\n\nDue: ${new Date(task.dueDate).toLocaleDateString()}\n\nUse the scheduling section to reschedule this task.`, 'info');
         }
     }, 500);
+}
+
+function completeTask(taskId) {
+    console.log('✅ Completing task:', taskId);
+    
+    const task = window.scheduledTasks.find(t => t.id === taskId);
+    if (!task) {
+        beeMarshallAlert('Task not found', 'error');
+        return;
+    }
+    
+    // Confirm completion
+    if (confirm(`Mark task as complete?\n\nTask: ${getTaskDisplayName(null, task.taskId)}\nSite: ${window.sites.find(s => s.id === task.siteId)?.name || 'Unknown'}\nDue: ${new Date(task.dueDate).toLocaleDateString()}`)) {
+        // Use tenant-specific path for data isolation
+        const tenantPath = currentTenantId ? `tenants/${currentTenantId}/scheduledTasks` : 'scheduledTasks';
+        
+        const updates = {
+            completed: true,
+            completedAt: new Date().toISOString(),
+            completedBy: currentUser ? currentUser.username : 'Unknown'
+        };
+        
+        database.ref(`${tenantPath}/${taskId}`).update(updates)
+            .then(() => {
+                console.log('✅ Task completed successfully');
+                beeMarshallAlert(`Task completed successfully!\n\nTask: ${getTaskDisplayName(null, task.taskId)}\nCompleted by: ${currentUser ? currentUser.username : 'Unknown'}`, 'success');
+                // Refresh the flagged items list
+                renderFlaggedItems();
+            })
+            .catch(error => {
+                console.error('❌ Error completing task:', error);
+                beeMarshallAlert('Error completing task. Please try again.', 'error');
+            });
+    }
 }
 
 function unflagAction(id) {
