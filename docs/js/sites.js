@@ -102,6 +102,20 @@ function renderSites() {
                 return seasonalMap[seasonalValue] || seasonalValue;
             })();
             
+            // Seasonal badge styling
+            const seasonalBadge = (() => {
+                if (!seasonalDisplay) return '';
+                const seasonalColorMap = {
+                    'Summer Site': '#ffc107',        // yellow
+                    'Winter Site': '#0dcaf0',        // ice-blue
+                    'All Year Round': '#20c997',     // teal/greenish
+                    'Summer Only': '#ffcd39',
+                    'Winter Only': '#39c0ed'
+                };
+                const bg = seasonalColorMap[seasonalDisplay] || '#6c757d';
+                return `<span class="badge ms-2" style="background-color: ${bg}; color: #111;">${seasonalDisplay}</span>`;
+            })();
+
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
                     <div class="card site-card h-100" data-site-id="${c.id}" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
@@ -112,9 +126,12 @@ function renderSites() {
                                     ${c.name}
                                     ${archivedBadge}
                                 </h5>
-                                <span class="badge" style="background-color: ${typeInfo.color}; color: white;">
-                                    ${typeInfo.name}
-                                </span>
+                                <div>
+                                    <span class="badge" style="background-color: ${typeInfo.color}; color: white;">
+                                        ${typeInfo.name}
+                                    </span>
+                                    ${seasonalBadge}
+                                </div>
                             </div>
                             
                             <!-- Landowner contact (single truncated line: name/phone, address) -->
@@ -123,16 +140,7 @@ function renderSites() {
                                 <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
                             </div>
                             
-                            <!-- Combined Classification (compact) -->
-                            <div class="mb-2">
-                                <i class="bi bi-tags text-muted me-1"></i>
-                                <strong>Classification:</strong> ${(() => {
-                                    const funcCap = functionalClassificationLabel
-                                        ? functionalClassificationLabel.charAt(0).toUpperCase() + functionalClassificationLabel.slice(1)
-                                        : 'Not specified';
-                                    return seasonalDisplay ? `${funcCap}, ${seasonalDisplay}` : funcCap;
-                                })()}
-                            </div>
+                            
                             
                             <!-- Total Hive Count -->
                             <div class="mb-2">
