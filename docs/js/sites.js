@@ -17,7 +17,7 @@ const SITE_TYPES = {
 
 function renderSites() {
     // Filter sites based on archive status
-    const visibleSites = sites.filter(c => {
+    const visibleSites = window.sites.filter(c => {
         if (showArchivedSites) {
             return c.archived === true;
         } else {
@@ -535,7 +535,7 @@ function handleSaveSite(e) {
             singles: visualHiveData.singles || 0,
             nucs: visualHiveData.nucs || 0,
             empty: visualHiveData.empty || 0
-        } : (sites.find(c => c.id === parseInt(id))?.hiveStacks || {
+        } : (window.sites.find(c => c.id === parseInt(id))?.hiveStacks || {
             doubles: 0,
             topSplits: 0,
             singles: 0,
@@ -558,12 +558,12 @@ function handleSaveSite(e) {
         honeyPotentials: getSelectedHoneyPotentials(),
         lastModifiedBy: currentUser.username,
         lastModifiedAt: new Date().toISOString(),
-        createdAt: id ? (sites.find(c => c.id === parseInt(id))?.createdAt || new Date().toISOString()) : new Date().toISOString()
+        createdAt: id ? (window.sites.find(c => c.id === parseInt(id))?.createdAt || new Date().toISOString()) : new Date().toISOString()
     };
     
     // Preserve harvest records if they exist
     if (id) {
-        const existingSite = sites.find(c => c.id === parseInt(id));
+        const existingSite = window.sites.find(c => c.id === parseInt(id));
         if (existingSite && existingSite.harvestRecords) {
             site.harvestRecords = existingSite.harvestRecords;
         }
@@ -632,7 +632,7 @@ function editSite(id) {
         return;
     }
     
-    const site = sites.find(c => c.id === id);
+    const site = window.sites.find(c => c.id === id);
     if (!site) return;
     
     hideAllViews();
@@ -829,7 +829,7 @@ function addHarvestRecord() {
     let harvestRecords = [];
     
     if (siteId) {
-        const existingSite = sites.find(c => c.id === parseInt(siteId));
+        const existingSite = window.sites.find(c => c.id === parseInt(siteId));
         if (existingSite && existingSite.harvestRecords) {
             harvestRecords = [...existingSite.harvestRecords];
         }
@@ -865,9 +865,9 @@ function addHarvestRecord() {
     
     // Update the site in the array temporarily (will be saved when form is submitted)
     if (siteId) {
-        const siteIndex = sites.findIndex(c => c.id === parseInt(siteId));
+        const siteIndex = window.sites.findIndex(c => c.id === parseInt(siteId));
         if (siteIndex !== -1) {
-            sites[siteIndex].harvestRecords = harvestRecords;
+            window.sites[siteIndex].harvestRecords = harvestRecords;
         }
     }
     
@@ -897,7 +897,7 @@ function editHarvestRecord(index) {
         return;
     }
     
-    const existingSite = sites.find(c => c.id === parseInt(siteId));
+    const existingSite = window.sites.find(c => c.id === parseInt(siteId));
     if (!existingSite || !existingSite.harvestRecords || !existingSite.harvestRecords[index]) {
         beeMarshallAlert('Record not found', 'error');
         return;
@@ -1007,17 +1007,17 @@ function removeHarvestRecord(index) {
         return;
     }
     
-    const siteIndex = sites.findIndex(c => c.id === parseInt(siteId));
+    const siteIndex = window.sites.findIndex(c => c.id === parseInt(siteId));
     if (siteIndex === -1) {
         beeMarshallAlert('Site not found', 'error');
         return;
     }
     
-    if (!sites[siteIndex].harvestRecords) {
-        sites[siteIndex].harvestRecords = [];
+    if (!window.sites[siteIndex].harvestRecords) {
+        window.sites[siteIndex].harvestRecords = [];
     }
     
-    sites[siteIndex].harvestRecords.splice(index, 1);
+    window.sites[siteIndex].harvestRecords.splice(index, 1);
     
     // Reset edit state if the deleted record was being edited
     if (editingHarvestRecordIndex === index) {
@@ -1033,13 +1033,13 @@ function removeHarvestRecord(index) {
         }
     }
     
-    renderHarvestRecords(sites[siteIndex].harvestRecords);
+    renderHarvestRecords(window.sites[siteIndex].harvestRecords);
     
     beeMarshallAlert('Harvest record removed', 'info');
 }
 
 function viewSiteDetails(id) {
-    const site = sites.find(c => c.id === id);
+    const site = window.sites.find(c => c.id === id);
     if (!site) return;
     
     const typeInfo = SITE_TYPES[site.siteType] || SITE_TYPES['custom'];
@@ -1132,7 +1132,7 @@ function scheduleTaskForSite(siteId) {
 }
 
 function archiveSite(id) {
-    const site = sites.find(c => c.id === id);
+    const site = window.sites.find(c => c.id === id);
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1178,7 +1178,7 @@ function unarchiveSite(id) {
         return;
     }
     
-    const site = sites.find(c => c.id === id);
+    const site = window.sites.find(c => c.id === id);
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1225,7 +1225,7 @@ function deleteSite(id) {
         return;
     }
     
-    const site = sites.find(c => c.id === id);
+    const site = window.sites.find(c => c.id === id);
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1259,7 +1259,7 @@ function deleteSite(id) {
  * Detects platform and opens appropriate app (Google Maps or Apple Maps)
  */
 function openInMaps(siteId) {
-    const site = sites.find(c => c.id === siteId);
+    const site = window.sites.find(c => c.id === siteId);
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1310,7 +1310,7 @@ function openInMaps(siteId) {
 // Update map with new site data
 function updateMapWithSites() {
     console.log('🔄 Updating map with site data...');
-    if (map && sites && sites.length > 0) {
+    if (map && window.sites && window.sites.length > 0) {
         renderSites();
     } else if (map) {
         console.log('📍 Map exists but no sites to render');
@@ -1380,15 +1380,15 @@ function initMap() {
     markers = [];
     
     // Only render sites if we have data
-    if (!sites || sites.length === 0) {
+    if (!window.sites || window.sites.length === 0) {
         console.log('📍 No sites to render yet');
         return;
     }
     
-    console.log(`📍 Rendering ${sites.length} sites on map`);
+    console.log(`📍 Rendering ${window.sites.length} sites on map`);
     
     // Add marker for each site with type-specific colors
-    sites.forEach(site => {
+    window.sites.forEach(site => {
         try {
             const typeInfo = SITE_TYPES[site.siteType] || SITE_TYPES['custom'];
             
@@ -1505,7 +1505,7 @@ function initMap() {
     });
     
     // Fit bounds to show all markers
-    if (sites.length > 1 && markers.length > 0) {
+    if (window.sites.length > 1 && markers.length > 0) {
         try {
             const group = new L.featureGroup(markers);
             map.fitBounds(group.getBounds().pad(0.1));
@@ -1611,7 +1611,7 @@ function renderVisualHiveGrid() {
         return;
     }
     
-    const site = sites.find(c => c.id === parseInt(siteId));
+    const site = window.sites.find(c => c.id === parseInt(siteId));
     if (!site) {
         container.innerHTML = '<p class="text-muted">Site not found.</p>';
         return;
@@ -1815,7 +1815,7 @@ function updateHiveCount(type) {
     // Auto-save to Firebase and log as action
     const siteId = document.getElementById('siteId')?.value;
     if (siteId && oldValue !== newValue) {
-        const site = sites.find(c => c.id === parseInt(siteId));
+        const site = window.sites.find(c => c.id === parseInt(siteId));
         if (site) {
             // Update site data
             if (!site.hiveStacks) site.hiveStacks = {};
@@ -1873,7 +1873,7 @@ function saveVisualHiveChanges() {
         return;
     }
     
-    const site = sites.find(c => c.id === parseInt(siteId));
+    const site = window.sites.find(c => c.id === parseInt(siteId));
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -1970,7 +1970,7 @@ function editHiveStateCount(state) {
     }
     
     // Get the site
-    const site = sites.find(c => c.id === parseInt(siteId));
+    const site = window.sites.find(c => c.id === parseInt(siteId));
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -2091,8 +2091,8 @@ function updateArchivedButtonText() {
     const button = document.getElementById('toggleArchivedButton');
     if (!button) return;
     
-    const archivedCount = sites.filter(c => c.archived === true).length;
-    const activeCount = sites.filter(c => !c.archived).length;
+    const archivedCount = window.sites.filter(c => c.archived === true).length;
+    const activeCount = window.sites.filter(c => !c.archived).length;
     
     if (showArchivedSites) {
         button.innerHTML = '<i class="bi bi-arrow-left"></i> Show Active Sites';
@@ -2110,7 +2110,7 @@ function updateArchivedButtonText() {
  * Opens a prompt for entering new count and updates Firebase
  */
 function quickEditHiveStrength(siteId, state, currentValue) {
-    const site = sites.find(c => c.id === siteId);
+    const site = window.sites.find(c => c.id === siteId);
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
@@ -2177,7 +2177,7 @@ function quickEditHiveStrength(siteId, state, currentValue) {
  * Opens a prompt for entering new count and updates Firebase
  */
 function quickEditHiveBox(siteId, boxType, currentValue) {
-    const site = sites.find(c => c.id === siteId);
+    const site = window.sites.find(c => c.id === siteId);
     if (!site) {
         beeMarshallAlert('Site not found', 'error');
         return;
