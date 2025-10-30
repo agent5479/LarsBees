@@ -3682,6 +3682,7 @@
                 missingAccessInfo: [],
                 missingGPS: [],
                 missingContactDetails: [],
+                invalidPhoneNumbers: [],
                 missingHoneyTypes: [],
                 overdueCompliance: []
             };
@@ -3750,7 +3751,19 @@
                     });
                 }
                 
-                // Check 6: Missing honey types
+                // Check 6: Invalid phone numbers (must contain at least 7 digits)
+                if (hasPhone) {
+                    const digits = (site.landownerPhone || '').replace(/\D/g, '');
+                    if (digits.length > 0 && digits.length < 7) {
+                        issues.invalidPhoneNumbers.push({
+                            siteName: site.name,
+                            siteId: site.id,
+                            phone: site.landownerPhone
+                        });
+                    }
+                }
+                
+                // Check 7: Missing honey types
                 if (!site.honeyPotentials || !Array.isArray(site.honeyPotentials) || site.honeyPotentials.length === 0) {
                     issues.missingHoneyTypes.push({
                         siteName: site.name,
@@ -3759,7 +3772,7 @@
                 }
             });
             
-            // Check 7: Overdue compliance requirements
+            // Check 8: Overdue compliance requirements
             const currentDate = new Date();
             const currentYear = currentDate.getFullYear();
             
@@ -3821,6 +3834,7 @@
                               issues.missingAccessInfo.length + 
                               issues.missingGPS.length + 
                               issues.missingContactDetails.length +
+                              issues.invalidPhoneNumbers.length +
                               issues.missingHoneyTypes.length +
                               issues.overdueCompliance.length;
             
@@ -3973,6 +3987,35 @@
                         html += `
                             <li class="list-group-item">
                                 <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-primary float-end" onclick="editSite(${issue.siteId})">
+                                    <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Invalid phone numbers
+                if (issues.invalidPhoneNumbers.length > 0) {
+                    html += `
+                        <div class="card mb-3 border-info">
+                            <div class="card-header bg-info text-white">
+                                <i class="bi bi-telephone-inbound"></i> Invalid Phone Numbers (${issues.invalidPhoneNumbers.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted">Sites with phone numbers containing fewer than 7 digits:</p>
+                                <ul class="list-group">
+                    `;
+                    issues.invalidPhoneNumbers.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <br><small class="text-muted">Phone: ${issue.phone || 'N/A'}</small>
                                 <button class="btn btn-sm btn-primary float-end" onclick="editSite(${issue.siteId})">
                                     <i class="bi bi-arrow-right"></i> Fix
                                 </button>
