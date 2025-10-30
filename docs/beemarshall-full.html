@@ -3428,6 +3428,36 @@
                 });
             }
             
+            // Add tasks data
+            if (window.tasks && window.tasks.length > 0) {
+                window.tasks.forEach(task => {
+                    allData.push({
+                        'Data Type': 'Task',
+                        'ID': task.id,
+                        'Name': task.name || '',
+                        'Category': task.category || '',
+                        'Description': task.description || '',
+                        'Created At': task.createdAt || '',
+                        'Last Modified At': task.lastModifiedAt || ''
+                    });
+                });
+            }
+            
+            // Add deleted tasks archive (if any)
+            if (window.deletedTasks && typeof window.deletedTasks === 'object' && Object.keys(window.deletedTasks).length > 0) {
+                Object.keys(window.deletedTasks).forEach(id => {
+                    const t = window.deletedTasks[id];
+                    allData.push({
+                        'Data Type': 'Deleted Task',
+                        'ID': id,
+                        'Name': t?.name || '',
+                        'Category': t?.category || '',
+                        'Description': t?.description || '',
+                        'Deleted': 'Yes'
+                    });
+                });
+            }
+            
             // Add actions data
             if (window.actions && window.actions.length > 0) {
                 window.actions.forEach(action => {
@@ -3511,6 +3541,24 @@
                     });
                 });
             }
+
+            // Add employees data (tenant-scoped)
+            if (window.employees && Array.isArray(window.employees) && window.employees.length > 0) {
+                window.employees.forEach(emp => {
+                    allData.push({
+                        'Data Type': 'Employee',
+                        'Username': emp.username || '',
+                        'Role': emp.role || '',
+                        'Status': emp.active ? 'Active' : (emp.status || 'Inactive'),
+                        'Created By': emp.createdBy || '',
+                        'Tenant ID': emp.tenantId || (typeof currentTenantId !== 'undefined' ? currentTenantId : ''),
+                        'Device Remembered': emp.deviceRemembered ? 'Yes' : 'No',
+                        'Temporary Password Expiry': emp.temporaryPasswordExpiry || '',
+                        'Created At': emp.createdAt || '',
+                        'Last Modified At': emp.lastModifiedAt || ''
+                    });
+                });
+            }
             
             if (allData.length === 0) {
                 beeMarshallAlert('No data available to export.', 'info');
@@ -3540,6 +3588,8 @@
                 `Actions: ${typeof actions !== 'undefined' && actions ? actions.length : 0}`,
                 `Scheduled Tasks: ${typeof scheduledTasks !== 'undefined' && scheduledTasks ? scheduledTasks.length : 0}`,
                 `Individual Hives: ${typeof individualHives !== 'undefined' && individualHives ? individualHives.length : 0}`,
+                `Tasks: ${typeof tasks !== 'undefined' && tasks ? tasks.length : 0}`,
+                `Employees: ${typeof employees !== 'undefined' && Array.isArray(employees) ? employees.length : 0}`,
                 ``, // Empty line before data
             ];
             
