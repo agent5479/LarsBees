@@ -20,12 +20,12 @@ function updateActiveNav(section) {
     const sectionMap = {
         'dashboard': 'showDashboard',
         'Sites': 'showSites',
-        'Sites': 'showSites',
         'Actions': 'showActions',
         'Schedule': 'showScheduledTasks',
         'Tasks': 'showTasks',
         'Task': 'showTasks',
         'Compliance': 'showComplianceView',
+        'Data Integrity': 'showIntegrityCheck',
         'Team': 'showEmployees',
         'Employees': 'showEmployees'
     };

@@ -625,7 +625,8 @@ function handleSaveSite(e) {
     }
 }
 
-function editSite(id) {
+// Make editSite globally accessible
+window.editSite = function(id) {
     // Check if user has permission to edit sites
     if (!isAdmin) {
         beeMarshallAlert('Only administrators can edit site details. You can update hive strength and hive boxes from the summary cards.', 'warning');
@@ -770,7 +771,7 @@ function editSite(id) {
             }
         });
     }
-}
+};
 
 /**
  * Render honey potentials checkboxes in the form

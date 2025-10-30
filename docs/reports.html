@@ -654,29 +654,6 @@
         </div>
 
 
-        <!-- Data Integrity Check -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="report-card">
-                    <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-shield-check"></i> Data Integrity Check</h5>
-                        <small class="text-muted">Identify data inconsistencies and missing information across sites</small>
-                    </div>
-                    <div class="card-body">
-                        <div id="integrityCheckSection">
-                            <div class="d-flex align-items-center justify-content-center" style="min-height: 200px;">
-                                <div class="text-center">
-                                    <div class="spinner-border text-primary" role="status">
-                                        <span class="visually-hidden">Loading...</span>
-                                    </div>
-                                    <p class="text-muted mt-3">Analyzing data integrity...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Scripts -->
@@ -960,10 +937,6 @@
                 window.database = window.database;
             }
             
-            // Run integrity check after a short delay to ensure data is loaded
-            setTimeout(() => {
-                performIntegrityCheck();
-            }, 2000);
             
             Logger.log('✅ Reports page initialization complete');
         });
@@ -1349,17 +1322,6 @@
                     return;
                 }
                 
-                // Step 1: Run data integrity check first (for logging and bottom report)
-                const integrityIssues = performDataIntegrityCheck();
-                
-                // Step 2: Log integrity check results (no modal popup)
-                if (integrityIssues.totalIssues === 0) {
-                    console.log('✅ Data integrity check passed - all data is consistent');
-                    Logger.log('✅ Data integrity check passed - all data is consistent');
-                } else {
-                    console.log(`⚠️ Data integrity check found ${integrityIssues.totalIssues} issues - see detailed report below`);
-                    Logger.warn(`⚠️ Data integrity check found ${integrityIssues.totalIssues} issues - see detailed report below`);
-                }
                 
                 // Step 3: Always generate reports regardless of integrity issues
                 console.log('📊 Proceeding with report generation...');
@@ -1378,8 +1340,6 @@
                         generateOperationsReport();
                     }
                     
-                    // Always generate detailed integrity check report at bottom
-                    generateDataIntegrityCheck(sites);
                     
                     // Mark reports as generated and reset flag
                     reportsGenerated = true;
