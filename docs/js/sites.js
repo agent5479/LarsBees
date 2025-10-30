@@ -78,14 +78,23 @@ function renderSites() {
             const hiveNUCs = c.hiveStacks?.nucs || 0;
             const hiveEmpty = c.hiveStacks?.empty || 0;
             
-            // Get honey potentials
-            const honeyPotentials = c.honeyPotentials || [];
-            const honeyPotentialsList = honeyPotentials.length > 0 
-                ? honeyPotentials.map(p => `<span class="badge bg-warning me-1">${p}</span>`).join('')
-                : '<span class="text-muted">None specified</span>';
-            
-            // Determine functional classification label
+            // Determine classification labels (compact for summary card)
             const functionalClassificationLabel = c.functionalClassification || 'Not specified';
+            const seasonalDisplay = (() => {
+                const seasonalValue = c.seasonalClassification || c.seasonal_classification || '';
+                if (!seasonalValue) return '';
+                const seasonalMap = {
+                    'summer': 'Summer Site',
+                    'winter': 'Winter Site',
+                    'all-year': 'All Year Round',
+                    'summer-only': 'Summer Only',
+                    'winter-only': 'Winter Only',
+                    'All Year Round': 'All Year Round',
+                    'Summer Site': 'Summer Site',
+                    'Winter Site': 'Winter Site'
+                };
+                return seasonalMap[seasonalValue] || seasonalValue;
+            })();
             
             return `
                 <div class="col-md-6 col-lg-4 mb-3">
@@ -108,29 +117,14 @@ function renderSites() {
                                 <strong>Landowner:</strong> ${landownerInfo}
                             </div>
                             
-                            <!-- Functional Classification -->
+                            <!-- Combined Classification (compact) -->
                             <div class="mb-2">
-                                <i class="bi bi-calendar-event text-muted me-1"></i>
-                                <strong>Functional Classification:</strong> ${functionalClassificationLabel}
-                            </div>
-                            
-                            <!-- Seasonal Classification -->
-                            <div class="mb-2">
-                                <i class="bi bi-sun text-muted me-1"></i>
-                                <strong>Seasonal Classification:</strong> ${(() => {
-                                    const seasonalValue = c.seasonalClassification || c.seasonal_classification;
-                                    
-                                    // Map stored values to display text
-                                    const seasonalMap = {
-                                        'summer': 'Summer Site',
-                                        'winter': 'Winter Site',
-                                        'all-year': 'All Year Round',
-                                        'Summer Site': 'Summer Site',
-                                        'Winter Site': 'Winter Site',
-                                        'All Year Round': 'All Year Round'
-                                    };
-                                    
-                                    return seasonalMap[seasonalValue] || seasonalValue || 'Not specified';
+                                <i class="bi bi-tags text-muted me-1"></i>
+                                <strong>Classification:</strong> ${(() => {
+                                    const funcCap = functionalClassificationLabel
+                                        ? functionalClassificationLabel.charAt(0).toUpperCase() + functionalClassificationLabel.slice(1)
+                                        : 'Not specified';
+                                    return seasonalDisplay ? `${funcCap}, ${seasonalDisplay}` : funcCap;
                                 })()}
                             </div>
                             
@@ -209,13 +203,7 @@ function renderSites() {
                                 </div>
                             </div>
                             
-                            <!-- Honey Potentials -->
-                            <div class="mb-3">
-                                <strong><i class="bi bi-flower1"></i> Honey Potentials:</strong>
-                                <div class="mt-1">
-                                    ${honeyPotentialsList}
-                                </div>
-                            </div>
+                            
                             
                             ${c.lastModifiedBy ? `<small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small>` : ''}
                         </div>
