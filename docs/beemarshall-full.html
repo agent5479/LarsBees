@@ -122,6 +122,17 @@
             transition: var(--transition);
             box-shadow: 0 8px 22px rgba(0,0,0,0.1);
         }
+
+        /* Sticky sub-navigation/header used across views */
+        .sticky-subnav {
+            position: sticky;
+            top: 56px; /* keep below navbar */
+            z-index: 1010;
+            background: #fff;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #eee;
+        }
         
         .btn-primary {
             background: linear-gradient(135deg, var(--dark-yellow), var(--accent));
@@ -1750,7 +1761,7 @@
 
             <!-- Sites View -->
             <div id="sitesView" class="hidden">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 sticky-subnav">
                     <h2><i class="bi bi-geo-alt"></i> Apiary Sites</h2>
                     <div>
                         <button class="btn btn-outline-success me-2" onclick="exportSitesCSV()">
@@ -2127,7 +2138,7 @@
 
             <!-- Actions View -->
             <div id="actionsView" class="hidden">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 sticky-subnav">
                     <h2><i class="bi bi-list-check"></i> Actions</h2>
                     <div>
                         <button class="btn btn-outline-success me-2" onclick="exportActionsCSV()">
@@ -2298,7 +2309,7 @@
 
             <!-- Scheduled Tasks View -->
             <div id="scheduledView" class="hidden">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 sticky-subnav">
                     <h2><i class="bi bi-calendar3"></i> Scheduled Tasks</h2>
                     <div>
                         <button class="btn btn-outline-primary me-2" onclick="toggleCalendarView()" id="calendarToggleBtn">
@@ -2370,7 +2381,7 @@
 
             <!-- Schedule for Next Visit View -->
             <div id="scheduleForNextVisitView" class="hidden">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 sticky-subnav">
                     <h2><i class="bi bi-calendar-plus"></i> Schedule for Next Visit</h2>
                     <button class="btn btn-secondary" onclick="showScheduledTasks()">
                         <i class="bi bi-arrow-left"></i> Back to Schedule
@@ -2447,7 +2458,7 @@
 
             <!-- Suggested Schedule View -->
             <div id="suggestedScheduleView" class="hidden">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 sticky-subnav">
                     <h2><i class="bi bi-lightbulb"></i> Suggested Schedule</h2>
                     <button class="btn btn-secondary" onclick="showScheduledTasks()">
                         <i class="bi bi-arrow-left"></i> Back to Schedule
