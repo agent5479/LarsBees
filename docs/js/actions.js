@@ -205,24 +205,35 @@ function renderActions() {
         return by === employeeFilter.toString().trim().toLowerCase();
     });
     
-    // Apply action type filters
+    // Apply action type filters with robust keyword matching
+    const getName = (a) => (a.taskName || a.task || a.name || '').toString().toLowerCase();
+    const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
+    const moveKeywords = ['move', 'moved', 'relocation', 'relocate', 'transfer'];
+    const strengthKeywords = ['strong', 'medium', 'weak', 'nuc', 'dead', 'hive state', 'strength'];
+
     if (hideDeletes) {
-        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('delete'));
+        filtered = filtered.filter(a => {
+            const name = getName(a);
+            return !deleteKeywords.some(k => name.includes(k));
+        });
     }
     if (hideMoves) {
-        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('move'));
+        filtered = filtered.filter(a => {
+            const name = getName(a);
+            return !moveKeywords.some(k => name.includes(k));
+        });
     }
     if (hideStackUpdates) {
-        filtered = filtered.filter(a => !a.taskName?.toLowerCase().includes('inventory'));
+        filtered = filtered.filter(a => {
+            const name = getName(a);
+            return !name.includes('inventory');
+        });
     }
     if (hideStrengthUpdates) {
-        filtered = filtered.filter(a => 
-            !a.taskName?.toLowerCase().includes('strong') && 
-            !a.taskName?.toLowerCase().includes('medium') && 
-            !a.taskName?.toLowerCase().includes('weak') &&
-            !a.taskName?.toLowerCase().includes('nuc') &&
-            !a.taskName?.toLowerCase().includes('dead')
-        );
+        filtered = filtered.filter(a => {
+            const name = getName(a);
+            return !strengthKeywords.some(k => name.includes(k));
+        });
     }
     
     const sitesArray = Array.isArray(window.sites) ? window.sites : [];
