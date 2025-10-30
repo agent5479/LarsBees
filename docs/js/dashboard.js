@@ -82,7 +82,25 @@ window.getTaskDisplayName = function(taskName, taskId) {
     
     // Try to find in COMPREHENSIVE_TASKS if available
     if (typeof window.COMPREHENSIVE_TASKS !== 'undefined' && taskId) {
-        const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+        // First try exact match
+        let comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+        
+        // If no exact match and taskId is numeric, try mapping to task_N format
+        if (!comprehensiveTask && typeof taskId === 'number') {
+            const mappedId = `task_${taskId}`;
+            comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === mappedId);
+            console.log(`🔄 Trying mapped ID: ${mappedId}`);
+        }
+        
+        // If still no match and taskId is numeric, try reverse mapping (task_N -> N)
+        if (!comprehensiveTask && typeof taskId === 'number') {
+            comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => {
+                const numericId = parseInt(t.id.replace('task_', ''));
+                return numericId === taskId;
+            });
+            console.log(`🔄 Trying reverse mapping for numeric ID: ${taskId}`);
+        }
+        
         if (comprehensiveTask) {
             console.log(`✅ Found in COMPREHENSIVE_TASKS: ${comprehensiveTask.name}`);
             return comprehensiveTask.name;

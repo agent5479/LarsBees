@@ -29,7 +29,23 @@ function getTaskDisplayName(taskName, taskId) {
     
     // Try to find in COMPREHENSIVE_TASKS if available
     if (typeof window.COMPREHENSIVE_TASKS !== 'undefined' && taskId) {
-        const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+        // First try exact match
+        let comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+        
+        // If no exact match and taskId is numeric, try mapping to task_N format
+        if (!comprehensiveTask && typeof taskId === 'number') {
+            const mappedId = `task_${taskId}`;
+            comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === mappedId);
+        }
+        
+        // If still no match and taskId is numeric, try reverse mapping (task_N -> N)
+        if (!comprehensiveTask && typeof taskId === 'number') {
+            comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => {
+                const numericId = parseInt(t.id.replace('task_', ''));
+                return numericId === taskId;
+            });
+        }
+        
         if (comprehensiveTask) {
             return comprehensiveTask.name;
         }
@@ -38,7 +54,23 @@ function getTaskDisplayName(taskName, taskId) {
     // If we have a taskId but no name, try to find it in COMPREHENSIVE_TASKS
     if (taskId) {
         if (typeof window.COMPREHENSIVE_TASKS !== 'undefined') {
-            const comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+            // First try exact match
+            let comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === taskId);
+            
+            // If no exact match and taskId is numeric, try mapping to task_N format
+            if (!comprehensiveTask && typeof taskId === 'number') {
+                const mappedId = `task_${taskId}`;
+                comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => t.id === mappedId);
+            }
+            
+            // If still no match and taskId is numeric, try reverse mapping (task_N -> N)
+            if (!comprehensiveTask && typeof taskId === 'number') {
+                comprehensiveTask = window.COMPREHENSIVE_TASKS.find(t => {
+                    const numericId = parseInt(t.id.replace('task_', ''));
+                    return numericId === taskId;
+                });
+            }
+            
             if (comprehensiveTask) {
                 return comprehensiveTask.name;
             }
