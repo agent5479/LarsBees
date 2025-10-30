@@ -179,6 +179,34 @@ function updateDashboard() {
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.length : 0;
     document.getElementById('statFlagged').textContent = flaggedCount;
+    // Emphasize flagged card severity by count
+    const flaggedCard = document.querySelector('.dashboard-stat-card.flagged-card');
+    if (flaggedCard) {
+        const c = flaggedCount;
+        // Three-tier severity scale: <5 low, 5-9 medium, >=10 high
+        let bg = '#f2c7a6'; // low: brownish orange light red
+        let fg = '#422b22';
+        let border = '#e1a77a';
+        if (c >= 5 && c < 10) {
+            bg = '#f08b6a'; // medium: orange-red
+            fg = '#ffffff';
+            border = '#de6e4f';
+        } else if (c >= 10) {
+            bg = '#d93a2f'; // high: vivid warning red
+            fg = '#ffffff';
+            border = '#b82f26';
+        }
+        flaggedCard.style.backgroundColor = bg;
+        flaggedCard.style.borderColor = border;
+        flaggedCard.style.color = fg;
+        // Also adjust inner text color for labels/numbers
+        const statNum = flaggedCard.querySelector('#statFlagged');
+        const statLabel = flaggedCard.querySelector('.stat-label');
+        if (statNum) statNum.style.color = fg;
+        if (statLabel) statLabel.style.color = fg;
+        const icon = flaggedCard.querySelector('.stat-icon-container i');
+        if (icon) icon.style.color = fg;
+    }
     
     console.log('📊 Dashboard cards updated:', {
         sites: activeSites.length,
