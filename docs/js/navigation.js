@@ -80,6 +80,11 @@ function showSites() {
 
 function showActions() {
     console.log('🔄 Switching to Actions view...');
+    console.log('🔍 Data state when switching to Actions:', {
+        actions: window.actions ? window.actions.length : 'undefined',
+        sites: window.sites ? window.sites.length : 'undefined',
+        tasks: window.tasks ? window.tasks.length : 'undefined'
+    });
     hideAllViews();
     
     // Small delay to ensure all views are hidden before showing new view

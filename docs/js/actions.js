@@ -173,6 +173,10 @@ function populateActionFilters() {
 }
 
 function renderActions() {
+    console.log('🔍 renderActions called');
+    console.log('🔍 window.actions:', window.actions);
+    console.log('🔍 window.actions length:', window.actions ? window.actions.length : 'undefined');
+    
     const siteFilter = document.getElementById('filterSite')?.value;
     const categoryFilter = document.getElementById('filterCategory')?.value;
     const employeeFilter = document.getElementById('filterEmployee')?.value;
@@ -184,6 +188,7 @@ function renderActions() {
     const hideStrengthUpdates = document.getElementById('hideStrengthUpdates')?.checked || false;
     
     let filtered = [...window.actions];
+    console.log('🔍 filtered actions before filtering:', filtered.length);
     if (siteFilter) filtered = filtered.filter(a => a.siteId == siteFilter);
     if (categoryFilter) filtered = filtered.filter(a => a.taskCategory === categoryFilter);
     if (employeeFilter) filtered = filtered.filter(a => a.loggedBy === employeeFilter);
@@ -246,7 +251,10 @@ function renderActions() {
         }).join('')
         : '<p class="text-center text-muted my-5">No actions found.</p>';
     
+    console.log('🔍 Final HTML length:', html.length);
+    console.log('🔍 actionsList element:', document.getElementById('actionsList'));
     document.getElementById('actionsList').innerHTML = html;
+    console.log('🔍 Actions list updated');
 }
 
 function deleteAction(id) {
