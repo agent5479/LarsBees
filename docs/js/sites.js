@@ -131,6 +131,9 @@ function renderSites() {
                                         ${typeInfo.name}
                                     </span>
                                     ${seasonalBadge}
+                                    <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px;">
+                                        ${c.hiveCount || 0}
+                                    </span>
                                 </div>
                             </div>
                             
@@ -142,11 +145,7 @@ function renderSites() {
                             
                             
                             
-                            <!-- Total Hive Count -->
-                            <div class="mb-2">
-                                <i class="bi bi-hexagon text-muted me-1"></i>
-                                <strong>Total Hives:</strong> <span class="badge bg-primary">${c.hiveCount || 0}</span>
-                            </div>
+                            
                             
                             <!-- Hive Count Summary (Editable inline) -->
                             <div class="mb-3">
