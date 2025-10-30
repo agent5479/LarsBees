@@ -33,10 +33,13 @@ function hideAllViews() {
     });
     
     // Also hide any lingering scheduled/timeline panels that might be orphaned
+    // Always hide these explicitly, regardless of parent state
     ['scheduledTasksList', 'scheduleTimeline'].forEach(id => {
         const el = document.getElementById(id);
-        if (el && el.closest('.hidden') === null) {
+        if (el) {
             el.style.display = 'none';
+            // Also add hidden class for extra safety
+            el.classList.add('hidden');
         }
     });
     
@@ -154,6 +157,18 @@ function showScheduledTasks() {
             view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
+        // Restore scheduled child elements
+        const tasksList = document.getElementById('scheduledTasksList');
+        const timeline = document.getElementById('scheduleTimeline');
+        if (tasksList) {
+            tasksList.style.display = '';
+            tasksList.classList.remove('hidden');
+        }
+        if (timeline) {
+            timeline.style.display = '';
+            timeline.classList.remove('hidden');
+        }
+        
         if (typeof updateActiveNav === 'function') {
             updateActiveNav('Schedule');
         }
@@ -165,7 +180,7 @@ function showScheduledTasks() {
         renderScheduleTimeline();
         
         console.log('✅ Schedule view displayed');
-    }, 10);
+    }, 50);
 }
 
 function showFlagged() {
@@ -192,6 +207,19 @@ function showEmployees() {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
         }
+        
+        // Ensure scheduled panels are fully hidden
+        const tasksList = document.getElementById('scheduledTasksList');
+        const timeline = document.getElementById('scheduleTimeline');
+        if (tasksList) {
+            tasksList.style.display = 'none';
+            tasksList.classList.add('hidden');
+        }
+        if (timeline) {
+            timeline.style.display = 'none';
+            timeline.classList.add('hidden');
+        }
+        
         if (typeof updateActiveNav === 'function') {
             updateActiveNav('Team');
         }

@@ -99,6 +99,18 @@ function showTasks() {
             view.style.display = ''; // Restore display to override hideAllViews display:none
         }
         
+        // Ensure scheduled panels are fully hidden
+        const tasksList = document.getElementById('scheduledTasksList');
+        const timeline = document.getElementById('scheduleTimeline');
+        if (tasksList) {
+            tasksList.style.display = 'none';
+            tasksList.classList.add('hidden');
+        }
+        if (timeline) {
+            timeline.style.display = 'none';
+            timeline.classList.add('hidden');
+        }
+        
         if (typeof updateActiveNav === 'function') {
             updateActiveNav('Task');
         }
@@ -115,7 +127,7 @@ function showTasks() {
         }
         
         console.log('✅ Tasks view displayed');
-    }, 10);
+    }, 50);
 }
 
 // Make renderTasksList globally accessible
