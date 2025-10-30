@@ -236,6 +236,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 navbar.classList.remove('scrolled');
             }
         }
+        // Auto-collapse mobile nav immediately on any scroll
+        if (window.innerWidth <= 992) { // <= lg breakpoint
+            const navCollapse = document.getElementById('navbarNav');
+            if (navCollapse && navCollapse.classList.contains('show')) {
+                try {
+                    if (window.bootstrap && window.bootstrap.Collapse) {
+                        let instance = window.bootstrap.Collapse.getInstance(navCollapse);
+                        if (!instance) {
+                            instance = new window.bootstrap.Collapse(navCollapse, { toggle: false });
+                        }
+                        instance.hide();
+                    } else {
+                        navCollapse.classList.remove('show');
+                    }
+                    const toggler = document.querySelector('.navbar-toggler');
+                    if (toggler) toggler.setAttribute('aria-expanded', 'false');
+                } catch (e) {
+                    navCollapse.classList.remove('show');
+                }
+            }
+        }
     });
     
     // Initialize global quick links bar
