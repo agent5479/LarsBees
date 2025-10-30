@@ -131,7 +131,7 @@ function renderSites() {
                                         ${typeInfo.name}
                                     </span>
                                     ${seasonalBadge}
-                                    <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px;">
+                                    <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-size: 1.25rem; font-weight: bold;">
                                         ${c.hiveCount || 0}
                                     </span>
                                 </div>
