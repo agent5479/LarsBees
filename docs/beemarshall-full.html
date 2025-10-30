@@ -112,6 +112,24 @@
                 transform: none !important;
             }
         }
+
+        /* Global Quick Links Bar */
+        .global-quicklinks {
+            position: sticky;
+            top: 56px; /* below navbar */
+            z-index: 1020;
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            padding: 6px 12px;
+        }
+        .global-quicklinks .btn {
+            box-shadow: none;
+        }
+        @media (max-width: 576px) {
+            .global-quicklinks {
+                top: 56px;
+            }
+        }
         
         /* Enhanced Button Styles */
         .btn {
@@ -1525,6 +1543,11 @@
                 </div>
             </div>
         </nav>
+
+        <!-- Global Quick Links (Sticky across all views) -->
+        <div id="globalQuickLinksBar" class="global-quicklinks hidden">
+            <!-- Populated by core.js initializeGlobalQuickLinks() -->
+        </div>
 
         <!-- Main Content -->
         <div class="container-fluid mt-4">
