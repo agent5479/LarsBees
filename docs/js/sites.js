@@ -61,8 +61,14 @@ function renderSites() {
             // Add archived indicator
             const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
             
-            // Get landowner info
-            const landownerInfo = c.landownerName ? `${c.landownerName}${c.landownerPhone ? ' • ' + c.landownerPhone : ''}` : 'Not specified';
+            // Get compact landowner/contact info for one-line display (avoid bloat)
+            const landownerName = c.landownerName || '';
+            const landownerPhone = c.landownerPhone || '';
+            const landownerAddress = c.landownerAddress || '';
+            const contactLine = [landownerName, landownerPhone].filter(Boolean).join(' • ');
+            const addressLine = landownerAddress;
+            const landownerDisplay = [contactLine, addressLine].filter(Boolean).join(', ');
+            const landownerTitle = [contactLine, addressLine].filter(Boolean).join(' — ');
             
             // Get hive strength breakdown for inline editing
             const hiveStrong = c.hiveStrength?.strong || 0;
@@ -111,10 +117,10 @@ function renderSites() {
                                 </span>
                             </div>
                             
-                            <!-- Landowner & Phone -->
-                            <div class="mb-2">
+                            <!-- Landowner contact (single truncated line: name/phone, address) -->
+                            <div class="mb-2" title="${landownerTitle}">
                                 <i class="bi bi-person-fill text-muted me-1"></i>
-                                <strong>Landowner:</strong> ${landownerInfo}
+                                <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
                             </div>
                             
                             <!-- Combined Classification (compact) -->
