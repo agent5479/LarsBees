@@ -80,12 +80,15 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             scroll-behavior: smooth;
+            overflow-x: hidden;
         }
         
+        /* Ensure body is the scrolling container for sticky navbar */
         body {
             font-size: var(--font-size-base);
             line-height: var(--line-height-base);
             background: var(--white);
+            position: relative;
         }
         
         a {
@@ -447,21 +450,42 @@
             }
         }
         
-        /* Navigation - Ensure navbar is always sticky */
+        /* Navigation - Use fixed positioning to guarantee navbar stays at top on all pages */
         .navbar {
             background: var(--dark-yellow) !important;
             border-bottom: 2px solid var(--black);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: -webkit-sticky !important; /* Safari */
-            position: sticky !important;
+            position: fixed !important;
             top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
             z-index: 1040 !important;
             width: 100% !important;
             margin: 0 !important;
         }
         
+        /* Add padding to container-fluid to compensate for fixed navbar */
+        #mainApp > .container-fluid {
+            padding-top: 80px !important; /* Navbar height + spacing */
+            margin-top: 0 !important;
+        }
+        
         /* Ensure mainApp and parents don't break sticky positioning */
         #mainApp {
+            position: relative;
+            overflow: visible !important;
+            min-height: 100vh;
+        }
+        
+        /* Ensure container-fluid doesn't break sticky */
+        #mainApp > .container-fluid {
+            position: relative;
+            overflow: visible !important;
+        }
+        
+        /* Ensure all view containers don't break sticky */
+        #mainApp > .container-fluid > [id$="View"],
+        #mainApp > .container-fluid > [id$="view"] {
             position: relative;
             overflow: visible !important;
         }
@@ -1595,7 +1619,7 @@
         </nav>
 
         <!-- Main Content -->
-        <div class="container-fluid mt-4">
+        <div class="container-fluid">
             <!-- Dashboard View -->
             <div id="dashboardView">
                 <!-- Dashboard Header -->
