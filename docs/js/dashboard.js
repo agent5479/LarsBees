@@ -382,7 +382,7 @@ function updateDashboard() {
             return `
                 <div class="action-item ${a.flag ? 'flag-' + a.flag : ''}">
                     <div><strong>${flagIcon} ${displayTaskName}</strong> - ${site?.name || 'Unknown'}</div>
-                    <small class="text-muted">${a.date} • ${a.loggedBy || 'User'}</small>
+                    <small class="text-muted">${a.date} • ${a.loggedBy || a.completedBy || a.employee || 'Unknown'}</small>
                     ${a.notes ? `<p class="mb-0 mt-1"><small>${a.notes}</small></p>` : ''}
                 </div>
             `;

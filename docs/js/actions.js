@@ -161,8 +161,8 @@ function populateActionFilters() {
     document.getElementById('filterCategory').innerHTML = '<option value="">All Categories</option>' +
         categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
     
-    // Get employee names from both actions and current employees list
-    const actionEmployeeNames = [...new Set((Array.isArray(window.actions) ? window.actions : []).map(a => a.loggedBy))].filter(Boolean);
+    // Get employee names from both actions and current employees list (check loggedBy, completedBy, and employee for backward compatibility)
+    const actionEmployeeNames = [...new Set((Array.isArray(window.actions) ? window.actions : []).map(a => a.loggedBy || a.completedBy || a.employee).filter(Boolean))];
     const currentEmployeeNames = Array.isArray(window.employees) ? window.employees.map(emp => emp.username) : [];
     
     // Combine and deduplicate employee names
@@ -222,7 +222,7 @@ function renderActions() {
         return cat === categoryFilter;
     });
     if (employeeFilter) filtered = filtered.filter(a => {
-        const by = (a.loggedBy || '').toString().trim().toLowerCase();
+        const by = (a.loggedBy || a.completedBy || a.employee || '').toString().trim().toLowerCase();
         return by === employeeFilter.toString().trim().toLowerCase();
     });
     
@@ -307,7 +307,7 @@ function renderActions() {
                                 ${hive ? ` • <i class=\"bi bi-hexagon\"></i> ${hive.hiveName || hive.hiveNumber || ''}` : ''}
                                 <br>
                                 <i class="bi bi-calendar"></i> ${a.date || ''} • 
-                                <i class="bi bi-person"></i> ${a.loggedBy || 'Unknown'}
+                                <i class="bi bi-person"></i> ${a.loggedBy || a.completedBy || a.employee || 'Unknown'}
                             </div>
                             ${a.notes ? `<p class="mb-0 mt-2"><small><strong>Notes:</strong> ${a.notes}</small></p>` : ''}
                         </div>
@@ -378,7 +378,7 @@ function renderFlaggedItems() {
                             <div class="flex-grow-1">
                                 <h5>${flagIcon} ${window.getTaskDisplayName(a.taskName, a.taskId)}</h5>
                                 <p class="mb-1"><i class="bi bi-geo-alt"></i> ${site?.name || 'Unknown'}</p>
-                                <p class="mb-1"><small><i class="bi bi-calendar"></i> ${a.date} • <i class="bi bi-person"></i> ${a.loggedBy}</small></p>
+                                <p class="mb-1"><small><i class="bi bi-calendar"></i> ${a.date} • <i class="bi bi-person"></i> ${a.loggedBy || a.completedBy || a.employee || 'Unknown'}</small></p>
                                 <span class="badge bg-${flagClass}">${a.flag.toUpperCase()}</span>
                                 ${a.notes ? `<p class="mt-2">${a.notes}</p>` : ''}
                                 <small class="text-muted"><i class="bi bi-hand-index"></i> Click to view site details</small>

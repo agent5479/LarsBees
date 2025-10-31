@@ -1149,9 +1149,12 @@ function archiveSite(id) {
                 id: Date.now(),
                 siteId: id,
                 task: 'Archive Site',
-                date: new Date().toISOString(),
-                employee: currentUser.username,
-                notes: actionText
+                taskName: 'Archive Site',
+                taskCategory: 'Management',
+                date: new Date().toISOString().split('T')[0],
+                loggedBy: currentUser.username,
+                notes: actionText,
+                createdAt: new Date().toISOString()
             };
             
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
@@ -1195,9 +1198,12 @@ function unarchiveSite(id) {
                 id: Date.now(),
                 siteId: id,
                 task: 'Unarchive Site',
-                date: new Date().toISOString(),
-                employee: currentUser.username,
-                notes: actionText
+                taskName: 'Unarchive Site',
+                taskCategory: 'Management',
+                date: new Date().toISOString().split('T')[0],
+                loggedBy: currentUser.username,
+                notes: actionText,
+                createdAt: new Date().toISOString()
             };
             
             const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
@@ -1943,9 +1949,9 @@ function logSiteVisitAction(siteId, notes) {
         taskId: 'site_visit_inventory',
         taskCategory: 'Management',
         notes: notes,
-        completedBy: currentUser.username,
-        completedAt: new Date().toISOString(),
-        date: new Date().toISOString().split('T')[0]
+        loggedBy: currentUser.username,
+        date: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString()
     };
     
     actions.push(newAction);
@@ -2047,9 +2053,9 @@ function editHiveStateCount(state) {
             taskId: 'hive_state_update',
             taskCategory: 'Management',
             notes: actionText,
-            completedBy: currentUser.username,
-            completedAt: new Date().toISOString(),
-            date: new Date().toISOString().split('T')[0]
+            loggedBy: currentUser.username,
+            date: new Date().toISOString().split('T')[0],
+            createdAt: new Date().toISOString()
         };
         
         actions.push(newAction);
@@ -2143,9 +2149,9 @@ function quickEditHiveStrength(siteId, state, currentValue) {
         taskId: 'hive_state_update',
         taskCategory: 'Management',
         notes: actionText,
-        completedBy: currentUser.username,
-        completedAt: new Date().toISOString(),
-        date: new Date().toISOString().split('T')[0]
+        loggedBy: currentUser.username,
+        date: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString()
     };
     const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
 
@@ -2264,9 +2270,9 @@ function quickEditHiveBox(siteId, boxType, currentValue) {
         taskId: 'hive_box_update',
         taskCategory: 'Management',
         notes: actionText,
-        completedBy: currentUser.username,
-        completedAt: new Date().toISOString(),
-        date: new Date().toISOString().split('T')[0]
+        loggedBy: currentUser.username,
+        date: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString()
     };
     const actionPath = currentTenantId ? `tenants/${currentTenantId}/actions` : 'actions';
 
