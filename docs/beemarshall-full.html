@@ -2205,7 +2205,32 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <button class="btn btn-outline-secondary w-100" onclick="renderActions()">
+                        <select class="form-select" id="sortOrder" onchange="renderActions()">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Date Range Filter -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label for="filterDateFrom" class="form-label small">From Date</label>
+                        <input type="date" class="form-select form-control" id="filterDateFrom" onchange="renderActions()">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterDateTo" class="form-label small">To Date</label>
+                        <input type="date" class="form-select form-control" id="filterDateTo" onchange="renderActions()">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">&nbsp;</label>
+                        <button class="btn btn-outline-secondary w-100" onclick="clearDateFilters()">
+                            <i class="bi bi-x-circle"></i> Clear Dates
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">&nbsp;</label>
+                        <button class="btn btn-outline-primary w-100" onclick="renderActions()">
                             <i class="bi bi-funnel"></i> Apply Filters
                         </button>
                     </div>
@@ -2256,6 +2281,10 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                
+                <div class="alert alert-info mb-3">
+                    <i class="bi bi-info-circle"></i> <strong>Note:</strong> Actions list is limited to the 100 most recent actions for performance. Use date filters to view specific time periods.
                 </div>
                 
                 <div id="actionsList">

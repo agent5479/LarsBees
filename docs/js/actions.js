@@ -177,6 +177,12 @@ function populateActionFilters() {
     document.getElementById('filterEmployee').value = '';
 }
 
+function clearDateFilters() {
+    document.getElementById('filterDateFrom').value = '';
+    document.getElementById('filterDateTo').value = '';
+    renderActions();
+}
+
 function renderActions() {
     console.log('🔍 renderActions called');
     console.log('🔍 window.actions:', window.actions);
@@ -185,6 +191,9 @@ function renderActions() {
     const siteFilter = document.getElementById('filterSite')?.value;
     const categoryFilter = document.getElementById('filterCategory')?.value;
     const employeeFilter = document.getElementById('filterEmployee')?.value;
+    const sortOrder = document.getElementById('sortOrder')?.value || 'newest';
+    const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+    const dateTo = document.getElementById('filterDateTo')?.value || '';
     
     // Get action type filter checkboxes
     const hideDeletes = document.getElementById('hideDeletes')?.checked || false;
@@ -193,7 +202,19 @@ function renderActions() {
     const hideStrengthUpdates = document.getElementById('hideStrengthUpdates')?.checked || false;
     
     const actionsArray = Array.isArray(window.actions) ? window.actions : [];
-    let filtered = [...actionsArray];
+    
+    // Sort by date first (newest first for limiting), then limit to 100 most recent
+    let sorted = [...actionsArray].sort((a, b) => {
+        const dateA = new Date(a.date || 0);
+        const dateB = new Date(b.date || 0);
+        return dateB - dateA; // Newest first for limiting
+    });
+    
+    // Limit to 100 most recent actions before filtering (prevents buffering entire list)
+    const limited = sorted.slice(0, 100);
+    console.log(`🔍 Limited to ${limited.length} most recent actions (out of ${actionsArray.length} total)`);
+    
+    let filtered = [...limited];
     console.log('🔍 filtered actions before filtering:', filtered.length);
     if (siteFilter) filtered = filtered.filter(a => a.siteId == siteFilter);
     if (categoryFilter) filtered = filtered.filter(a => {
@@ -236,11 +257,31 @@ function renderActions() {
         });
     }
     
+    // Apply date range filtering
+    if (dateFrom || dateTo) {
+        filtered = filtered.filter(a => {
+            const actionDate = new Date(a.date || 0);
+            const fromDate = dateFrom ? new Date(dateFrom) : null;
+            const toDate = dateTo ? new Date(dateTo + 'T23:59:59') : null; // Include entire end date
+            
+            if (fromDate && actionDate < fromDate) return false;
+            if (toDate && actionDate > toDate) return false;
+            return true;
+        });
+    }
+    
+    // Sort by date based on sortOrder setting
+    filtered.sort((a, b) => {
+        const dateA = new Date(a.date || 0);
+        const dateB = new Date(b.date || 0);
+        return sortOrder === 'oldest' ? dateA - dateB : dateB - dateA;
+    });
+    
     const sitesArray = Array.isArray(window.sites) ? window.sites : [];
     const hivesArray = Array.isArray(window.individualHives) ? window.individualHives : [];
 
     const html = filtered.length > 0
-        ? filtered.slice().reverse().map(a => {
+        ? filtered.map(a => {
             const site = sitesArray.find(s => s.id === a.siteId);
             const hive = hivesArray.find(h => h.id === a.individualHiveId);
             const flagIcon = a.flag === 'urgent' ? '🚨' : a.flag === 'warning' ? '⚠️' : a.flag === 'info' ? 'ℹ️' : '';
@@ -275,7 +316,7 @@ function renderActions() {
                 </div>
             `;
         }).join('')
-        : (actionsArray.length > 0
+        : (limited.length > 0
             ? '<div class="text-center text-muted my-5"><i class="bi bi-funnel"></i> No actions match current filters. Try clearing filters.</div>'
             : '<p class="text-center text-muted my-5">No actions found.</p>');
     
