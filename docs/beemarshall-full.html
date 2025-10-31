@@ -447,14 +447,31 @@
             }
         }
         
-        /* Navigation */
+        /* Navigation - Ensure navbar is always sticky */
         .navbar {
-            background: var(--dark-yellow);
+            background: var(--dark-yellow) !important;
             border-bottom: 2px solid var(--black);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1040;
+            position: -webkit-sticky !important; /* Safari */
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1040 !important;
+            width: 100% !important;
+            margin: 0 !important;
+        }
+        
+        /* Ensure mainApp and parents don't break sticky positioning */
+        #mainApp {
+            position: relative;
+            overflow: visible !important;
+        }
+        
+        /* Ensure navbar container doesn't break sticky */
+        #mainApp > nav.navbar {
+            position: -webkit-sticky !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1040 !important;
         }
         
         .navbar.scrolled {
