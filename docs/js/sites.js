@@ -211,8 +211,6 @@ function renderSites() {
                                     </div>
                                 </div>
                             </div>
-                            
-                            ${c.lastModifiedBy ? `<div class="mt-1"><small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small></div>` : ''}
                         </div>
                         <div class="card-footer bg-light">
                             ${isAdmin ? `<button class="btn btn-primary" onclick="editSite(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
