@@ -143,14 +143,10 @@ function renderSites() {
                                 <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
                             </div>
                             
-                            
-                            
-                            
-                            
                             <!-- Hive Count Summary (Editable inline) -->
-                            <div class="mb-3">
+                            <div class="mb-2">
                                 <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
-                                <div class="d-flex flex-wrap gap-2 mt-2">
+                                <div class="d-flex flex-wrap gap-2 mt-1">
                                     <div class="badge bg-success d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Strong', ${hiveStrong})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
                                         <i class="bi bi-hexagon-fill me-1"></i>
                                         <span>Strong: <strong id="hiveStrong_${c.id}">${hiveStrong}</strong></span>
@@ -175,9 +171,9 @@ function renderSites() {
                             </div>
                             
                             <!-- Hive Boxes (Clickable mini cards) -->
-                            <div class="mb-3">
+                            <div class="mb-2">
                                 <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
-                                <div class="d-flex flex-wrap gap-1 gap-md-2 mt-2 hive-boxes-container">
+                                <div class="d-flex flex-wrap gap-1 gap-md-2 mt-1 hive-boxes-container">
                                     <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e3f2fd; border: 2px solid #2196f3;">
                                         <div class="card-body p-1 p-md-2 text-center">
                                             <i class="bi bi-stack hive-box-icon" style="font-size: 1rem; color: #1976d2;"></i>
@@ -216,9 +212,7 @@ function renderSites() {
                                 </div>
                             </div>
                             
-                            
-                            
-                            ${c.lastModifiedBy ? `<small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small>` : ''}
+                            ${c.lastModifiedBy ? `<div class="mt-1"><small class="text-muted"><i class="bi bi-person"></i> ${c.lastModifiedBy}</small></div>` : ''}
                         </div>
                         <div class="card-footer bg-light">
                             ${isAdmin ? `<button class="btn btn-primary" onclick="editSite(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
