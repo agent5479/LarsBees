@@ -179,26 +179,71 @@ function updateDashboard() {
     document.getElementById('statHives').textContent = totalHives;
     document.getElementById('statActions').textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.length : 0;
     document.getElementById('statFlagged').textContent = flaggedCount;
-    // Emphasize flagged card severity by count
+    // Emphasize flagged card severity by count with progressive transition
     const flaggedCard = document.querySelector('.dashboard-stat-card.flagged-card');
     if (flaggedCard) {
         const c = flaggedCount;
-        // Three-tier severity scale: <5 low, 5-9 medium, >=10 high
-        let bg = '#f2c7a6'; // low: brownish orange light red
-        let fg = '#422b22';
-        let border = '#e1a77a';
-        if (c >= 5 && c < 10) {
-            bg = '#f08b6a'; // medium: orange-red
-            fg = '#ffffff';
-            border = '#de6e4f';
-        } else if (c >= 10) {
-            bg = '#d93a2f'; // high: vivid warning red
-            fg = '#ffffff';
-            border = '#b82f26';
+        
+        // Helper function to interpolate between two RGB colors
+        function interpolateColor(color1, color2, factor) {
+            const r1 = parseInt(color1.slice(1, 3), 16);
+            const g1 = parseInt(color1.slice(3, 5), 16);
+            const b1 = parseInt(color1.slice(5, 7), 16);
+            const r2 = parseInt(color2.slice(1, 3), 16);
+            const g2 = parseInt(color2.slice(3, 5), 16);
+            const b2 = parseInt(color2.slice(5, 7), 16);
+            
+            const r = Math.round(r1 + (r2 - r1) * factor);
+            const g = Math.round(g1 + (g2 - g1) * factor);
+            const b = Math.round(b1 + (b2 - b1) * factor);
+            
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
         }
+        
+        // Color scale: 0 = normal card color, 11+ = warning red/orange
+        // Normal card color (light yellow/cream): #FFFACD (var(--glass) equivalent)
+        // Warning red/orange: #FF6B35 (vibrant orange-red) or #D93A2F (warning red)
+        const normalColor = '#FFFACD'; // Same as other cards
+        const warningColor = '#FF6B35'; // Vibrant orange-red warning color
+        
+        let bg, fg, border;
+        
+        // Progressive color transition: 0 = normal, 1-10 = gradual, 11+ = full warning
+        // Factor ranges from 0 (0 flags) to 1 (10+ flags)
+        const factor = Math.min(c / 10, 1.0); // Smooth progression: 0 flags = 0, 10 flags = 1.0
+        
+        if (c === 0) {
+            // 0 flags: Same as normal cards (factor = 0)
+            bg = normalColor;
+            fg = '#000000';
+            border = 'rgba(255,255,255,0.2)';
+        } else if (c >= 11) {
+            // 11+ flags: Full warning red/orange (factor = 1.0)
+            bg = warningColor;
+            fg = '#ffffff';
+            border = '#E85A2A';
+        } else {
+            // 1-10 flags: Progressive transition using interpolated colors
+            bg = interpolateColor(normalColor, warningColor, factor);
+            
+            // Text color transitions from black to white when background gets dark
+            // Switch to white text when factor > 0.5 (around 5-6 flags)
+            if (factor > 0.5) {
+                fg = '#ffffff';
+            } else {
+                fg = '#000000';
+            }
+            
+            // Border color also interpolates smoothly
+            const borderNormal = '#E1A77A'; // Light border (matches normal card style)
+            const borderWarning = '#E85A2A'; // Darker border (matches warning)
+            border = interpolateColor(borderNormal, borderWarning, factor);
+        }
+        
         flaggedCard.style.backgroundColor = bg;
         flaggedCard.style.borderColor = border;
         flaggedCard.style.color = fg;
+        
         // Also adjust inner text color for labels/numbers
         const statNum = flaggedCard.querySelector('#statFlagged');
         const statLabel = flaggedCard.querySelector('.stat-label');
