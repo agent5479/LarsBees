@@ -177,40 +177,40 @@ function renderSites() {
                             <!-- Hive Boxes (Clickable mini cards) -->
                             <div class="mb-3">
                                 <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
-                                <div class="d-flex flex-wrap gap-2 mt-2">
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #e3f2fd; border: 2px solid #2196f3;">
-                                        <div class="card-body p-2 text-center">
-                                            <i class="bi bi-stack" style="font-size: 1.2rem; color: #1976d2;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #1976d2;">Doubles</div>
-                                            <div class="h5 mb-0" id="boxDoubles_${c.id}" style="color: #1976d2; font-weight: 600;">${hiveDoubles}</div>
+                                <div class="d-flex flex-wrap gap-1 gap-md-2 mt-2 hive-boxes-container">
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e3f2fd; border: 2px solid #2196f3;">
+                                        <div class="card-body p-1 p-md-2 text-center">
+                                            <i class="bi bi-stack hive-box-icon" style="font-size: 1rem; color: #1976d2;"></i>
+                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #1976d2;">Doubles</div>
+                                            <div class="hive-box-number mb-0" id="boxDoubles_${c.id}" style="font-size: 1rem; color: #1976d2; font-weight: 600;">${hiveDoubles}</div>
                                         </div>
                                     </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
-                                        <div class="card-body p-2 text-center">
-                                            <i class="bi bi-layers-half" style="font-size: 1.2rem; color: #7b1fa2;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #7b1fa2;">Top-Splits</div>
-                                            <div class="h5 mb-0" id="boxTopSplits_${c.id}" style="color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
+                                        <div class="card-body p-1 p-md-2 text-center">
+                                            <i class="bi bi-layers-half hive-box-icon" style="font-size: 1rem; color: #7b1fa2;"></i>
+                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #7b1fa2;">Top-Splits</div>
+                                            <div class="hive-box-number mb-0" id="boxTopSplits_${c.id}" style="font-size: 1rem; color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
                                         </div>
                                     </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #e8f5e8; border: 2px solid #4caf50;">
-                                        <div class="card-body p-2 text-center">
-                                            <i class="bi bi-square" style="font-size: 1.2rem; color: #388e3c;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #388e3c;">Singles</div>
-                                            <div class="h5 mb-0" id="boxSingles_${c.id}" style="color: #388e3c; font-weight: 600;">${hiveSingles}</div>
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e8f5e8; border: 2px solid #4caf50;">
+                                        <div class="card-body p-1 p-md-2 text-center">
+                                            <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #388e3c;"></i>
+                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #388e3c;">Singles</div>
+                                            <div class="hive-box-number mb-0" id="boxSingles_${c.id}" style="font-size: 1rem; color: #388e3c; font-weight: 600;">${hiveSingles}</div>
                                         </div>
                                     </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #fff3e0; border: 2px solid #ff9800;">
-                                        <div class="card-body p-2 text-center">
-                                            <i class="bi bi-circle" style="font-size: 1.2rem; color: #f57c00;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #f57c00;">NUCs</div>
-                                            <div class="h5 mb-0" id="boxNucs_${c.id}" style="color: #f57c00; font-weight: 600;">${hiveNUCs}</div>
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #fff3e0; border: 2px solid #ff9800;">
+                                        <div class="card-body p-1 p-md-2 text-center">
+                                            <i class="bi bi-circle hive-box-icon" style="font-size: 1rem; color: #f57c00;"></i>
+                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #f57c00;">NUCs</div>
+                                            <div class="hive-box-number mb-0" id="boxNucs_${c.id}" style="font-size: 1rem; color: #f57c00; font-weight: 600;">${hiveNUCs}</div>
                                         </div>
                                     </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; min-width: 100px; max-width: 120px; background-color: #f5f5f5; border: 2px solid #9e9e9e;">
-                                        <div class="card-body p-2 text-center">
-                                            <i class="bi bi-square" style="font-size: 1.2rem; color: #616161;"></i>
-                                            <div class="fw-bold mt-1" style="font-size: 0.9rem; color: #616161;">Empty</div>
-                                            <div class="h5 mb-0" id="boxEmpty_${c.id}" style="color: #616161; font-weight: 600;">${hiveEmpty}</div>
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f5f5f5; border: 2px solid #9e9e9e;">
+                                        <div class="card-body p-1 p-md-2 text-center">
+                                            <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #616161;"></i>
+                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #616161;">Empty</div>
+                                            <div class="hive-box-number mb-0" id="boxEmpty_${c.id}" style="font-size: 1rem; color: #616161; font-weight: 600;">${hiveEmpty}</div>
                                         </div>
                                     </div>
                                 </div>
