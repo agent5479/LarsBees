@@ -125,6 +125,9 @@ function showActions() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
+            
+            // Scroll to the view element itself to ensure proper positioning
+            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         if (typeof updateActiveNav === 'function') {
@@ -134,8 +137,12 @@ function showActions() {
         populateActionFilters();
         renderActions();
         
-        // Force scroll to top after DOM updates
+        // Force scroll to view position after DOM updates
         requestAnimationFrame(() => {
+            const view = document.getElementById('actionsView');
+            if (view) {
+                view.scrollIntoView({ behavior: 'instant', block: 'start' });
+            }
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;
@@ -190,6 +197,9 @@ function showScheduledTasks() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
+            
+            // Scroll to the view element itself to ensure proper positioning
+            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Restore scheduled child elements
@@ -214,14 +224,15 @@ function showScheduledTasks() {
         console.log('📊 About to call renderScheduleTimeline()');
         renderScheduleTimeline();
         
-        // Force scroll to top after DOM updates - multiple methods for compatibility
+        // Force scroll to view position after DOM updates
         requestAnimationFrame(() => {
+            const view = document.getElementById('scheduledView');
+            if (view) {
+                view.scrollIntoView({ behavior: 'instant', block: 'start' });
+            }
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;
-            if (window.pageYOffset !== 0) {
-                window.scrollTo(0, 0);
-            }
         });
         
         console.log('✅ Schedule view displayed');
@@ -257,6 +268,9 @@ function showEmployees() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
+            
+            // Scroll to the view element itself to ensure proper positioning
+            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Ensure scheduled panels are fully hidden
@@ -276,8 +290,12 @@ function showEmployees() {
         }
         renderEmployees();
         
-        // Force scroll to top after DOM updates
+        // Force scroll to view position after DOM updates
         requestAnimationFrame(() => {
+            const view = document.getElementById('employeesView');
+            if (view) {
+                view.scrollIntoView({ behavior: 'instant', block: 'start' });
+            }
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;

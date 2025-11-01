@@ -66,6 +66,9 @@ function showComplianceView() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
+            
+            // Scroll to the view element itself to ensure proper positioning
+            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Ensure scheduled panels are fully hidden
@@ -85,8 +88,12 @@ function showComplianceView() {
         }
         renderComplianceDashboard();
         
-        // Force scroll to top after DOM updates
+        // Force scroll to view position after DOM updates
         requestAnimationFrame(() => {
+            const view = document.getElementById('complianceView');
+            if (view) {
+                view.scrollIntoView({ behavior: 'instant', block: 'start' });
+            }
             window.scrollTo(0, 0);
             document.documentElement.scrollTop = 0;
             document.body.scrollTop = 0;
