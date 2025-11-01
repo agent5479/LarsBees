@@ -114,8 +114,10 @@ function showActions() {
     });
     hideAllViews();
     
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Scroll to top immediately - multiple methods for compatibility
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -132,8 +134,12 @@ function showActions() {
         populateActionFilters();
         renderActions();
         
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // Force scroll to top after DOM updates
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
         
         console.log('✅ Actions view displayed');
     }, 10);
@@ -174,7 +180,9 @@ function showScheduledTasks() {
     hideAllViews();
     
     // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -206,8 +214,15 @@ function showScheduledTasks() {
         console.log('📊 About to call renderScheduleTimeline()');
         renderScheduleTimeline();
         
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // Force scroll to top after DOM updates - multiple methods for compatibility
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+            if (window.pageYOffset !== 0) {
+                window.scrollTo(0, 0);
+            }
+        });
         
         console.log('✅ Schedule view displayed');
     }, 50);
@@ -232,8 +247,10 @@ function showEmployees() {
     }
     hideAllViews();
     
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Scroll to top immediately - multiple methods for compatibility
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     setTimeout(() => {
         const view = document.getElementById('employeesView');
@@ -259,8 +276,12 @@ function showEmployees() {
         }
         renderEmployees();
         
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // Force scroll to top after DOM updates
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
     }, 50); // Ensure hideAllViews completes first
 }
 

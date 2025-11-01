@@ -56,8 +56,10 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
 function showComplianceView() {
     hideAllViews();
     
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Scroll to top immediately - multiple methods for compatibility
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     setTimeout(() => {
         const view = document.getElementById('complianceView');
@@ -83,8 +85,12 @@ function showComplianceView() {
         }
         renderComplianceDashboard();
         
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // Force scroll to top after DOM updates
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
     }, 50); // Ensure hideAllViews completes first
 }
 

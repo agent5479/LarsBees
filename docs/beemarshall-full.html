@@ -466,8 +466,15 @@
         
         /* Add padding to container-fluid to compensate for fixed navbar */
         #mainApp > .container-fluid {
-            padding-top: 80px !important; /* Navbar height + spacing */
+            padding-top: 56px !important; /* Navbar height only - reduced from 80px */
             margin-top: 0 !important;
+        }
+        
+        /* Remove extra spacing - views should start immediately after navbar */
+        #mainApp > .container-fluid > [id$="View"],
+        #mainApp > .container-fluid > [id$="view"] {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
         }
         
         /* Ensure mainApp and parents don't break sticky positioning */
@@ -3751,8 +3758,10 @@
         function showIntegrityCheck() {
             hideAllViews();
             
-            // Scroll to top immediately to prevent blank space gap
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            // Scroll to top immediately - multiple methods for compatibility
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
             
             setTimeout(() => {
                 const view = document.getElementById('integrityCheckView');
@@ -3778,8 +3787,12 @@
                 }
                 runIntegrityCheck();
                 
-                // Ensure scroll position after DOM update
-                window.scrollTo({ top: 0, behavior: 'instant' });
+                // Force scroll to top after DOM updates
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                });
             }, 50); // Ensure hideAllViews completes first
         }
 

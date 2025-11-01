@@ -91,8 +91,10 @@ function showTasks() {
     console.log('🔄 Switching to Tasks view...');
     hideAllViews();
     
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    // Scroll to top immediately - multiple methods for compatibility
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -129,8 +131,12 @@ function showTasks() {
             loadHoneyTypes();
         }
         
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        // Force scroll to top after DOM updates
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
         
         console.log('✅ Tasks view displayed');
     }, 50);
