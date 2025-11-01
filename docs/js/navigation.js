@@ -50,6 +50,9 @@ function showDashboard() {
     console.log('🔄 Switching to Dashboard view...');
     hideAllViews();
     
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
         const view = document.getElementById('dashboardView');
@@ -66,6 +69,9 @@ function showDashboard() {
             updateDashboard();
         }
         
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        
         console.log('✅ Dashboard view displayed');
     }, 10);
 }
@@ -73,6 +79,9 @@ function showDashboard() {
 function showSites() {
     console.log('🔄 Switching to Sites view...');
     hideAllViews();
+    
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -89,6 +98,9 @@ function showSites() {
         renderSites();
         renderSiteTypeFilter();
         
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        
         console.log('✅ Sites view displayed');
     }, 10);
 }
@@ -101,6 +113,9 @@ function showActions() {
         tasks: window.tasks ? window.tasks.length : 'undefined'
     });
     hideAllViews();
+    
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -117,12 +132,18 @@ function showActions() {
         populateActionFilters();
         renderActions();
         
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        
         console.log('✅ Actions view displayed');
     }, 10);
 }
 
 function showLogActionForm() {
     hideAllViews();
+    
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -135,6 +156,9 @@ function showLogActionForm() {
         if (typeof populateActionForm === 'function') {
             populateActionForm();
         }
+        
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 10);
 }
 
@@ -148,6 +172,9 @@ function showScheduledTasks() {
     });
     
     hideAllViews();
+    
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -179,6 +206,9 @@ function showScheduledTasks() {
         console.log('📊 About to call renderScheduleTimeline()');
         renderScheduleTimeline();
         
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        
         console.log('✅ Schedule view displayed');
     }, 50);
 }
@@ -201,6 +231,10 @@ function showEmployees() {
         return;
     }
     hideAllViews();
+    
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    
     setTimeout(() => {
         const view = document.getElementById('employeesView');
         if (view) {
@@ -224,6 +258,9 @@ function showEmployees() {
             updateActiveNav('Team');
         }
         renderEmployees();
+        
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 50); // Ensure hideAllViews completes first
 }
 

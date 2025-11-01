@@ -55,6 +55,10 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
  */
 function showComplianceView() {
     hideAllViews();
+    
+    // Scroll to top immediately to prevent blank space gap
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    
     setTimeout(() => {
         const view = document.getElementById('complianceView');
         if (view) {
@@ -78,6 +82,9 @@ function showComplianceView() {
             updateActiveNav('Compliance');
         }
         renderComplianceDashboard();
+        
+        // Ensure scroll position after DOM update
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 50); // Ensure hideAllViews completes first
 }
 

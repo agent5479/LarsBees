@@ -3750,6 +3750,10 @@
         // Data Integrity Check Functions
         function showIntegrityCheck() {
             hideAllViews();
+            
+            // Scroll to top immediately to prevent blank space gap
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            
             setTimeout(() => {
                 const view = document.getElementById('integrityCheckView');
                 if (view) {
@@ -3773,6 +3777,9 @@
                     updateActiveNav('Data Integrity');
                 }
                 runIntegrityCheck();
+                
+                // Ensure scroll position after DOM update
+                window.scrollTo({ top: 0, behavior: 'instant' });
             }, 50); // Ensure hideAllViews completes first
         }
 
