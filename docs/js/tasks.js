@@ -87,17 +87,14 @@ function showTasks() {
         alert('Only administrators can manage tasks.');
         return;
     }
-    
     hideAllViews();
-    window.scrollTo(0, 0);
-    
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('tasksView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -108,8 +105,7 @@ function showTasks() {
             timeline.style.display = 'none';
             timeline.classList.add('hidden');
         }
-        
-        updateActiveNav('Task');
+        updateActiveNav('Tasks');
         renderTasksList();
         setupTaskDisplayToggles();
         
@@ -117,7 +113,7 @@ function showTasks() {
             document.getElementById('honeyTypeManagement').style.display = 'block';
             loadHoneyTypes();
         }
-    }, 50);
+    }, 10);
 }
 
 // Make renderTasksList globally accessible

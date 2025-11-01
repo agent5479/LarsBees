@@ -55,15 +55,13 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
  */
 function showComplianceView() {
     hideAllViews();
-    window.scrollTo(0, 0);
-    
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('complianceView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -74,10 +72,9 @@ function showComplianceView() {
             timeline.style.display = 'none';
             timeline.classList.add('hidden');
         }
-        
         updateActiveNav('Compliance');
         renderComplianceDashboard();
-    }, 50);
+    }, 10);
 }
 
 /**

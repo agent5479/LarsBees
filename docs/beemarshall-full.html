@@ -3770,15 +3770,13 @@
         // Data Integrity Check Functions
         function showIntegrityCheck() {
             hideAllViews();
-            window.scrollTo(0, 0);
-            
+            scrollToTop();
             setTimeout(() => {
                 const view = document.getElementById('integrityCheckView');
                 if (view) {
                     view.classList.remove('hidden');
                     view.style.display = '';
                 }
-                
                 const tasksList = document.getElementById('scheduledTasksList');
                 const timeline = document.getElementById('scheduleTimeline');
                 if (tasksList) {
@@ -3789,10 +3787,9 @@
                     timeline.style.display = 'none';
                     timeline.classList.add('hidden');
                 }
-                
                 updateActiveNav('Data Integrity');
                 runIntegrityCheck();
-            }, 50);
+            }, 10);
         }
 
         function runIntegrityCheck() {

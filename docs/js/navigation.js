@@ -1,5 +1,12 @@
 // BeeMarshall - Navigation Module
 
+// Universal minimal scroll-to-top function
+function scrollToTop() {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+}
+
 function hideAllViews() {
     // List of all view containers
     const viewIds = [
@@ -47,46 +54,32 @@ function hideAllViews() {
 }
 
 function showDashboard() {
-    console.log('🔄 Switching to Dashboard view...');
     hideAllViews();
-    
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Small delay to ensure all views are hidden before showing new view
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('dashboardView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
-        
         if (typeof updateActiveNav === 'function') {
             updateActiveNav('dashboard');
         }
-        
         if (typeof updateDashboard === 'function') {
             updateDashboard();
         }
-        
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        
-        console.log('✅ Dashboard view displayed');
     }, 10);
 }
 
 function showSites() {
     hideAllViews();
-    window.scrollTo(0, 0);
-    
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('sitesView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        
         updateActiveNav('Sites');
         renderSites();
         renderSiteTypeFilter();
@@ -95,15 +88,13 @@ function showSites() {
 
 function showActions() {
     hideAllViews();
-    window.scrollTo(0, 0);
-    
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('actionsView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        
         updateActiveNav('Actions');
         populateActionFilters();
         renderActions();
@@ -112,38 +103,28 @@ function showActions() {
 
 function showLogActionForm() {
     hideAllViews();
-    
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Small delay to ensure all views are hidden before showing new view
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('logActionView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
-        
         if (typeof populateActionForm === 'function') {
             populateActionForm();
         }
-        
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 10);
 }
 
 function showScheduledTasks() {
     hideAllViews();
-    window.scrollTo(0, 0);
-    
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('scheduledView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -154,23 +135,23 @@ function showScheduledTasks() {
             timeline.style.display = '';
             timeline.classList.remove('hidden');
         }
-        
         updateActiveNav('Schedule');
         renderScheduledTasks();
         renderScheduleTimeline();
-    }, 50);
+    }, 10);
 }
 
 function showFlagged() {
     hideAllViews();
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('flaggedView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         renderFlaggedItems();
-    }, 50); // Ensure hideAllViews completes first
+    }, 10);
 }
 
 function showEmployees() {
@@ -179,15 +160,13 @@ function showEmployees() {
         return;
     }
     hideAllViews();
-    window.scrollTo(0, 0);
-    
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('employeesView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -198,10 +177,9 @@ function showEmployees() {
             timeline.style.display = 'none';
             timeline.classList.add('hidden');
         }
-        
         updateActiveNav('Team');
         renderEmployees();
-    }, 50);
+    }, 10);
 }
 
 function showManageTasks() {
@@ -210,14 +188,15 @@ function showManageTasks() {
         return;
     }
     hideAllViews();
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('manageTasksView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         renderTasksList();
-    }, 50);
+    }, 10);
 }
 
 function showSeasonalRequirements() {
@@ -226,28 +205,30 @@ function showSeasonalRequirements() {
         return;
     }
     hideAllViews();
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('seasonalRequirementsView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         populateSiteCheckboxes();
         renderSeasonalRequirements();
         renderComplianceStatus();
-    }, 50);
+    }, 10);
 }
 
 function showSuggestedSchedule() {
     hideAllViews();
+    scrollToTop();
     setTimeout(() => {
         const view = document.getElementById('suggestedScheduleView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         renderSuggestedSchedule();
-    }, 50);
+    }, 10);
 }
 
 function showReports() {
