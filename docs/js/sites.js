@@ -1114,9 +1114,16 @@ function viewSiteDetails(id) {
     // Add modal to page
     document.body.insertAdjacentHTML('beforeend', detailsHtml);
     
-    // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('siteDetailsModal'));
-    modal.show();
+    // Show modal - use a small delay to ensure DOM is ready and any popups are closed
+    setTimeout(() => {
+        const modalElement = document.getElementById('siteDetailsModal');
+        if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            console.error('Bootstrap Modal not available or modal element not found');
+        }
+    }, 150);
 }
 
 function scheduleTaskForSite(siteId) {
@@ -1424,7 +1431,7 @@ function initMap() {
                 .bindPopup(`
                     <div style="padding:10px; min-width:250px;">
                         <h6>
-                            <a href="#" onclick="viewSiteDetails(${site.id}); return false;" style="color: ${typeInfo.color}; text-decoration: none; font-weight: bold; cursor: pointer;">
+                            <a href="#" onclick="event.stopPropagation(); const mapInstance = window.beeMarshallMap; if (mapInstance) { mapInstance.closePopup(); } setTimeout(() => viewSiteDetails(${site.id}), 100); return false;" style="color: ${typeInfo.color}; text-decoration: none; font-weight: bold; cursor: pointer;">
                                 <i class="bi ${typeInfo.icon}"></i> ${site.name}
                             </a>
                         </h6>
@@ -1468,7 +1475,7 @@ function initMap() {
                         `}
                         
                         <div class="mt-3 d-grid gap-1">
-                            <button class="btn btn-sm btn-primary" onclick="viewSiteDetails(${site.id}); return false;">
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); const mapInstance = window.beeMarshallMap; if (mapInstance) { mapInstance.closePopup(); } setTimeout(() => viewSiteDetails(${site.id}), 100); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
                             <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${site.id}); return false;">
