@@ -494,28 +494,7 @@
             height: auto !important;
         }
         
-        /* Make section headings sticky right below navbar as workaround for blank space */
-        #mainApp > .container-fluid > [id$="View"] > div:first-child,
-        #mainApp > .container-fluid > [id$="view"] > div:first-child {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 56px; /* Navbar height - adjust if navbar height differs */
-            z-index: 1030;
-            background: var(--light-yellow); /* Match page background */
-            padding-top: 0.5rem;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem !important;
-            border-bottom: 1px solid rgba(218, 165, 32, 0.2);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        /* Mobile navbar might be taller when expanded */
-        @media (max-width: 991px) {
-            #mainApp > .container-fluid > [id$="View"] > div:first-child,
-            #mainApp > .container-fluid > [id$="view"] > div:first-child {
-                top: 56px; /* Base navbar height */
-            }
-        }
+        /* Removed sticky headings - investigating structure differences */
         
         .navbar-brand {
             font-weight: 700;
