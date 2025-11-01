@@ -91,10 +91,8 @@ function showTasks() {
     console.log('🔄 Switching to Tasks view...');
     hideAllViews();
     
-    // Scroll to top immediately - multiple methods for compatibility
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // Scroll to top immediately to prevent blank space gap (same as Sites)
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -102,9 +100,6 @@ function showTasks() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
-            
-            // Scroll to the view element itself to ensure proper positioning
-            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Ensure scheduled panels are fully hidden
@@ -134,16 +129,8 @@ function showTasks() {
             loadHoneyTypes();
         }
         
-        // Force scroll to view position after DOM updates
-        requestAnimationFrame(() => {
-            const view = document.getElementById('tasksView');
-            if (view) {
-                view.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-        });
+        // Ensure scroll position after DOM update (same as Sites)
+        window.scrollTo({ top: 0, behavior: 'instant' });
         
         console.log('✅ Tasks view displayed');
     }, 50);

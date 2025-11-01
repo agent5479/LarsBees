@@ -56,19 +56,14 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
 function showComplianceView() {
     hideAllViews();
     
-    // Scroll to top immediately - multiple methods for compatibility
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // Scroll to top immediately to prevent blank space gap (same as Sites)
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     setTimeout(() => {
         const view = document.getElementById('complianceView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
-            
-            // Scroll to the view element itself to ensure proper positioning
-            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Ensure scheduled panels are fully hidden
@@ -88,16 +83,8 @@ function showComplianceView() {
         }
         renderComplianceDashboard();
         
-        // Force scroll to view position after DOM updates
-        requestAnimationFrame(() => {
-            const view = document.getElementById('complianceView');
-            if (view) {
-                view.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-        });
+        // Ensure scroll position after DOM update (same as Sites)
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 50); // Ensure hideAllViews completes first
 }
 

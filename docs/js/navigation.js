@@ -114,10 +114,8 @@ function showActions() {
     });
     hideAllViews();
     
-    // Scroll to top immediately - multiple methods for compatibility
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // Scroll to top immediately to prevent blank space gap (same as Sites)
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -125,9 +123,6 @@ function showActions() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
-            
-            // Scroll to the view element itself to ensure proper positioning
-            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         if (typeof updateActiveNav === 'function') {
@@ -137,16 +132,8 @@ function showActions() {
         populateActionFilters();
         renderActions();
         
-        // Force scroll to view position after DOM updates
-        requestAnimationFrame(() => {
-            const view = document.getElementById('actionsView');
-            if (view) {
-                view.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-        });
+        // Ensure scroll position after DOM update (same as Sites)
+        window.scrollTo({ top: 0, behavior: 'instant' });
         
         console.log('✅ Actions view displayed');
     }, 10);
@@ -186,10 +173,8 @@ function showScheduledTasks() {
     
     hideAllViews();
     
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // Scroll to top immediately to prevent blank space gap (same as Sites)
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
@@ -197,9 +182,6 @@ function showScheduledTasks() {
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
-            
-            // Scroll to the view element itself to ensure proper positioning
-            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Restore scheduled child elements
@@ -224,16 +206,8 @@ function showScheduledTasks() {
         console.log('📊 About to call renderScheduleTimeline()');
         renderScheduleTimeline();
         
-        // Force scroll to view position after DOM updates
-        requestAnimationFrame(() => {
-            const view = document.getElementById('scheduledView');
-            if (view) {
-                view.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-        });
+        // Ensure scroll position after DOM update (same as Sites)
+        window.scrollTo({ top: 0, behavior: 'instant' });
         
         console.log('✅ Schedule view displayed');
     }, 50);
@@ -258,19 +232,14 @@ function showEmployees() {
     }
     hideAllViews();
     
-    // Scroll to top immediately - multiple methods for compatibility
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    // Scroll to top immediately to prevent blank space gap (same as Sites)
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
     setTimeout(() => {
         const view = document.getElementById('employeesView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = ''; // Restore display to override hideAllViews display:none
-            
-            // Scroll to the view element itself to ensure proper positioning
-            view.scrollIntoView({ behavior: 'instant', block: 'start' });
         }
         
         // Ensure scheduled panels are fully hidden
@@ -290,16 +259,8 @@ function showEmployees() {
         }
         renderEmployees();
         
-        // Force scroll to view position after DOM updates
-        requestAnimationFrame(() => {
-            const view = document.getElementById('employeesView');
-            if (view) {
-                view.scrollIntoView({ behavior: 'instant', block: 'start' });
-            }
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-        });
+        // Ensure scroll position after DOM update (same as Sites)
+        window.scrollTo({ top: 0, behavior: 'instant' });
     }, 50); // Ensure hideAllViews completes first
 }
 

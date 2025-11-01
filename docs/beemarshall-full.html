@@ -486,33 +486,8 @@
             scroll-margin-top: 0;
         }
         
-        /* Add scroll-margin-top to first visible element in problematic views to account for navbar */
-        #actionsView > *:first-child,
-        #scheduledView > *:first-child,
-        #tasksView > *:first-child,
-        #complianceView > *:first-child,
-        #integrityCheckView > *:first-child,
-        #employeesView > *:first-child {
-            scroll-margin-top: 56px;
-            padding-top: 0 !important;
-            margin-top: 0 !important;
-        }
-        
-        /* Position section titles to account for sticky navbar */
-        #actionsView > .d-flex:first-child,
-        #scheduledView > .d-flex:first-child,
-        #tasksView > .d-flex:first-child,
-        #integrityCheckView > .d-flex:first-child,
-        #employeesView > .d-flex:first-child {
-            position: sticky;
-            top: 56px;
-            background: white;
-            z-index: 10;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-            margin-top: 0 !important;
-            margin-bottom: 1rem !important;
-        }
+        /* Removed: scroll-margin-top and sticky header rules - these were causing blank space */
+        /* All views now use simple scroll-to-top like Sites, no special positioning needed */
         
         /* Ensure mainApp and all parent containers support sticky positioning */
         #mainApp {
@@ -3796,19 +3771,14 @@
         function showIntegrityCheck() {
             hideAllViews();
             
-            // Scroll to top immediately - multiple methods for compatibility
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
+            // Scroll to top immediately to prevent blank space gap (same as Sites)
+            window.scrollTo({ top: 0, behavior: 'instant' });
             
             setTimeout(() => {
                 const view = document.getElementById('integrityCheckView');
                 if (view) {
                     view.classList.remove('hidden');
                     view.style.display = ''; // Restore display to override hideAllViews display:none
-                    
-                    // Scroll to the view element itself to ensure proper positioning
-                    view.scrollIntoView({ behavior: 'instant', block: 'start' });
                 }
                 
                 // Ensure scheduled panels are fully hidden
@@ -3828,16 +3798,8 @@
                 }
                 runIntegrityCheck();
                 
-                // Force scroll to view position after DOM updates
-                requestAnimationFrame(() => {
-                    const view = document.getElementById('integrityCheckView');
-                    if (view) {
-                        view.scrollIntoView({ behavior: 'instant', block: 'start' });
-                    }
-                    window.scrollTo(0, 0);
-                    document.documentElement.scrollTop = 0;
-                    document.body.scrollTop = 0;
-                });
+                // Ensure scroll position after DOM update (same as Sites)
+                window.scrollTo({ top: 0, behavior: 'instant' });
             }, 50); // Ensure hideAllViews completes first
         }
 
