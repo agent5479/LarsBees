@@ -451,6 +451,13 @@
         }
         
         /* Navigation - Use sticky positioning (no padding needed, no blank space) */
+        /* Ensure navbar is sticky on ALL pages by applying to body/html scroll context */
+        body, html {
+            overflow-x: hidden;
+            height: 100%;
+        }
+        
+        /* Navbar sticky positioning - works because body is the scrolling container */
         .navbar {
             background: var(--dark-yellow) !important;
             border-bottom: 2px solid var(--black);
@@ -469,19 +476,16 @@
             margin-top: 0 !important;
         }
         
-        /* Ensure view containers have no extra spacing */
+        /* Ensure view containers have no extra spacing and don't break sticky */
         #mainApp > .container-fluid > [id$="View"],
         #mainApp > .container-fluid > [id$="view"] {
             margin-top: 0 !important;
             padding-top: 0 !important;
+            position: relative;
+            overflow: visible !important;
         }
         
-        /* Ensure body and html allow sticky positioning */
-        html, body {
-            overflow-x: hidden;
-        }
-        
-        /* Ensure mainApp and parents don't break sticky positioning */
+        /* Ensure mainApp and all parent containers support sticky positioning */
         #mainApp {
             position: relative;
             overflow: visible !important;
@@ -494,24 +498,20 @@
             overflow: visible !important;
         }
         
-        /* Ensure all view containers don't break sticky */
-        #mainApp > .container-fluid > [id$="View"],
-        #mainApp > .container-fluid > [id$="view"] {
-            position: relative;
-            overflow: visible !important;
-        }
-        
-        /* Ensure navbar stays sticky - parent containers must not break this */
-        #mainApp {
-            position: relative;
-            overflow: visible !important;
-        }
-        
-        #mainApp > nav.navbar {
+        /* Force navbar to stay sticky regardless of view - ensure it's always in sticky context */
+        #mainApp > nav.navbar,
+        nav.navbar {
             position: -webkit-sticky !important;
             position: sticky !important;
             top: 0 !important;
             z-index: 1040 !important;
+        }
+        
+        /* Ensure no parent elements break sticky by having overflow other than visible */
+        body > *,
+        html > body {
+            overflow-x: visible;
+            overflow-y: auto;
         }
         
         .navbar.scrolled {
