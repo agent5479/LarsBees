@@ -3789,6 +3789,8 @@
                 }
                 updateActiveNav('Data Integrity');
                 runIntegrityCheck();
+                // Scroll again after view is fully shown
+                setTimeout(() => scrollToTop(), 5);
             }, 10);
         }
 

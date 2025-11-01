@@ -74,6 +74,8 @@ function showComplianceView() {
         }
         updateActiveNav('Compliance');
         renderComplianceDashboard();
+        // Scroll again after view is fully shown
+        setTimeout(() => scrollToTop(), 5);
     }, 10);
 }
 

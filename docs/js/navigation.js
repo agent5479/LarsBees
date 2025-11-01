@@ -2,9 +2,20 @@
 
 // Universal minimal scroll-to-top function
 function scrollToTop() {
+    // Force scroll to absolute top before any view changes
     window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    
+    // Also ensure any scroll containers are reset
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) {
+        mainApp.scrollTop = 0;
+    }
+    const container = mainApp?.querySelector('.container-fluid');
+    if (container) {
+        container.scrollTop = 0;
+    }
 }
 
 function hideAllViews() {
@@ -98,6 +109,8 @@ function showActions() {
         updateActiveNav('Actions');
         populateActionFilters();
         renderActions();
+        // Scroll again after view is fully shown
+        setTimeout(() => scrollToTop(), 5);
     }, 10);
 }
 
@@ -138,6 +151,8 @@ function showScheduledTasks() {
         updateActiveNav('Schedule');
         renderScheduledTasks();
         renderScheduleTimeline();
+        // Scroll again after view is fully shown
+        setTimeout(() => scrollToTop(), 5);
     }, 10);
 }
 
@@ -179,6 +194,8 @@ function showEmployees() {
         }
         updateActiveNav('Team');
         renderEmployees();
+        // Scroll again after view is fully shown
+        setTimeout(() => scrollToTop(), 5);
     }, 10);
 }
 

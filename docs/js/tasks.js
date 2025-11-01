@@ -113,6 +113,8 @@ function showTasks() {
             document.getElementById('honeyTypeManagement').style.display = 'block';
             loadHoneyTypes();
         }
+        // Scroll again after view is fully shown
+        setTimeout(() => scrollToTop(), 5);
     }, 10);
 }
 
