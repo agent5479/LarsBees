@@ -57,6 +57,11 @@ function showComplianceView() {
     hideAllViews();
     scrollToTop();
     setTimeout(() => {
+        const view = document.getElementById('complianceView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = '';
+        }
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -69,18 +74,6 @@ function showComplianceView() {
         }
         updateActiveNav('Compliance');
         renderComplianceDashboard();
-        // Show view AFTER content is rendered
-        const view = document.getElementById('complianceView');
-        if (view) {
-            view.classList.remove('hidden');
-            view.style.display = '';
-        }
-        // Force scroll to top after DOM update
-        requestAnimationFrame(() => {
-            window.scrollTo(0, 0);
-            document.documentElement.scrollTop = 0;
-            document.body.scrollTop = 0;
-        });
     }, 10);
 }
 
