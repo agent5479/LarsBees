@@ -88,21 +88,16 @@ function showTasks() {
         return;
     }
     
-    console.log('🔄 Switching to Tasks view...');
     hideAllViews();
+    window.scrollTo(0, 0);
     
-    // Scroll to top immediately to prevent blank space gap (same as Sites)
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
         const view = document.getElementById('tasksView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         
-        // Ensure scheduled panels are fully hidden
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -114,25 +109,14 @@ function showTasks() {
             timeline.classList.add('hidden');
         }
         
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Task');
-        }
-        
+        updateActiveNav('Task');
         renderTasksList();
-        
-        // Set up toggle event listeners
         setupTaskDisplayToggles();
         
-        // Show/hide honey type management for admins
         if (typeof isAdmin !== 'undefined' && isAdmin) {
             document.getElementById('honeyTypeManagement').style.display = 'block';
             loadHoneyTypes();
         }
-        
-        // Ensure scroll position after DOM update (same as Sites)
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        
-        console.log('✅ Tasks view displayed');
     }, 50);
 }
 

@@ -77,65 +77,36 @@ function showDashboard() {
 }
 
 function showSites() {
-    console.log('🔄 Switching to Sites view...');
     hideAllViews();
+    window.scrollTo(0, 0);
     
-    // Scroll to top immediately to prevent blank space gap
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
         const view = document.getElementById('sitesView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Sites');
-        }
-        
+        updateActiveNav('Sites');
         renderSites();
         renderSiteTypeFilter();
-        
-        // Ensure scroll position after DOM update
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        
-        console.log('✅ Sites view displayed');
     }, 10);
 }
 
 function showActions() {
-    console.log('🔄 Switching to Actions view...');
-    console.log('🔍 Data state when switching to Actions:', {
-        actions: window.actions ? window.actions.length : 'undefined',
-        sites: window.sites ? window.sites.length : 'undefined',
-        tasks: window.tasks ? window.tasks.length : 'undefined'
-    });
     hideAllViews();
+    window.scrollTo(0, 0);
     
-    // Scroll to top immediately to prevent blank space gap (same as Sites)
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
         const view = document.getElementById('actionsView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Actions');
-        }
-        
+        updateActiveNav('Actions');
         populateActionFilters();
         renderActions();
-        
-        // Ensure scroll position after DOM update (same as Sites)
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        
-        console.log('✅ Actions view displayed');
     }, 10);
 }
 
@@ -163,28 +134,16 @@ function showLogActionForm() {
 }
 
 function showScheduledTasks() {
-    console.log('🔄 Switching to Schedule view...');
-    console.log('📊 Current data state:', {
-        scheduledTasks: scheduledTasks ? scheduledTasks.length : 'undefined',
-        sites: sites ? sites.length : 'undefined',
-        tasks: tasks ? tasks.length : 'undefined',
-        individualHives: individualHives ? individualHives.length : 'undefined'
-    });
-    
     hideAllViews();
+    window.scrollTo(0, 0);
     
-    // Scroll to top immediately to prevent blank space gap (same as Sites)
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    
-    // Small delay to ensure all views are hidden before showing new view
     setTimeout(() => {
         const view = document.getElementById('scheduledView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         
-        // Restore scheduled child elements
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -196,20 +155,9 @@ function showScheduledTasks() {
             timeline.classList.remove('hidden');
         }
         
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Schedule');
-        }
-        
-        console.log('📊 About to call renderScheduledTasks()');
+        updateActiveNav('Schedule');
         renderScheduledTasks();
-        
-        console.log('📊 About to call renderScheduleTimeline()');
         renderScheduleTimeline();
-        
-        // Ensure scroll position after DOM update (same as Sites)
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        
-        console.log('✅ Schedule view displayed');
     }, 50);
 }
 
@@ -231,18 +179,15 @@ function showEmployees() {
         return;
     }
     hideAllViews();
-    
-    // Scroll to top immediately to prevent blank space gap (same as Sites)
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo(0, 0);
     
     setTimeout(() => {
         const view = document.getElementById('employeesView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         
-        // Ensure scheduled panels are fully hidden
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -254,14 +199,9 @@ function showEmployees() {
             timeline.classList.add('hidden');
         }
         
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Team');
-        }
+        updateActiveNav('Team');
         renderEmployees();
-        
-        // Ensure scroll position after DOM update (same as Sites)
-        window.scrollTo({ top: 0, behavior: 'instant' });
-    }, 50); // Ensure hideAllViews completes first
+    }, 50);
 }
 
 function showManageTasks() {

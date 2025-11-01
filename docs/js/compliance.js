@@ -55,18 +55,15 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
  */
 function showComplianceView() {
     hideAllViews();
-    
-    // Scroll to top immediately to prevent blank space gap (same as Sites)
-    window.scrollTo({ top: 0, behavior: 'instant' });
+    window.scrollTo(0, 0);
     
     setTimeout(() => {
         const view = document.getElementById('complianceView');
         if (view) {
             view.classList.remove('hidden');
-            view.style.display = ''; // Restore display to override hideAllViews display:none
+            view.style.display = '';
         }
         
-        // Ensure scheduled panels are fully hidden
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -78,14 +75,9 @@ function showComplianceView() {
             timeline.classList.add('hidden');
         }
         
-        if (typeof updateActiveNav === 'function') {
-            updateActiveNav('Compliance');
-        }
+        updateActiveNav('Compliance');
         renderComplianceDashboard();
-        
-        // Ensure scroll position after DOM update (same as Sites)
-        window.scrollTo({ top: 0, behavior: 'instant' });
-    }, 50); // Ensure hideAllViews completes first
+    }, 50);
 }
 
 /**

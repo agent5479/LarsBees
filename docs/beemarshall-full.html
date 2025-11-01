@@ -3770,18 +3770,15 @@
         // Data Integrity Check Functions
         function showIntegrityCheck() {
             hideAllViews();
-            
-            // Scroll to top immediately to prevent blank space gap (same as Sites)
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            window.scrollTo(0, 0);
             
             setTimeout(() => {
                 const view = document.getElementById('integrityCheckView');
                 if (view) {
                     view.classList.remove('hidden');
-                    view.style.display = ''; // Restore display to override hideAllViews display:none
+                    view.style.display = '';
                 }
                 
-                // Ensure scheduled panels are fully hidden
                 const tasksList = document.getElementById('scheduledTasksList');
                 const timeline = document.getElementById('scheduleTimeline');
                 if (tasksList) {
@@ -3793,14 +3790,9 @@
                     timeline.classList.add('hidden');
                 }
                 
-                if (typeof updateActiveNav === 'function') {
-                    updateActiveNav('Data Integrity');
-                }
+                updateActiveNav('Data Integrity');
                 runIntegrityCheck();
-                
-                // Ensure scroll position after DOM update (same as Sites)
-                window.scrollTo({ top: 0, behavior: 'instant' });
-            }, 50); // Ensure hideAllViews completes first
+            }, 50);
         }
 
         function runIntegrityCheck() {
