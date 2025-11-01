@@ -84,6 +84,9 @@ function renderSites() {
             const hiveNUCs = c.hiveStacks?.nucs || 0;
             const hiveEmpty = c.hiveStacks?.empty || 0;
             
+            // Calculate total hive count from hive box cards (excluding empty platforms)
+            const totalHiveCount = hiveDoubles + hiveTopSplits + hiveSingles + hiveNUCs;
+            
             // Determine classification labels (compact for summary card)
             const functionalClassificationLabel = c.functionalClassification || 'Not specified';
             const seasonalDisplay = (() => {
@@ -132,7 +135,7 @@ function renderSites() {
                                     </span>
                                     ${seasonalBadge}
                                     <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-size: 1.25rem; font-weight: bold;">
-                                        ${c.hiveCount || 0}
+                                        ${totalHiveCount}
                                     </span>
                                 </div>
                             </div>
