@@ -107,8 +107,10 @@ function showActions() {
             view.style.display = '';
         }
         updateActiveNav('Actions');
-        populateActionFilters();
+        // Match Sites pattern: render main content FIRST, then populate filters
+        // This prevents layout reflow gap that causes blank space
         renderActions();
+        populateActionFilters();
     }, 10);
 }
 
