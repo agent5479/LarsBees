@@ -450,76 +450,43 @@
             }
         }
         
-        /* Navigation - Use sticky positioning (no padding needed, no blank space) */
-        /* Ensure navbar is sticky on ALL pages by applying to body/html scroll context */
+        /* Navigation - Regular header (non-sticky) */
         body, html {
             overflow-x: hidden;
-            height: 100%;
         }
         
-        /* Navbar sticky positioning - works because body is the scrolling container */
+        /* Navbar as regular header */
         .navbar {
             background: var(--dark-yellow) !important;
             border-bottom: 2px solid var(--black);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: -webkit-sticky !important; /* Safari */
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 1040 !important;
-            width: 100% !important;
-            margin: 0 !important;
+            width: 100%;
+            margin: 0;
+            z-index: 1040;
         }
         
-        /* No padding needed with sticky navbar - it stays in document flow */
-        #mainApp > .container-fluid {
-            padding-top: 0 !important;
-            margin-top: 0 !important;
-        }
-        
-        /* Ensure view containers have no extra spacing and don't break sticky */
-        #mainApp > .container-fluid > [id$="View"],
-        #mainApp > .container-fluid > [id$="view"] {
-            margin-top: 0 !important;
-            padding-top: 0 !important;
-            position: relative;
-            overflow: visible !important;
-            scroll-margin-top: 0;
-        }
-        
-        /* Removed: scroll-margin-top and sticky header rules - these were causing blank space */
-        /* All views now use simple scroll-to-top like Sites, no special positioning needed */
-        
-        /* Ensure mainApp and all parent containers support sticky positioning */
+        /* Main content area */
         #mainApp {
             position: relative;
             overflow: visible !important;
             min-height: 100vh;
         }
         
-        /* Ensure container-fluid doesn't break sticky */
+        /* Container spacing */
         #mainApp > .container-fluid {
+            padding-top: 0 !important;
+            margin-top: 0 !important;
             position: relative;
             overflow: visible !important;
         }
         
-        /* Force navbar to stay sticky regardless of view - ensure it's always in sticky context */
-        #mainApp > nav.navbar,
-        nav.navbar {
-            position: -webkit-sticky !important;
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 1040 !important;
-        }
-        
-        /* Ensure no parent elements break sticky by having overflow other than visible */
-        body > *,
-        html > body {
-            overflow-x: visible;
-            overflow-y: auto;
-        }
-        
-        .navbar.scrolled {
-            background: var(--dark-yellow);
+        /* View containers */
+        #mainApp > .container-fluid > [id$="View"],
+        #mainApp > .container-fluid > [id$="view"] {
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            position: relative;
+            overflow: visible !important;
         }
         
         .navbar-brand {
@@ -1526,7 +1493,7 @@
     <!-- Main App -->
     <div id="mainApp" class="hidden">
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-dark">
             <div class="container-fluid">
                 <!-- Logo/Brand -->
                 <a class="navbar-brand" href="#" onclick="showDashboard(); return false;">

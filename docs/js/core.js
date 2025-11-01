@@ -226,16 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addRequirementForm')?.addEventListener('submit', handleAddRequirement);
     document.getElementById('actionDate').valueAsDate = new Date();
     
-    // Enhanced sticky navbar on scroll
+    // Auto-collapse mobile nav immediately on any scroll
     window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
-        if (navbar) {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-        }
         // Auto-collapse mobile nav immediately on any scroll
         if (window.innerWidth <= 992) { // <= lg breakpoint
             const navCollapse = document.getElementById('navbarNav');
