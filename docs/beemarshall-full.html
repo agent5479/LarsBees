@@ -450,19 +450,22 @@
             }
         }
         
-        /* Navigation - Regular header (non-sticky) */
+        /* Navigation - Sticky positioning restored */
         body, html {
             overflow-x: hidden;
         }
         
-        /* Navbar as regular header */
+        /* Navbar sticky positioning */
         .navbar {
             background: var(--dark-yellow) !important;
             border-bottom: 2px solid var(--black);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            width: 100%;
-            margin: 0;
-            z-index: 1040;
+            position: -webkit-sticky !important; /* Safari */
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 1040 !important;
+            width: 100% !important;
+            margin: 0 !important;
         }
         
         /* Main content area */
@@ -480,13 +483,15 @@
             overflow: visible !important;
         }
         
-        /* View containers */
+        /* View containers - ensure no hidden height or spacing */
         #mainApp > .container-fluid > [id$="View"],
         #mainApp > .container-fluid > [id$="view"] {
             margin-top: 0 !important;
             padding-top: 0 !important;
             position: relative;
             overflow: visible !important;
+            min-height: 0 !important;
+            height: auto !important;
         }
         
         .navbar-brand {
@@ -1493,7 +1498,7 @@
     <!-- Main App -->
     <div id="mainApp" class="hidden">
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-lg navbar-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
             <div class="container-fluid">
                 <!-- Logo/Brand -->
                 <a class="navbar-brand" href="#" onclick="showDashboard(); return false;">
@@ -3739,11 +3744,6 @@
             hideAllViews();
             scrollToTop();
             setTimeout(() => {
-                const view = document.getElementById('integrityCheckView');
-                if (view) {
-                    view.classList.remove('hidden');
-                    view.style.display = '';
-                }
                 const tasksList = document.getElementById('scheduledTasksList');
                 const timeline = document.getElementById('scheduleTimeline');
                 if (tasksList) {
@@ -3756,8 +3756,18 @@
                 }
                 updateActiveNav('Data Integrity');
                 runIntegrityCheck();
-                // Scroll again after view is fully shown
-                setTimeout(() => scrollToTop(), 5);
+                // Show view AFTER content is rendered
+                const view = document.getElementById('integrityCheckView');
+                if (view) {
+                    view.classList.remove('hidden');
+                    view.style.display = '';
+                }
+                // Force scroll to top after DOM update
+                requestAnimationFrame(() => {
+                    window.scrollTo(0, 0);
+                    document.documentElement.scrollTop = 0;
+                    document.body.scrollTop = 0;
+                });
             }, 10);
         }
 

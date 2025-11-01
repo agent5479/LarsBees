@@ -101,16 +101,21 @@ function showActions() {
     hideAllViews();
     scrollToTop();
     setTimeout(() => {
+        updateActiveNav('Actions');
+        populateActionFilters();
+        renderActions();
+        // Show view AFTER content is rendered
         const view = document.getElementById('actionsView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        updateActiveNav('Actions');
-        populateActionFilters();
-        renderActions();
-        // Scroll again after view is fully shown
-        setTimeout(() => scrollToTop(), 5);
+        // Force scroll to top after DOM update
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
     }, 10);
 }
 
@@ -133,11 +138,9 @@ function showScheduledTasks() {
     hideAllViews();
     scrollToTop();
     setTimeout(() => {
-        const view = document.getElementById('scheduledView');
-        if (view) {
-            view.classList.remove('hidden');
-            view.style.display = '';
-        }
+        updateActiveNav('Schedule');
+        renderScheduledTasks();
+        renderScheduleTimeline();
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -148,11 +151,18 @@ function showScheduledTasks() {
             timeline.style.display = '';
             timeline.classList.remove('hidden');
         }
-        updateActiveNav('Schedule');
-        renderScheduledTasks();
-        renderScheduleTimeline();
-        // Scroll again after view is fully shown
-        setTimeout(() => scrollToTop(), 5);
+        // Show view AFTER content is rendered
+        const view = document.getElementById('scheduledView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = '';
+        }
+        // Force scroll to top after DOM update
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
     }, 10);
 }
 
@@ -177,11 +187,6 @@ function showEmployees() {
     hideAllViews();
     scrollToTop();
     setTimeout(() => {
-        const view = document.getElementById('employeesView');
-        if (view) {
-            view.classList.remove('hidden');
-            view.style.display = '';
-        }
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -194,8 +199,18 @@ function showEmployees() {
         }
         updateActiveNav('Team');
         renderEmployees();
-        // Scroll again after view is fully shown
-        setTimeout(() => scrollToTop(), 5);
+        // Show view AFTER content is rendered
+        const view = document.getElementById('employeesView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = '';
+        }
+        // Force scroll to top after DOM update
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
     }, 10);
 }
 

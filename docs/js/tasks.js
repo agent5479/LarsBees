@@ -90,11 +90,6 @@ function showTasks() {
     hideAllViews();
     scrollToTop();
     setTimeout(() => {
-        const view = document.getElementById('tasksView');
-        if (view) {
-            view.classList.remove('hidden');
-            view.style.display = '';
-        }
         const tasksList = document.getElementById('scheduledTasksList');
         const timeline = document.getElementById('scheduleTimeline');
         if (tasksList) {
@@ -113,8 +108,18 @@ function showTasks() {
             document.getElementById('honeyTypeManagement').style.display = 'block';
             loadHoneyTypes();
         }
-        // Scroll again after view is fully shown
-        setTimeout(() => scrollToTop(), 5);
+        // Show view AFTER content is rendered
+        const view = document.getElementById('tasksView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = '';
+        }
+        // Force scroll to top after DOM update
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
     }, 10);
 }
 
