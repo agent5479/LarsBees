@@ -100,6 +100,9 @@ function showSites() {
 function showActions() {
     hideAllViews();
     scrollToTop();
+    // Populate filters WHILE view is still hidden to prevent layout reflow
+    // This ensures filters are ready before view becomes visible
+    populateActionFilters();
     setTimeout(() => {
         const view = document.getElementById('actionsView');
         if (view) {
@@ -107,12 +110,16 @@ function showActions() {
             view.style.display = '';
         }
         updateActiveNav('Actions');
-        // Populate filters and render content in same frame to prevent layout gap
-        populateActionFilters();
-        // Use requestAnimationFrame to batch DOM updates and prevent layout reflow gap
+        // Render content immediately after showing view
+        renderActions();
+        // Force scroll to top after content renders to prevent blank space
+        // Use double RAF to ensure it happens after layout calculation
         requestAnimationFrame(() => {
-            renderActions();
-            window.scrollTo(0, 0);
+            requestAnimationFrame(() => {
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            });
         });
     }, 10);
 }
