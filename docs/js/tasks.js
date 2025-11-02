@@ -89,15 +89,6 @@ function showTasks() {
     }
     hideAllViews();
     scrollToTop();
-    // CRITICAL: Render content WHILE view is still hidden
-    // This prevents browser from calculating layout with partial content
-    renderTasksList();
-    setupTaskDisplayToggles();
-    
-    if (typeof isAdmin !== 'undefined' && isAdmin) {
-        document.getElementById('honeyTypeManagement').style.display = 'block';
-        loadHoneyTypes();
-    }
     setTimeout(() => {
         const view = document.getElementById('tasksView');
         if (view) {
@@ -115,10 +106,13 @@ function showTasks() {
             timeline.classList.add('hidden');
         }
         updateActiveNav('Tasks');
-        // Scroll reset immediately after showing view (everything already rendered)
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
+        renderTasksList();
+        setupTaskDisplayToggles();
+        
+        if (typeof isAdmin !== 'undefined' && isAdmin) {
+            document.getElementById('honeyTypeManagement').style.display = 'block';
+            loadHoneyTypes();
+        }
     }, 10);
 }
 

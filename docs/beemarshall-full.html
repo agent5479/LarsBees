@@ -2927,45 +2927,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Compliance Details Modal -->
-    <div class="modal fade" id="complianceDetailsModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Mark Obligation as Achieved</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="complianceDetailsForm">
-                        <input type="hidden" id="complianceObligationKey">
-                        <input type="hidden" id="complianceYear">
-                        
-                        <div class="mb-3">
-                            <label for="complianceDetails" class="form-label"><strong>Details</strong></label>
-                            <textarea class="form-control" id="complianceDetails" rows="4" 
-                                      placeholder="Enter details such as reference numbers, receipt numbers, invoice numbers, compliance numbers, email addresses, or any relevant information..."></textarea>
-                            <small class="form-text text-muted">
-                                Example: Invoice #12345, received via email john@example.com on 15/05/2024, Compliance ID: COMP-2024-001
-                            </small>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="complianceDate" class="form-label"><strong>Achievement Date</strong></label>
-                            <input type="date" class="form-control" id="complianceDate" required>
-                            <small class="form-text text-muted">When was this obligation completed?</small>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" onclick="handleComplianceDetails()">
-                        <i class="bi bi-check-circle"></i> Mark as Achieved
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
     </div>
 
     <!-- Scripts -->
@@ -3784,9 +3745,6 @@
         function showIntegrityCheck() {
             hideAllViews();
             scrollToTop();
-            // CRITICAL: Run check WHILE view is still hidden
-            // This prevents browser from calculating layout with partial content
-            runIntegrityCheck();
             setTimeout(() => {
                 const view = document.getElementById('integrityCheckView');
                 if (view) {
@@ -3804,10 +3762,7 @@
                     timeline.classList.add('hidden');
                 }
                 updateActiveNav('Data Integrity');
-                // Scroll reset immediately after showing view (everything already rendered)
-                window.scrollTo(0, 0);
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
+                runIntegrityCheck();
             }, 10);
         }
 
