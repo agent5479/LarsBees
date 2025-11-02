@@ -136,6 +136,10 @@ function showLogActionForm() {
 function showScheduledTasks() {
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    renderScheduledTasks();
+    renderScheduleTimeline();
     setTimeout(() => {
         const view = document.getElementById('scheduledView');
         if (view) {
@@ -153,21 +157,29 @@ function showScheduledTasks() {
             timeline.classList.remove('hidden');
         }
         updateActiveNav('Schedule');
-        renderScheduledTasks();
-        renderScheduleTimeline();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 
 function showFlagged() {
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    renderFlaggedItems();
     setTimeout(() => {
         const view = document.getElementById('flaggedView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        renderFlaggedItems();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 
@@ -178,6 +190,9 @@ function showEmployees() {
     }
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    renderEmployees();
     setTimeout(() => {
         const view = document.getElementById('employeesView');
         if (view) {
@@ -195,7 +210,10 @@ function showEmployees() {
             timeline.classList.add('hidden');
         }
         updateActiveNav('Team');
-        renderEmployees();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 
@@ -206,13 +224,19 @@ function showManageTasks() {
     }
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    renderTasksList();
     setTimeout(() => {
         const view = document.getElementById('manageTasksView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        renderTasksList();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 
@@ -223,28 +247,40 @@ function showSeasonalRequirements() {
     }
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    populateSiteCheckboxes();
+    renderSeasonalRequirements();
+    renderComplianceStatus();
     setTimeout(() => {
         const view = document.getElementById('seasonalRequirementsView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        populateSiteCheckboxes();
-        renderSeasonalRequirements();
-        renderComplianceStatus();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 
 function showSuggestedSchedule() {
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    renderSuggestedSchedule();
     setTimeout(() => {
         const view = document.getElementById('suggestedScheduleView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        renderSuggestedSchedule();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 

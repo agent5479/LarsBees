@@ -56,6 +56,9 @@ const AFB_REPORTING_DEADLINE = 7; // Must report within 7 days of detection
 function showComplianceView() {
     hideAllViews();
     scrollToTop();
+    // CRITICAL: Populate filters AND render content WHILE view is still hidden
+    // This prevents browser from calculating layout with partial content
+    renderComplianceDashboard();
     setTimeout(() => {
         const view = document.getElementById('complianceView');
         if (view) {
@@ -73,7 +76,10 @@ function showComplianceView() {
             timeline.classList.add('hidden');
         }
         updateActiveNav('Compliance');
-        renderComplianceDashboard();
+        // Scroll reset immediately after showing view (everything already rendered)
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
     }, 10);
 }
 
@@ -304,17 +310,18 @@ function renderAllObligations() {
                 ${period.obligations.map(obligation => {
                     const isCompleted = complianceStatus[obligation.key] || false;
                     const completionDate = complianceStatus[`${obligation.key}Date`];
+                    const details = complianceStatus[`${obligation.key}Details`];
                     
                     return `
                         <div class="card mb-2 ${isCompleted ? 'border-success' : 'border-light'}">
                             <div class="card-body py-2">
-                                <div class="form-check d-flex align-items-center">
+                                <div class="form-check d-flex align-items-start">
                                     <input class="form-check-input me-3" 
                                            type="checkbox" 
                                            id="compliance_${obligation.key}" 
                                            ${isCompleted ? 'checked' : ''}
                                            onchange="toggleComplianceStatus('${obligation.key}', ${currentYear})"
-                                           style="transform: scale(1.2);">
+                                           style="transform: scale(1.2); margin-top: 0.25rem;">
                                     <div class="flex-grow-1">
                                         <label class="form-check-label" for="compliance_${obligation.key}">
                                             <strong class="${isCompleted ? 'text-success' : ''}">${obligation.name}</strong>
@@ -323,6 +330,21 @@ function renderAllObligations() {
                                         </label>
                                         <br><small class="text-muted">${obligation.description}</small>
                                         ${completionDate ? `<br><small class="text-success"><i class="bi bi-calendar-check"></i> Completed: ${formatDate(new Date(completionDate))}</small>` : ''}
+                                        ${details ? `
+                                            <br><div class="mt-2 p-2 bg-light rounded border">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div class="flex-grow-1">
+                                                        <small class="text-dark"><strong><i class="bi bi-info-circle"></i> Details:</strong></small>
+                                                        <br><small class="text-dark">${details}</small>
+                                                    </div>
+                                                    <button class="btn btn-sm btn-outline-secondary ms-2" 
+                                                            onclick="editComplianceDetails('${obligation.key}', ${currentYear})"
+                                                            title="Edit details">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -467,6 +489,109 @@ function toggleComplianceStatus(obligationKey, year) {
     const checkbox = document.getElementById(`compliance_${obligationKey}`);
     const isCompleted = checkbox.checked;
     
+    // If marking as completed, show the details modal
+    if (isCompleted) {
+        showComplianceDetailsModal(obligationKey, year, checkbox);
+    } else {
+        // If unchecking, just save immediately
+        saveComplianceStatus(obligationKey, year, false, checkbox);
+    }
+}
+
+/**
+ * Show compliance details modal
+ */
+function showComplianceDetailsModal(obligationKey, year, checkbox) {
+    // Set modal title and button text for new entry
+    document.querySelector('#complianceDetailsModal .modal-title').textContent = 'Mark Obligation as Achieved';
+    const submitButton = document.querySelector('#complianceDetailsModal .btn-success');
+    submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Mark as Achieved';
+    
+    // Set hidden fields
+    document.getElementById('complianceObligationKey').value = obligationKey;
+    document.getElementById('complianceYear').value = year;
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('complianceDate').value = today;
+    
+    // Clear details field
+    document.getElementById('complianceDetails').value = '';
+    
+    // Store checkbox reference for cancel handler
+    window.pendingComplianceCheckbox = checkbox;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('complianceDetailsModal'));
+    modal.show();
+    
+    // Handle modal close (user clicks X or outside)
+    const modalElement = document.getElementById('complianceDetailsModal');
+    modalElement.addEventListener('hidden.bs.modal', function onModalHidden() {
+        // Revert checkbox if modal was closed without submitting
+        if (checkbox && checkbox.checked) {
+            checkbox.checked = false;
+        }
+        modalElement.removeEventListener('hidden.bs.modal', onModalHidden);
+        window.pendingComplianceCheckbox = null;
+    }, { once: true });
+}
+
+/**
+ * Edit existing compliance details
+ */
+function editComplianceDetails(obligationKey, year) {
+    const profile = getUserProfile();
+    const complianceStatus = profile?.compliance?.[year] || {};
+    
+    // Set modal title and button text for edit mode
+    document.querySelector('#complianceDetailsModal .modal-title').textContent = 'Edit Compliance Details';
+    const submitButton = document.querySelector('#complianceDetailsModal .btn-success');
+    submitButton.innerHTML = '<i class="bi bi-check-circle"></i> Update Details';
+    
+    // Set hidden fields
+    document.getElementById('complianceObligationKey').value = obligationKey;
+    document.getElementById('complianceYear').value = year;
+    
+    // Set existing date
+    const existingDate = complianceStatus[`${obligationKey}Date`];
+    document.getElementById('complianceDate').value = existingDate || new Date().toISOString().split('T')[0];
+    
+    // Set existing details
+    const existingDetails = complianceStatus[`${obligationKey}Details`] || '';
+    document.getElementById('complianceDetails').value = existingDetails;
+    
+    // No checkbox for edit mode
+    window.pendingComplianceCheckbox = null;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('complianceDetailsModal'));
+    modal.show();
+}
+
+/**
+ * Handle compliance details submission
+ */
+function handleComplianceDetails() {
+    const obligationKey = document.getElementById('complianceObligationKey').value;
+    const year = parseInt(document.getElementById('complianceYear').value);
+    const details = document.getElementById('complianceDetails').value.trim();
+    const date = document.getElementById('complianceDate').value;
+    
+    const checkbox = window.pendingComplianceCheckbox;
+    
+    // Close modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('complianceDetailsModal'));
+    modal.hide();
+    
+    // Save with details
+    saveComplianceStatus(obligationKey, year, true, checkbox, details, date);
+}
+
+/**
+ * Save compliance status
+ */
+function saveComplianceStatus(obligationKey, year, isCompleted, checkbox, details = null, date = null) {
     const profile = getUserProfile();
     
     if (!profile.compliance) {
@@ -479,9 +604,18 @@ function toggleComplianceStatus(obligationKey, year) {
     profile.compliance[year][obligationKey] = isCompleted;
     
     if (isCompleted) {
-        profile.compliance[year][`${obligationKey}Date`] = new Date().toISOString();
+        // Use provided date or current date
+        const completionDate = date || new Date().toISOString().split('T')[0];
+        profile.compliance[year][`${obligationKey}Date`] = completionDate;
+        
+        // Store details if provided
+        if (details) {
+            profile.compliance[year][`${obligationKey}Details`] = details;
+        }
     } else {
+        // Remove all related data
         delete profile.compliance[year][`${obligationKey}Date`];
+        delete profile.compliance[year][`${obligationKey}Details`];
     }
     
     showSyncStatus('<i class="bi bi-arrow-repeat"></i> Saving...', 'syncing');
@@ -494,15 +628,17 @@ function toggleComplianceStatus(obligationKey, year) {
             showSyncStatus(`<i class="bi bi-check"></i> ${obligationKey} ${statusText}!`, 'success');
             currentUser.complianceProfile = profile;
             
-            // Update the compliance status display
-            renderComplianceStatus();
+            // Update the compliance dashboard
+            renderComplianceDashboard();
         })
         .catch(error => {
             showSyncStatus('<i class="bi bi-x"></i> Save failed', 'error');
             console.error('Error updating compliance status:', error);
             
             // Revert checkbox state
-            checkbox.checked = !isCompleted;
+            if (checkbox) {
+                checkbox.checked = !isCompleted;
+            }
         });
 }
 
