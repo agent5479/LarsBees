@@ -198,7 +198,6 @@ function processFirebaseQueue() {
         // Enough time has passed, execute immediately
         lastFirebaseOperationTime = now;
         operation.execute();
-        operation.resolve();
         isProcessingQueue = false;
         // Process next in queue
         if (firebaseOperationQueue.length > 0) {
