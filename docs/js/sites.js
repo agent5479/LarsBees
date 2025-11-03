@@ -2523,64 +2523,125 @@ function quickEditSiteNote(siteId) {
  * Used when navigating from map popup or other views
  */
 function scrollToSiteCard(siteId) {
+    console.log(`🔍 scrollToSiteCard called for site ID: ${siteId}`);
+    
     // Close map popup if it's open
     const mapInstance = window.beeMarshallMap;
     if (mapInstance) {
         mapInstance.closePopup();
     }
     
-    // Hide all views and show sites view manually (to avoid scrollToTop)
-    hideAllViews();
+    // Find the site data first to get its name
+    const site = window.sites?.find(s => s.id === siteId);
     
-    setTimeout(() => {
+    if (!site) {
+        console.warn(`⚠️ Site with ID ${siteId} not found in window.sites`);
+        // Still navigate to sites page
+        if (typeof showSites === 'function') {
+            showSites();
+        }
+        return;
+    }
+    
+    // Get first letter of site name
+    const firstLetter = site.name.charAt(0).toUpperCase();
+    const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
+    console.log(`📍 Navigating to sites page and scrolling to section: ${letter} (site: ${site.name})`);
+    
+    // Navigate to sites summary page using showSites() to ensure proper initialization
+    // Note: showSites() calls scrollToTop(), so we'll override that with our scroll after a delay
+    if (typeof showSites === 'function') {
+        showSites();
+    } else {
+        // Fallback: manually show sites view
+        hideAllViews();
         const view = document.getElementById('sitesView');
         if (view) {
             view.classList.remove('hidden');
             view.style.display = '';
         }
-        updateActiveNav('Sites');
-        renderSites();
-        renderSiteTypeFilter();
+        if (typeof updateActiveNav === 'function') {
+            updateActiveNav('Sites');
+        }
+        if (typeof renderSites === 'function') {
+            renderSites();
+        }
+        if (typeof renderSiteTypeFilter === 'function') {
+            renderSiteTypeFilter();
+        }
+    }
+    
+    // Wait for page to fully load and render, then scroll to the letter section
+    // Use a longer initial delay to allow showSites() to complete (including scrollToTop)
+    let attempts = 0;
+    const maxAttempts = 40; // Increased attempts for better reliability
+    
+    const tryScroll = () => {
+        attempts++;
+        console.log(`🔍 Scroll attempt ${attempts}/${maxAttempts} for section: ${letter} (site: ${site.name})`);
         
-        // Wait for rendering to complete, then scroll to the alphabetical section marker
-        // Use multiple checks to ensure the section is rendered
-        let attempts = 0;
-        const maxAttempts = 15;
-        
-        const tryScroll = () => {
-            attempts++;
-            
-            // Find the site data to get its name
-            const site = window.sites?.find(s => s.id === siteId);
-            
-            if (site && site.name) {
-                // Get first letter of site name
-                const firstLetter = site.name.charAt(0).toUpperCase();
-                const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
-                const sectionMarker = document.getElementById(`section-${letter}`);
-                
-                // Scroll to the alphabetical section marker
-                if (sectionMarker) {
-                    requestAnimationFrame(() => {
-                        sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    });
-                } else if (attempts < maxAttempts) {
-                    // Section marker not found yet, try again after a short delay
-                    setTimeout(tryScroll, 100);
-                } else {
-                    // Section marker not found after max attempts
-                    console.warn(`Section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
-                }
-            } else if (attempts < maxAttempts) {
-                // Site data not found yet, try again after a short delay
-                setTimeout(tryScroll, 100);
-            } else {
-                // Site not found after max attempts
-                console.warn(`Site with ID ${siteId} not found after ${maxAttempts} attempts`);
+        // Check if sites view is visible
+        const sitesView = document.getElementById('sitesView');
+        if (sitesView && sitesView.classList.contains('hidden')) {
+            // Sites view not visible yet, wait a bit more
+            if (attempts < maxAttempts) {
+                setTimeout(tryScroll, 250);
             }
-        };
+            return;
+        }
         
-        // Start trying after sites are rendered
-        setTimeout(tryScroll, 150);
-    }, 10);
+        // Check if sites list container exists
+        const sitesList = document.getElementById('sitesList');
+        if (!sitesList) {
+            if (attempts < maxAttempts) {
+                setTimeout(tryScroll, 250);
+            } else {
+                console.warn('⚠️ sitesList container not found after max attempts');
+            }
+            return;
+        }
+        
+        // Check if sites are actually rendered (not just loading message)
+        const sitesListContent = sitesList.innerHTML.trim();
+        const isStillLoading = sitesListContent === '<div class="col-12"><p class="text-center text-muted my-5">Loading sites...</p></div>' || 
+                               sitesListContent === '' ||
+                               sitesListContent.includes('Loading sites');
+        
+        if (isStillLoading && attempts < maxAttempts) {
+            // Sites not rendered yet, wait longer
+            setTimeout(tryScroll, 300);
+            return;
+        }
+        
+        // Look for the alphabetical section marker
+        const sectionMarker = document.getElementById(`section-${letter}`);
+        
+        if (sectionMarker) {
+            console.log(`✅ Found section marker for letter ${letter}, scrolling...`);
+            // Use requestAnimationFrame for smooth scrolling
+            // Add a small delay to ensure scrollToTop from showSites() has completed
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    console.log(`✅ Successfully scrolled to section ${letter} for site: ${site.name}`);
+                }, 200);
+            });
+        } else {
+            // Section marker not found yet
+            if (attempts < maxAttempts) {
+                // Sites are rendered but section marker not found - might need to wait for renderSites to complete
+                setTimeout(tryScroll, 150);
+            } else {
+                console.warn(`⚠️ Section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
+                // Try to scroll to top of sites list as fallback
+                if (sitesList) {
+                    sitesList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+    };
+    
+    // Start trying after a longer delay to allow showSites() and scrollToTop() to complete
+    // showSites() has a setTimeout of 10ms, so we wait longer to ensure everything is ready
+    setTimeout(tryScroll, 500);
 }
