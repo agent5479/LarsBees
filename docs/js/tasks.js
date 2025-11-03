@@ -150,23 +150,23 @@ window.renderTasksList = function(filterCategory = 'All') {
                     </thead>
                     <tbody>
                         ${sortedTasks.map(task => `
-                            <tr>
-                                <td>${task.name}</td>
-                                <td><span class="badge bg-primary">${task.category}</span></td>
-                                <td>
-                                    ${task.common 
-                                        ? '<span class="badge bg-success">Quick List</span>' 
-                                        : '<span class="badge bg-secondary">Full List</span>'}
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="editTask('${task.id}')" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')" title="Delete">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td>${task.name}</td>
+                                    <td><span class="badge bg-primary">${task.category}</span></td>
+                                    <td>
+                                        ${task.common 
+                                            ? '<span class="badge bg-success">Quick List</span>' 
+                                            : '<span class="badge bg-secondary">Full List</span>'}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${typeof task.id === 'string' ? `'${task.id}'` : task.id})" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${typeof task.id === 'string' ? `'${task.id}'` : task.id})" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
                         `).join('')}
                     </tbody>
                 </table>
@@ -210,10 +210,10 @@ window.renderTasksList = function(filterCategory = 'All') {
                                             : '<span class="badge bg-secondary">Full List</span>'}
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-primary" onclick="editTask('${task.id}')" title="Edit">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editTask(${typeof task.id === 'string' ? `'${task.id}'` : task.id})" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')" title="Delete">
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${typeof task.id === 'string' ? `'${task.id}'` : task.id})" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
@@ -230,7 +230,12 @@ window.renderTasksList = function(filterCategory = 'All') {
 };
 
 // Add new task
-function handleAddTask() {
+function handleAddTask(e) {
+    // Prevent form submission if called from form event
+    if (e && e.preventDefault) {
+        e.preventDefault();
+    }
+    
     const categorySelect = document.getElementById('newTaskCategory').value;
     const categoryCustom = document.getElementById('newTaskCategoryCustom').value.trim();
     const category = categoryCustom || categorySelect;
@@ -239,16 +244,21 @@ function handleAddTask() {
     
     if (!category) {
         beeMarshallAlert('Please select or enter a category.', 'warning');
-        return;
+        return false;
     }
     
     if (!name) {
         beeMarshallAlert('Please enter a task name.', 'warning');
-        return;
+        return false;
     }
     
     // Generate new ID (max existing ID + 1)
-    const maxId = tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) : 0;
+    const tasksToUse = typeof tasks !== 'undefined' ? tasks : [];
+    const maxId = tasksToUse.length > 0 ? Math.max(...tasksToUse.map(t => {
+        // Handle both numeric and string IDs
+        const id = typeof t.id === 'string' ? parseInt(t.id.replace('task_', '')) || 0 : t.id;
+        return id;
+    })) : 0;
     const newId = maxId + 1;
     
     const newTask = {
@@ -260,9 +270,18 @@ function handleAddTask() {
         createdBy: currentUser.username
     };
     
+    // Use tenant-specific path for data isolation
+    const tasksPath = currentTenantId ? `tenants/${currentTenantId}/tasks` : 'tasks';
+    
     // Save to Firebase
-    database.ref(`tasks/${newId}`).set(newTask).then(() => {
+    database.ref(`${tasksPath}/${newId}`).set(newTask).then(() => {
         beeMarshallAlert(`✅ Task "${name}" added successfully!`, 'success');
+        
+        // Reset form
+        const form = document.getElementById('addTaskForm');
+        if (form) {
+            form.reset();
+        }
         
         // Close modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('addTaskModal'));
@@ -271,10 +290,14 @@ function handleAddTask() {
         }
         
         // Tasks will be reloaded automatically from Firebase listener
+        return false;
     }).catch(error => {
         console.error('Error adding task:', error);
         beeMarshallAlert('❌ Error adding task. Please try again.', 'error');
+        return false;
     });
+    
+    return false;
 }
 
 function editTask(taskId) {
@@ -293,7 +316,13 @@ function editTask(taskId) {
     console.log('🔧 Available tasks:', tasksToUse.length);
     console.log('🔧 Task IDs:', tasksToUse.map(t => t.id));
     
-    const task = tasksToUse.find(t => t.id === taskId);
+    // Handle both string and numeric task IDs
+    const taskIdNum = typeof taskId === 'string' ? parseInt(taskId) : taskId;
+    const task = tasksToUse.find(t => {
+        const tId = typeof t.id === 'string' ? parseInt(t.id.replace('task_', '')) || t.id : t.id;
+        return tId === taskId || tId === taskIdNum || t.id === taskId;
+    });
+    
     if (!task) {
         console.log('❌ Task not found with ID:', taskId);
         beeMarshallAlert('Task not found. Please refresh the page and try again.', 'error');
@@ -313,7 +342,7 @@ function editTask(taskId) {
                     </div>
                     <div class="modal-body">
                         <form id="editTaskForm">
-                            <input type="hidden" id="editTaskId" value="${taskId}">
+                            <input type="hidden" id="editTaskId" value="${task.id}">
                             <div class="mb-3">
                                 <label for="editTaskName" class="form-label">Task Name *</label>
                                 <input type="text" class="form-control" id="editTaskName" value="${task.name}" required>
@@ -353,7 +382,7 @@ function editTask(taskId) {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="handleEditTask()">Update Task</button>
+                        <button type="submit" class="btn btn-primary" form="editTaskForm">Update Task</button>
                     </div>
                 </div>
             </div>
@@ -373,14 +402,37 @@ function editTask(taskId) {
     const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
     modal.show();
     
+    // Add form submit event listener
+    const editForm = document.getElementById('editTaskForm');
+    if (editForm) {
+        // Remove any existing listeners to avoid duplicates
+        const newEditForm = editForm.cloneNode(true);
+        editForm.parentNode.replaceChild(newEditForm, editForm);
+        newEditForm.addEventListener('submit', handleEditTask);
+    }
+    
     // Clean up modal when hidden
     document.getElementById('editTaskModal').addEventListener('hidden.bs.modal', function() {
         this.remove();
     });
 }
 
-function handleEditTask() {
-    const taskId = parseInt(document.getElementById('editTaskId').value);
+function handleEditTask(e) {
+    // Prevent form submission if called from form event
+    if (e && e.preventDefault) {
+        e.preventDefault();
+    }
+    
+    const taskIdInput = document.getElementById('editTaskId');
+    if (!taskIdInput) {
+        beeMarshallAlert('Task ID not found. Please try again.', 'error');
+        return false;
+    }
+    
+    // Handle both string and numeric task IDs
+    const taskIdValue = taskIdInput.value;
+    const taskId = isNaN(taskIdValue) ? taskIdValue : parseInt(taskIdValue);
+    
     const categorySelect = document.getElementById('editTaskCategory').value;
     const categoryCustom = document.getElementById('editTaskCategoryCustom').value.trim();
     const category = categoryCustom || categorySelect;
@@ -389,12 +441,12 @@ function handleEditTask() {
     
     if (!category) {
         beeMarshallAlert('Please select or enter a category.', 'warning');
-        return;
+        return false;
     }
     
     if (!name) {
         beeMarshallAlert('Please enter a task name.', 'warning');
-        return;
+        return false;
     }
     
     const updates = {
@@ -405,8 +457,11 @@ function handleEditTask() {
         updatedBy: currentUser.username
     };
     
+    // Use tenant-specific path for data isolation
+    const tasksPath = currentTenantId ? `tenants/${currentTenantId}/tasks` : 'tasks';
+    
     // Update in Firebase
-    database.ref(`tasks/${taskId}`).update(updates).then(() => {
+    database.ref(`${tasksPath}/${taskId}`).update(updates).then(() => {
         beeMarshallAlert('✅ Task updated successfully!', 'success');
         
         // Close modal
@@ -416,10 +471,14 @@ function handleEditTask() {
         }
         
         // Tasks will be reloaded automatically from Firebase listener
+        return false;
     }).catch(error => {
         console.error('Error updating task:', error);
         beeMarshallAlert('❌ Error updating task. Please try again.', 'error');
+        return false;
     });
+    
+    return false;
 }
 
 function deleteTask(taskId) {
@@ -433,8 +492,18 @@ function deleteTask(taskId) {
     }
     
     const tasksToUse = typeof tasks !== 'undefined' ? tasks : (typeof COMPREHENSIVE_TASKS !== 'undefined' ? COMPREHENSIVE_TASKS : []);
-    const task = tasksToUse.find(t => t.id === taskId);
-    if (!task) return;
+    
+    // Handle both string and numeric task IDs
+    const taskIdNum = typeof taskId === 'string' ? parseInt(taskId) : taskId;
+    const task = tasksToUse.find(t => {
+        const tId = typeof t.id === 'string' ? parseInt(t.id.replace('task_', '')) || t.id : t.id;
+        return tId === taskId || tId === taskIdNum || t.id === taskId;
+    });
+    
+    if (!task) {
+        beeMarshallAlert('Task not found. Please refresh the page and try again.', 'error');
+        return;
+    }
     
     // Check how many actions use this task
     const affectedActions = actions.filter(a => a.task === task.name || a.taskId === taskId);
@@ -463,8 +532,12 @@ function deleteTask(taskId) {
     const confirmDelete = confirm(warningMessage);
     
     if (confirmDelete) {
+        // Use tenant-specific path for data isolation
+        const tasksPath = currentTenantId ? `tenants/${currentTenantId}/tasks` : 'tasks';
+        const deletedTasksPath = currentTenantId ? `tenants/${currentTenantId}/deletedTasks` : 'deletedTasks';
+        
         // Archive the task name before deleting for reference
-        database.ref(`deletedTasks/${taskId}`).set({
+        database.ref(`${deletedTasksPath}/${taskId}`).set({
             id: taskId,
             name: task.name,
             category: task.category,
@@ -472,7 +545,7 @@ function deleteTask(taskId) {
             deletedBy: currentUser.username
         });
         
-        database.ref(`tasks/${taskId}`).remove().then(() => {
+        database.ref(`${tasksPath}/${taskId}`).remove().then(() => {
             if (totalAffected > 0) {
                 alert(`✅ Task deleted.\n\n${totalAffected} historical record(s) will now show as "[Deleted: ${task.name}]"`);
             } else {
@@ -548,7 +621,7 @@ function showAddTaskForm() {
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="handleAddTask()">Add Task</button>
+                        <button type="submit" class="btn btn-primary" form="addTaskForm">Add Task</button>
                     </div>
                 </div>
             </div>

@@ -223,7 +223,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addEmployeeForm')?.addEventListener('submit', handleAddEmployee);
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
     document.getElementById('addTaskForm')?.addEventListener('submit', handleAddTask);
+    // Edit task form will be dynamically created, so we'll add listener when modal is shown
     document.getElementById('addRequirementForm')?.addEventListener('submit', handleAddRequirement);
+    
+    // Setup edit task form listener when modal is created
+    document.addEventListener('DOMContentLoaded', function() {
+        // This will be handled dynamically when editTask modal is created
+    });
     document.getElementById('actionDate').valueAsDate = new Date();
     
     // Enhanced sticky navbar on scroll
