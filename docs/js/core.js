@@ -894,29 +894,28 @@ function checkWelcomeDataLoaded() {
     
     welcomeDataCheckAttempts++;
     
-    // Check if sites data is loaded
-    // Accept either: sites count > 0 OR sites array exists and has been initialized (even if empty)
+    // Check if sites data is loaded - must have sites count > 0
     const sitesExists = window.sites !== undefined && window.sites !== null;
     const sitesCount = Array.isArray(window.sites) ? window.sites.length : 0;
-    const dataLoaded = sitesExists && (sitesCount > 0 || welcomeDataCheckAttempts >= MAX_WELCOME_DATA_CHECK_ATTEMPTS);
+    const dataLoaded = sitesExists && sitesCount > 0;
     
     console.log(`🔍 Welcome data check attempt ${welcomeDataCheckAttempts}: sites exists=${sitesExists}, count=${sitesCount}, loaded=${dataLoaded}`);
     
     if (dataLoaded) {
-        // Data is loaded (or timeout reached), update button to green "Okay"
+        // Data is loaded (sites count > 0), update button to green "Okay"
         updateWelcomeButton(true);
         updateWelcomeSyncStatus('synchronised');
-        console.log('✅ Welcome popup: Data loaded, button enabled');
+        console.log('✅ Welcome popup: Data loaded (sites count > 0), button enabled');
     } else if (welcomeDataCheckAttempts < MAX_WELCOME_DATA_CHECK_ATTEMPTS) {
-        // Still loading, check again after a delay
+        // Still loading or no sites yet, check again after a delay
         setTimeout(() => {
             checkWelcomeDataLoaded();
         }, 500);
     } else {
-        // Max attempts reached, enable button anyway
-        console.log('⚠️ Welcome popup: Max check attempts reached, enabling button');
-        updateWelcomeButton(true);
-        updateWelcomeSyncStatus('synchronised');
+        // Max attempts reached but no sites loaded - keep button orange
+        console.log('⚠️ Welcome popup: Max check attempts reached but no sites loaded (count=0), keeping button orange');
+        updateWelcomeButton(false);
+        updateWelcomeSyncStatus('synchronising');
     }
 }
 
@@ -954,15 +953,19 @@ function updateWelcomeStats() {
         syncTimeElement.textContent = now.toLocaleTimeString();
     }
     
-    // Check if data is loaded and update status
+    // Check if data is loaded and update status - require sites count > 0
     const sitesExists = window.sites !== undefined && window.sites !== null;
     const sitesCount = Array.isArray(window.sites) ? window.sites.length : 0;
     console.log(`🔍 updateWelcomeStats: sites exists=${sitesExists}, count=${sitesCount}`);
     
-    if (sitesExists) {
-        // Sites array exists (even if empty), consider data loaded
+    if (sitesExists && sitesCount > 0) {
+        // Sites array exists and has data (count > 0), consider data loaded
         updateWelcomeSyncStatus('synchronised');
         updateWelcomeButton(true);
+    } else {
+        // No sites or sites count is 0, keep synchronising status
+        updateWelcomeSyncStatus('synchronising');
+        updateWelcomeButton(false);
     }
     
     console.log('✅ Welcome popup ready - sync timestamp updated');
@@ -2196,6 +2199,12 @@ function loadDataFromFirebase() {
                     if (sitesCount > 0) {
                         updateWelcomeSyncStatus('synchronised');
                         updateWelcomeButton(true);
+                        console.log(`✅ Welcome popup updated: ${sitesCount} sites loaded`);
+                    } else {
+                        // Keep synchronising if no sites
+                        updateWelcomeSyncStatus('synchronising');
+                        updateWelcomeButton(false);
+                        console.log(`🟠 Welcome popup: No sites loaded yet (count=${sitesCount})`);
                     }
                 }
             }, 100);
