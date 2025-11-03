@@ -177,6 +177,97 @@ let firebaseListeners = {
     employees: null
 };
 
+// Firebase operation throttling - prevent fetches faster than 300ms
+let lastFirebaseOperationTime = 0;
+const FIREBASE_THROTTLE_MS = 300;
+let firebaseOperationQueue = [];
+let isProcessingQueue = false;
+
+function processFirebaseQueue() {
+    if (isProcessingQueue || firebaseOperationQueue.length === 0) {
+        return;
+    }
+    
+    isProcessingQueue = true;
+    const operation = firebaseOperationQueue.shift();
+    
+    const now = Date.now();
+    const timeSinceLastOp = now - lastFirebaseOperationTime;
+    
+    if (timeSinceLastOp >= FIREBASE_THROTTLE_MS) {
+        // Enough time has passed, execute immediately
+        lastFirebaseOperationTime = now;
+        operation.execute();
+        operation.resolve();
+        isProcessingQueue = false;
+        // Process next in queue
+        if (firebaseOperationQueue.length > 0) {
+            processFirebaseQueue();
+        }
+    } else {
+        // Need to wait
+        const delay = FIREBASE_THROTTLE_MS - timeSinceLastOp;
+        console.log(`⏱️ Throttling Firebase operation for ${operation.path}: waiting ${delay}ms`);
+        
+        setTimeout(() => {
+            lastFirebaseOperationTime = Date.now();
+            operation.execute();
+            isProcessingQueue = false;
+            // Process next in queue
+            if (firebaseOperationQueue.length > 0) {
+                processFirebaseQueue();
+            }
+        }, delay);
+    }
+}
+
+// Wrap Firebase database ref to throttle .once() operations
+function setupFirebaseThrottling() {
+    if (!window.database || !window.database.ref) {
+        console.warn('⚠️ Firebase database not available for throttling setup');
+        return;
+    }
+    
+    // Store original ref function
+    const originalRef = window.database.ref.bind(window.database);
+    
+    // Override ref to wrap .once() calls
+    window.database.ref = function(path) {
+        const ref = originalRef(path);
+        
+        // Store original once method if not already wrapped
+        if (!ref._originalOnce) {
+            ref._originalOnce = ref.once.bind(ref);
+            
+            // Override once method with throttling
+            ref.once = function(eventType, callback, errorCallback) {
+                // Only throttle 'value' events (read operations)
+                if (eventType === 'value') {
+                    return new Promise((resolve, reject) => {
+                        const operation = {
+                            path: path,
+                            execute: () => {
+                                const promise = ref._originalOnce(eventType, callback, errorCallback);
+                                promise.then(resolve).catch(reject);
+                            }
+                        };
+                        
+                        firebaseOperationQueue.push(operation);
+                        processFirebaseQueue();
+                    });
+                } else {
+                    // Non-value events don't need throttling
+                    return ref._originalOnce(eventType, callback, errorCallback);
+                }
+            };
+        }
+        
+        return ref;
+    };
+    
+    console.log('✅ Firebase throttling enabled (300ms minimum between reads)');
+}
+
 // Seasonal requirements
 let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category, frequency}
 
@@ -190,6 +281,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize database reference
     initializeDatabase();
+    
+    // Setup Firebase throttling after database is initialized
+    setTimeout(() => {
+        setupFirebaseThrottling();
+    }, 100);
     
     // Update version display
     updateVersionDisplay();
