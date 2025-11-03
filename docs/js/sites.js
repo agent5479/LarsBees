@@ -39,8 +39,41 @@ function renderSites() {
         return nameA.localeCompare(nameB);
     });
     
-    const html = sortedSites.length > 0
-        ? sortedSites.map(c => {
+    // Group sites by first letter for alphabetical markers
+    const sitesByLetter = {};
+    sortedSites.forEach(site => {
+        const firstLetter = (site.name || '').charAt(0).toUpperCase();
+        const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
+        if (!sitesByLetter[letter]) {
+            sitesByLetter[letter] = [];
+        }
+        sitesByLetter[letter].push(site);
+    });
+    
+    // Generate HTML with alphabetical sections
+    let html = '';
+    if (sortedSites.length > 0) {
+        // Sort letters alphabetically (# for non-alphabetic goes last)
+        const sortedLetters = Object.keys(sitesByLetter).sort((a, b) => {
+            if (a === '#') return 1;
+            if (b === '#') return -1;
+            return a.localeCompare(b);
+        });
+        
+        sortedLetters.forEach(letter => {
+            // Add alphabetical section marker
+            html += `
+                <div class="col-12 mb-3 mt-4" id="section-${letter}">
+                    <div class="alphabet-marker" style="background-color: #f8f9fa; padding: 10px 15px; border-left: 4px solid #007bff; border-radius: 4px;">
+                        <h4 class="mb-0" style="color: #007bff; font-weight: bold;">
+                            <i class="bi bi-bookmark-fill"></i> ${letter}
+                        </h4>
+                    </div>
+                </div>
+            `;
+            
+            // Add sites for this letter
+            sitesByLetter[letter].forEach(c => {
             // Archive button for admins only (shown on active sites)
             const archiveBtn = (isAdmin && !c.archived) ? `
                 <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
@@ -267,8 +300,11 @@ function renderSites() {
                     </div>
                 </div>
             `;
-        }).join('')
-        : '<div class="col-12"><p class="text-center text-muted my-5">' + (showArchivedSites ? 'No archived sites.' : 'No sites found.') + '</p></div>';
+            });
+        });
+    } else {
+        html = '<div class="col-12"><p class="text-center text-muted my-5">' + (showArchivedSites ? 'No archived sites.' : 'No sites found.') + '</p></div>';
+    }
     
     document.getElementById('sitesList').innerHTML = html;
     
@@ -2516,13 +2552,40 @@ function scrollToSiteCard(siteId) {
             const siteCard = document.querySelector(`[data-site-id="${siteId}"]`);
             
             if (siteCard) {
-                // Card found, scroll to it with smooth behavior
-                // Use requestAnimationFrame to ensure DOM is fully rendered
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 50);
-                });
+                // Find the site data to get its name
+                const site = window.sites?.find(s => s.id === siteId);
+                
+                if (site && site.name) {
+                    // Get first letter of site name
+                    const firstLetter = site.name.charAt(0).toUpperCase();
+                    const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
+                    const sectionMarker = document.getElementById(`section-${letter}`);
+                    
+                    // First scroll to the alphabetical section marker
+                    if (sectionMarker) {
+                        requestAnimationFrame(() => {
+                            sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Then scroll to the specific card after a short delay
+                            setTimeout(() => {
+                                siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                        });
+                    } else {
+                        // No section marker found, just scroll to card
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 50);
+                        });
+                    }
+                } else {
+                    // Site data not found, just scroll to card
+                    requestAnimationFrame(() => {
+                        setTimeout(() => {
+                            siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 50);
+                    });
+                }
             } else if (attempts < maxAttempts) {
                 // Card not found yet, try again after a short delay
                 setTimeout(tryScroll, 100);
