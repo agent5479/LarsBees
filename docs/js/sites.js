@@ -74,232 +74,232 @@ function renderSites() {
             
             // Add sites for this letter
             sitesByLetter[letter].forEach(c => {
-            // Archive button for admins only (shown on active sites)
-            const archiveBtn = (isAdmin && !c.archived) ? `
-                <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
-                    <i class="bi bi-archive"></i> Archive
-                </button>
-            ` : '';
-            
-            // Delete button only for admins on archived sites
-            const deleteBtn = (isAdmin && c.archived) ? `
-                <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteSite(${c.id})">
-                    <i class="bi bi-trash"></i> Delete
-                </button>
-            ` : '';
-            
-            // Unarchive button for admins on archived sites
-            const unarchiveBtn = (isAdmin && c.archived) ? `
-                <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); unarchiveSite(${c.id})">
-                    <i class="bi bi-arrow-counterclockwise"></i> Unarchive
-                </button>
-            ` : '';
-            
-            const functionalClassification = c.functionalClassification || 'production';
-            const typeInfo = SITE_TYPES[functionalClassification] || SITE_TYPES['custom'];
-            
-            // Add archived indicator
-            const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
-            
-            // Get compact landowner/contact info for one-line display (avoid bloat)
-            const landownerName = c.landownerName || '';
-            const landownerPhone = c.landownerPhone || '';
-            const landownerAddress = c.landownerAddress || '';
-            const contactLine = [landownerName, landownerPhone].filter(Boolean).join(' • ');
-            const addressLine = landownerAddress;
-            const landownerDisplay = [contactLine, addressLine].filter(Boolean).join(', ');
-            const landownerTitle = [contactLine, addressLine].filter(Boolean).join(' — ');
-            
-            // Check if contact before visit is required (handle both boolean and string values)
-            const needsContact = c.contactBeforeVisit === true || c.contactBeforeVisit === 'true' || c.contactBeforeVisit === 1 || c.contactBeforeVisit === '1';
-            
-            // Get hive strength breakdown for inline editing
-            const hiveStrong = c.hiveStrength?.strong || 0;
-            const hiveMedium = c.hiveStrength?.medium || 0;
-            const hiveWeak = c.hiveStrength?.weak || 0;
-            const hiveNUC = c.hiveStrength?.nuc || 0;
-            const hiveDead = c.hiveStrength?.dead || 0;
-            
-            // Get hive stacks for clickable cards
-            const hiveDoubles = c.hiveStacks?.doubles || 0;
-            const hiveTopSplits = c.hiveStacks?.topSplits || 0;
-            const hiveSingles = c.hiveStacks?.singles || 0;
-            const hiveNUCs = c.hiveStacks?.nucs || 0;
-            const hiveEmpty = c.hiveStacks?.empty || 0;
-            
-            // Calculate total hive count from hive box cards (excluding empty platforms)
-            const totalHiveCount = hiveDoubles + hiveTopSplits + hiveSingles + hiveNUCs;
-            
-            // Determine classification labels (compact for summary card)
-            const functionalClassificationLabel = c.functionalClassification || 'Not specified';
-            const seasonalDisplay = (() => {
-                const seasonalValue = c.seasonalClassification || c.seasonal_classification || '';
-                if (!seasonalValue) return '';
-                const seasonalMap = {
-                    'summer': 'Summer Site',
-                    'winter': 'Winter Site',
-                    'all-year': 'All Year Round',
-                    'summer-only': 'Summer Only',
-                    'winter-only': 'Winter Only',
-                    'All Year Round': 'All Year Round',
-                    'Summer Site': 'Summer Site',
-                    'Winter Site': 'Winter Site'
-                };
-                return seasonalMap[seasonalValue] || seasonalValue;
-            })();
-            
-            // Seasonal badge styling
-            const seasonalBadge = (() => {
-                if (!seasonalDisplay) return '';
-                const seasonalColorMap = {
-                    'Summer Site': '#ffc107',        // yellow
-                    'Winter Site': '#0dcaf0',        // ice-blue
-                    'All Year Round': '#20c997',     // teal/greenish
-                    'Summer Only': '#ffcd39',
-                    'Winter Only': '#39c0ed'
-                };
-                const bg = seasonalColorMap[seasonalDisplay] || '#6c757d';
-                return `<span class="badge ms-2" style="background-color: ${bg}; color: #111;">${seasonalDisplay}</span>`;
-            })();
+                // Archive button for admins only (shown on active sites)
+                const archiveBtn = (isAdmin && !c.archived) ? `
+                    <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
+                        <i class="bi bi-archive"></i> Archive
+                    </button>
+                ` : '';
+                
+                // Delete button only for admins on archived sites
+                const deleteBtn = (isAdmin && c.archived) ? `
+                    <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteSite(${c.id})">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                ` : '';
+                
+                // Unarchive button for admins on archived sites
+                const unarchiveBtn = (isAdmin && c.archived) ? `
+                    <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); unarchiveSite(${c.id})">
+                        <i class="bi bi-arrow-counterclockwise"></i> Unarchive
+                    </button>
+                ` : '';
+                
+                const functionalClassification = c.functionalClassification || 'production';
+                const typeInfo = SITE_TYPES[functionalClassification] || SITE_TYPES['custom'];
+                
+                // Add archived indicator
+                const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
+                
+                // Get compact landowner/contact info for one-line display (avoid bloat)
+                const landownerName = c.landownerName || '';
+                const landownerPhone = c.landownerPhone || '';
+                const landownerAddress = c.landownerAddress || '';
+                const contactLine = [landownerName, landownerPhone].filter(Boolean).join(' • ');
+                const addressLine = landownerAddress;
+                const landownerDisplay = [contactLine, addressLine].filter(Boolean).join(', ');
+                const landownerTitle = [contactLine, addressLine].filter(Boolean).join(' — ');
+                
+                // Check if contact before visit is required (handle both boolean and string values)
+                const needsContact = c.contactBeforeVisit === true || c.contactBeforeVisit === 'true' || c.contactBeforeVisit === 1 || c.contactBeforeVisit === '1';
+                
+                // Get hive strength breakdown for inline editing
+                const hiveStrong = c.hiveStrength?.strong || 0;
+                const hiveMedium = c.hiveStrength?.medium || 0;
+                const hiveWeak = c.hiveStrength?.weak || 0;
+                const hiveNUC = c.hiveStrength?.nuc || 0;
+                const hiveDead = c.hiveStrength?.dead || 0;
+                
+                // Get hive stacks for clickable cards
+                const hiveDoubles = c.hiveStacks?.doubles || 0;
+                const hiveTopSplits = c.hiveStacks?.topSplits || 0;
+                const hiveSingles = c.hiveStacks?.singles || 0;
+                const hiveNUCs = c.hiveStacks?.nucs || 0;
+                const hiveEmpty = c.hiveStacks?.empty || 0;
+                
+                // Calculate total hive count from hive box cards (excluding empty platforms)
+                const totalHiveCount = hiveDoubles + hiveTopSplits + hiveSingles + hiveNUCs;
+                
+                // Determine classification labels (compact for summary card)
+                const functionalClassificationLabel = c.functionalClassification || 'Not specified';
+                const seasonalDisplay = (() => {
+                    const seasonalValue = c.seasonalClassification || c.seasonal_classification || '';
+                    if (!seasonalValue) return '';
+                    const seasonalMap = {
+                        'summer': 'Summer Site',
+                        'winter': 'Winter Site',
+                        'all-year': 'All Year Round',
+                        'summer-only': 'Summer Only',
+                        'winter-only': 'Winter Only',
+                        'All Year Round': 'All Year Round',
+                        'Summer Site': 'Summer Site',
+                        'Winter Site': 'Winter Site'
+                    };
+                    return seasonalMap[seasonalValue] || seasonalValue;
+                })();
+                
+                // Seasonal badge styling
+                const seasonalBadge = (() => {
+                    if (!seasonalDisplay) return '';
+                    const seasonalColorMap = {
+                        'Summer Site': '#ffc107',        // yellow
+                        'Winter Site': '#0dcaf0',        // ice-blue
+                        'All Year Round': '#20c997',     // teal/greenish
+                        'Summer Only': '#ffcd39',
+                        'Winter Only': '#39c0ed'
+                    };
+                    const bg = seasonalColorMap[seasonalDisplay] || '#6c757d';
+                    return `<span class="badge ms-2" style="background-color: ${bg}; color: #111;">${seasonalDisplay}</span>`;
+                })();
 
-            return `
-                <div class="col-md-6 col-lg-4 mb-3">
-                    <div class="card site-card h-100" data-site-id="${c.id}" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="card-title">
-                                    <i class="bi ${typeInfo.icon}" style="color: ${typeInfo.color}"></i> 
-                                    <strong>${c.name}</strong>
-                                    ${archivedBadge}
-                                </h5>
-                                <div>
-                                    <span class="badge" style="background-color: ${typeInfo.color}; color: white;">
-                                        ${typeInfo.name}
-                                    </span>
-                                    ${seasonalBadge}
-                                    ${needsContact ? `<span class="badge bg-warning text-dark ms-2" style="font-weight: bold;" title="Contact required before visit"><i class="bi bi-telephone-fill"></i> Contact Required</span>` : ''}
-                                    <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-size: 1.25rem; font-weight: bold;">
-                                        ${totalHiveCount}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <!-- Landowner contact (single truncated line: name/phone, address) -->
-                            <div class="mb-2" title="${landownerTitle}">
-                                <i class="bi bi-person-fill text-muted me-1"></i>
-                                <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
-                            </div>
-                            
-                            <!-- Description (truncated if too long) -->
-                            ${c.description ? `<div class="mb-2" title="${c.description}">
-                                <i class="bi bi-card-text text-muted me-1"></i>
-                                <strong>Description:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${c.description.length > 100 ? c.description.substring(0, 100) + '...' : c.description}</span>
-                            </div>` : ''}
-                            
-                            <!-- Hive Count Summary (Editable inline) -->
-                            <div class="mb-2">
-                                <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
-                                <div class="d-flex flex-wrap gap-2 mt-1">
-                                    <div class="badge bg-success d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Strong', ${hiveStrong})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
-                                        <i class="bi bi-hexagon-fill me-1"></i>
-                                        <span>Strong: <strong id="hiveStrong_${c.id}">${hiveStrong}</strong></span>
-                                    </div>
-                                    <div class="badge bg-warning text-dark d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Medium', ${hiveMedium})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
-                                        <i class="bi bi-hexagon me-1"></i>
-                                        <span>Med: <strong id="hiveMedium_${c.id}">${hiveMedium}</strong></span>
-                                    </div>
-                                    <div class="badge bg-danger d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Weak', ${hiveWeak})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
-                                        <i class="bi bi-hexagon me-1"></i>
-                                        <span>Weak: <strong id="hiveWeak_${c.id}">${hiveWeak}</strong></span>
-                                    </div>
-                                    <div class="badge bg-info d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'NUC', ${hiveNUC})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
-                                        <i class="bi bi-hexagon-half me-1"></i>
-                                        <span>NUC: <strong id="hiveNUC_${c.id}">${hiveNUC}</strong></span>
-                                    </div>
-                                    <div class="badge bg-secondary d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Dead', ${hiveDead})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
-                                        <i class="bi bi-hexagon me-1"></i>
-                                        <span>Dead: <strong id="hiveDead_${c.id}">${hiveDead}</strong></span>
+                html += `
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card site-card h-100" data-site-id="${c.id}" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title">
+                                        <i class="bi ${typeInfo.icon}" style="color: ${typeInfo.color}"></i> 
+                                        <strong>${c.name}</strong>
+                                        ${archivedBadge}
+                                    </h5>
+                                    <div>
+                                        <span class="badge" style="background-color: ${typeInfo.color}; color: white;">
+                                            ${typeInfo.name}
+                                        </span>
+                                        ${seasonalBadge}
+                                        ${needsContact ? `<span class="badge bg-warning text-dark ms-2" style="font-weight: bold;" title="Contact required before visit"><i class="bi bi-telephone-fill"></i> Contact Required</span>` : ''}
+                                        <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-size: 1.25rem; font-weight: bold;">
+                                            ${totalHiveCount}
+                                        </span>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Hive Boxes (Clickable mini cards) - Order: doubles, singles, nucs, top splits, empty -->
-                            <div class="mb-2">
-                                <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
-                                <div class="d-flex flex-wrap gap-1 gap-md-2 mt-1 hive-boxes-container">
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e3f2fd; border: 2px solid #2196f3;">
-                                        <div class="card-body p-1 p-md-2 text-center">
-                                            <i class="bi bi-stack hive-box-icon" style="font-size: 1rem; color: #1976d2;"></i>
-                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #1976d2;">Doubles</div>
-                                            <div class="hive-box-number mb-0" id="boxDoubles_${c.id}" style="font-size: 1rem; color: #1976d2; font-weight: 600;">${hiveDoubles}</div>
+                                
+                                <!-- Landowner contact (single truncated line: name/phone, address) -->
+                                <div class="mb-2" title="${landownerTitle}">
+                                    <i class="bi bi-person-fill text-muted me-1"></i>
+                                    <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
+                                </div>
+                                
+                                <!-- Description (truncated if too long) -->
+                                ${c.description ? `<div class="mb-2" title="${c.description}">
+                                    <i class="bi bi-card-text text-muted me-1"></i>
+                                    <strong>Description:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${c.description.length > 100 ? c.description.substring(0, 100) + '...' : c.description}</span>
+                                </div>` : ''}
+                                
+                                <!-- Hive Count Summary (Editable inline) -->
+                                <div class="mb-2">
+                                    <strong><i class="bi bi-hexagon-fill"></i> Hive Strength:</strong>
+                                    <div class="d-flex flex-wrap gap-2 mt-1">
+                                        <div class="badge bg-success d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Strong', ${hiveStrong})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
+                                            <i class="bi bi-hexagon-fill me-1"></i>
+                                            <span>Strong: <strong id="hiveStrong_${c.id}">${hiveStrong}</strong></span>
                                         </div>
-                                    </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e8f5e8; border: 2px solid #4caf50;">
-                                        <div class="card-body p-1 p-md-2 text-center">
-                                            <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #388e3c;"></i>
-                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #388e3c;">Singles</div>
-                                            <div class="hive-box-number mb-0" id="boxSingles_${c.id}" style="font-size: 1rem; color: #388e3c; font-weight: 600;">${hiveSingles}</div>
+                                        <div class="badge bg-warning text-dark d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Medium', ${hiveMedium})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
+                                            <i class="bi bi-hexagon me-1"></i>
+                                            <span>Med: <strong id="hiveMedium_${c.id}">${hiveMedium}</strong></span>
                                         </div>
-                                    </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #fff3e0; border: 2px solid #ff9800;">
-                                        <div class="card-body p-1 p-md-2 text-center">
-                                            <i class="bi bi-circle hive-box-icon" style="font-size: 1rem; color: #f57c00;"></i>
-                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #f57c00;">NUCs</div>
-                                            <div class="hive-box-number mb-0" id="boxNucs_${c.id}" style="font-size: 1rem; color: #f57c00; font-weight: 600;">${hiveNUCs}</div>
+                                        <div class="badge bg-danger d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Weak', ${hiveWeak})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
+                                            <i class="bi bi-hexagon me-1"></i>
+                                            <span>Weak: <strong id="hiveWeak_${c.id}">${hiveWeak}</strong></span>
                                         </div>
-                                    </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
-                                        <div class="card-body p-1 p-md-2 text-center">
-                                            <i class="bi bi-layers-half hive-box-icon" style="font-size: 1rem; color: #7b1fa2;"></i>
-                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #7b1fa2;">Top-Splits</div>
-                                            <div class="hive-box-number mb-0" id="boxTopSplits_${c.id}" style="font-size: 1rem; color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
+                                        <div class="badge bg-info d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'NUC', ${hiveNUC})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
+                                            <i class="bi bi-hexagon-half me-1"></i>
+                                            <span>NUC: <strong id="hiveNUC_${c.id}">${hiveNUC}</strong></span>
                                         </div>
-                                    </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f5f5f5; border: 2px solid #9e9e9e;">
-                                        <div class="card-body p-1 p-md-2 text-center">
-                                            <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #616161;"></i>
-                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #616161;">Empty</div>
-                                            <div class="hive-box-number mb-0" id="boxEmpty_${c.id}" style="font-size: 1rem; color: #616161; font-weight: 600;">${hiveEmpty}</div>
+                                        <div class="badge bg-secondary d-flex align-items-center px-3 py-2 hive-strength-badge" onclick="quickEditHiveStrength(${c.id}, 'Dead', ${hiveDead})" style="cursor: pointer; font-size: 1rem; font-weight: 600; min-width: 80px; justify-content: center;">
+                                            <i class="bi bi-hexagon me-1"></i>
+                                            <span>Dead: <strong id="hiveDead_${c.id}">${hiveDead}</strong></span>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            
-                            <!-- Notes display and quick edit -->
-                            <div class="mb-2">
-                                ${c.notes ? `
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <div class="flex-grow-1">
-                                            <i class="bi bi-sticky-fill text-info me-1"></i>
-                                            <strong>Note:</strong> 
-                                            <span class="text-truncate d-inline-block" style="max-width: 70%;" title="${c.notes}">${c.notes.length > 50 ? c.notes.substring(0, 50) + '...' : c.notes}</span>
+                                
+                                <!-- Hive Boxes (Clickable mini cards) - Order: doubles, singles, nucs, top splits, empty -->
+                                <div class="mb-2">
+                                    <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
+                                    <div class="d-flex flex-wrap gap-1 gap-md-2 mt-1 hive-boxes-container">
+                                        <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'doubles', ${hiveDoubles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e3f2fd; border: 2px solid #2196f3;">
+                                            <div class="card-body p-1 p-md-2 text-center">
+                                                <i class="bi bi-stack hive-box-icon" style="font-size: 1rem; color: #1976d2;"></i>
+                                                <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #1976d2;">Doubles</div>
+                                                <div class="hive-box-number mb-0" id="boxDoubles_${c.id}" style="font-size: 1rem; color: #1976d2; font-weight: 600;">${hiveDoubles}</div>
+                                            </div>
                                         </div>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="quickEditSiteNote(${c.id})" title="Edit note">
-                                            <i class="bi bi-pencil"></i>
-                                        </button>
+                                        <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e8f5e8; border: 2px solid #4caf50;">
+                                            <div class="card-body p-1 p-md-2 text-center">
+                                                <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #388e3c;"></i>
+                                                <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #388e3c;">Singles</div>
+                                                <div class="hive-box-number mb-0" id="boxSingles_${c.id}" style="font-size: 1rem; color: #388e3c; font-weight: 600;">${hiveSingles}</div>
+                                            </div>
+                                        </div>
+                                        <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'nucs', ${hiveNUCs})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #fff3e0; border: 2px solid #ff9800;">
+                                            <div class="card-body p-1 p-md-2 text-center">
+                                                <i class="bi bi-circle hive-box-icon" style="font-size: 1rem; color: #f57c00;"></i>
+                                                <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #f57c00;">NUCs</div>
+                                                <div class="hive-box-number mb-0" id="boxNucs_${c.id}" style="font-size: 1rem; color: #f57c00; font-weight: 600;">${hiveNUCs}</div>
+                                            </div>
+                                        </div>
+                                        <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
+                                            <div class="card-body p-1 p-md-2 text-center">
+                                                <i class="bi bi-layers-half hive-box-icon" style="font-size: 1rem; color: #7b1fa2;"></i>
+                                                <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #7b1fa2;">Top-Splits</div>
+                                                <div class="hive-box-number mb-0" id="boxTopSplits_${c.id}" style="font-size: 1rem; color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
+                                            </div>
+                                        </div>
+                                        <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f5f5f5; border: 2px solid #9e9e9e;">
+                                            <div class="card-body p-1 p-md-2 text-center">
+                                                <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #616161;"></i>
+                                                <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #616161;">Empty</div>
+                                                <div class="hive-box-number mb-0" id="boxEmpty_${c.id}" style="font-size: 1rem; color: #616161; font-weight: 600;">${hiveEmpty}</div>
+                                            </div>
+                                        </div>
                                     </div>
-                                ` : `
-                                    <div class="d-flex align-items-center justify-content-between">
-                                        <span class="text-muted"><i class="bi bi-sticky text-muted me-1"></i> No notes</span>
-                                        <button class="btn btn-sm btn-outline-secondary" onclick="quickEditSiteNote(${c.id})" title="Add note">
-                                            <i class="bi bi-plus"></i> Add Note
-                                        </button>
-                                    </div>
-                                `}
+                                </div>
+                                
+                                <!-- Notes display and quick edit -->
+                                <div class="mb-2">
+                                    ${c.notes ? `
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div class="flex-grow-1">
+                                                <i class="bi bi-sticky-fill text-info me-1"></i>
+                                                <strong>Note:</strong> 
+                                                <span class="text-truncate d-inline-block" style="max-width: 70%;" title="${c.notes}">${c.notes.length > 50 ? c.notes.substring(0, 50) + '...' : c.notes}</span>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="quickEditSiteNote(${c.id})" title="Edit note">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                        </div>
+                                    ` : `
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span class="text-muted"><i class="bi bi-sticky text-muted me-1"></i> No notes</span>
+                                            <button class="btn btn-sm btn-outline-secondary" onclick="quickEditSiteNote(${c.id})" title="Add note">
+                                                <i class="bi bi-plus"></i> Add Note
+                                            </button>
+                                        </div>
+                                    `}
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-footer bg-light">
-                            ${isAdmin ? `<button class="btn btn-primary" onclick="editSite(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
-                            <button class="btn btn-sm btn-outline-info" onclick="viewSiteDetails(${c.id})">
-                                <i class="bi bi-eye"></i> View
-                            </button>
-                            ${archiveBtn}
-                            ${unarchiveBtn}
-                            ${deleteBtn}
+                            <div class="card-footer bg-light">
+                                ${isAdmin ? `<button class="btn btn-primary" onclick="editSite(${c.id})"><i class="bi bi-pencil"></i> Update</button>` : ''}
+                                <button class="btn btn-sm btn-outline-info" onclick="viewSiteDetails(${c.id})">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                                ${archiveBtn}
+                                ${unarchiveBtn}
+                                ${deleteBtn}
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
             });
         });
     } else {
