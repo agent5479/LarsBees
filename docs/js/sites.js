@@ -144,7 +144,14 @@ function renderSites() {
                             <div class="mb-2" title="${landownerTitle}">
                                 <i class="bi bi-person-fill text-muted me-1"></i>
                                 <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
+                                ${c.contactBeforeVisit ? `<span class="badge bg-warning text-dark ms-2" title="Contact required before visit"><i class="bi bi-telephone-fill"></i> Contact Required</span>` : ''}
                             </div>
+                            
+                            <!-- Description (truncated if too long) -->
+                            ${c.description ? `<div class="mb-2" title="${c.description}">
+                                <i class="bi bi-card-text text-muted me-1"></i>
+                                <strong>Description:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${c.description.length > 100 ? c.description.substring(0, 100) + '...' : c.description}</span>
+                            </div>` : ''}
                             
                             <!-- Hive Count Summary (Editable inline) -->
                             <div class="mb-2">
@@ -173,7 +180,7 @@ function renderSites() {
                                 </div>
                             </div>
                             
-                            <!-- Hive Boxes (Clickable mini cards) -->
+                            <!-- Hive Boxes (Clickable mini cards) - Order: doubles, singles, nucs, top splits, empty -->
                             <div class="mb-2">
                                 <strong><i class="bi bi-boxes"></i> Hive Boxes:</strong>
                                 <div class="d-flex flex-wrap gap-1 gap-md-2 mt-1 hive-boxes-container">
@@ -182,13 +189,6 @@ function renderSites() {
                                             <i class="bi bi-stack hive-box-icon" style="font-size: 1rem; color: #1976d2;"></i>
                                             <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #1976d2;">Doubles</div>
                                             <div class="hive-box-number mb-0" id="boxDoubles_${c.id}" style="font-size: 1rem; color: #1976d2; font-weight: 600;">${hiveDoubles}</div>
-                                        </div>
-                                    </div>
-                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
-                                        <div class="card-body p-1 p-md-2 text-center">
-                                            <i class="bi bi-layers-half hive-box-icon" style="font-size: 1rem; color: #7b1fa2;"></i>
-                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #7b1fa2;">Top-Splits</div>
-                                            <div class="hive-box-number mb-0" id="boxTopSplits_${c.id}" style="font-size: 1rem; color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
                                         </div>
                                     </div>
                                     <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'singles', ${hiveSingles})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #e8f5e8; border: 2px solid #4caf50;">
@@ -205,6 +205,13 @@ function renderSites() {
                                             <div class="hive-box-number mb-0" id="boxNucs_${c.id}" style="font-size: 1rem; color: #f57c00; font-weight: 600;">${hiveNUCs}</div>
                                         </div>
                                     </div>
+                                    <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'topSplits', ${hiveTopSplits})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f3e5f5; border: 2px solid #9c27b0;">
+                                        <div class="card-body p-1 p-md-2 text-center">
+                                            <i class="bi bi-layers-half hive-box-icon" style="font-size: 1rem; color: #7b1fa2;"></i>
+                                            <div class="fw-bold mt-1 hive-box-label" style="font-size: 0.75rem; color: #7b1fa2;">Top-Splits</div>
+                                            <div class="hive-box-number mb-0" id="boxTopSplits_${c.id}" style="font-size: 1rem; color: #7b1fa2; font-weight: 600;">${hiveTopSplits}</div>
+                                        </div>
+                                    </div>
                                     <div class="card hive-box-card" onclick="quickEditHiveBox(${c.id}, 'empty', ${hiveEmpty})" style="cursor: pointer; flex: 1 1 0; min-width: 60px; max-width: 120px; background-color: #f5f5f5; border: 2px solid #9e9e9e;">
                                         <div class="card-body p-1 p-md-2 text-center">
                                             <i class="bi bi-square hive-box-icon" style="font-size: 1rem; color: #616161;"></i>
@@ -213,6 +220,29 @@ function renderSites() {
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            
+                            <!-- Notes display and quick edit -->
+                            <div class="mb-2">
+                                ${c.notes ? `
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="flex-grow-1">
+                                            <i class="bi bi-sticky-fill text-info me-1"></i>
+                                            <strong>Note:</strong> 
+                                            <span class="text-truncate d-inline-block" style="max-width: 70%;" title="${c.notes}">${c.notes.length > 50 ? c.notes.substring(0, 50) + '...' : c.notes}</span>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="quickEditSiteNote(${c.id})" title="Edit note">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <span class="text-muted"><i class="bi bi-sticky text-muted me-1"></i> No notes</span>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="quickEditSiteNote(${c.id})" title="Add note">
+                                            <i class="bi bi-plus"></i> Add Note
+                                        </button>
+                                    </div>
+                                `}
                             </div>
                         </div>
                         <div class="card-footer bg-light">
@@ -460,14 +490,9 @@ function handleSaveSite(e) {
     const hiveCount = parseInt(hiveCountField.value);
     const seasonalClassification = document.getElementById('seasonalClassification').value;
     
-    // Allow 0 hives only for Summer Only, Winter Only, and All Year Round sites
-    const isZeroHiveAllowed = seasonalClassification === 'summer' || seasonalClassification === 'winter' || seasonalClassification === 'all-year';
-    
-    if (isNaN(hiveCount) || hiveCount < 0 || (!isZeroHiveAllowed && hiveCount <= 0)) {
-        const message = isZeroHiveAllowed 
-            ? '⚠️ Please enter a valid hive count (0 or greater)'
-            : '⚠️ Please enter a valid hive count (must be greater than 0)';
-        beeMarshallAlert(message, 'warning');
+    // Allow 0 hives for all sites (some sites may be waiting for action or new contracts)
+    if (isNaN(hiveCount) || hiveCount < 0) {
+        beeMarshallAlert('⚠️ Please enter a valid hive count (0 or greater)', 'warning');
         hiveCountField.focus();
         hiveCountField.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
@@ -581,9 +606,16 @@ function handleSaveSite(e) {
                 if (window.syncStatusManager) {
                     window.syncStatusManager.updateSyncStatus('synced');
                 }
-                // Close the form and return to sites view
+                // Close the form and return to sites view, then scroll to the site card
                 setTimeout(() => {
                     showSites();
+                    // Scroll to the site card after rendering
+                    setTimeout(() => {
+                        const siteCard = document.querySelector(`[data-site-id="${site.id}"]`);
+                        if (siteCard) {
+                            siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
                 }, 500);
             })
             .catch(error => {
@@ -598,9 +630,16 @@ function handleSaveSite(e) {
                     });
                 }
                 beeMarshallAlert('⚠️ Site saved locally. Will sync when connection is restored.', 'warning');
-                // Close the form and return to sites view
+                // Close the form and return to sites view, then scroll to the site card
                 setTimeout(() => {
                     showSites();
+                    // Scroll to the site card after rendering
+                    setTimeout(() => {
+                        const siteCard = document.querySelector(`[data-site-id="${site.id}"]`);
+                        if (siteCard) {
+                            siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
                 }, 500);
             });
     } else {
@@ -1475,7 +1514,7 @@ function initMap() {
                         `}
                         
                         <div class="mt-3 d-grid gap-1">
-                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); const mapInstance = window.beeMarshallMap; if (mapInstance) { mapInstance.closePopup(); } setTimeout(() => viewSiteDetails(${site.id}), 100); return false;">
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); const mapInstance = window.beeMarshallMap; if (mapInstance) { mapInstance.closePopup(); } setTimeout(() => { showSites(); setTimeout(() => { const siteCard = document.querySelector(\`[data-site-id='${site.id}']\`); if (siteCard) { siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 100); }, 100); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
                             <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${site.id}); return false;">
@@ -2133,7 +2172,7 @@ function quickEditHiveStrength(siteId, state, currentValue) {
     const newValue = parseInt(newValueStr) || 0;
     
     if (newValue < 0) {
-        beeMarshallAlert('Count cannot be negative', 'warning');
+        beeMarshallAlert('Count cannot be negative. Use 0 for empty or waiting sites.', 'warning');
         return;
     }
     
@@ -2247,7 +2286,7 @@ function quickEditHiveBox(siteId, boxType, currentValue) {
     const newValue = parseInt(newValueStr) || 0;
     
     if (newValue < 0) {
-        beeMarshallAlert('Count cannot be negative', 'warning');
+        beeMarshallAlert('Count cannot be negative. Use 0 for empty or waiting sites.', 'warning');
         return;
     }
     
@@ -2353,5 +2392,82 @@ function quickEditHiveBox(siteId, boxType, currentValue) {
         if (typeof updateDashboard === 'function') {
             updateDashboard();
         }
+    }
+}
+
+/**
+ * Quick edit site note from summary card
+ * Opens a prompt for entering/editing notes and updates Firebase
+ */
+function quickEditSiteNote(siteId) {
+    const site = window.sites.find(c => c.id === siteId);
+    if (!site) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    const currentNote = site.notes || '';
+    const newNote = prompt(`Edit note for ${site.name}:\n\n(Leave empty to remove note)`, currentNote);
+    
+    // If user cancelled, do nothing
+    if (newNote === null) return;
+    
+    // Update site data
+    const updatedNote = newNote.trim();
+    site.notes = updatedNote || null;
+    
+    // Prepare references and payloads
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
+    const updateData = {
+        notes: updatedNote || null,
+        lastModified: new Date().toISOString(),
+        lastModifiedBy: currentUser.username
+    };
+    
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', 'Saving note...');
+    }
+
+    if (navigator.onLine && window.database) {
+        database.ref(`${tenantPath}/${siteId}`).update(updateData)
+            .then(() => {
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.updateSyncStatus('synced');
+                }
+                beeMarshallAlert(updatedNote ? `✅ Note updated for ${site.name}` : `✅ Note removed from ${site.name}`, 'success');
+                // Re-render sites to update the display
+                renderSites();
+            })
+            .catch(error => {
+                console.error('Error updating note (online path):', error);
+                // Queue for later sync
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.addPendingChange({
+                        type: 'note_update',
+                        path: `${tenantPath}/${siteId}`,
+                        data: updateData,
+                        method: 'update'
+                    });
+                    window.syncStatusManager.updateSyncStatus('offline', 'Saved locally, will sync later');
+                }
+                beeMarshallAlert('⚠️ Saved locally. Will sync when connection is restored.', 'warning');
+                // Re-render sites to update the display
+                renderSites();
+            });
+    } else {
+        // Offline: queue changes and update UI immediately
+        if (window.syncStatusManager) {
+            window.syncStatusManager.addPendingChange({
+                type: 'note_update',
+                path: `${tenantPath}/${siteId}`,
+                data: updateData,
+                method: 'update'
+            });
+            window.syncStatusManager.updateSyncStatus('offline', 'Saved locally, will sync later');
+        }
+        beeMarshallAlert('⚠️ Saved locally. Will sync when connection is restored.', 'warning');
+        // Re-render sites to update the display
+        renderSites();
     }
 }

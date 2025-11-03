@@ -2413,6 +2413,7 @@
                 missingGPS: [],
                 missingContactDetails: [],
                 missingHoneyTypes: [],
+                missingContactBeforeVisit: [],
                 overdueCompliance: []
             };
             
@@ -2553,6 +2554,7 @@
                               issues.missingGPS.length + 
                               issues.missingContactDetails.length +
                               issues.missingHoneyTypes.length +
+                              (issues.missingContactBeforeVisit ? issues.missingContactBeforeVisit.length : 0) +
                               issues.overdueCompliance.length;
             
             return { totalIssues, issues };
@@ -2797,6 +2799,7 @@
                 missingGPS: [],
                 missingContactDetails: [],
                 missingHoneyTypes: [],
+                missingContactBeforeVisit: [],
                 overdueCompliance: []
             };
             
@@ -2871,9 +2874,18 @@
                         siteId: site.id
                     });
                 }
+                
+                // Check 7: Missing contactBeforeVisit flag (important for visit planning)
+                if (site.contactBeforeVisit === undefined || site.contactBeforeVisit === null) {
+                    issues.missingContactBeforeVisit.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Contact Before Visit flag'
+                    });
+                }
             });
             
-            // Check 7: Overdue compliance requirements
+            // Check 8: Overdue compliance requirements
             const currentDate = new Date();
             const currentYear = currentDate.getFullYear();
             
@@ -2936,6 +2948,7 @@
                               issues.missingGPS.length + 
                               issues.missingContactDetails.length +
                               issues.missingHoneyTypes.length +
+                              (issues.missingContactBeforeVisit ? issues.missingContactBeforeVisit.length : 0) +
                               issues.overdueCompliance.length;
             
             // Generate HTML report
