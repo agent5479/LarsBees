@@ -70,6 +70,14 @@ function renderSites() {
             const landownerDisplay = [contactLine, addressLine].filter(Boolean).join(', ');
             const landownerTitle = [contactLine, addressLine].filter(Boolean).join(' — ');
             
+            // Check if contact before visit is required (handle both boolean and string values)
+            const needsContact = c.contactBeforeVisit === true || c.contactBeforeVisit === 'true' || c.contactBeforeVisit === 1 || c.contactBeforeVisit === '1';
+            
+            // Debug logging (remove after testing)
+            if (c.contactBeforeVisit !== undefined && c.contactBeforeVisit !== null) {
+                console.log(`Site ${c.name}: contactBeforeVisit =`, c.contactBeforeVisit, typeof c.contactBeforeVisit, 'needsContact =', needsContact);
+            }
+            
             // Get hive strength breakdown for inline editing
             const hiveStrong = c.hiveStrength?.strong || 0;
             const hiveMedium = c.hiveStrength?.medium || 0;
@@ -144,7 +152,7 @@ function renderSites() {
                             <div class="mb-2" title="${landownerTitle}">
                                 <i class="bi bi-person-fill text-muted me-1"></i>
                                 <strong>Landowner:</strong> <span class="d-inline-block text-truncate" style="max-width: 100%;">${landownerDisplay || 'Not specified'}</span>
-                                ${c.contactBeforeVisit ? `<span class="badge bg-warning text-dark ms-2" title="Contact required before visit"><i class="bi bi-telephone-fill"></i> Contact Required</span>` : ''}
+                                ${needsContact ? `<span class="badge bg-warning text-dark ms-2" style="font-weight: bold;" title="Contact required before visit"><i class="bi bi-telephone-fill"></i> Contact Required</span>` : ''}
                             </div>
                             
                             <!-- Description (truncated if too long) -->
@@ -1514,7 +1522,7 @@ function initMap() {
                         `}
                         
                         <div class="mt-3 d-grid gap-1">
-                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); const mapInstance = window.beeMarshallMap; if (mapInstance) { mapInstance.closePopup(); } setTimeout(() => { showSites(); setTimeout(() => { const siteCard = document.querySelector(\`[data-site-id='${site.id}']\`); if (siteCard) { siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' }); } }, 100); }, 100); return false;">
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); const mapInstance = window.beeMarshallMap; if (mapInstance) { mapInstance.closePopup(); } scrollToSiteCard(${site.id}); return false;">
                                 <i class="bi bi-eye"></i> View Details
                             </button>
                             <button class="btn btn-sm btn-outline-primary" onclick="openInMaps(${site.id}); return false;">
@@ -2470,4 +2478,59 @@ function quickEditSiteNote(siteId) {
         // Re-render sites to update the display
         renderSites();
     }
+}
+
+/**
+ * Scroll to a specific site card in the sites view
+ * Used when navigating from map popup or other views
+ */
+function scrollToSiteCard(siteId) {
+    // Close map popup if it's open
+    const mapInstance = window.beeMarshallMap;
+    if (mapInstance) {
+        mapInstance.closePopup();
+    }
+    
+    // Hide all views and show sites view manually (to avoid scrollToTop)
+    hideAllViews();
+    
+    setTimeout(() => {
+        const view = document.getElementById('sitesView');
+        if (view) {
+            view.classList.remove('hidden');
+            view.style.display = '';
+        }
+        updateActiveNav('Sites');
+        renderSites();
+        renderSiteTypeFilter();
+        
+        // Wait for rendering to complete, then scroll to the card
+        // Use multiple checks to ensure the card is rendered
+        let attempts = 0;
+        const maxAttempts = 15;
+        
+        const tryScroll = () => {
+            attempts++;
+            const siteCard = document.querySelector(`[data-site-id="${siteId}"]`);
+            
+            if (siteCard) {
+                // Card found, scroll to it with smooth behavior
+                // Use requestAnimationFrame to ensure DOM is fully rendered
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 50);
+                });
+            } else if (attempts < maxAttempts) {
+                // Card not found yet, try again after a short delay
+                setTimeout(tryScroll, 100);
+            } else {
+                // Card not found after max attempts
+                console.warn(`Site card with ID ${siteId} not found after ${maxAttempts} attempts`);
+            }
+        };
+        
+        // Start trying after sites are rendered
+        setTimeout(tryScroll, 150);
+    }, 10);
 }
