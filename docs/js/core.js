@@ -163,6 +163,20 @@ let isOnline = navigator.onLine;
 let syncQueue = []; // Queue of pending changes to sync
 let syncInProgress = false;
 
+// Firebase listener references for cleanup
+// Store database refs so we can remove listeners
+let firebaseListeners = {
+    sites: null,
+    actions: null,
+    individualHives: null,
+    scheduledTasks: null,
+    honeyTypes: null,
+    tasks: null,
+    deletedTasks: null,
+    seasonalRequirements: null,
+    employees: null
+};
+
 // Seasonal requirements
 let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category, frequency}
 
@@ -1972,11 +1986,31 @@ function updateDashboardStats() {
 // Prevent multiple simultaneous data loads
 let isLoadingData = false;
 
+function cleanupFirebaseListeners() {
+    // Remove all existing Firebase listeners to prevent duplicates
+    console.log('🧹 Cleaning up Firebase listeners...');
+    Object.keys(firebaseListeners).forEach(key => {
+        if (firebaseListeners[key]) {
+            try {
+                // Remove all listeners from this ref
+                firebaseListeners[key].off();
+                firebaseListeners[key] = null;
+                console.log(`✅ Removed listener: ${key}`);
+            } catch (error) {
+                console.warn(`⚠️ Error removing listener ${key}:`, error);
+            }
+        }
+    });
+}
+
 function loadDataFromFirebase() {
     if (isLoadingData) {
         console.log('⏳ Data loading already in progress, skipping...');
         return;
     }
+    
+    // Clean up old listeners before setting up new ones
+    cleanupFirebaseListeners();
     
     isLoadingData = true;
     showSyncStatus('', 'syncing');
@@ -2029,7 +2063,8 @@ function loadDataFromFirebase() {
         }
     }
     
-    database.ref(`tenants/${currentTenantId}/sites`).on('value', (snapshot) => {
+    firebaseListeners.sites = database.ref(`tenants/${currentTenantId}/sites`);
+    firebaseListeners.sites.on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('🔍 Raw sites data for', currentTenantId + ':', data);
         sites = data ? Object.values(data) : [];
@@ -2050,7 +2085,8 @@ function loadDataFromFirebase() {
         checkAllDataLoaded();
     });
     
-    database.ref(`tenants/${currentTenantId}/actions`).on('value', (snapshot) => {
+    firebaseListeners.actions = database.ref(`tenants/${currentTenantId}/actions`);
+    firebaseListeners.actions.on('value', (snapshot) => {
         const data = snapshot.val();
         console.log('🔍 Raw actions data for', currentTenantId + ':', data);
         actions = data ? Object.values(data) : [];
@@ -2063,7 +2099,8 @@ function loadDataFromFirebase() {
         checkAllDataLoaded();
     });
     
-    database.ref(`tenants/${currentTenantId}/individualHives`).on('value', (snapshot) => {
+    firebaseListeners.individualHives = database.ref(`tenants/${currentTenantId}/individualHives`);
+    firebaseListeners.individualHives.on('value', (snapshot) => {
         individualHives = snapshot.val() ? Object.values(snapshot.val()) : [];
         console.log('📊 Individual hives loaded for', currentTenantId + ':', individualHives.length);
         checkAllDataLoaded();
@@ -2072,7 +2109,8 @@ function loadDataFromFirebase() {
         checkAllDataLoaded();
     });
     
-    database.ref(`tenants/${currentTenantId}/scheduledTasks`).on('value', (snapshot) => {
+    firebaseListeners.scheduledTasks = database.ref(`tenants/${currentTenantId}/scheduledTasks`);
+    firebaseListeners.scheduledTasks.on('value', (snapshot) => {
         console.log('🔄 Scheduled tasks Firebase listener triggered');
         console.log('📊 Snapshot exists:', !!snapshot.val());
         console.log('📊 Snapshot keys:', snapshot.val() ? Object.keys(snapshot.val()) : 'null');
@@ -2095,7 +2133,8 @@ function loadDataFromFirebase() {
     });
     
     // Load honey types
-    database.ref(`tenants/${currentTenantId}/honeyTypes`).on('value', (snapshot) => {
+    firebaseListeners.honeyTypes = database.ref(`tenants/${currentTenantId}/honeyTypes`);
+    firebaseListeners.honeyTypes.on('value', (snapshot) => {
         const data = snapshot.val();
         if (data && Array.isArray(data)) {
             HONEY_TYPES = data;
@@ -2128,7 +2167,8 @@ function loadDataFromFirebase() {
     }
     
     // Initialize and listen for tasks
-    database.ref('tasks').on('value', (snapshot) => {
+    firebaseListeners.tasks = database.ref('tasks');
+    firebaseListeners.tasks.on('value', (snapshot) => {
         if (!snapshot.exists()) {
             // First time: populate with default tasks
             COMPREHENSIVE_TASKS.forEach(task => {
@@ -2148,12 +2188,14 @@ function loadDataFromFirebase() {
     });
     
     // Load deleted tasks archive for historical reference
-    database.ref('deletedTasks').on('value', (snapshot) => {
+    firebaseListeners.deletedTasks = database.ref('deletedTasks');
+    firebaseListeners.deletedTasks.on('value', (snapshot) => {
         deletedTasks = snapshot.val() || {};
     });
     
     // Load seasonal requirements
-    database.ref('seasonalRequirements').on('value', (snapshot) => {
+    firebaseListeners.seasonalRequirements = database.ref('seasonalRequirements');
+    firebaseListeners.seasonalRequirements.on('value', (snapshot) => {
         seasonalRequirements = snapshot.val() ? Object.values(snapshot.val()) : [];
         // Refresh if on seasonal requirements page
         if (!document.getElementById('seasonalRequirementsView')?.classList.contains('hidden')) {
@@ -2169,7 +2211,8 @@ function loadEmployees() {
         return;
     }
     
-    database.ref(`tenants/${currentTenantId}/employees`).on('value', (snapshot) => {
+    firebaseListeners.employees = database.ref(`tenants/${currentTenantId}/employees`);
+    firebaseListeners.employees.on('value', (snapshot) => {
         employees = snapshot.val() ? Object.values(snapshot.val()) : [];
         renderEmployees();
     });
@@ -2813,8 +2856,12 @@ function initializeDataLoading() {
     if (database && currentTenantId) {
         const tenantPath = `tenants/${currentTenantId}`;
         
+        // Clean up any existing listeners first
+        cleanupFirebaseListeners();
+        
         // Real-time listeners for data updates
-        database.ref(`${tenantPath}/sites`).on('value', snapshot => {
+        firebaseListeners.sites = database.ref(`${tenantPath}/sites`);
+        firebaseListeners.sites.on('value', snapshot => {
             const data = snapshot.val();
             window.sites = data ? Object.values(data) : [];
             console.log('🔄 Sites updated:', window.sites.length);
@@ -2823,7 +2870,8 @@ function initializeDataLoading() {
             }
         });
         
-        database.ref(`${tenantPath}/actions`).on('value', snapshot => {
+        firebaseListeners.actions = database.ref(`${tenantPath}/actions`);
+        firebaseListeners.actions.on('value', snapshot => {
             const data = snapshot.val();
             window.actions = data ? Object.values(data) : [];
             console.log('🔄 Actions updated:', window.actions.length);
@@ -2846,7 +2894,8 @@ function initializeDataLoading() {
             }
         });
         
-        database.ref(`${tenantPath}/scheduledTasks`).on('value', snapshot => {
+        firebaseListeners.scheduledTasks = database.ref(`${tenantPath}/scheduledTasks`);
+        firebaseListeners.scheduledTasks.on('value', snapshot => {
             const data = snapshot.val();
             window.scheduledTasks = data ? Object.values(data) : [];
             console.log('🔄 Scheduled tasks updated:', window.scheduledTasks.length);
@@ -2855,7 +2904,8 @@ function initializeDataLoading() {
             }
         });
         
-        database.ref(`${tenantPath}/individualHives`).on('value', snapshot => {
+        firebaseListeners.individualHives = database.ref(`${tenantPath}/individualHives`);
+        firebaseListeners.individualHives.on('value', snapshot => {
             const data = snapshot.val();
             window.individualHives = data ? Object.values(data) : [];
             console.log('🔄 Individual hives updated:', window.individualHives.length);
@@ -2864,7 +2914,8 @@ function initializeDataLoading() {
             }
         });
         
-        database.ref(`${tenantPath}/tasks`).on('value', snapshot => {
+        firebaseListeners.tasks = database.ref(`${tenantPath}/tasks`);
+        firebaseListeners.tasks.on('value', snapshot => {
             const data = snapshot.val();
             window.tasks = data ? Object.values(data) : [];
             console.log('🔄 Tasks updated:', window.tasks.length);
@@ -2873,7 +2924,8 @@ function initializeDataLoading() {
             }
         });
         
-        database.ref(`${tenantPath}/deletedTasks`).on('value', snapshot => {
+        firebaseListeners.deletedTasks = database.ref(`${tenantPath}/deletedTasks`);
+        firebaseListeners.deletedTasks.on('value', snapshot => {
             const data = snapshot.val();
             window.deletedTasks = data || {};
             console.log('🔄 Deleted tasks updated:', Object.keys(window.deletedTasks).length);
