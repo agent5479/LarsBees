@@ -16,6 +16,13 @@ const SITE_TYPES = {
 };
 
 function renderSites() {
+    // Ensure window.sites is available and is an array
+    if (!window.sites || !Array.isArray(window.sites)) {
+        console.warn('⚠️ window.sites is not available or not an array:', window.sites);
+        document.getElementById('sitesList').innerHTML = '<div class="col-12"><p class="text-center text-muted my-5">Loading sites...</p></div>';
+        return;
+    }
+    
     // Filter sites based on archive status
     const visibleSites = window.sites.filter(c => {
         if (showArchivedSites) {
@@ -72,11 +79,6 @@ function renderSites() {
             
             // Check if contact before visit is required (handle both boolean and string values)
             const needsContact = c.contactBeforeVisit === true || c.contactBeforeVisit === 'true' || c.contactBeforeVisit === 1 || c.contactBeforeVisit === '1';
-            
-            // Debug logging (remove after testing)
-            if (c.contactBeforeVisit !== undefined && c.contactBeforeVisit !== null) {
-                console.log(`Site ${c.name}: contactBeforeVisit =`, c.contactBeforeVisit, typeof c.contactBeforeVisit, 'needsContact =', needsContact);
-            }
             
             // Get hive strength breakdown for inline editing
             const hiveStrong = c.hiveStrength?.strong || 0;
