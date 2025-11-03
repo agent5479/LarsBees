@@ -2542,56 +2542,41 @@ function scrollToSiteCard(siteId) {
         renderSites();
         renderSiteTypeFilter();
         
-        // Wait for rendering to complete, then scroll to the card
-        // Use multiple checks to ensure the card is rendered
+        // Wait for rendering to complete, then scroll to the alphabetical section marker
+        // Use multiple checks to ensure the section is rendered
         let attempts = 0;
         const maxAttempts = 15;
         
         const tryScroll = () => {
             attempts++;
-            const siteCard = document.querySelector(`[data-site-id="${siteId}"]`);
             
-            if (siteCard) {
-                // Find the site data to get its name
-                const site = window.sites?.find(s => s.id === siteId);
+            // Find the site data to get its name
+            const site = window.sites?.find(s => s.id === siteId);
+            
+            if (site && site.name) {
+                // Get first letter of site name
+                const firstLetter = site.name.charAt(0).toUpperCase();
+                const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
+                const sectionMarker = document.getElementById(`section-${letter}`);
                 
-                if (site && site.name) {
-                    // Get first letter of site name
-                    const firstLetter = site.name.charAt(0).toUpperCase();
-                    const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
-                    const sectionMarker = document.getElementById(`section-${letter}`);
-                    
-                    // First scroll to the alphabetical section marker
-                    if (sectionMarker) {
-                        requestAnimationFrame(() => {
-                            sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                            // Then scroll to the specific card after a short delay
-                            setTimeout(() => {
-                                siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }, 300);
-                        });
-                    } else {
-                        // No section marker found, just scroll to card
-                        requestAnimationFrame(() => {
-                            setTimeout(() => {
-                                siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }, 50);
-                        });
-                    }
-                } else {
-                    // Site data not found, just scroll to card
+                // Scroll to the alphabetical section marker
+                if (sectionMarker) {
                     requestAnimationFrame(() => {
-                        setTimeout(() => {
-                            siteCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 50);
+                        sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     });
+                } else if (attempts < maxAttempts) {
+                    // Section marker not found yet, try again after a short delay
+                    setTimeout(tryScroll, 100);
+                } else {
+                    // Section marker not found after max attempts
+                    console.warn(`Section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
                 }
             } else if (attempts < maxAttempts) {
-                // Card not found yet, try again after a short delay
+                // Site data not found yet, try again after a short delay
                 setTimeout(tryScroll, 100);
             } else {
-                // Card not found after max attempts
-                console.warn(`Site card with ID ${siteId} not found after ${maxAttempts} attempts`);
+                // Site not found after max attempts
+                console.warn(`Site with ID ${siteId} not found after ${maxAttempts} attempts`);
             }
         };
         
