@@ -3,7 +3,7 @@
 // Employees: Can add/view, cannot delete
 
 // Version Management
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.78';
 const VERSION_HISTORY = [
     { version: '0.91', date: '2024-12-19', changes: ['Fixed dashboard loading issue', 'Enhanced login system', 'Added welcome popup', 'Improved map initialization'] },
     { version: '0.92', date: '2024-12-19', changes: ['Added version tag to login screen', 'Implemented lazy map loading', 'Enhanced error prevention', 'Improved user experience'] },
@@ -805,6 +805,9 @@ function updateSystemStatus() {
 function showWelcomePopup() {
     console.log('🎉 Showing welcome popup - dashboard fully loaded!');
     
+    // Reset check attempts counter
+    welcomeDataCheckAttempts = 0;
+    
     // Update welcome message with user info
     const welcomeUserName = document.getElementById('welcomeUserName');
     const welcomeMessage = document.getElementById('welcomeMessage');
@@ -826,6 +829,9 @@ function showWelcomePopup() {
     // Initially show synchronising status
     updateWelcomeSyncStatus('synchronising');
     
+    // Initially set button to orange and disabled
+    updateWelcomeButton(false);
+    
     // Update quick stats
     updateWelcomeStats();
     
@@ -838,7 +844,10 @@ function showWelcomePopup() {
     console.log('✅ Welcome popup displayed - all systems operational');
     
     // Check if data is loaded and update button accordingly
-    checkWelcomeDataLoaded();
+    // Use a small delay to ensure modal is rendered
+    setTimeout(() => {
+        checkWelcomeDataLoaded();
+    }, 100);
 }
 
 function updateWelcomeSyncStatus(status) {
@@ -873,19 +882,41 @@ function updateWelcomeSyncStatus(status) {
     }
 }
 
+let welcomeDataCheckAttempts = 0;
+const MAX_WELCOME_DATA_CHECK_ATTEMPTS = 30; // 15 seconds max
+
 function checkWelcomeDataLoaded() {
-    // Check if sites data is loaded (sites count > 0)
-    const sitesCount = window.sites && Array.isArray(window.sites) ? window.sites.length : 0;
+    // Check if modal is still open
+    const modal = document.getElementById('welcomeModal');
+    if (!modal || !modal.classList.contains('show')) {
+        return; // Modal closed, stop checking
+    }
     
-    if (sitesCount > 0) {
-        // Data is loaded, update button to green "Okay"
+    welcomeDataCheckAttempts++;
+    
+    // Check if sites data is loaded
+    // Accept either: sites count > 0 OR sites array exists and has been initialized (even if empty)
+    const sitesExists = window.sites !== undefined && window.sites !== null;
+    const sitesCount = Array.isArray(window.sites) ? window.sites.length : 0;
+    const dataLoaded = sitesExists && (sitesCount > 0 || welcomeDataCheckAttempts >= MAX_WELCOME_DATA_CHECK_ATTEMPTS);
+    
+    console.log(`🔍 Welcome data check attempt ${welcomeDataCheckAttempts}: sites exists=${sitesExists}, count=${sitesCount}, loaded=${dataLoaded}`);
+    
+    if (dataLoaded) {
+        // Data is loaded (or timeout reached), update button to green "Okay"
         updateWelcomeButton(true);
         updateWelcomeSyncStatus('synchronised');
-    } else {
+        console.log('✅ Welcome popup: Data loaded, button enabled');
+    } else if (welcomeDataCheckAttempts < MAX_WELCOME_DATA_CHECK_ATTEMPTS) {
         // Still loading, check again after a delay
         setTimeout(() => {
             checkWelcomeDataLoaded();
         }, 500);
+    } else {
+        // Max attempts reached, enable button anyway
+        console.log('⚠️ Welcome popup: Max check attempts reached, enabling button');
+        updateWelcomeButton(true);
+        updateWelcomeSyncStatus('synchronised');
     }
 }
 
@@ -893,7 +924,10 @@ function updateWelcomeButton(dataLoaded) {
     const welcomeBtn = document.getElementById('welcomeContinueBtn');
     const welcomeBtnText = document.getElementById('welcomeBtnText');
     
-    if (!welcomeBtn || !welcomeBtnText) return;
+    if (!welcomeBtn || !welcomeBtnText) {
+        console.warn('⚠️ Welcome button elements not found');
+        return;
+    }
     
     if (dataLoaded) {
         // Change to green "Okay" button
@@ -901,12 +935,14 @@ function updateWelcomeButton(dataLoaded) {
         welcomeBtn.style.color = 'white';
         welcomeBtn.disabled = false;
         welcomeBtnText.textContent = 'Okay';
+        console.log('✅ Welcome button updated to green "Okay"');
     } else {
-        // Keep orange "Continue" button disabled
+        // Keep orange "Continue" button (but still clickable)
         welcomeBtn.style.background = '#ff9800';
         welcomeBtn.style.color = 'white';
-        welcomeBtn.disabled = true;
+        welcomeBtn.disabled = false; // Always allow clicking
         welcomeBtnText.textContent = 'Continue';
+        console.log('🟠 Welcome button set to orange "Continue"');
     }
 }
 
@@ -919,8 +955,12 @@ function updateWelcomeStats() {
     }
     
     // Check if data is loaded and update status
-    const sitesCount = window.sites && Array.isArray(window.sites) ? window.sites.length : 0;
-    if (sitesCount > 0) {
+    const sitesExists = window.sites !== undefined && window.sites !== null;
+    const sitesCount = Array.isArray(window.sites) ? window.sites.length : 0;
+    console.log(`🔍 updateWelcomeStats: sites exists=${sitesExists}, count=${sitesCount}`);
+    
+    if (sitesExists) {
+        // Sites array exists (even if empty), consider data loaded
         updateWelcomeSyncStatus('synchronised');
         updateWelcomeButton(true);
     }
