@@ -477,6 +477,32 @@ a:hover {
     }
 }
 
+/* ===== SHIMMER ANIMATION FOR CONTACT REQUIRED BADGE ===== */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.contact-required-badge {
+    border: 2px solid #000000 !important;
+    background: linear-gradient(
+        90deg,
+        #ffc107 0%,
+        #ffcd39 25%,
+        #ffd700 50%,
+        #ffcd39 75%,
+        #ffc107 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite linear;
+    position: relative;
+    overflow: hidden;
+}
+
 /* ===== PREFERS REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
     *,
@@ -490,5 +516,9 @@ a:hover {
     .hive-strength-badge,
     .hive-box-card {
         transition: none !important;
+    }
+    
+    .contact-required-badge {
+        animation: none !important;
     }
 }
