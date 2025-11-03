@@ -1424,11 +1424,6 @@
                             <i class="bi bi-hexagon-fill" style="font-size: 4rem; color: var(--accent);"></i>
                             <h2 class="mt-3" style="color: var(--brand);">BeeMarshall</h2>
                             <p class="text-muted">Professional Apiary Management System</p>
-                            <div class="version-tag">
-                                <span class="badge bg-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
-                                    <i class="bi bi-tag-fill me-1"></i>v1.3
-                                </span>
-                            </div>
                         </div>
                         
                         <!-- Login Status Messages -->
@@ -2898,28 +2893,35 @@
                 </div>
                 <div class="modal-body text-center">
                     <div class="mb-4">
-                        <i class="bi bi-check-circle-fill text-warning" style="font-size: 3rem;"></i>
+                        <i class="bi bi-hourglass-split text-warning" id="welcomeIcon" style="font-size: 3rem;"></i>
                     </div>
-                    <h4 class="mb-3" id="welcomeUserName">Dashboard Loaded Successfully!</h4>
+                    <h4 class="mb-3" id="welcomeUserName">Welcome back!</h4>
                     <p class="text-muted mb-4" id="welcomeMessage">
                         Your apiary management system is ready. All data has been synchronized and the dashboard is fully operational.
                     </p>
                     
+                    <!-- Version Tag -->
+                    <div class="mb-3">
+                        <span class="badge bg-primary" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                            <i class="bi bi-tag-fill me-1"></i>v<span id="welcomeVersionTag"></span>
+                        </span>
+                    </div>
+                    
                     <!-- Data Sync Status -->
-                    <div class="alert alert-success border-0" style="background: rgba(40, 167, 69, 0.1);">
+                    <div class="alert border-0" id="syncStatusAlert" style="background: rgba(255, 193, 7, 0.1);">
                         <div class="d-flex flex-column align-items-center justify-content-center">
                             <div class="d-flex align-items-center mb-1">
-                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                <span class="fw-semibold">Data synchronised</span>
+                                <i class="bi bi-hourglass-split text-warning me-2" id="syncStatusIcon"></i>
+                                <span class="fw-semibold" id="syncStatusText">Synchronising...</span>
                             </div>
                             <small class="text-muted" id="syncTimestamp">Last updated: <span id="syncTime"></span></small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 justify-content-center">
-                    <button type="button" class="btn btn-success hexagon-button" data-bs-dismiss="modal" onclick="dismissWelcomeModal()">
+                    <button type="button" class="btn hexagon-button" id="welcomeContinueBtn" data-bs-dismiss="modal" onclick="dismissWelcomeModal()" style="background: #ff9800; color: white;" disabled>
                         <div class="hexagon-content">
-                            <span class="hexagon-text">continue</span>
+                            <span class="hexagon-text" id="welcomeBtnText">Continue</span>
                         </div>
                     </button>
                 </div>

@@ -817,6 +817,15 @@ function showWelcomePopup() {
         welcomeMessage.textContent = `Your apiary management system is ready. All data has been synchronized and the dashboard is fully operational.`;
     }
     
+    // Add version tag
+    const versionTag = document.getElementById('welcomeVersionTag');
+    if (versionTag) {
+        versionTag.textContent = APP_VERSION;
+    }
+    
+    // Initially show synchronising status
+    updateWelcomeSyncStatus('synchronising');
+    
     // Update quick stats
     updateWelcomeStats();
     
@@ -827,6 +836,78 @@ function showWelcomePopup() {
     // Update debug info
     updateDebugInfo('systemStatus', 'Dashboard fully loaded');
     console.log('✅ Welcome popup displayed - all systems operational');
+    
+    // Check if data is loaded and update button accordingly
+    checkWelcomeDataLoaded();
+}
+
+function updateWelcomeSyncStatus(status) {
+    const syncStatusAlert = document.getElementById('syncStatusAlert');
+    const syncStatusIcon = document.getElementById('syncStatusIcon');
+    const syncStatusText = document.getElementById('syncStatusText');
+    
+    if (!syncStatusAlert || !syncStatusIcon || !syncStatusText) return;
+    
+    if (status === 'synchronised') {
+        // Change to green success state
+        syncStatusAlert.style.background = 'rgba(40, 167, 69, 0.1)';
+        syncStatusIcon.className = 'bi bi-check-circle-fill text-success me-2';
+        syncStatusText.textContent = 'Data synchronised';
+        
+        // Update icon in main area
+        const welcomeIcon = document.getElementById('welcomeIcon');
+        if (welcomeIcon) {
+            welcomeIcon.className = 'bi bi-check-circle-fill text-success';
+        }
+    } else {
+        // Keep synchronising state
+        syncStatusAlert.style.background = 'rgba(255, 193, 7, 0.1)';
+        syncStatusIcon.className = 'bi bi-hourglass-split text-warning me-2';
+        syncStatusText.textContent = 'Synchronising...';
+        
+        // Update icon in main area
+        const welcomeIcon = document.getElementById('welcomeIcon');
+        if (welcomeIcon) {
+            welcomeIcon.className = 'bi bi-hourglass-split text-warning';
+        }
+    }
+}
+
+function checkWelcomeDataLoaded() {
+    // Check if sites data is loaded (sites count > 0)
+    const sitesCount = window.sites && Array.isArray(window.sites) ? window.sites.length : 0;
+    
+    if (sitesCount > 0) {
+        // Data is loaded, update button to green "Okay"
+        updateWelcomeButton(true);
+        updateWelcomeSyncStatus('synchronised');
+    } else {
+        // Still loading, check again after a delay
+        setTimeout(() => {
+            checkWelcomeDataLoaded();
+        }, 500);
+    }
+}
+
+function updateWelcomeButton(dataLoaded) {
+    const welcomeBtn = document.getElementById('welcomeContinueBtn');
+    const welcomeBtnText = document.getElementById('welcomeBtnText');
+    
+    if (!welcomeBtn || !welcomeBtnText) return;
+    
+    if (dataLoaded) {
+        // Change to green "Okay" button
+        welcomeBtn.style.background = '#28a745';
+        welcomeBtn.style.color = 'white';
+        welcomeBtn.disabled = false;
+        welcomeBtnText.textContent = 'Okay';
+    } else {
+        // Keep orange "Continue" button disabled
+        welcomeBtn.style.background = '#ff9800';
+        welcomeBtn.style.color = 'white';
+        welcomeBtn.disabled = true;
+        welcomeBtnText.textContent = 'Continue';
+    }
 }
 
 function updateWelcomeStats() {
@@ -836,6 +917,14 @@ function updateWelcomeStats() {
         const now = new Date();
         syncTimeElement.textContent = now.toLocaleTimeString();
     }
+    
+    // Check if data is loaded and update status
+    const sitesCount = window.sites && Array.isArray(window.sites) ? window.sites.length : 0;
+    if (sitesCount > 0) {
+        updateWelcomeSyncStatus('synchronised');
+        updateWelcomeButton(true);
+    }
+    
     console.log('✅ Welcome popup ready - sync timestamp updated');
 }
 
@@ -846,10 +935,11 @@ function dismissWelcomeModal() {
 
 // Version Management Functions
 function updateVersionDisplay() {
-    const versionElements = document.querySelectorAll('.version-tag .badge');
-    versionElements.forEach(element => {
-        element.innerHTML = `<i class="bi bi-tag-fill me-1"></i>v${APP_VERSION}`;
-    });
+    // Only update version tag in welcome popup (version tag removed from other locations)
+    const versionTag = document.getElementById('welcomeVersionTag');
+    if (versionTag) {
+        versionTag.textContent = APP_VERSION;
+    }
     console.log(`🏷️ Version display updated to v${APP_VERSION}`);
 }
 
@@ -2059,6 +2149,15 @@ function loadDataFromFirebase() {
                     individualHives: Array.isArray(individualHives) ? individualHives.length : typeof individualHives
                 });
                 updateDashboard();
+                
+                // Update welcome popup if it's open
+                if (document.getElementById('welcomeModal') && document.getElementById('welcomeModal').classList.contains('show')) {
+                    const sitesCount = window.sites && Array.isArray(window.sites) ? window.sites.length : 0;
+                    if (sitesCount > 0) {
+                        updateWelcomeSyncStatus('synchronised');
+                        updateWelcomeButton(true);
+                    }
+                }
             }, 100);
         }
     }
