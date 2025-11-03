@@ -60,10 +60,32 @@ function renderSites() {
             return a.localeCompare(b);
         });
         
+        // Add alphabetical navigation bar at the top
+        html += `
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm" style="background: #f8f9fa; border: 1px solid #dee2e6;">
+                    <div class="card-body p-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="alphabetNavBar">
+                            <span class="text-muted me-2" style="font-weight: 600;">Jump to:</span>
+                            ${sortedLetters.map(letter => `
+                                <a href="#section-${letter}" 
+                                   class="btn btn-sm btn-outline-primary alphabet-nav-link" 
+                                   onclick="event.preventDefault(); scrollToLetterSection('${letter}'); return false;"
+                                   style="min-width: 40px; padding: 0.25rem 0.5rem; font-weight: 600;">
+                                    ${letter}
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
         sortedLetters.forEach(letter => {
-            // Add alphabetical section marker
+            // Add alphabetical section marker with anchor
             html += `
                 <div class="col-12 mb-3 mt-4" id="section-${letter}">
+                    <a name="section-${letter}" id="anchor-section-${letter}"></a>
                     <div class="alphabet-marker" style="background-color: #f8f9fa; padding: 10px 15px; border-left: 4px solid #007bff; border-radius: 4px;">
                         <h4 class="mb-0" style="color: #007bff; font-weight: bold;">
                             <i class="bi bi-bookmark-fill"></i> ${letter}
@@ -310,6 +332,27 @@ function renderSites() {
     
     // Update the show archived button text
     updateArchivedButtonText();
+}
+
+/**
+ * Scroll to a specific letter section in the sites list
+ * @param {string} letter - The letter to scroll to (e.g., 'A', 'B', '#')
+ */
+function scrollToLetterSection(letter) {
+    console.log(`📍 Scrolling to letter section: ${letter}`);
+    const sectionMarker = document.getElementById(`section-${letter}`);
+    
+    if (sectionMarker) {
+        // Use requestAnimationFrame for smooth scrolling
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                console.log(`✅ Scrolled to section ${letter}`);
+            }, 50);
+        });
+    } else {
+        console.warn(`⚠️ Section marker for letter ${letter} not found`);
+    }
 }
 
 function renderSiteTypeFilter() {
