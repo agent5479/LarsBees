@@ -832,8 +832,8 @@ function showWelcomePopup() {
     // Initially set button to orange and disabled
     updateWelcomeButton(false);
     
-    // Update quick stats
-    updateWelcomeStats();
+    // Don't update welcome stats here - wait for sites to actually load
+    // updateWelcomeStats() will be called after data is loaded
     
     // Show the modal
     const welcomeModal = new bootstrap.Modal(document.getElementById('welcomeModal'));
@@ -953,19 +953,25 @@ function updateWelcomeStats() {
         syncTimeElement.textContent = now.toLocaleTimeString();
     }
     
-    // Check if data is loaded and update status - require sites count > 0
-    const sitesExists = window.sites !== undefined && window.sites !== null;
-    const sitesCount = Array.isArray(window.sites) ? window.sites.length : 0;
-    console.log(`🔍 updateWelcomeStats: sites exists=${sitesExists}, count=${sitesCount}`);
-    
-    if (sitesExists && sitesCount > 0) {
-        // Sites array exists and has data (count > 0), consider data loaded
-        updateWelcomeSyncStatus('synchronised');
-        updateWelcomeButton(true);
-    } else {
-        // No sites or sites count is 0, keep synchronising status
-        updateWelcomeSyncStatus('synchronising');
-        updateWelcomeButton(false);
+    // Only update status if modal is open - don't automatically turn green
+    // Status will be updated by checkWelcomeDataLoaded() or when Firebase data loads
+    const modal = document.getElementById('welcomeModal');
+    if (modal && modal.classList.contains('show')) {
+        // Check if data is loaded and update status - require sites count > 0
+        const sitesExists = window.sites !== undefined && window.sites !== null;
+        const sitesCount = Array.isArray(window.sites) ? window.sites.length : 0;
+        console.log(`🔍 updateWelcomeStats: sites exists=${sitesExists}, count=${sitesCount}`);
+        
+        // Only update if we have sites - otherwise keep synchronising
+        if (sitesExists && sitesCount > 0) {
+            // Sites array exists and has data (count > 0), consider data loaded
+            updateWelcomeSyncStatus('synchronised');
+            updateWelcomeButton(true);
+        } else {
+            // No sites or sites count is 0, keep synchronising status
+            updateWelcomeSyncStatus('synchronising');
+            updateWelcomeButton(false);
+        }
     }
     
     console.log('✅ Welcome popup ready - sync timestamp updated');
@@ -2226,6 +2232,22 @@ function loadDataFromFirebase() {
         } else {
             showSyncStatus('', 'success');
         }
+        
+        // Update welcome popup if it's open - sites are now loaded
+        if (document.getElementById('welcomeModal') && document.getElementById('welcomeModal').classList.contains('show')) {
+            const sitesCount = sites.length;
+            if (sitesCount > 0) {
+                updateWelcomeSyncStatus('synchronised');
+                updateWelcomeButton(true);
+                console.log(`✅ Welcome popup: Sites loaded (${sitesCount}), button turned green`);
+            } else {
+                // Keep synchronising if no sites
+                updateWelcomeSyncStatus('synchronising');
+                updateWelcomeButton(false);
+                console.log(`🟠 Welcome popup: No sites loaded (count=${sitesCount}), keeping button orange`);
+            }
+        }
+        
         checkAllDataLoaded();
     }, (error) => {
         console.log('❌ Tenant sites access failed:', error.message);
