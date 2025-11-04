@@ -1040,13 +1040,13 @@
             text-decoration: line-through;
         }
         
-        /* Site Cards */
+        /* Site Cards - Performance optimized (no animations) */
         .site-card {
-            transition: all 0.3s ease;
+            /* Removed transition for performance */
         }
         
         .site-card:hover {
-            transform: translateY(-3px);
+            /* Subtle shadow change only, no transform for performance */
             box-shadow: var(--shadow-lg);
         }
         

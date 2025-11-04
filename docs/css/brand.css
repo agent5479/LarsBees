@@ -263,12 +263,11 @@ a:hover {
     border-radius: var(--radius-lg);
     border: 2px solid var(--dark-yellow);
     box-shadow: var(--shadow-hive);
-    transition: all var(--transition-base);
     overflow: hidden;
 }
 
 .card:hover {
-    transform: translateY(-2px);
+    /* Subtle shadow change only, no transform for performance */
     box-shadow: var(--shadow-xl);
 }
 
@@ -421,30 +420,27 @@ a:hover {
 }
 
 /* ===== ENHANCED MINI-CARDS ===== */
-/* Hive Strength Badges */
+/* Hive Strength Badges - Performance optimized (no animations) */
 .hive-strength-badge {
-    transition: all 0.2s ease;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .hive-strength-badge:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    /* Subtle shadow change only, no transform for performance */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
 }
 
-/* Hive Box Cards */
+/* Hive Box Cards - Performance optimized (no animations) */
 .hive-box-card {
-    transition: all 0.2s ease;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     border: 2px solid transparent;
 }
 
 .hive-box-card:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    border-color: rgba(255,255,255,0.3);
+    /* Subtle shadow change only, no transform/scale for performance */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* Mobile responsiveness for mini-cards */
@@ -489,6 +485,7 @@ a:hover {
 
 .contact-required-badge {
     border: 2px solid #000000 !important;
+    /* Static gradient background instead of animated shimmer for performance */
     background: linear-gradient(
         90deg,
         #ffc107 0%,
@@ -497,10 +494,49 @@ a:hover {
         #ffcd39 75%,
         #ffc107 100%
     );
-    background-size: 200% 100%;
-    animation: shimmer 3s infinite linear;
     position: relative;
     overflow: hidden;
+}
+
+/* ===== RETURN TO TOP BUTTON ===== */
+#returnToTopBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--primary, #007bff);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    opacity: 0.9;
+}
+
+#returnToTopBtn:hover {
+    opacity: 1;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+    background: var(--primary-dark, #0056b3);
+}
+
+#returnToTopBtn:active {
+    transform: scale(0.95);
+}
+
+@media (max-width: 768px) {
+    #returnToTopBtn {
+        bottom: 15px;
+        right: 15px;
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
 }
 
 /* ===== PREFERS REDUCED MOTION ===== */

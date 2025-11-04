@@ -480,6 +480,60 @@ function renderSites() {
     } else {
         _renderSitesInternal();
     }
+    
+    // Setup return-to-top button visibility after rendering
+    setupReturnToTopButton();
+}
+
+/**
+ * Setup return-to-top button visibility based on scroll position
+ */
+function setupReturnToTopButton() {
+    const returnToTopBtn = document.getElementById('returnToTopBtn');
+    if (!returnToTopBtn) return;
+    
+    // Show/hide button based on scroll position
+    const handleScroll = () => {
+        const sitesView = document.getElementById('sitesView');
+        if (!sitesView || sitesView.classList.contains('hidden')) {
+            returnToTopBtn.style.display = 'none';
+            return;
+        }
+        
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > 300) {
+            returnToTopBtn.style.display = 'flex';
+        } else {
+            returnToTopBtn.style.display = 'none';
+        }
+    };
+    
+    // Check on initial load
+    handleScroll();
+    
+    // Throttle scroll listener for performance
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        scrollTimeout = setTimeout(handleScroll, 100);
+    }, { passive: true });
+}
+
+/**
+ * Scroll to top of sites view
+ */
+function scrollToTopSites() {
+    const sitesView = document.getElementById('sitesView');
+    if (sitesView) {
+        sitesView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Also scroll window to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        // Fallback to window scroll
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 /**

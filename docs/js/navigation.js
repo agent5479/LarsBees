@@ -94,6 +94,12 @@ function showSites() {
         updateActiveNav('Sites');
         renderSites();
         renderSiteTypeFilter();
+        // Setup return-to-top button after view is shown
+        setTimeout(() => {
+            if (typeof setupReturnToTopButton === 'function') {
+                setupReturnToTopButton();
+            }
+        }, 100);
     }, 10);
 }
 
