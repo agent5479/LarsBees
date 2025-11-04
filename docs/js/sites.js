@@ -485,12 +485,20 @@ function renderSites() {
     setupReturnToTopButton();
 }
 
+// Store scroll handler to avoid duplicate listeners
+let returnToTopScrollHandler = null;
+
 /**
  * Setup return-to-top button visibility based on scroll position
  */
 function setupReturnToTopButton() {
     const returnToTopBtn = document.getElementById('returnToTopBtn');
     if (!returnToTopBtn) return;
+    
+    // Remove existing listener if any
+    if (returnToTopScrollHandler) {
+        window.removeEventListener('scroll', returnToTopScrollHandler);
+    }
     
     // Show/hide button based on scroll position
     const handleScroll = () => {
@@ -508,17 +516,20 @@ function setupReturnToTopButton() {
         }
     };
     
-    // Check on initial load
-    handleScroll();
-    
-    // Throttle scroll listener for performance
+    // Store handler for cleanup
     let scrollTimeout;
-    window.addEventListener('scroll', () => {
+    returnToTopScrollHandler = () => {
         if (scrollTimeout) {
             clearTimeout(scrollTimeout);
         }
         scrollTimeout = setTimeout(handleScroll, 100);
-    }, { passive: true });
+    };
+    
+    // Check on initial load
+    handleScroll();
+    
+    // Add throttled scroll listener for performance
+    window.addEventListener('scroll', returnToTopScrollHandler, { passive: true });
 }
 
 /**
