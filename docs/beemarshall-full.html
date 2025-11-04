@@ -450,11 +450,6 @@
             }
         }
         
-        /* Navigation - Sticky positioning restored */
-        body, html {
-            overflow-x: hidden;
-        }
-        
         /* Navbar sticky positioning - ensure it works across all views */
         .navbar {
             background: var(--dark-yellow) !important;
@@ -470,8 +465,8 @@
             will-change: transform;
         }
         
-        /* Ensure body is the scroll container for sticky to work */
-        body {
+        /* Ensure body/html are scroll containers for sticky navbar */
+        body, html {
             overflow-x: hidden;
         }
         
