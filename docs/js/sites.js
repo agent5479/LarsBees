@@ -1796,6 +1796,9 @@ function initMap() {
     }
 }
 
+// Make initMap globally available
+window.initMap = initMap;
+
 // GPS Location
 function getCurrentLocation() {
     if (!navigator.geolocation) {
