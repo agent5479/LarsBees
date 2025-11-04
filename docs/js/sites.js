@@ -2630,7 +2630,7 @@ function scrollToSiteCard(siteId) {
     // Wait for page to fully load and render, then scroll to the letter section
     // Use a longer initial delay to allow showSites() to complete (including scrollToTop)
     let attempts = 0;
-    const maxAttempts = 40; // Increased attempts for better reliability
+    const maxAttempts = 50; // Increased attempts for better reliability
     
     const tryScroll = () => {
         attempts++;
@@ -2641,7 +2641,7 @@ function scrollToSiteCard(siteId) {
         if (sitesView && sitesView.classList.contains('hidden')) {
             // Sites view not visible yet, wait a bit more
             if (attempts < maxAttempts) {
-                setTimeout(tryScroll, 250);
+                setTimeout(tryScroll, 200);
             }
             return;
         }
@@ -2650,7 +2650,7 @@ function scrollToSiteCard(siteId) {
         const sitesList = document.getElementById('sitesList');
         if (!sitesList) {
             if (attempts < maxAttempts) {
-                setTimeout(tryScroll, 250);
+                setTimeout(tryScroll, 200);
             } else {
                 console.warn('⚠️ sitesList container not found after max attempts');
             }
@@ -2665,12 +2665,18 @@ function scrollToSiteCard(siteId) {
         
         if (isStillLoading && attempts < maxAttempts) {
             // Sites not rendered yet, wait longer
-            setTimeout(tryScroll, 300);
+            setTimeout(tryScroll, 250);
             return;
         }
         
         // Check if alphabet navigation bar exists (indicates sites are fully rendered)
         const alphabetNavBar = document.getElementById('alphabetNavBar');
+        if (!alphabetNavBar && attempts < maxAttempts) {
+            // Alphabet nav bar not rendered yet, wait a bit more
+            setTimeout(tryScroll, 200);
+            return;
+        }
+        
         const alphabetNavLink = alphabetNavBar ? document.querySelector(`a[href="#section-${letter}"].alphabet-nav-link`) : null;
         
         // Look for the section marker
@@ -2678,20 +2684,22 @@ function scrollToSiteCard(siteId) {
         
         if (sectionMarker) {
             console.log(`✅ Found section marker for letter ${letter}, scrolling...`);
-            // Use scrollToLetterSection function which handles the navigation link click
-            if (alphabetNavLink && typeof scrollToLetterSection === 'function') {
-                // Use the navigation function to ensure consistent behavior
-                scrollToLetterSection(letter);
-                console.log(`✅ Successfully scrolled to section ${letter} using navigation link (site: ${site.name})`);
-            } else {
-                // Direct scroll if navigation link not available
-                requestAnimationFrame(() => {
-                    setTimeout(() => {
-                        sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        console.log(`✅ Successfully scrolled to section ${letter} directly (site: ${site.name})`);
-                    }, 100);
-                });
-            }
+            // Calculate the position and scroll directly to ensure it happens
+            const rect = sectionMarker.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetPosition = rect.top + scrollTop - 20; // 20px offset from top
+            
+            // Use requestAnimationFrame to ensure smooth scroll after all rendering
+            requestAnimationFrame(() => {
+                // Force scroll after a short delay to override any scrollToTop interference
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                    console.log(`✅ Successfully scrolled to section ${letter} at position ${targetPosition} (site: ${site.name})`);
+                }, 150);
+            });
         } else {
             // Section marker not found yet
             if (attempts < maxAttempts) {
@@ -2702,7 +2710,7 @@ function scrollToSiteCard(siteId) {
                     setTimeout(tryScroll, 150);
                 } else {
                     // Sites not rendered yet, wait longer
-                    setTimeout(tryScroll, 300);
+                    setTimeout(tryScroll, 250);
                 }
             } else {
                 console.warn(`⚠️ Section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
@@ -2717,5 +2725,6 @@ function scrollToSiteCard(siteId) {
     // Start trying after a longer delay to allow showSites() and scrollToTop() to complete
     // showSites() has a setTimeout of 10ms and calls scrollToTop(), so we need to wait
     // for that to finish before scrolling to our target section
-    setTimeout(tryScroll, 800);
+    // Increased delay to 1200ms to ensure scrollToTop() animation completes
+    setTimeout(tryScroll, 1200);
 }
