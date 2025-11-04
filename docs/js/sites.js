@@ -457,22 +457,25 @@ function setupReturnToTopButton() {
         const mainApp = document.getElementById('mainApp');
         if (!mainApp || mainApp.classList.contains('hidden')) {
             returnToTopBtn.style.display = 'none';
+            returnToTopBtn.style.visibility = 'hidden';
             return;
         }
         
         // Check scroll position from window or document
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-        if (typeof Logger !== 'undefined') {
-            Logger.log(`🔍 Scroll position: ${scrollTop}, showing button: ${scrollTop > 300}`);
-        }
+        
         if (scrollTop > 300) {
+            // Show button
             returnToTopBtn.style.display = 'flex';
             returnToTopBtn.style.visibility = 'visible';
             returnToTopBtn.style.opacity = '0.9';
+            returnToTopBtn.style.position = 'fixed';
+            returnToTopBtn.style.zIndex = '1050';
             updateButtonPosition();
             // Force a reflow to ensure visibility
             void returnToTopBtn.offsetHeight;
         } else {
+            // Hide button
             returnToTopBtn.style.display = 'none';
             returnToTopBtn.style.visibility = 'hidden';
         }
