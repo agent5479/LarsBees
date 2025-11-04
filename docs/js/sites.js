@@ -2656,40 +2656,46 @@ function scrollToSiteCard(siteId) {
             return;
         }
         
-        // Look for the alphabet navigation link first, then use it to scroll
-        const alphabetNavLink = document.querySelector(`a[href="#section-${letter}"].alphabet-nav-link`);
+        // Check if alphabet navigation bar exists (indicates sites are fully rendered)
+        const alphabetNavBar = document.getElementById('alphabetNavBar');
+        const alphabetNavLink = alphabetNavBar ? document.querySelector(`a[href="#section-${letter}"].alphabet-nav-link`) : null;
         
-        if (alphabetNavLink) {
-            console.log(`✅ Found alphabet navigation link for letter ${letter}, clicking to scroll...`);
-            // Use the navigation link to scroll (this uses scrollToLetterSection)
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    alphabetNavLink.click();
-                    console.log(`✅ Successfully clicked navigation link for section ${letter} (site: ${site.name})`);
-                }, 200);
-            });
-        } else {
-            // Fallback: look for section marker directly if navigation link not found
-            const sectionMarker = document.getElementById(`section-${letter}`);
-            if (sectionMarker) {
-                console.log(`✅ Found section marker (no nav link), scrolling directly to letter ${letter}...`);
+        // Look for the section marker
+        const sectionMarker = document.getElementById(`section-${letter}`);
+        
+        if (sectionMarker) {
+            console.log(`✅ Found section marker for letter ${letter}, scrolling...`);
+            // Use scrollToLetterSection function which handles the navigation link click
+            if (alphabetNavLink && typeof scrollToLetterSection === 'function') {
+                // Use the navigation function to ensure consistent behavior
+                scrollToLetterSection(letter);
+                console.log(`✅ Successfully scrolled to section ${letter} using navigation link (site: ${site.name})`);
+            } else {
+                // Direct scroll if navigation link not available
                 requestAnimationFrame(() => {
                     setTimeout(() => {
                         sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        console.log(`✅ Successfully scrolled to section ${letter} for site: ${site.name}`);
-                    }, 200);
+                        console.log(`✅ Successfully scrolled to section ${letter} directly (site: ${site.name})`);
+                    }, 100);
                 });
-            } else {
-                // Section marker not found yet
-                if (attempts < maxAttempts) {
-                    // Sites are rendered but navigation link/marker not found - might need to wait for renderSites to complete
+            }
+        } else {
+            // Section marker not found yet
+            if (attempts < maxAttempts) {
+                // Check if sites are being rendered
+                const sitesListContent = sitesList.innerHTML.trim();
+                if (sitesListContent && sitesListContent !== '<div class="col-12"><p class="text-center text-muted my-5">Loading sites...</p></div>') {
+                    // Sites are rendered but section marker not found - might need to wait for renderSites to complete
                     setTimeout(tryScroll, 150);
                 } else {
-                    console.warn(`⚠️ Alphabet navigation link and section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
-                    // Try to scroll to top of sites list as fallback
-                    if (sitesList) {
-                        sitesList.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
+                    // Sites not rendered yet, wait longer
+                    setTimeout(tryScroll, 300);
+                }
+            } else {
+                console.warn(`⚠️ Section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
+                // Try to scroll to top of sites list as fallback
+                if (sitesList) {
+                    sitesList.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
             }
         }
