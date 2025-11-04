@@ -327,7 +327,16 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error('❌ Login form not found!');
     }
-    document.getElementById('siteForm').addEventListener('submit', handleSaveSite);
+    const siteForm = document.getElementById('siteForm');
+    if (siteForm) {
+        siteForm.addEventListener('submit', function(e) {
+            if (typeof handleSaveSite === 'function') {
+                handleSaveSite(e);
+            } else {
+                console.error('handleSaveSite function not available');
+            }
+        });
+    }
     document.getElementById('actionForm').addEventListener('submit', handleLogAction);
     document.getElementById('addEmployeeForm')?.addEventListener('submit', handleAddEmployee);
     document.getElementById('scheduleTaskForm')?.addEventListener('submit', handleScheduleTask);
