@@ -272,11 +272,20 @@ let seasonalRequirements = []; // Array of {taskId, taskName, dueDate, category,
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM Content Loaded - Initializing BeeMarshall...');
-    console.log(`📦 BeeMarshall v${APP_VERSION} - Professional Apiary Management System`);
+    if (typeof Logger !== 'undefined') {
+        Logger.log('🚀 DOM Content Loaded - Initializing BeeMarshall...');
+        Logger.log(`📦 BeeMarshall v${APP_VERSION} - Professional Apiary Management System`);
+    }
     
     // Initialize secure configuration and admin accounts
     initializeAdminAccounts();
+    
+    // Initialize return-to-top button for all views
+    setTimeout(() => {
+        if (typeof setupReturnToTopButton === 'function') {
+            setupReturnToTopButton();
+        }
+    }, 500);
     
     // Initialize database reference
     initializeDatabase();

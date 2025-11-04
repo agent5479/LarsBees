@@ -79,6 +79,12 @@ function showDashboard() {
         if (typeof updateDashboard === 'function') {
             updateDashboard();
         }
+        // Setup return-to-top button for dashboard view
+        setTimeout(() => {
+            if (typeof setupReturnToTopButton === 'function') {
+                setupReturnToTopButton();
+            }
+        }, 100);
     }, 10);
 }
 
@@ -121,6 +127,12 @@ function showActions() {
         window.scrollTo(0, 0);
         document.documentElement.scrollTop = 0;
         document.body.scrollTop = 0;
+        // Setup return-to-top button for actions view
+        setTimeout(() => {
+            if (typeof setupReturnToTopButton === 'function') {
+                setupReturnToTopButton();
+            }
+        }, 100);
     }, 10);
 }
 

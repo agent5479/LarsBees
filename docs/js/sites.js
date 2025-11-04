@@ -415,10 +415,11 @@ function setupReturnToTopButton() {
         window.removeEventListener('scroll', returnToTopScrollHandler);
     }
     
-    // Show/hide navbar link based on scroll position
+    // Show/hide navbar link based on scroll position (works for all views)
     const handleScroll = () => {
-        const sitesView = document.getElementById('sitesView');
-        if (!sitesView || sitesView.classList.contains('hidden')) {
+        // Check if mainApp is visible (user is logged in)
+        const mainApp = document.getElementById('mainApp');
+        if (!mainApp || mainApp.classList.contains('hidden')) {
             backToTopNavItem.style.display = 'none';
             return;
         }
@@ -449,18 +450,14 @@ function setupReturnToTopButton() {
 }
 
 /**
- * Scroll to top of sites view
+ * Scroll to top (works for all views)
  */
 function scrollToTopSites() {
-    const sitesView = document.getElementById('sitesView');
-    if (sitesView) {
-        sitesView.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Also scroll window to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-        // Fallback to window scroll
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    // Scroll window to top - works for all views
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Also ensure document elements are scrolled
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 }
 
 /**
