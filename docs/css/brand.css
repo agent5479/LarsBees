@@ -498,20 +498,9 @@ a:hover {
     overflow: hidden;
 }
 
-/* ===== BACK TO TOP NAVBAR LINK ===== */
-#backToTopNavItem {
-    transition: opacity 0.3s ease;
-}
-
-#backToTopNavItem .nav-link {
-    color: var(--black) !important;
-    font-weight: 600;
-}
-
-#backToTopNavItem .nav-link:hover {
-    color: var(--white) !important;
-    background: rgba(255,255,255,0.3);
-}
+/* ===== BACK TO TOP BUTTON ===== */
+/* Button is now positioned in bottom right next to sync overlay */
+/* Styles are defined in beemarshall-full.html */
 
 /* ===== PREFERS REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {

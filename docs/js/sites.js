@@ -404,32 +404,55 @@ window.renderSites = renderSites;
 let returnToTopScrollHandler = null;
 
 /**
- * Setup return-to-top navbar link visibility based on scroll position
+ * Setup return-to-top button visibility based on scroll position
+ * Button is positioned next to sync overlay in bottom right
  */
 function setupReturnToTopButton() {
-    const backToTopNavItem = document.getElementById('backToTopNavItem');
-    if (!backToTopNavItem) return;
+    const returnToTopBtn = document.getElementById('returnToTopBtn');
+    if (!returnToTopBtn) return;
     
     // Remove existing listener if any
     if (returnToTopScrollHandler) {
         window.removeEventListener('scroll', returnToTopScrollHandler);
     }
     
-    // Show/hide navbar link based on scroll position (works for all views)
+    // Function to update button position based on sync overlay visibility
+    const updateButtonPosition = () => {
+        const syncOverlay = document.getElementById('syncStatusOverlay');
+        if (!syncOverlay) return;
+        
+        // Check if sync overlay is visible
+        const isSyncVisible = syncOverlay.offsetParent !== null && 
+                              !syncOverlay.classList.contains('hidden') &&
+                              syncOverlay.style.display !== 'none';
+        
+        if (isSyncVisible) {
+            // Position button to the left of sync overlay
+            const syncWidth = syncOverlay.offsetWidth || 200;
+            const gap = 10; // Gap between button and sync overlay
+            returnToTopBtn.style.right = `${20 + syncWidth + gap}px`;
+        } else {
+            // Position button at bottom right (same as sync overlay position)
+            returnToTopBtn.style.right = '20px';
+        }
+    };
+    
+    // Show/hide button based on scroll position (works for all views)
     const handleScroll = () => {
         // Check if mainApp is visible (user is logged in)
         const mainApp = document.getElementById('mainApp');
         if (!mainApp || mainApp.classList.contains('hidden')) {
-            backToTopNavItem.style.display = 'none';
+            returnToTopBtn.style.display = 'none';
             return;
         }
         
         // Check scroll position from window or document
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
         if (scrollTop > 300) {
-            backToTopNavItem.style.display = 'block';
+            returnToTopBtn.style.display = 'flex';
+            updateButtonPosition();
         } else {
-            backToTopNavItem.style.display = 'none';
+            returnToTopBtn.style.display = 'none';
         }
     };
     
@@ -439,11 +462,29 @@ function setupReturnToTopButton() {
         if (scrollTimeout) {
             clearTimeout(scrollTimeout);
         }
-        scrollTimeout = setTimeout(handleScroll, 100);
+        scrollTimeout = setTimeout(() => {
+            handleScroll();
+            updateButtonPosition();
+        }, 100);
     };
+    
+    // Watch for sync overlay visibility changes
+    const syncOverlay = document.getElementById('syncStatusOverlay');
+    if (syncOverlay) {
+        const observer = new MutationObserver(() => {
+            updateButtonPosition();
+        });
+        observer.observe(syncOverlay, {
+            attributes: true,
+            attributeFilter: ['style', 'class'],
+            childList: false,
+            subtree: false
+        });
+    }
     
     // Check on initial load
     handleScroll();
+    updateButtonPosition();
     
     // Add throttled scroll listener for performance
     window.addEventListener('scroll', returnToTopScrollHandler, { passive: true });

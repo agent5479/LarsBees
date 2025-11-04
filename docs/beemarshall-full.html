@@ -1563,14 +1563,6 @@
                     
                     <!-- Right Side Navigation -->
                     <ul class="navbar-nav ms-auto align-items-center">
-                        <!-- Back to Top (visible when scrolling down on any view) -->
-                        <li class="nav-item" id="backToTopNavItem" style="display: none;">
-                            <a class="nav-link" href="#" onclick="scrollToTopSites(); return false;" title="Back to top">
-                                <i class="bi bi-arrow-up"></i>
-                                <span class="d-none d-md-inline ms-1">Top</span>
-                            </a>
-                        </li>
-                        
                         <!-- Help/Documentation -->
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showHelpModal()" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Help & Documentation">
@@ -4453,6 +4445,12 @@
             <div id="syncStatusCount" class="sync-status-count hidden">0</div>
         </div>
     </div>
+    
+    <!-- Return to Top Button (positioned next to sync overlay) -->
+    <button id="returnToTopBtn" onclick="scrollToTopSites(); return false;" title="Back to top" style="display: none;">
+        <i class="bi bi-arrow-up"></i>
+        <span class="d-none d-md-inline ms-1">Top</span>
+    </button>
 
     <style>
         /* Sync Status Overlay Styles */
@@ -4555,6 +4553,63 @@
                 max-width: 160px;
                 padding: 10px 12px;
                 font-size: 0.8rem;
+            }
+        }
+        
+        /* Return to Top Button - positioned next to sync overlay */
+        #returnToTopBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1050;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            padding: 12px 16px;
+            min-width: 60px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            opacity: 0.9;
+        }
+        
+        #returnToTopBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+            opacity: 1;
+        }
+        
+        #returnToTopBtn i {
+            font-size: 1.1rem;
+        }
+        
+        /* Position button to the left of sync overlay when both are visible */
+        #syncStatusOverlay:not(.hidden) ~ #returnToTopBtn,
+        #syncStatusOverlay:not([style*="display: none"]) ~ #returnToTopBtn {
+            right: calc(20px + 200px); /* Adjust based on sync overlay width */
+        }
+        
+        /* Mobile responsiveness for return to top button */
+        @media (max-width: 768px) {
+            #returnToTopBtn {
+                bottom: 10px;
+                right: 10px;
+                padding: 10px 12px;
+                font-size: 0.8rem;
+                min-width: 50px;
+            }
+            
+            #syncStatusOverlay:not(.hidden) ~ #returnToTopBtn,
+            #syncStatusOverlay:not([style*="display: none"]) ~ #returnToTopBtn {
+                right: calc(10px + 160px); /* Adjust for mobile sync overlay width */
             }
         }
     </style>
