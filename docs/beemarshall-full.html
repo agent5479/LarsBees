@@ -455,7 +455,7 @@
             overflow-x: hidden;
         }
         
-        /* Navbar sticky positioning */
+        /* Navbar sticky positioning - ensure it works across all views */
         .navbar {
             background: var(--dark-yellow) !important;
             border-bottom: 2px solid var(--black);
@@ -466,6 +466,13 @@
             z-index: 1040 !important;
             width: 100% !important;
             margin: 0 !important;
+            /* Ensure sticky works properly */
+            will-change: transform;
+        }
+        
+        /* Ensure body is the scroll container for sticky to work */
+        body {
+            overflow-x: hidden;
         }
         
         /* Main content area */
