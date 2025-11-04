@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 navbar.classList.remove('scrolled');
             }
         }
-        // Auto-collapse mobile nav immediately on any scroll
+        // Auto-collapse mobile nav immediately on any scroll (if not already handled by navbar script)
         if (window.innerWidth <= 992) { // <= lg breakpoint
             const navCollapse = document.getElementById('navbarNav');
             if (navCollapse && navCollapse.classList.contains('show')) {
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
-    });
+    }, { passive: true });
     
     // Initialize global quick links bar
     initializeGlobalQuickLinks();
