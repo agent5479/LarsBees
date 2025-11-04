@@ -340,19 +340,32 @@ function renderSites() {
  */
 function scrollToLetterSection(letter) {
     console.log(`📍 Scrolling to letter section: ${letter}`);
-    const sectionMarker = document.getElementById(`section-${letter}`);
     
-    if (sectionMarker) {
-        // Use requestAnimationFrame for smooth scrolling
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                console.log(`✅ Scrolled to section ${letter}`);
-            }, 50);
-        });
-    } else {
-        console.warn(`⚠️ Section marker for letter ${letter} not found`);
-    }
+    // Try to find the section marker with retries
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const tryScroll = () => {
+        attempts++;
+        const sectionMarker = document.getElementById(`section-${letter}`);
+        
+        if (sectionMarker) {
+            // Use requestAnimationFrame for smooth scrolling
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    console.log(`✅ Scrolled to section ${letter}`);
+                }, 100);
+            });
+        } else if (attempts < maxAttempts) {
+            // Section marker not found yet, retry
+            setTimeout(tryScroll, 100);
+        } else {
+            console.warn(`⚠️ Section marker for letter ${letter} not found after ${maxAttempts} attempts`);
+        }
+    };
+    
+    tryScroll();
 }
 
 function renderSiteTypeFilter() {
@@ -2702,6 +2715,7 @@ function scrollToSiteCard(siteId) {
     };
     
     // Start trying after a longer delay to allow showSites() and scrollToTop() to complete
-    // showSites() has a setTimeout of 10ms, so we wait longer to ensure everything is ready
-    setTimeout(tryScroll, 500);
+    // showSites() has a setTimeout of 10ms and calls scrollToTop(), so we need to wait
+    // for that to finish before scrolling to our target section
+    setTimeout(tryScroll, 800);
 }
