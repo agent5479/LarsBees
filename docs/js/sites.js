@@ -11,6 +11,12 @@ let sitesRenderCache = {
 };
 const SITE_CACHE_TTL = 100; // Cache for 100ms to handle rapid calls
 
+// Function to invalidate the render cache (call when sites data changes)
+function invalidateSitesRenderCache() {
+    sitesRenderCache.data = null;
+    sitesRenderCache.timestamp = 0;
+}
+
 // Site types and their associated colors
 const SITE_TYPES = {
     'production': { name: 'Production', color: '#28a745', icon: 'bi-hexagon-fill' },

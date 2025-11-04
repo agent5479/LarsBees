@@ -3129,7 +3129,13 @@ function initializeDataLoading() {
         firebaseListeners.sites.on('value', snapshot => {
             const data = snapshot.val();
             window.sites = data ? Object.values(data) : [];
-            console.log('🔄 Sites updated:', window.sites.length);
+            // Invalidate render cache when sites data changes
+            if (typeof invalidateSitesRenderCache === 'function') {
+                invalidateSitesRenderCache();
+            }
+            if (typeof Logger !== 'undefined') {
+                Logger.log('🔄 Sites updated:', window.sites.length);
+            }
             if (typeof updateDashboard === 'function') {
                 updateDashboard();
             }
