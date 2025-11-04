@@ -432,15 +432,22 @@ function setupReturnToTopButton() {
         }
         
         // Check if sync overlay is visible
+        const computedStyle = window.getComputedStyle(syncOverlay);
         const isSyncVisible = syncOverlay.offsetParent !== null && 
                               !syncOverlay.classList.contains('hidden') &&
                               syncOverlay.style.display !== 'none' &&
-                              window.getComputedStyle(syncOverlay).display !== 'none';
+                              computedStyle.display !== 'none' &&
+                              computedStyle.visibility !== 'hidden';
         
         if (isSyncVisible) {
+            // Get sync overlay dimensions and position
+            const syncRect = syncOverlay.getBoundingClientRect();
+            const syncWidth = syncRect.width || 200;
+            const gap = 12; // Gap between button and sync overlay
+            const buttonWidth = returnToTopBtn.offsetWidth || 60;
+            
             // Position button to the left of sync overlay
-            const syncWidth = syncOverlay.offsetWidth || 200;
-            const gap = 10; // Gap between button and sync overlay
+            // Sync overlay is at right: 20px, so button should be at right: 20px + syncWidth + gap
             const rightPos = 20 + syncWidth + gap;
             returnToTopBtn.style.right = `${rightPos}px`;
             returnToTopBtn.style.bottom = '20px'; // Match sync overlay bottom position
@@ -471,7 +478,10 @@ function setupReturnToTopButton() {
             returnToTopBtn.style.opacity = '0.9';
             returnToTopBtn.style.position = 'fixed';
             returnToTopBtn.style.zIndex = '1050';
-            updateButtonPosition();
+            // Use requestAnimationFrame to ensure sync overlay is rendered first
+            requestAnimationFrame(() => {
+                updateButtonPosition();
+            });
             // Force a reflow to ensure visibility
             void returnToTopBtn.offsetHeight;
         } else {
@@ -489,15 +499,21 @@ function setupReturnToTopButton() {
         }
         scrollTimeout = setTimeout(() => {
             handleScroll();
-            updateButtonPosition();
+            // Update position after scroll handling
+            requestAnimationFrame(() => {
+                updateButtonPosition();
+            });
         }, 100);
     };
     
-    // Watch for sync overlay visibility changes
+    // Watch for sync overlay visibility changes and resize events
     const syncOverlay = document.getElementById('syncStatusOverlay');
     if (syncOverlay) {
         const observer = new MutationObserver(() => {
-            updateButtonPosition();
+            // Use requestAnimationFrame to ensure DOM is updated
+            requestAnimationFrame(() => {
+                updateButtonPosition();
+            });
         });
         observer.observe(syncOverlay, {
             attributes: true,
@@ -505,25 +521,31 @@ function setupReturnToTopButton() {
             childList: false,
             subtree: false
         });
+        
+        // Also watch for window resize to recalculate position
+        window.addEventListener('resize', () => {
+            requestAnimationFrame(() => {
+                updateButtonPosition();
+            });
+        }, { passive: true });
     }
     
     // Check on initial load
     handleScroll();
-    updateButtonPosition();
+    requestAnimationFrame(() => {
+        updateButtonPosition();
+    });
     
     // Force initial check after a short delay to ensure DOM is ready
     setTimeout(() => {
         handleScroll();
-        updateButtonPosition();
+        requestAnimationFrame(() => {
+            updateButtonPosition();
+        });
     }, 200);
     
     // Add throttled scroll listener for performance
     window.addEventListener('scroll', returnToTopScrollHandler, { passive: true });
-    
-    // Also check on window resize (sync overlay size might change)
-    window.addEventListener('resize', () => {
-        updateButtonPosition();
-    }, { passive: true });
 }
 
 /**
