@@ -2680,15 +2680,16 @@ function scrollToSiteCard(siteId) {
                     }, 200);
                 });
             } else {
-            // Section marker not found yet
-            if (attempts < maxAttempts) {
-                // Sites are rendered but section marker not found - might need to wait for renderSites to complete
-                setTimeout(tryScroll, 150);
-            } else {
-                console.warn(`⚠️ Section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
-                // Try to scroll to top of sites list as fallback
-                if (sitesList) {
-                    sitesList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Section marker not found yet
+                if (attempts < maxAttempts) {
+                    // Sites are rendered but navigation link/marker not found - might need to wait for renderSites to complete
+                    setTimeout(tryScroll, 150);
+                } else {
+                    console.warn(`⚠️ Alphabet navigation link and section marker for letter ${letter} (site: ${site.name}) not found after ${maxAttempts} attempts`);
+                    // Try to scroll to top of sites list as fallback
+                    if (sitesList) {
+                        sitesList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 }
             }
         }
