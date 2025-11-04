@@ -4398,7 +4398,7 @@
             // Handle reports navigation
             handleReportsNavigation();
             
-            // Auto-collapse mobile navbar menu after 5 seconds
+            // Auto-collapse mobile navbar menu after 3 seconds (reduced from 5)
             const navbarToggler = document.querySelector('.navbar-toggler');
             const navbarCollapse = document.getElementById('navbarNav');
             
@@ -4412,13 +4412,13 @@
                         clearTimeout(collapseTimeout);
                     }
                     
-                    // Set new timeout to collapse after 5 seconds
+                    // Set new timeout to collapse after 3 seconds
                     collapseTimeout = setTimeout(function() {
                         const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
                         if (bsCollapse) {
                             bsCollapse.hide();
                         }
-                    }, 5000);
+                    }, 3000);
                 });
                 
                 // Clear timeout when user manually closes the menu
@@ -4428,6 +4428,33 @@
                         collapseTimeout = null;
                     }
                 });
+                
+                // Collapse menu immediately on scroll (for mobile)
+                let scrollTimeout = null;
+                window.addEventListener('scroll', function() {
+                    // Only collapse on mobile viewports
+                    if (window.innerWidth <= 992) {
+                        // Check if navbar is expanded
+                        if (navbarCollapse.classList.contains('show')) {
+                            // Clear auto-collapse timeout since we're collapsing now
+                            if (collapseTimeout) {
+                                clearTimeout(collapseTimeout);
+                                collapseTimeout = null;
+                            }
+                            
+                            // Throttle scroll events to avoid excessive calls
+                            if (scrollTimeout) {
+                                clearTimeout(scrollTimeout);
+                            }
+                            scrollTimeout = setTimeout(function() {
+                                const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                                if (bsCollapse && navbarCollapse.classList.contains('show')) {
+                                    bsCollapse.hide();
+                                }
+                            }, 50); // Small delay to allow scroll to start
+                        }
+                    }
+                }, { passive: true });
             }
         });
     </script>
