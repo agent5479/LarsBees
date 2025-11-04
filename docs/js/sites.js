@@ -2656,20 +2656,30 @@ function scrollToSiteCard(siteId) {
             return;
         }
         
-        // Look for the alphabetical section marker
-        const sectionMarker = document.getElementById(`section-${letter}`);
+        // Look for the alphabet navigation link first, then use it to scroll
+        const alphabetNavLink = document.querySelector(`a[href="#section-${letter}"].alphabet-nav-link`);
         
-        if (sectionMarker) {
-            console.log(`✅ Found section marker for letter ${letter}, scrolling...`);
-            // Use requestAnimationFrame for smooth scrolling
-            // Add a small delay to ensure scrollToTop from showSites() has completed
+        if (alphabetNavLink) {
+            console.log(`✅ Found alphabet navigation link for letter ${letter}, clicking to scroll...`);
+            // Use the navigation link to scroll (this uses scrollToLetterSection)
             requestAnimationFrame(() => {
                 setTimeout(() => {
-                    sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    console.log(`✅ Successfully scrolled to section ${letter} for site: ${site.name}`);
+                    alphabetNavLink.click();
+                    console.log(`✅ Successfully clicked navigation link for section ${letter} (site: ${site.name})`);
                 }, 200);
             });
         } else {
+            // Fallback: look for section marker directly if navigation link not found
+            const sectionMarker = document.getElementById(`section-${letter}`);
+            if (sectionMarker) {
+                console.log(`✅ Found section marker (no nav link), scrolling directly to letter ${letter}...`);
+                requestAnimationFrame(() => {
+                    setTimeout(() => {
+                        sectionMarker.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        console.log(`✅ Successfully scrolled to section ${letter} for site: ${site.name}`);
+                    }, 200);
+                });
+            } else {
             // Section marker not found yet
             if (attempts < maxAttempts) {
                 // Sites are rendered but section marker not found - might need to wait for renderSites to complete
