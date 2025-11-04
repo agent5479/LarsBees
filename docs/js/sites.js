@@ -397,6 +397,9 @@ function renderSites() {
     setupReturnToTopButton();
 }
 
+// Make renderSites globally available
+window.renderSites = renderSites;
+
 // Store scroll handler to avoid duplicate listeners
 let returnToTopScrollHandler = null;
 
