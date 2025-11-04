@@ -421,41 +421,12 @@ function setupReturnToTopButton() {
         window.removeEventListener('scroll', returnToTopScrollHandler);
     }
     
-    // Function to update button position based on sync overlay visibility
+    // Function to update button position - always on left side
     const updateButtonPosition = () => {
-        const syncOverlay = document.getElementById('syncStatusOverlay');
-        if (!syncOverlay) {
-            // No sync overlay, position at default bottom right
-            returnToTopBtn.style.right = '20px';
-            returnToTopBtn.style.bottom = '20px';
-            return;
-        }
-        
-        // Check if sync overlay is visible
-        const computedStyle = window.getComputedStyle(syncOverlay);
-        const isSyncVisible = syncOverlay.offsetParent !== null && 
-                              !syncOverlay.classList.contains('hidden') &&
-                              syncOverlay.style.display !== 'none' &&
-                              computedStyle.display !== 'none' &&
-                              computedStyle.visibility !== 'hidden';
-        
-        if (isSyncVisible) {
-            // Get sync overlay dimensions and position
-            const syncRect = syncOverlay.getBoundingClientRect();
-            const syncWidth = syncRect.width || 200;
-            const gap = 12; // Gap between button and sync overlay
-            const buttonWidth = returnToTopBtn.offsetWidth || 60;
-            
-            // Position button to the left of sync overlay
-            // Sync overlay is at right: 20px, so button should be at right: 20px + syncWidth + gap
-            const rightPos = 20 + syncWidth + gap;
-            returnToTopBtn.style.right = `${rightPos}px`;
-            returnToTopBtn.style.bottom = '20px'; // Match sync overlay bottom position
-        } else {
-            // Position button at bottom right (same as sync overlay position)
-            returnToTopBtn.style.right = '20px';
-            returnToTopBtn.style.bottom = '20px';
-        }
+        // Position button on the left side (opposite of sync overlay)
+        returnToTopBtn.style.left = '20px';
+        returnToTopBtn.style.right = 'auto';
+        returnToTopBtn.style.bottom = '20px';
     };
     
     // Show/hide button based on scroll position (works for all views)
@@ -478,10 +449,7 @@ function setupReturnToTopButton() {
             returnToTopBtn.style.opacity = '0.9';
             returnToTopBtn.style.position = 'fixed';
             returnToTopBtn.style.zIndex = '1050';
-            // Use requestAnimationFrame to ensure sync overlay is rendered first
-            requestAnimationFrame(() => {
-                updateButtonPosition();
-            });
+            updateButtonPosition();
             // Force a reflow to ensure visibility
             void returnToTopBtn.offsetHeight;
         } else {
@@ -499,49 +467,24 @@ function setupReturnToTopButton() {
         }
         scrollTimeout = setTimeout(() => {
             handleScroll();
-            // Update position after scroll handling
-            requestAnimationFrame(() => {
-                updateButtonPosition();
-            });
         }, 100);
     };
     
-    // Watch for sync overlay visibility changes and resize events
-    const syncOverlay = document.getElementById('syncStatusOverlay');
-    if (syncOverlay) {
-        const observer = new MutationObserver(() => {
-            // Use requestAnimationFrame to ensure DOM is updated
-            requestAnimationFrame(() => {
-                updateButtonPosition();
-            });
+    // Watch for window resize to update position if needed
+    window.addEventListener('resize', () => {
+        requestAnimationFrame(() => {
+            updateButtonPosition();
         });
-        observer.observe(syncOverlay, {
-            attributes: true,
-            attributeFilter: ['style', 'class'],
-            childList: false,
-            subtree: false
-        });
-        
-        // Also watch for window resize to recalculate position
-        window.addEventListener('resize', () => {
-            requestAnimationFrame(() => {
-                updateButtonPosition();
-            });
-        }, { passive: true });
-    }
+    }, { passive: true });
     
     // Check on initial load
     handleScroll();
-    requestAnimationFrame(() => {
-        updateButtonPosition();
-    });
+    updateButtonPosition();
     
     // Force initial check after a short delay to ensure DOM is ready
     setTimeout(() => {
         handleScroll();
-        requestAnimationFrame(() => {
-            updateButtonPosition();
-        });
+        updateButtonPosition();
     }, 200);
     
     // Add throttled scroll listener for performance

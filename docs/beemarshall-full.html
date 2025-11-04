@@ -4583,11 +4583,12 @@
             }
         }
         
-        /* Return to Top Button - positioned next to sync overlay */
+        /* Return to Top Button - positioned on left side (opposite of sync overlay) */
         #returnToTopBtn {
             position: fixed !important;
             bottom: 20px !important;
-            right: 20px !important;
+            left: 20px !important;
+            right: auto !important;
             z-index: 1050 !important;
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(10px);
@@ -4619,22 +4620,15 @@
             font-size: 1.1rem;
         }
         
-        /* Position button to the left of sync overlay when both are visible */
-        /* This is handled dynamically by JavaScript */
-        
         /* Mobile responsiveness for return to top button */
         @media (max-width: 768px) {
             #returnToTopBtn {
                 bottom: 10px;
-                right: 10px;
+                left: 10px;
+                right: auto;
                 padding: 10px 12px;
                 font-size: 0.8rem;
                 min-width: 50px;
-            }
-            
-            #syncStatusOverlay:not(.hidden) ~ #returnToTopBtn,
-            #syncStatusOverlay:not([style*="display: none"]) ~ #returnToTopBtn {
-                right: calc(10px + 160px); /* Adjust for mobile sync overlay width */
             }
         }
     </style>
