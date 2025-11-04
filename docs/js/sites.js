@@ -424,21 +424,30 @@ function setupReturnToTopButton() {
     // Function to update button position based on sync overlay visibility
     const updateButtonPosition = () => {
         const syncOverlay = document.getElementById('syncStatusOverlay');
-        if (!syncOverlay) return;
+        if (!syncOverlay) {
+            // No sync overlay, position at default bottom right
+            returnToTopBtn.style.right = '20px';
+            returnToTopBtn.style.bottom = '20px';
+            return;
+        }
         
         // Check if sync overlay is visible
         const isSyncVisible = syncOverlay.offsetParent !== null && 
                               !syncOverlay.classList.contains('hidden') &&
-                              syncOverlay.style.display !== 'none';
+                              syncOverlay.style.display !== 'none' &&
+                              window.getComputedStyle(syncOverlay).display !== 'none';
         
         if (isSyncVisible) {
             // Position button to the left of sync overlay
             const syncWidth = syncOverlay.offsetWidth || 200;
             const gap = 10; // Gap between button and sync overlay
-            returnToTopBtn.style.right = `${20 + syncWidth + gap}px`;
+            const rightPos = 20 + syncWidth + gap;
+            returnToTopBtn.style.right = `${rightPos}px`;
+            returnToTopBtn.style.bottom = '20px'; // Match sync overlay bottom position
         } else {
             // Position button at bottom right (same as sync overlay position)
             returnToTopBtn.style.right = '20px';
+            returnToTopBtn.style.bottom = '20px';
         }
     };
     
@@ -461,8 +470,11 @@ function setupReturnToTopButton() {
             returnToTopBtn.style.visibility = 'visible';
             returnToTopBtn.style.opacity = '0.9';
             updateButtonPosition();
+            // Force a reflow to ensure visibility
+            void returnToTopBtn.offsetHeight;
         } else {
             returnToTopBtn.style.display = 'none';
+            returnToTopBtn.style.visibility = 'hidden';
         }
     };
     
@@ -496,8 +508,19 @@ function setupReturnToTopButton() {
     handleScroll();
     updateButtonPosition();
     
+    // Force initial check after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        handleScroll();
+        updateButtonPosition();
+    }, 200);
+    
     // Add throttled scroll listener for performance
     window.addEventListener('scroll', returnToTopScrollHandler, { passive: true });
+    
+    // Also check on window resize (sync overlay size might change)
+    window.addEventListener('resize', () => {
+        updateButtonPosition();
+    }, { passive: true });
 }
 
 /**
