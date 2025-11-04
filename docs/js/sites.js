@@ -3,6 +3,14 @@
 // Global variable to track whether to show archived sites
 let showArchivedSites = false;
 
+// Cache for rendered sites data to avoid recomputation
+let sitesRenderCache = {
+    data: null,
+    archiveFilter: null,
+    timestamp: 0
+};
+const SITE_CACHE_TTL = 100; // Cache for 100ms to handle rapid calls
+
 // Site types and their associated colors
 const SITE_TYPES = {
     'production': { name: 'Production', color: '#28a745', icon: 'bi-hexagon-fill' },
@@ -15,43 +23,68 @@ const SITE_TYPES = {
     'custom': { name: 'Custom', color: '#20c997', icon: 'bi-gear' }
 };
 
-function renderSites() {
+// Internal render function (actual rendering logic)
+function _renderSitesInternal() {
     // Ensure window.sites is available and is an array
     if (!window.sites || !Array.isArray(window.sites)) {
-        console.warn('⚠️ window.sites is not available or not an array:', window.sites);
-        document.getElementById('sitesList').innerHTML = '<div class="col-12"><p class="text-center text-muted my-5">Loading sites...</p></div>';
+        if (typeof Logger !== 'undefined') {
+            Logger.warn('⚠️ window.sites is not available or not an array:', window.sites);
+        }
+        const sitesList = document.getElementById('sitesList');
+        if (sitesList) {
+            sitesList.innerHTML = '<div class="col-12"><p class="text-center text-muted my-5">Loading sites...</p></div>';
+        }
         return;
     }
     
-    // Filter sites based on archive status
-    const visibleSites = window.sites.filter(c => {
-        if (showArchivedSites) {
-            return c.archived === true;
-        } else {
-            return !c.archived; // Show non-archived by default
-        }
-    });
+    // Check cache first
+    const now = Date.now();
+    const cacheValid = sitesRenderCache.data && 
+                       sitesRenderCache.archiveFilter === showArchivedSites &&
+                       (now - sitesRenderCache.timestamp) < SITE_CACHE_TTL;
     
-    // Sort sites alphabetically by name
-    const sortedSites = visibleSites.sort((a, b) => {
-        const nameA = (a.name || '').toLowerCase();
-        const nameB = (b.name || '').toLowerCase();
-        return nameA.localeCompare(nameB);
-    });
+    let sortedSites, sitesByLetter;
     
-    // Group sites by first letter for alphabetical markers
-    const sitesByLetter = {};
-    sortedSites.forEach(site => {
-        const firstLetter = (site.name || '').charAt(0).toUpperCase();
-        const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
-        if (!sitesByLetter[letter]) {
-            sitesByLetter[letter] = [];
-        }
-        sitesByLetter[letter].push(site);
-    });
+    if (cacheValid) {
+        // Use cached data
+        sortedSites = sitesRenderCache.data.sortedSites;
+        sitesByLetter = sitesRenderCache.data.sitesByLetter;
+    } else {
+        // Filter sites based on archive status
+        const visibleSites = window.sites.filter(c => {
+            if (showArchivedSites) {
+                return c.archived === true;
+            } else {
+                return !c.archived; // Show non-archived by default
+            }
+        });
+        
+        // Sort sites alphabetically by name (create new array to avoid mutating original)
+        sortedSites = [...visibleSites].sort((a, b) => {
+            const nameA = (a.name || '').toLowerCase();
+            const nameB = (b.name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+        });
+        
+        // Group sites by first letter for alphabetical markers
+        sitesByLetter = {};
+        sortedSites.forEach(site => {
+            const firstLetter = (site.name || '').charAt(0).toUpperCase();
+            const letter = /[A-Z]/.test(firstLetter) ? firstLetter : '#';
+            if (!sitesByLetter[letter]) {
+                sitesByLetter[letter] = [];
+            }
+            sitesByLetter[letter].push(site);
+        });
+        
+        // Update cache
+        sitesRenderCache.data = { sortedSites, sitesByLetter };
+        sitesRenderCache.archiveFilter = showArchivedSites;
+        sitesRenderCache.timestamp = now;
+    }
     
-    // Generate HTML with alphabetical sections
-    let html = '';
+    // Generate HTML with alphabetical sections using array for better performance
+    const htmlParts = [];
     if (sortedSites.length > 0) {
         // Sort letters alphabetically (# for non-alphabetic goes last)
         const sortedLetters = Object.keys(sitesByLetter).sort((a, b) => {
@@ -61,29 +94,31 @@ function renderSites() {
         });
         
         // Add alphabetical navigation bar at the top
-        html += `
+        const navLinks = sortedLetters.map(letter => 
+            `<a href="#section-${letter}" 
+               class="btn btn-sm btn-outline-primary alphabet-nav-link" 
+               onclick="event.preventDefault(); scrollToLetterSection('${letter}'); return false;"
+               style="min-width: 40px; padding: 0.25rem 0.5rem; font-weight: 600;">
+                ${letter}
+            </a>`
+        ).join('');
+        
+        htmlParts.push(`
             <div class="col-12 mb-4">
                 <div class="card shadow-sm" style="background: #f8f9fa; border: 1px solid #dee2e6;">
                     <div class="card-body p-3">
                         <div class="d-flex flex-wrap align-items-center justify-content-center gap-2" id="alphabetNavBar">
                             <span class="text-muted me-2" style="font-weight: 600;">Jump to:</span>
-                            ${sortedLetters.map(letter => `
-                                <a href="#section-${letter}" 
-                                   class="btn btn-sm btn-outline-primary alphabet-nav-link" 
-                                   onclick="event.preventDefault(); scrollToLetterSection('${letter}'); return false;"
-                                   style="min-width: 40px; padding: 0.25rem 0.5rem; font-weight: 600;">
-                                    ${letter}
-                                </a>
-                            `).join('')}
+                            ${navLinks}
                         </div>
                     </div>
                 </div>
             </div>
-        `;
+        `);
         
         sortedLetters.forEach(letter => {
             // Add alphabetical section marker with anchor
-            html += `
+            htmlParts.push(`
                 <div class="col-12 mb-3 mt-4" id="section-${letter}">
                     <a name="section-${letter}" id="anchor-section-${letter}"></a>
                     <div class="alphabet-marker" style="background-color: #f8f9fa; padding: 10px 15px; border-left: 4px solid #007bff; border-radius: 4px;">
@@ -92,10 +127,10 @@ function renderSites() {
                         </h4>
                     </div>
                 </div>
-            `;
+            `);
             
-            // Add sites for this letter
-            sitesByLetter[letter].forEach(c => {
+            // Add sites for this letter (build cards in array, then join)
+            const siteCards = sitesByLetter[letter].map(c => {
                 // Archive button for admins only (shown on active sites)
                 const archiveBtn = (isAdmin && !c.archived) ? `
                     <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
@@ -184,7 +219,94 @@ function renderSites() {
                     return `<span class="badge ms-2" style="background-color: ${bg}; color: #111;">${seasonalDisplay}</span>`;
                 })();
 
-                html += `
+                // Archive button for admins only (shown on active sites)
+                const archiveBtn = (isAdmin && !c.archived) ? `
+                    <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
+                        <i class="bi bi-archive"></i> Archive
+                    </button>
+                ` : '';
+                
+                // Delete button only for admins on archived sites
+                const deleteBtn = (isAdmin && c.archived) ? `
+                    <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteSite(${c.id})">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                ` : '';
+                
+                // Unarchive button for admins on archived sites
+                const unarchiveBtn = (isAdmin && c.archived) ? `
+                    <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); unarchiveSite(${c.id})">
+                        <i class="bi bi-arrow-counterclockwise"></i> Unarchive
+                    </button>
+                ` : '';
+                
+                const functionalClassification = c.functionalClassification || 'production';
+                const typeInfo = SITE_TYPES[functionalClassification] || SITE_TYPES['custom'];
+                
+                // Add archived indicator
+                const archivedBadge = c.archived ? `<span class="badge bg-secondary ms-2">Archived</span>` : '';
+                
+                // Get compact landowner/contact info for one-line display (avoid bloat)
+                const landownerName = c.landownerName || '';
+                const landownerPhone = c.landownerPhone || '';
+                const landownerAddress = c.landownerAddress || '';
+                const contactLine = [landownerName, landownerPhone].filter(Boolean).join(' • ');
+                const addressLine = landownerAddress;
+                const landownerDisplay = [contactLine, addressLine].filter(Boolean).join(', ');
+                const landownerTitle = [contactLine, addressLine].filter(Boolean).join(' — ');
+                
+                // Check if contact before visit is required (handle both boolean and string values)
+                const needsContact = c.contactBeforeVisit === true || c.contactBeforeVisit === 'true' || c.contactBeforeVisit === 1 || c.contactBeforeVisit === '1';
+                
+                // Get hive strength breakdown for inline editing
+                const hiveStrong = c.hiveStrength?.strong || 0;
+                const hiveMedium = c.hiveStrength?.medium || 0;
+                const hiveWeak = c.hiveStrength?.weak || 0;
+                const hiveNUC = c.hiveStrength?.nuc || 0;
+                const hiveDead = c.hiveStrength?.dead || 0;
+                
+                // Get hive stacks for clickable cards
+                const hiveDoubles = c.hiveStacks?.doubles || 0;
+                const hiveTopSplits = c.hiveStacks?.topSplits || 0;
+                const hiveSingles = c.hiveStacks?.singles || 0;
+                const hiveNUCs = c.hiveStacks?.nucs || 0;
+                const hiveEmpty = c.hiveStacks?.empty || 0;
+                
+                // Calculate total hive count from hive box cards (excluding empty platforms)
+                const totalHiveCount = hiveDoubles + hiveTopSplits + hiveSingles + hiveNUCs;
+                
+                // Determine classification labels (compact for summary card)
+                const seasonalDisplay = (() => {
+                    const seasonalValue = c.seasonalClassification || c.seasonal_classification || '';
+                    if (!seasonalValue) return '';
+                    const seasonalMap = {
+                        'summer': 'Summer Site',
+                        'winter': 'Winter Site',
+                        'all-year': 'All Year Round',
+                        'summer-only': 'Summer Only',
+                        'winter-only': 'Winter Only',
+                        'All Year Round': 'All Year Round',
+                        'Summer Site': 'Summer Site',
+                        'Winter Site': 'Winter Site'
+                    };
+                    return seasonalMap[seasonalValue] || seasonalValue;
+                })();
+                
+                // Seasonal badge styling
+                const seasonalBadge = (() => {
+                    if (!seasonalDisplay) return '';
+                    const seasonalColorMap = {
+                        'Summer Site': '#ffc107',
+                        'Winter Site': '#0dcaf0',
+                        'All Year Round': '#20c997',
+                        'Summer Only': '#ffcd39',
+                        'Winter Only': '#39c0ed'
+                    };
+                    const bg = seasonalColorMap[seasonalDisplay] || '#6c757d';
+                    return `<span class="badge ms-2" style="background-color: ${bg}; color: #111;">${seasonalDisplay}</span>`;
+                })();
+                
+                return `
                     <div class="col-md-6 col-lg-4 mb-3">
                         <div class="card site-card h-100" data-site-id="${c.id}" data-site-type="${functionalClassification}" ${c.archived ? 'style="opacity: 0.7;"' : ''}>
                             <div class="card-body">
@@ -323,15 +445,35 @@ function renderSites() {
                     </div>
                 `;
             });
+            
+            htmlParts.push(siteCards.join(''));
         });
     } else {
-        html = '<div class="col-12"><p class="text-center text-muted my-5">' + (showArchivedSites ? 'No archived sites.' : 'No sites found.') + '</p></div>';
+        htmlParts.push(`<div class="col-12"><p class="text-center text-muted my-5">${showArchivedSites ? 'No archived sites.' : 'No sites found.'}</p></div>`);
     }
     
-    document.getElementById('sitesList').innerHTML = html;
-    
-    // Update the show archived button text
-    updateArchivedButtonText();
+    // Use requestAnimationFrame for DOM update to batch with browser paint
+    requestAnimationFrame(() => {
+        const sitesList = document.getElementById('sitesList');
+        if (sitesList) {
+            sitesList.innerHTML = htmlParts.join('');
+        }
+        // Update the show archived button text
+        updateArchivedButtonText();
+    });
+}
+
+// Debounced render function for external calls
+let renderSitesDebounced = null;
+function renderSites() {
+    if (!renderSitesDebounced && typeof debounce === 'function') {
+        renderSitesDebounced = debounce(_renderSitesInternal, 100);
+    }
+    if (renderSitesDebounced) {
+        renderSitesDebounced();
+    } else {
+        _renderSitesInternal();
+    }
 }
 
 /**
@@ -339,7 +481,9 @@ function renderSites() {
  * @param {string} letter - The letter to scroll to (e.g., 'A', 'B', '#')
  */
 function scrollToLetterSection(letter) {
-    console.log(`📍 Scrolling to letter section: ${letter}`);
+    if (typeof Logger !== 'undefined') {
+        Logger.log(`📍 Scrolling to letter section: ${letter}`);
+    }
     
     // Try to find the section marker with retries
     let attempts = 0;

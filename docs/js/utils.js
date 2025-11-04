@@ -45,3 +45,47 @@ const EnvironmentConfig = {
 };
 
 window.EnvironmentConfig = EnvironmentConfig;
+
+// Performance Utilities
+
+/**
+ * Debounce function - limits how often a function can be called
+ * @param {Function} func - Function to debounce
+ * @param {number} wait - Milliseconds to wait
+ * @param {boolean} immediate - Execute immediately on first call
+ * @returns {Function} Debounced function
+ */
+function debounce(func, wait, immediate) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            timeout = null;
+            if (!immediate) func(...args);
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func(...args);
+    };
+}
+
+/**
+ * Throttle function - ensures function is called at most once per interval
+ * @param {Function} func - Function to throttle
+ * @param {number} limit - Milliseconds between calls
+ * @returns {Function} Throttled function
+ */
+function throttle(func, limit) {
+    let inThrottle;
+    return function(...args) {
+        if (!inThrottle) {
+            func.apply(this, args);
+            inThrottle = true;
+            setTimeout(() => inThrottle = false, limit);
+        }
+    };
+}
+
+// Export utilities
+window.debounce = debounce;
+window.throttle = throttle;
