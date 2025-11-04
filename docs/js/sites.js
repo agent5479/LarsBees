@@ -423,7 +423,8 @@ function setupReturnToTopButton() {
             return;
         }
         
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        // Check scroll position from window or document
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
         if (scrollTop > 300) {
             returnToTopBtn.style.display = 'flex';
         } else {
