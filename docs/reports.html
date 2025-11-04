@@ -2805,27 +2805,28 @@
             
             // Check each site for data integrity issues
             sitesData.forEach(site => {
-                // Check 1: Hive count consistency
+                // Check 1: Hive count consistency (exclude dead hives and empty boxes)
                 if (site.hiveStrength && site.hiveStacks) {
-                    const hiveStrengthTotal = (site.hiveStrength.strong || 0) + 
-                                             (site.hiveStrength.medium || 0) + 
-                                             (site.hiveStrength.weak || 0) + 
-                                             (site.hiveStrength.nuc || 0) + 
-                                             (site.hiveStrength.dead || 0);
+                    // Active hive count (excluding dead)
+                    const activeHiveStrengthTotal = (site.hiveStrength.strong || 0) + 
+                                                    (site.hiveStrength.medium || 0) + 
+                                                    (site.hiveStrength.weak || 0) + 
+                                                    (site.hiveStrength.nuc || 0);
                     
-                    const hiveBoxTotal = (site.hiveStacks.doubles || 0) * 2 +
+                    // Hive box total (excluding empty, and NOT multiplying doubles - each box counts as 1)
+                    const hiveBoxTotal = (site.hiveStacks.doubles || 0) +
                                         (site.hiveStacks.topSplits || 0) +
                                         (site.hiveStacks.singles || 0) +
-                                        (site.hiveStacks.nucs || 0) +
-                                        (site.hiveStacks.empty || 0);
+                                        (site.hiveStacks.nucs || 0);
                     
-                    if (hiveStrengthTotal !== hiveBoxTotal && site.hiveCount > 0) {
+                    // Check if active hives match hive boxes (dead hives and empty boxes don't count)
+                    if (activeHiveStrengthTotal !== hiveBoxTotal && site.hiveCount > 0) {
                         issues.hiveCountMismatches.push({
                             siteName: site.name,
                             siteId: site.id,
-                            strengthTotal: hiveStrengthTotal,
+                            strengthTotal: activeHiveStrengthTotal,
                             boxTotal: hiveBoxTotal,
-                            difference: Math.abs(hiveStrengthTotal - hiveBoxTotal)
+                            difference: Math.abs(activeHiveStrengthTotal - hiveBoxTotal)
                         });
                     }
                 }
