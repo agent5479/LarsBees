@@ -4592,10 +4592,7 @@
         }
         
         /* Position button to the left of sync overlay when both are visible */
-        #syncStatusOverlay:not(.hidden) ~ #returnToTopBtn,
-        #syncStatusOverlay:not([style*="display: none"]) ~ #returnToTopBtn {
-            right: calc(20px + 200px); /* Adjust based on sync overlay width */
-        }
+        /* This is handled dynamically by JavaScript */
         
         /* Mobile responsiveness for return to top button */
         @media (max-width: 768px) {

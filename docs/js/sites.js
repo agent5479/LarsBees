@@ -409,7 +409,12 @@ let returnToTopScrollHandler = null;
  */
 function setupReturnToTopButton() {
     const returnToTopBtn = document.getElementById('returnToTopBtn');
-    if (!returnToTopBtn) return;
+    if (!returnToTopBtn) {
+        if (typeof Logger !== 'undefined') {
+            Logger.warn('⚠️ returnToTopBtn element not found');
+        }
+        return;
+    }
     
     // Remove existing listener if any
     if (returnToTopScrollHandler) {
@@ -448,8 +453,13 @@ function setupReturnToTopButton() {
         
         // Check scroll position from window or document
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        if (typeof Logger !== 'undefined') {
+            Logger.log(`🔍 Scroll position: ${scrollTop}, showing button: ${scrollTop > 300}`);
+        }
         if (scrollTop > 300) {
             returnToTopBtn.style.display = 'flex';
+            returnToTopBtn.style.visibility = 'visible';
+            returnToTopBtn.style.opacity = '0.9';
             updateButtonPosition();
         } else {
             returnToTopBtn.style.display = 'none';
