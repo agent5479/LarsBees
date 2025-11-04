@@ -89,6 +89,9 @@
             line-height: var(--line-height-base);
             background: var(--white);
             position: relative;
+            /* Ensure body is the scroll container for sticky positioning */
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         
         a {
