@@ -404,31 +404,31 @@ window.renderSites = renderSites;
 let returnToTopScrollHandler = null;
 
 /**
- * Setup return-to-top button visibility based on scroll position
+ * Setup return-to-top navbar link visibility based on scroll position
  */
 function setupReturnToTopButton() {
-    const returnToTopBtn = document.getElementById('returnToTopBtn');
-    if (!returnToTopBtn) return;
+    const backToTopNavItem = document.getElementById('backToTopNavItem');
+    if (!backToTopNavItem) return;
     
     // Remove existing listener if any
     if (returnToTopScrollHandler) {
         window.removeEventListener('scroll', returnToTopScrollHandler);
     }
     
-    // Show/hide button based on scroll position
+    // Show/hide navbar link based on scroll position
     const handleScroll = () => {
         const sitesView = document.getElementById('sitesView');
         if (!sitesView || sitesView.classList.contains('hidden')) {
-            returnToTopBtn.style.display = 'none';
+            backToTopNavItem.style.display = 'none';
             return;
         }
         
         // Check scroll position from window or document
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
         if (scrollTop > 300) {
-            returnToTopBtn.style.display = 'flex';
+            backToTopNavItem.style.display = 'block';
         } else {
-            returnToTopBtn.style.display = 'none';
+            backToTopNavItem.style.display = 'none';
         }
     };
     

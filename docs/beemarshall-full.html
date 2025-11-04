@@ -1558,6 +1558,14 @@
                     
                     <!-- Right Side Navigation -->
                     <ul class="navbar-nav ms-auto align-items-center">
+                        <!-- Back to Top (only visible when scrolling on sites view) -->
+                        <li class="nav-item" id="backToTopNavItem" style="display: none;">
+                            <a class="nav-link" href="#" onclick="scrollToTopSites(); return false;" title="Back to top">
+                                <i class="bi bi-arrow-up"></i>
+                                <span class="d-none d-md-inline ms-1">Top</span>
+                            </a>
+                        </li>
+                        
                         <!-- Help/Documentation -->
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showHelpModal()" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Help & Documentation">
@@ -4546,9 +4554,5 @@
         }
     </style>
     
-    <!-- Return to Top Button (sticky, appears on sites view when scrolling) -->
-    <button id="returnToTopBtn" onclick="scrollToTopSites()" title="Return to top">
-        <i class="bi bi-arrow-up"></i>
-    </button>
 </body>
 </html>
