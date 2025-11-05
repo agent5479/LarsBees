@@ -1825,8 +1825,15 @@
                 `;
                 // Remove ALL existing summaries to prevent duplicates
                 const opsChartParent = document.getElementById('operationsChart').parentNode;
-                const existingOpsSummaries = opsChartParent.querySelectorAll('.alert.alert-success');
-                existingOpsSummaries.forEach(summary => summary.remove());
+                const existingOpsSummaries = opsChartParent.querySelectorAll('.alert.alert-success, .alert.alert-info, .row.mt-3');
+                existingOpsSummaries.forEach(summary => {
+                    // Remove the entire row if it's a summary row
+                    if (summary.classList.contains('mt-3') && summary.querySelector('.alert')) {
+                        summary.remove();
+                    } else if (summary.classList.contains('alert')) {
+                        summary.remove();
+                    }
+                });
                 
                 document.getElementById('operationsChart').parentNode.insertAdjacentHTML('afterend', summary);
             } catch (error) {
