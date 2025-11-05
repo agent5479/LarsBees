@@ -38,6 +38,9 @@ function updateHiveStrengthBreakdown() {
         }
     });
     
+    // Calculate total active hives (excluding dead and empty)
+    const totalActiveHives = totalStrong + totalMedium + totalWeak + totalNUC;
+    
     // Update the display
     const strongEl = document.getElementById('strongCount');
     const mediumEl = document.getElementById('mediumCount');
@@ -54,6 +57,12 @@ function updateHiveStrengthBreakdown() {
     if (deadEl) deadEl.textContent = totalDead;
     if (emptyEl) emptyEl.textContent = totalEmpty;
     if (quarantineEl) quarantineEl.textContent = totalQuarantine;
+    
+    // Update correlation display if it exists
+    const correlationEl = document.getElementById('hiveBreakdownTotal');
+    if (correlationEl) {
+        correlationEl.textContent = totalActiveHives;
+    }
 }
 
 // Make function globally accessible
