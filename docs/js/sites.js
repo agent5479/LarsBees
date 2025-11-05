@@ -137,6 +137,47 @@ function _renderSitesInternal() {
             
             // Add sites for this letter (build cards in array, then join)
             const siteCards = sitesByLetter[letter].map(c => {
+                // Find last visit date for this site
+                let lastVisitDate = null;
+                if (window.actions && Array.isArray(window.actions)) {
+                    const siteActions = window.actions
+                        .filter(a => a.siteId === c.id && a.date)
+                        .map(a => new Date(a.date))
+                        .sort((a, b) => b - a); // Sort descending (most recent first)
+                    
+                    if (siteActions.length > 0) {
+                        lastVisitDate = siteActions[0];
+                    }
+                }
+                
+                // Format last visit date
+                let lastVisitDisplay = '';
+                if (lastVisitDate) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const visitDate = new Date(lastVisitDate);
+                    visitDate.setHours(0, 0, 0, 0);
+                    const daysDiff = Math.floor((today - visitDate) / (1000 * 60 * 60 * 24));
+                    
+                    const formattedDate = visitDate.toLocaleDateString('en-NZ', { 
+                        day: 'numeric', 
+                        month: 'short', 
+                        year: 'numeric' 
+                    });
+                    
+                    if (daysDiff === 0) {
+                        lastVisitDisplay = `<span class="badge bg-success text-white ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> Today</span>`;
+                    } else if (daysDiff === 1) {
+                        lastVisitDisplay = `<span class="badge bg-info text-white ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> Yesterday</span>`;
+                    } else if (daysDiff <= 7) {
+                        lastVisitDisplay = `<span class="badge bg-warning text-dark ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> ${daysDiff} days ago</span>`;
+                    } else {
+                        lastVisitDisplay = `<span class="badge bg-secondary text-white ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> ${formattedDate}</span>`;
+                    }
+                } else {
+                    lastVisitDisplay = `<span class="badge bg-light text-dark ms-2" title="No visits recorded"><i class="bi bi-calendar-x"></i> No visits</span>`;
+                }
+                
                 // Archive button for admins only (shown on active sites)
                 const archiveBtn = (isAdmin && !c.archived) ? `
                     <button class="btn btn-sm btn-outline-warning" onclick="event.stopPropagation(); archiveSite(${c.id})">
