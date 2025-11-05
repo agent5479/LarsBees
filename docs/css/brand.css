@@ -601,6 +601,24 @@ a:hover {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    min-height: 70px;
+}
+
+/* Responsive adjustments for breakdown cards container */
+@media (max-width: 991.98px) {
+    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 {
+        width: 100%;
+        max-width: 100%;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 {
+        width: 50%;
+        max-width: 50%;
+    }
 }
 
 .hive-icon-compact {
@@ -612,6 +630,13 @@ a:hover {
     .hive-icon-compact {
         font-size: 1.5rem;
         margin-bottom: 0.25rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .hive-icon-compact {
+        font-size: 1.75rem;
+        margin-bottom: 0.3rem;
     }
 }
 
@@ -637,6 +662,13 @@ a:hover {
     }
 }
 
+@media (min-width: 992px) {
+    .hive-count-compact {
+        font-size: 1.75rem;
+        margin-bottom: 0.2rem;
+    }
+}
+
 .hive-label-compact {
     font-size: 0.75rem;
     font-weight: 500;
@@ -648,6 +680,12 @@ a:hover {
 @media (min-width: 576px) {
     .hive-label-compact {
         font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .hive-label-compact {
+        font-size: 0.9rem;
     }
 }
 
