@@ -15,7 +15,6 @@ function updateHiveStrengthBreakdown() {
     let totalWeak = 0;
     let totalNUC = 0;
     let totalDead = 0;
-    let totalEmpty = 0;
     let totalQuarantine = 0;
     
     window.sites.forEach(site => {
@@ -29,16 +28,13 @@ function updateHiveStrengthBreakdown() {
             totalNUC += site.hiveStrength.nuc || 0;
             totalDead += site.hiveStrength.dead || 0;
         }
-        if (site.hiveStacks) {
-            totalEmpty += site.hiveStacks.empty || 0;
-        }
         // Count quarantine sites
         if (site.isQuarantine) {
             totalQuarantine++;
         }
     });
     
-    // Calculate total active hives (excluding dead and empty)
+    // Calculate total active hives (excluding dead)
     const totalActiveHives = totalStrong + totalMedium + totalWeak + totalNUC;
     
     // Update the display
@@ -47,7 +43,6 @@ function updateHiveStrengthBreakdown() {
     const weakEl = document.getElementById('weakCount');
     const nucEl = document.getElementById('nucCount');
     const deadEl = document.getElementById('deadCount');
-    const emptyEl = document.getElementById('emptyCount');
     const quarantineEl = document.getElementById('quarantineCount');
     
     if (strongEl) strongEl.textContent = totalStrong;
@@ -55,7 +50,6 @@ function updateHiveStrengthBreakdown() {
     if (weakEl) weakEl.textContent = totalWeak;
     if (nucEl) nucEl.textContent = totalNUC;
     if (deadEl) deadEl.textContent = totalDead;
-    if (emptyEl) emptyEl.textContent = totalEmpty;
     if (quarantineEl) quarantineEl.textContent = totalQuarantine;
     
     // Update correlation display if it exists
@@ -88,11 +82,11 @@ function updateEquipmentBreakdown() {
         if (site.archived) return;
         
         if (site.hiveStacks) {
-            totalDoubles += site.hiveStacks.doubles || 0;
-            totalTopSplits += site.hiveStacks.topSplits || 0;
-            totalSingles += site.hiveStacks.singles || 0;
-            totalNUCs += site.hiveStacks.nucs || 0;
-            totalEmpty += site.hiveStacks.empty || 0;
+            totalDoubles += parseInt(site.hiveStacks.doubles) || 0;
+            totalTopSplits += parseInt(site.hiveStacks.topSplits) || 0;
+            totalSingles += parseInt(site.hiveStacks.singles) || 0;
+            totalNUCs += parseInt(site.hiveStacks.nucs) || 0;
+            totalEmpty += parseInt(site.hiveStacks.empty) || 0;
         }
     });
     
@@ -113,6 +107,17 @@ function updateEquipmentBreakdown() {
     if (nucsEl) nucsEl.textContent = totalNUCs;
     if (emptyEl) emptyEl.textContent = totalEmpty;
     if (totalEl) totalEl.textContent = totalEquipment;
+    
+    if (typeof Logger !== 'undefined') {
+        Logger.log('📊 Equipment breakdown updated:', {
+            doubles: totalDoubles,
+            topSplits: totalTopSplits,
+            singles: totalSingles,
+            nucs: totalNUCs,
+            empty: totalEmpty,
+            total: totalEquipment
+        });
+    }
 }
 
 // Make functions globally accessible
