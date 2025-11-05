@@ -184,12 +184,11 @@
             transition: var(--transition);
         }
         
-        .hive-icon.strong { color: #28a745; }
-        .hive-icon.medium { color: #ffc107; }
         .hive-icon.weak { color: #fd7e14; }
         .hive-icon.nuc { color: #6f42c1; }
         .hive-icon.dead { color: #dc3545; }
         .hive-icon.empty { color: #6c757d; }
+        .hive-icon.quarantine { color: #dc3545; }
         
         .hive-count {
             font-size: 2rem;
@@ -421,40 +420,16 @@
         </div>
 
 
-        <!-- Interactive Hive Analysis -->
+        <!-- Hives of Concern -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="report-card">
                     <div class="card-header">
-                        <h5 class="mb-0"><i class="bi bi-hexagon-fill"></i> Interactive Hive Analysis</h5>
+                        <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Hives of Concern</h5>
                         <small class="text-muted">Click on hive categories to see affected sites and schedule tasks</small>
                     </div>
                     <div class="card-body">
                         <div class="row g-2">
-                            <!-- Strong Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card" data-category="strong">
-                                    <div class="hive-icon strong">
-                                        <i class="bi bi-hexagon-fill"></i>
-                                    </div>
-                                    <div class="hive-count" id="strongCount">0</div>
-                                    <div class="hive-label">Strong</div>
-                                    <div class="hive-description">Healthy & Productive</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Medium Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card" data-category="medium">
-                                    <div class="hive-icon medium">
-                                        <i class="bi bi-hexagon"></i>
-                                    </div>
-                                    <div class="hive-count" id="mediumCount">0</div>
-                                    <div class="hive-label">Medium</div>
-                                    <div class="hive-description">Average Health</div>
-                                </div>
-                            </div>
-                            
                             <!-- Weak Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
                                 <div class="hive-category-card clickable" data-category="weak" onclick="showSitesByCategory('weak')">
@@ -500,6 +475,18 @@
                                     <div class="hive-count" id="emptyCount">0</div>
                                     <div class="hive-label">Empty</div>
                                     <div class="hive-description">Unused Platforms</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quarantine Sites -->
+                            <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                <div class="hive-category-card clickable" data-category="quarantine" onclick="showSitesByCategory('quarantine')">
+                                    <div class="hive-icon quarantine">
+                                        <i class="bi bi-shield-exclamation"></i>
+                                    </div>
+                                    <div class="hive-count" id="quarantineCount">0</div>
+                                    <div class="hive-label">Quarantine</div>
+                                    <div class="hive-description">Isolated Sites</div>
                                 </div>
                             </div>
                         </div>
@@ -2275,19 +2262,18 @@
         }
         
         
-        // Interactive Hive Analysis Functions
+        // Hives of Concern Functions
         function updateHiveStrengthBreakdown() {
             if (!window.sites || window.sites.length === 0) {
                 Logger.log('📭 No sites data for hive strength breakdown');
                 return;
             }
             
-            let totalStrong = 0;
-            let totalMedium = 0;
             let totalWeak = 0;
             let totalNUC = 0;
             let totalDead = 0;
             let totalEmpty = 0;
+            let totalQuarantine = 0;
             
             // Enhanced breakdown with stack data
             let totalDoubles = 0;
@@ -2298,8 +2284,6 @@
             
             window.sites.forEach(site => {
                 if (site.hiveStrength) {
-                    totalStrong += site.hiveStrength.strong || 0;
-                    totalMedium += site.hiveStrength.medium || 0;
                     totalWeak += site.hiveStrength.weak || 0;
                     totalNUC += site.hiveStrength.nuc || 0;
                     totalDead += site.hiveStrength.dead || 0;
@@ -2312,24 +2296,26 @@
                     totalNUCStacks += site.hiveStacks.nucs || 0;
                     totalEmptyStacks += site.hiveStacks.empty || 0;
                 }
+                // Count quarantine sites
+                if (site.isQuarantine) {
+                    totalQuarantine++;
+                }
             });
             
             // Update the display
-            document.getElementById('strongCount').textContent = totalStrong;
-            document.getElementById('mediumCount').textContent = totalMedium;
             document.getElementById('weakCount').textContent = totalWeak;
             document.getElementById('nucCount').textContent = totalNUC;
             document.getElementById('deadCount').textContent = totalDead;
             document.getElementById('emptyCount').textContent = totalEmpty;
+            document.getElementById('quarantineCount').textContent = totalQuarantine;
             
-            Logger.log('📊 Enhanced hive strength breakdown updated:', {
+            Logger.log('📊 Hives of Concern breakdown updated:', {
                 hiveStrength: {
-                    strong: totalStrong,
-                    medium: totalMedium,
                     weak: totalWeak,
                     nuc: totalNUC,
                     dead: totalDead,
-                    empty: totalEmpty
+                    empty: totalEmpty,
+                    quarantine: totalQuarantine
                 },
                 stackConfiguration: {
                     doubles: totalDoubles,
@@ -2342,11 +2328,6 @@
         }
         
         function showSitesByCategory(category) {
-            // Disable interactivity for strong and medium categories
-            if (category === 'strong' || category === 'medium') {
-                return;
-            }
-            
             if (!window.sites || window.sites.length === 0) {
                 beeMarshallAlert('📊 No site data available.\n\nAdd your first apiary site to start generating reports and insights.', 'info');
                 return;
@@ -2355,6 +2336,8 @@
             const affectedSites = window.sites.filter(site => {
                 if (category === 'empty') {
                     return site.hiveStacks && site.hiveStacks.empty > 0;
+                } else if (category === 'quarantine') {
+                    return site.isQuarantine === true;
                 } else if (site.hiveStrength) {
                     return site.hiveStrength[category] > 0;
                 }
