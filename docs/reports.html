@@ -1648,30 +1648,49 @@
                 Logger.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
                 
                 // Filter to last 7 days
-                const sevenDaysAgo = new Date();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                const sevenDaysAgo = new Date(today);
                 sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-                sevenDaysAgo.setHours(0, 0, 0, 0);
+                
+                const sevenDaysFromNow = new Date(today);
+                sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+                sevenDaysFromNow.setHours(23, 59, 59, 999);
                 
                 // Filter actions from last 7 days
                 const recentActions = actions.filter(action => {
                     if (!action.date) return false;
                     const actionDate = new Date(action.date);
                     actionDate.setHours(0, 0, 0, 0);
-                    return actionDate >= sevenDaysAgo;
+                    return actionDate >= sevenDaysAgo && actionDate < today;
                 });
                 
-                // Filter scheduled tasks from last 7 days (based on dueDate or createdAt)
+                // Filter scheduled tasks from last 7 days (based on dueDate)
                 const recentTasks = scheduledTasks.filter(task => {
-                    if (!task.dueDate && !task.createdAt) return false;
-                    const taskDate = new Date(task.dueDate || task.createdAt);
+                    if (!task.dueDate) return false;
+                    const taskDate = new Date(task.dueDate);
                     taskDate.setHours(0, 0, 0, 0);
-                    return taskDate >= sevenDaysAgo;
+                    return taskDate >= sevenDaysAgo && taskDate < today;
                 });
                 
-                // Analyze operational data (last 7 days only)
+                // Filter scheduled tasks for next 7 days (based on dueDate)
+                const upcomingTasks = scheduledTasks.filter(task => {
+                    if (!task.dueDate) return false;
+                    const taskDate = new Date(task.dueDate);
+                    taskDate.setHours(0, 0, 0, 0);
+                    return taskDate >= today && taskDate <= sevenDaysFromNow;
+                });
+                
+                // Analyze operational data (last 7 days)
                 const completedTasks = recentTasks.filter(task => task.completed).length;
                 const pendingTasks = recentTasks.filter(task => !task.completed).length;
                 const totalActions = recentActions.length;
+                
+                // Analyze upcoming tasks (next 7 days)
+                const upcomingCompleted = upcomingTasks.filter(task => task.completed).length;
+                const upcomingPending = upcomingTasks.filter(task => !task.completed).length;
+                const totalUpcoming = upcomingTasks.length;
                 
                 // Calculate action types (last 7 days only)
                 const actionTypes = {};
@@ -1696,22 +1715,35 @@
                     return;
                 }
                 
-                // Create operations chart
+                // Create operations chart with last 7 days and next 7 days
                 const ctx = document.getElementById('operationsChart').getContext('2d');
                 new Chart(ctx, {
-                    type: 'pie',
+                    type: 'bar',
                     data: {
-                        labels: ['Completed Tasks', 'Pending Tasks', 'Actions Logged'],
-                        datasets: [{
-                            data: [completedTasks, pendingTasks, totalActions],
-                            backgroundColor: [
-                                '#28a745', // Completed - Green
-                                '#ffc107', // Pending - Yellow
-                                '#17a2b8'  // Actions - Blue
-                            ],
-                            borderWidth: 2,
-                            borderColor: '#fff'
-                        }]
+                        labels: ['Last 7 Days', 'Next 7 Days'],
+                        datasets: [
+                            {
+                                label: 'Completed Tasks',
+                                data: [completedTasks, upcomingCompleted],
+                                backgroundColor: '#28a745',
+                                borderColor: '#28a745',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Pending Tasks',
+                                data: [pendingTasks, upcomingPending],
+                                backgroundColor: '#ffc107',
+                                borderColor: '#ffc107',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Actions Logged',
+                                data: [totalActions, 0], // Actions only for past
+                                backgroundColor: '#17a2b8',
+                                borderColor: '#17a2b8',
+                                borderWidth: 1
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
@@ -1723,16 +1755,31 @@
                             legend: {
                                 position: 'bottom',
                                 labels: {
-                                    padding: 20,
+                                    padding: 15,
                                     usePointStyle: true
                                 }
                             },
                             title: {
                                 display: true,
-                                text: 'Operations Overview (Last 7 Days)',
+                                text: 'Operations: Last 7 Days vs Next 7 Days',
                                 font: {
-                                    size: 16,
+                                    size: 14,
                                     weight: 'bold'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: false,
+                                grid: {
+                                    display: false
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                stacked: false,
+                                ticks: {
+                                    stepSize: 1
                                 }
                             }
                         }
@@ -1748,14 +1795,32 @@
                     operationsSkeleton.remove(); // Remove the element entirely
                 }
                 
-                // Show operations summary (last 7 days)
+                // Calculate upcoming task completion rate
+                const upcomingCompletionRate = totalUpcoming > 0 ? (upcomingCompleted / totalUpcoming * 100).toFixed(1) : 0;
+                
+                // Show operations summary (last 7 days vs next 7 days)
                 const summary = `
-                    <div class="alert alert-success mt-3">
-                        <h6><i class="bi bi-gear"></i> Operations Summary (Last 7 Days)</h6>
-                        <p><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
-                        <p><strong>Actions per Site:</strong> ${actionsPerSite}</p>
-                        <p><strong>Total Actions Logged:</strong> ${totalActions}</p>
-                        <p><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-2">
+                            <div class="alert alert-success">
+                                <h6><i class="bi bi-clock-history"></i> Last 7 Days</h6>
+                                <p class="mb-1"><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
+                                <p class="mb-1"><strong>Completed Tasks:</strong> ${completedTasks}</p>
+                                <p class="mb-1"><strong>Pending Tasks:</strong> ${pendingTasks}</p>
+                                <p class="mb-1"><strong>Actions Logged:</strong> ${totalActions}</p>
+                                <p class="mb-0"><strong>Most Common Action:</strong> ${Object.keys(actionTypes).length > 0 ? Object.keys(actionTypes).reduce((a, b) => actionTypes[a] > actionTypes[b] ? a : b) : 'None'}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <div class="alert alert-info">
+                                <h6><i class="bi bi-calendar-check"></i> Next 7 Days</h6>
+                                <p class="mb-1"><strong>Task Completion Rate:</strong> ${upcomingCompletionRate}%</p>
+                                <p class="mb-1"><strong>Completed Tasks:</strong> ${upcomingCompleted}</p>
+                                <p class="mb-1"><strong>Pending Tasks:</strong> ${upcomingPending}</p>
+                                <p class="mb-1"><strong>Total Scheduled:</strong> ${totalUpcoming}</p>
+                                <p class="mb-0"><strong>Actions per Site:</strong> ${actionsPerSite}</p>
+                            </div>
+                        </div>
                     </div>
                 `;
                 // Remove ALL existing summaries to prevent duplicates
