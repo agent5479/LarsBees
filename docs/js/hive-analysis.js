@@ -77,18 +77,30 @@ function updateEquipmentBreakdown() {
     let totalNUCs = 0;
     let totalEmpty = 0;
     
+    let sitesProcessed = 0;
     window.sites.forEach(site => {
         // Exclude archived sites from calculations
         if (site.archived) return;
         
+        sitesProcessed++;
         if (site.hiveStacks) {
-            totalDoubles += parseInt(site.hiveStacks.doubles) || 0;
-            totalTopSplits += parseInt(site.hiveStacks.topSplits) || 0;
-            totalSingles += parseInt(site.hiveStacks.singles) || 0;
-            totalNUCs += parseInt(site.hiveStacks.nucs) || 0;
-            totalEmpty += parseInt(site.hiveStacks.empty) || 0;
+            const doubles = parseInt(site.hiveStacks.doubles) || 0;
+            const topSplits = parseInt(site.hiveStacks.topSplits) || 0;
+            const singles = parseInt(site.hiveStacks.singles) || 0;
+            const nucs = parseInt(site.hiveStacks.nucs) || 0;
+            const empty = parseInt(site.hiveStacks.empty) || 0;
+            
+            totalDoubles += doubles;
+            totalTopSplits += topSplits;
+            totalSingles += singles;
+            totalNUCs += nucs;
+            totalEmpty += empty;
         }
     });
+    
+    if (typeof Logger !== 'undefined') {
+        Logger.log('📊 Equipment breakdown - sites processed:', sitesProcessed, 'of', window.sites.length);
+    }
     
     // Calculate total equipment (excluding empty)
     const totalEquipment = totalDoubles + totalTopSplits + totalSingles + totalNUCs;
