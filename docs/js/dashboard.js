@@ -198,12 +198,28 @@ function updateDashboard() {
     // Make flaggedCount globally accessible
     window.flaggedCount = flaggedCount;
     
-    // Filter out deleted actions (actions with delete/remove/archive keywords in task name or notes)
-    const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
+    // Filter out deleted actions (actions with delete/remove/archive keywords in task name or notes, or [Deleted: pattern)
+    const deleteKeywords = ['delete', 'deleted', 'deleting', 'remove', 'removed', 'removing', 'archive', 'archived', 'archiving'];
     const activeActions = (window.actions && Array.isArray(window.actions)) ? window.actions.filter(a => {
-        const taskName = (a.taskName || a.task || a.name || '').toString().toLowerCase();
+        // Check if task name indicates a deleted task reference (e.g., "[Deleted: Task Name]")
+        const taskName = a.taskName || a.task || a.name || '';
+        const taskNameStr = taskName.toString();
+        if (taskNameStr.includes('[Deleted:') || taskNameStr.startsWith('[Deleted:')) {
+            return false; // Hide actions referencing deleted tasks
+        }
+        
+        // Also check the display task name if getTaskDisplayName is available
+        if (window.getTaskDisplayName) {
+            const displayTaskName = window.getTaskDisplayName(taskName, a.taskId);
+            if (displayTaskName && displayTaskName.toString().includes('[Deleted:')) {
+                return false; // Hide actions referencing deleted tasks
+            }
+        }
+        
+        // Check task name and notes for delete keywords
+        const taskNameLower = taskNameStr.toLowerCase();
         const notes = (a.notes || '').toString().toLowerCase();
-        const combinedText = taskName + ' ' + notes;
+        const combinedText = taskNameLower + ' ' + notes;
         return !deleteKeywords.some(keyword => combinedText.includes(keyword));
     }) : [];
     
