@@ -63,8 +63,59 @@ function updateHiveStrengthBreakdown() {
     if (correlationEl) {
         correlationEl.textContent = totalActiveHives;
     }
+    
+    // Also update equipment breakdown
+    updateEquipmentBreakdown();
 }
 
-// Make function globally accessible
+// Update equipment breakdown (hive stacks)
+function updateEquipmentBreakdown() {
+    if (!window.sites || window.sites.length === 0) {
+        if (typeof Logger !== 'undefined') {
+            Logger.log('📭 No sites data for equipment breakdown');
+        }
+        return;
+    }
+    
+    let totalDoubles = 0;
+    let totalTopSplits = 0;
+    let totalSingles = 0;
+    let totalNUCs = 0;
+    let totalEmpty = 0;
+    
+    window.sites.forEach(site => {
+        // Exclude archived sites from calculations
+        if (site.archived) return;
+        
+        if (site.hiveStacks) {
+            totalDoubles += site.hiveStacks.doubles || 0;
+            totalTopSplits += site.hiveStacks.topSplits || 0;
+            totalSingles += site.hiveStacks.singles || 0;
+            totalNUCs += site.hiveStacks.nucs || 0;
+            totalEmpty += site.hiveStacks.empty || 0;
+        }
+    });
+    
+    // Calculate total equipment (excluding empty)
+    const totalEquipment = totalDoubles + totalTopSplits + totalSingles + totalNUCs;
+    
+    // Update the display
+    const doublesEl = document.getElementById('equipmentDoublesCount');
+    const topSplitsEl = document.getElementById('equipmentTopSplitsCount');
+    const singlesEl = document.getElementById('equipmentSinglesCount');
+    const nucsEl = document.getElementById('equipmentNUCsCount');
+    const emptyEl = document.getElementById('equipmentEmptyCount');
+    const totalEl = document.getElementById('equipmentTotalCount');
+    
+    if (doublesEl) doublesEl.textContent = totalDoubles;
+    if (topSplitsEl) topSplitsEl.textContent = totalTopSplits;
+    if (singlesEl) singlesEl.textContent = totalSingles;
+    if (nucsEl) nucsEl.textContent = totalNUCs;
+    if (emptyEl) emptyEl.textContent = totalEmpty;
+    if (totalEl) totalEl.textContent = totalEquipment;
+}
+
+// Make functions globally accessible
 window.updateHiveStrengthBreakdown = updateHiveStrengthBreakdown;
+window.updateEquipmentBreakdown = updateEquipmentBreakdown;
 

@@ -142,6 +142,11 @@ function updateDashboard() {
         updateHiveStrengthBreakdown();
     }
     
+    // Update equipment breakdown card if it exists
+    if (typeof updateEquipmentBreakdown === 'function') {
+        updateEquipmentBreakdown();
+    }
+    
     // Check if data arrays are properly initialized
     if (!window.sites) {
         console.error('❌ Sites array is undefined!');
