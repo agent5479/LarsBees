@@ -19,7 +19,7 @@ function updateHiveStrengthBreakdown() {
     
     window.sites.forEach(site => {
         // Exclude archived sites from calculations
-        if (site.archived) return;
+        if (site.archived === true || site.archived === 'true' || site.archived === 1) return;
         
         if (site.hiveStrength) {
             totalStrong += site.hiveStrength.strong || 0;
@@ -81,7 +81,7 @@ function updateEquipmentBreakdown() {
     let sitesWithStacks = 0;
     window.sites.forEach(site => {
         // Exclude archived sites from calculations
-        if (site.archived) return;
+        if (site.archived === true || site.archived === 'true' || site.archived === 1) return;
         
         sitesProcessed++;
         if (site.hiveStacks && typeof site.hiveStacks === 'object') {
