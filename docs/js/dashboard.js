@@ -165,8 +165,15 @@ function updateDashboard() {
         window.individualHives = [];
     }
     
-    // Filter out archived sites for statistics
-    const activeSites = (window.sites && Array.isArray(window.sites)) ? window.sites.filter(s => !s.archived) : [];
+    // Filter out archived and deleted sites for statistics
+    // Note: Deleted sites are removed from Firebase, so they won't be in the array
+    const activeSites = (window.sites && Array.isArray(window.sites)) ? window.sites.filter(s => {
+        // Exclude archived sites (handle various data types from Firebase)
+        if (s.archived === true || s.archived === 'true' || s.archived === 1) return false;
+        // Exclude deleted sites if they somehow exist (shouldn't happen, but safety check)
+        if (s.deleted === true || s.deleted === 'true' || s.deleted === 1) return false;
+        return true;
+    }) : [];
     
     // Calculate total hives from hiveStacks (cumulative total of all hive boxes/platforms)
     // Always calculate from hiveStacks to exactly match equipment breakdown card
