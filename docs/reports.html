@@ -174,6 +174,10 @@
             cursor: pointer;
         }
         
+        .hive-category-card:not(.clickable) {
+            cursor: default;
+        }
+        
         .hive-icon {
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
@@ -429,7 +433,7 @@
                         <div class="row g-2">
                             <!-- Strong Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="strong" onclick="showSitesByCategory('strong')">
+                                <div class="hive-category-card" data-category="strong">
                                     <div class="hive-icon strong">
                                         <i class="bi bi-hexagon-fill"></i>
                                     </div>
@@ -441,7 +445,7 @@
                             
                             <!-- Medium Hives -->
                             <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="medium" onclick="showSitesByCategory('medium')">
+                                <div class="hive-category-card" data-category="medium">
                                     <div class="hive-icon medium">
                                         <i class="bi bi-hexagon"></i>
                                     </div>
@@ -2338,6 +2342,11 @@
         }
         
         function showSitesByCategory(category) {
+            // Disable interactivity for strong and medium categories
+            if (category === 'strong' || category === 'medium') {
+                return;
+            }
+            
             if (!window.sites || window.sites.length === 0) {
                 beeMarshallAlert('📊 No site data available.\n\nAdd your first apiary site to start generating reports and insights.', 'info');
                 return;
