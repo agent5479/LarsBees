@@ -612,12 +612,35 @@ a:hover {
         padding-left: 0.5rem;
         padding-right: 0.5rem;
     }
+    
+    /* Ensure inner row items fit 5 per line on mobile */
+    .row.g-1.g-sm-2 {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+    
+    .row.g-1.g-sm-2 > .col[style*="20%"] {
+        flex: 0 0 20% !important;
+        max-width: 20% !important;
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
 }
 
 @media (min-width: 992px) {
     .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 {
         width: 50%;
         max-width: 50%;
+    }
+    
+    /* On desktop, allow natural flex behavior */
+    .row.g-1.g-sm-2 {
+        flex-wrap: wrap;
+    }
+    
+    .row.g-1.g-sm-2 > .col[style*="20%"] {
+        flex: 0 0 auto !important;
+        max-width: none !important;
     }
 }
 
