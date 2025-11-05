@@ -2,7 +2,7 @@
 
 A comprehensive, production-ready web-based apiary (beekeeping) management system built with modern web technologies. Features real-time data synchronization, multi-tenant architecture, role-based access control, and comprehensive reporting capabilities.
 
-![Version](https://img.shields.io/badge/version-1.65-blue.svg)
+![Version](https://img.shields.io/badge/version-1.78-blue.svg)
 ![Status](https://img.shields.io/badge/status-production--ready-green.svg)
 ![Security](https://img.shields.io/badge/security-enhanced-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
@@ -25,7 +25,7 @@ A comprehensive, production-ready web-based apiary (beekeeping) management syste
 - **Mobile-Responsive**: Optimized for all device sizes
 - **Security-First**: No hardcoded credentials, secure password management
 
-## 🚀 Current Version: v1.65
+## 🚀 Current Version: v1.78
 
 ### System Capabilities
 - **🔐 Enterprise Authentication** - Multi-tenant Firebase authentication with secure password management
@@ -201,6 +201,6 @@ tenants/
 
 ---
 
-**BeeMarshall v1.65 - Production Ready Apiary Management System**
+**BeeMarshall v1.78 - Production Ready Apiary Management System**
 
 *Built with modern web technologies for professional beekeeping operations* 🐝
