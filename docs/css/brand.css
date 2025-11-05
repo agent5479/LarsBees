@@ -620,7 +620,8 @@ a:hover {
 .hive-label-compact {
     font-size: 0.85rem;
     font-weight: 500;
-    color: var(--gray-600);
+    color: var(--gray-700);
+    font-style: italic;
 }
 
 /* ===== PREFERS REDUCED MOTION ===== */
