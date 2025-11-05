@@ -2217,18 +2217,16 @@ function updateDashboardStats() {
     const activeSites = (sites && Array.isArray(sites)) ? sites.filter(s => !s.archived) : [];
     
     // Calculate total hives from hiveStacks (cumulative total of all hive boxes/platforms)
-    // Always calculate from hiveStacks to match equipment breakdown card
+    // Always calculate from hiveStacks to exactly match equipment breakdown card
     const totalHives = activeSites.reduce((sum, s) => {
-        if (s.hiveStacks) {
+        // Only count sites with hiveStacks data (same logic as equipment breakdown)
+        if (s.hiveStacks && typeof s.hiveStacks === 'object') {
             return sum + (s.hiveStacks.doubles || 0) + 
                         (s.hiveStacks.singles || 0) + 
                         (s.hiveStacks.nucs || 0) + 
                         (s.hiveStacks.topSplits || 0);
         }
-        // Fallback to hiveCount only if hiveStacks doesn't exist
-        if (s.hiveCount !== undefined && s.hiveCount !== null) {
-            return sum + (s.hiveCount || 0);
-        }
+        // Don't use hiveCount fallback - only count sites with hiveStacks data
         return sum;
     }, 0);
     
