@@ -17,7 +17,9 @@ function updateHiveStrengthBreakdown() {
     let totalQuarantine = 0;
     
     window.sites.forEach(site => {
-        // Match reports page - include ALL sites (including archived) for consistency
+        // Exclude archived sites from calculations
+        if (site.archived) return;
+        
         if (site.hiveStrength) {
             totalWeak += site.hiveStrength.weak || 0;
             totalNUC += site.hiveStrength.nuc || 0;
