@@ -228,15 +228,25 @@ function renderActions() {
     
     // Apply action type filters with robust keyword matching
     const getName = (a) => (a.taskName || a.task || a.name || '').toString().toLowerCase();
-    const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
+    const deleteKeywords = ['delete', 'deleted', 'deleting', 'remove', 'removed', 'removing', 'archive', 'archived', 'archiving', 'permanently deleted', 'has been deleted', 'was deleted', 'will be deleted'];
     const moveKeywords = ['move', 'moved', 'relocation', 'relocate', 'transfer'];
     const strengthKeywords = ['strong', 'medium', 'weak', 'nuc', 'dead', 'hive state', 'strength'];
 
     if (hideDeletes) {
         filtered = filtered.filter(a => {
-            const taskName = getName(a);
+            // Check if task name indicates a deleted task reference (e.g., "[Deleted: Task Name]")
+            const taskName = a.taskName || a.task || a.name || '';
+            const displayTaskName = window.getTaskDisplayName ? window.getTaskDisplayName(taskName, a.taskId) : taskName;
+            if (displayTaskName && displayTaskName.toString().startsWith('[Deleted:')) {
+                return false; // Hide actions referencing deleted tasks
+            }
+            
+            // Check task name and notes for delete keywords
+            const taskNameLower = getName(a);
             const notes = (a.notes || '').toString().toLowerCase();
-            const combinedText = taskName + ' ' + notes;
+            const combinedText = taskNameLower + ' ' + notes;
+            
+            // Check for any delete keyword in the combined text
             return !deleteKeywords.some(k => combinedText.includes(k));
         });
     }
