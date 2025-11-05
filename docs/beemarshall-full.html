@@ -1704,93 +1704,87 @@
                     </div>
                 </div>
 
-                <!-- Interactive Hive Analysis Card (Draggable & Resizable) -->
-                <div id="hiveAnalysisCard" class="draggable-card resizable-card" style="position: fixed; top: 200px; left: 50px; width: 800px; z-index: 1000; min-width: 400px; min-height: 300px;">
-                    <div class="card-header draggable-handle" style="cursor: move; user-select: none;">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="bi bi-hexagon-fill"></i> Interactive Hive Analysis</h5>
-                            <div>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleHiveAnalysisSize()" title="Resize">
-                                    <i class="bi bi-arrows-angle-contract" id="hiveAnalysisResizeIcon"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="toggleHiveAnalysisCard()" title="Minimize">
-                                    <i class="bi bi-dash" id="hiveAnalysisMinimizeIcon"></i>
-                                </button>
+                <!-- Interactive Hive Analysis Card (Permanently positioned) -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-hexagon-fill"></i> Interactive Hive Analysis</h5>
+                                <small class="text-muted">Click on hive categories to see affected sites and schedule tasks</small>
                             </div>
-                        </div>
-                        <small class="text-muted">Click on hive categories to see affected sites and schedule tasks</small>
-                    </div>
-                    <div class="card-body" id="hiveAnalysisCardBody">
-                        <div class="row g-2">
-                            <!-- Strong Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="strong" onclick="showSitesByCategory('strong')">
-                                    <div class="hive-icon strong">
-                                        <i class="bi bi-hexagon-fill"></i>
+                            <div class="card-body">
+                                <div class="row g-2">
+                                    <!-- Strong Hives -->
+                                    <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                        <div class="hive-category-card clickable" data-category="strong" onclick="showSitesByCategory('strong')">
+                                            <div class="hive-icon strong">
+                                                <i class="bi bi-hexagon-fill"></i>
+                                            </div>
+                                            <div class="hive-count" id="strongCount">0</div>
+                                            <div class="hive-label">Strong</div>
+                                            <div class="hive-description">Healthy & Productive</div>
+                                        </div>
                                     </div>
-                                    <div class="hive-count" id="strongCount">0</div>
-                                    <div class="hive-label">Strong</div>
-                                    <div class="hive-description">Healthy & Productive</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Medium Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="medium" onclick="showSitesByCategory('medium')">
-                                    <div class="hive-icon medium">
-                                        <i class="bi bi-hexagon"></i>
+                                    
+                                    <!-- Medium Hives -->
+                                    <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                        <div class="hive-category-card clickable" data-category="medium" onclick="showSitesByCategory('medium')">
+                                            <div class="hive-icon medium">
+                                                <i class="bi bi-hexagon"></i>
+                                            </div>
+                                            <div class="hive-count" id="mediumCount">0</div>
+                                            <div class="hive-label">Medium</div>
+                                            <div class="hive-description">Average Health</div>
+                                        </div>
                                     </div>
-                                    <div class="hive-count" id="mediumCount">0</div>
-                                    <div class="hive-label">Medium</div>
-                                    <div class="hive-description">Average Health</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Weak Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="weak" onclick="showSitesByCategory('weak')">
-                                    <div class="hive-icon weak">
-                                        <i class="bi bi-hexagon"></i>
+                                    
+                                    <!-- Weak Hives -->
+                                    <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                        <div class="hive-category-card clickable" data-category="weak" onclick="showSitesByCategory('weak')">
+                                            <div class="hive-icon weak">
+                                                <i class="bi bi-hexagon"></i>
+                                            </div>
+                                            <div class="hive-count" id="weakCount">0</div>
+                                            <div class="hive-label">Weak</div>
+                                            <div class="hive-description">Need Attention</div>
+                                        </div>
                                     </div>
-                                    <div class="hive-count" id="weakCount">0</div>
-                                    <div class="hive-label">Weak</div>
-                                    <div class="hive-description">Need Attention</div>
-                                </div>
-                            </div>
-                            
-                            <!-- NUC Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="nuc" onclick="showSitesByCategory('nuc')">
-                                    <div class="hive-icon nuc">
-                                        <i class="bi bi-hexagon-half"></i>
+                                    
+                                    <!-- NUC Hives -->
+                                    <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                        <div class="hive-category-card clickable" data-category="nuc" onclick="showSitesByCategory('nuc')">
+                                            <div class="hive-icon nuc">
+                                                <i class="bi bi-hexagon-half"></i>
+                                            </div>
+                                            <div class="hive-count" id="nucCount">0</div>
+                                            <div class="hive-label">NUC</div>
+                                            <div class="hive-description">Nucleus Colonies</div>
+                                        </div>
                                     </div>
-                                    <div class="hive-count" id="nucCount">0</div>
-                                    <div class="hive-label">NUC</div>
-                                    <div class="hive-description">Nucleus Colonies</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Dead Hives -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="dead" onclick="showSitesByCategory('dead')">
-                                    <div class="hive-icon dead">
-                                        <i class="bi bi-hexagon"></i>
+                                    
+                                    <!-- Dead Hives -->
+                                    <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                        <div class="hive-category-card clickable" data-category="dead" onclick="showSitesByCategory('dead')">
+                                            <div class="hive-icon dead">
+                                                <i class="bi bi-hexagon"></i>
+                                            </div>
+                                            <div class="hive-count" id="deadCount">0</div>
+                                            <div class="hive-label">Dead</div>
+                                            <div class="hive-description">Failed Colonies</div>
+                                        </div>
                                     </div>
-                                    <div class="hive-count" id="deadCount">0</div>
-                                    <div class="hive-label">Dead</div>
-                                    <div class="hive-description">Failed Colonies</div>
-                                </div>
-                            </div>
-                            
-                            <!-- Empty Platforms -->
-                            <div class="col-6 col-sm-4 col-md-2 mb-2">
-                                <div class="hive-category-card clickable" data-category="empty" onclick="showSitesByCategory('empty')">
-                                    <div class="hive-icon empty">
-                                        <i class="bi bi-square"></i>
+                                    
+                                    <!-- Empty Platforms -->
+                                    <div class="col-6 col-sm-4 col-md-2 mb-2">
+                                        <div class="hive-category-card clickable" data-category="empty" onclick="showSitesByCategory('empty')">
+                                            <div class="hive-icon empty">
+                                                <i class="bi bi-square"></i>
+                                            </div>
+                                            <div class="hive-count" id="emptyCount">0</div>
+                                            <div class="hive-label">Empty</div>
+                                            <div class="hive-description">Unused Platforms</div>
+                                        </div>
                                     </div>
-                                    <div class="hive-count" id="emptyCount">0</div>
-                                    <div class="hive-label">Empty</div>
-                                    <div class="hive-description">Unused Platforms</div>
                                 </div>
                             </div>
                         </div>
