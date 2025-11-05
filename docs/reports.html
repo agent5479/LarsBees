@@ -1587,11 +1587,20 @@
                 sevenDaysFromNow.setHours(23, 59, 59, 999);
                 
                 // Filter actions from last 7 days
-                const recentActions = actions.filter(action => {
+                const recentActionsRaw = actions.filter(action => {
                     if (!action.date) return false;
                     const actionDate = new Date(action.date);
                     actionDate.setHours(0, 0, 0, 0);
                     return actionDate >= sevenDaysAgo && actionDate < today;
+                });
+                
+                // Filter out deleted actions (actions with delete/remove/archive keywords in task name or notes)
+                const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
+                const recentActions = recentActionsRaw.filter(a => {
+                    const taskName = (a.taskName || a.task || a.name || '').toString().toLowerCase();
+                    const notes = (a.notes || '').toString().toLowerCase();
+                    const combinedText = taskName + ' ' + notes;
+                    return !deleteKeywords.some(keyword => combinedText.includes(keyword));
                 });
                 
                 // Filter scheduled tasks from last 7 days (based on dueDate)
