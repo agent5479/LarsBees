@@ -631,6 +631,9 @@ a:hover {
     .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 {
         width: 50%;
         max-width: 50%;
+        flex: 0 0 50%;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
     }
     
     /* On desktop, keep all 5 items on one line */
@@ -642,6 +645,16 @@ a:hover {
     .row.g-1.g-sm-2 > .col[style*="20%"] {
         flex: 0 0 20% !important;
         max-width: 20% !important;
+    }
+    
+    /* Make breakdown cards more compact on desktop */
+    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 .card-body {
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 .hive-category-card-compact {
+        padding: 0.4rem !important;
+        min-height: 60px !important;
     }
 }
 
