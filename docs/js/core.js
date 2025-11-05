@@ -2215,7 +2215,18 @@ function showDashboardWithoutMap() {
 function updateDashboardStats() {
     // Filter out archived sites for statistics
     const activeSites = (sites && Array.isArray(sites)) ? sites.filter(s => !s.archived) : [];
-    const totalHives = activeSites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
+    
+    // Calculate total hives from hiveStrength (matching breakdown calculation)
+    // This excludes dead hives and uses the same method as the breakdown
+    const totalHives = activeSites.reduce((sum, s) => {
+        if (s.hiveStrength) {
+            return sum + (s.hiveStrength.strong || 0) + 
+                        (s.hiveStrength.medium || 0) + 
+                        (s.hiveStrength.weak || 0) + 
+                        (s.hiveStrength.nuc || 0);
+        }
+        return sum + (s.hiveCount || 0); // Fallback to hiveCount if hiveStrength not available
+    }, 0);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
