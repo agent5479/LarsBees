@@ -194,11 +194,13 @@ function updateDashboard() {
     // Make flaggedCount globally accessible
     window.flaggedCount = flaggedCount;
     
-    // Filter out deleted actions (actions with delete/remove/archive keywords)
+    // Filter out deleted actions (actions with delete/remove/archive keywords in task name or notes)
     const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
     const activeActions = (window.actions && Array.isArray(window.actions)) ? window.actions.filter(a => {
         const taskName = (a.taskName || a.task || a.name || '').toString().toLowerCase();
-        return !deleteKeywords.some(keyword => taskName.includes(keyword));
+        const notes = (a.notes || '').toString().toLowerCase();
+        const combinedText = taskName + ' ' + notes;
+        return !deleteKeywords.some(keyword => combinedText.includes(keyword));
     }) : [];
     
     // Set numbers directly without animation (active sites only)
