@@ -18,8 +18,9 @@ function updateHiveStrengthBreakdown() {
     let totalQuarantine = 0;
     
     window.sites.forEach(site => {
-        // Exclude archived sites from calculations
+        // Exclude archived and deleted sites from calculations (same filtering as dashboard)
         if (site.archived === true || site.archived === 'true' || site.archived === 1) return;
+        if (site.deleted === true || site.deleted === 'true' || site.deleted === 1) return;
         
         if (site.hiveStrength) {
             totalStrong += site.hiveStrength.strong || 0;
@@ -80,8 +81,9 @@ function updateEquipmentBreakdown() {
     let sitesProcessed = 0;
     let sitesWithStacks = 0;
     window.sites.forEach(site => {
-        // Exclude archived sites from calculations
+        // Exclude archived and deleted sites from calculations (same filtering as dashboard)
         if (site.archived === true || site.archived === 'true' || site.archived === 1) return;
+        if (site.deleted === true || site.deleted === 'true' || site.deleted === 1) return;
         
         sitesProcessed++;
         if (site.hiveStacks && typeof site.hiveStacks === 'object') {

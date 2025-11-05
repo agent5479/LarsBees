@@ -2225,13 +2225,21 @@ function updateDashboardStats() {
     
     // Calculate total hives from hiveStacks (cumulative total of all hive boxes/platforms)
     // Always calculate from hiveStacks to exactly match equipment breakdown card
+    // Use same parsing logic as equipment breakdown (parseInt) to handle string numbers
+    const safeParse = (val) => {
+        if (val === null || val === undefined) return 0;
+        const parsed = parseInt(val, 10);
+        return isNaN(parsed) ? 0 : parsed;
+    };
+    
     const totalHives = activeSites.reduce((sum, s) => {
         // Only count sites with hiveStacks data (same logic as equipment breakdown)
         if (s.hiveStacks && typeof s.hiveStacks === 'object') {
-            return sum + (s.hiveStacks.doubles || 0) + 
-                        (s.hiveStacks.singles || 0) + 
-                        (s.hiveStacks.nucs || 0) + 
-                        (s.hiveStacks.topSplits || 0);
+            const doubles = safeParse(s.hiveStacks.doubles);
+            const singles = safeParse(s.hiveStacks.singles);
+            const nucs = safeParse(s.hiveStacks.nucs);
+            const topSplits = safeParse(s.hiveStacks.topSplits);
+            return sum + doubles + singles + nucs + topSplits;
         }
         // Don't use hiveCount fallback - only count sites with hiveStacks data
         return sum;
