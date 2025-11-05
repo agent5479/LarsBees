@@ -236,9 +236,19 @@ function renderActions() {
         filtered = filtered.filter(a => {
             // Check if task name indicates a deleted task reference (e.g., "[Deleted: Task Name]")
             const taskName = a.taskName || a.task || a.name || '';
-            const displayTaskName = window.getTaskDisplayName ? window.getTaskDisplayName(taskName, a.taskId) : taskName;
-            if (displayTaskName && displayTaskName.toString().startsWith('[Deleted:')) {
+            const taskNameStr = taskName.toString();
+            
+            // Check raw task name for "[Deleted:" pattern
+            if (taskNameStr.includes('[Deleted:') || taskNameStr.startsWith('[Deleted:')) {
                 return false; // Hide actions referencing deleted tasks
+            }
+            
+            // Also check the display task name if getTaskDisplayName is available
+            if (window.getTaskDisplayName) {
+                const displayTaskName = window.getTaskDisplayName(taskName, a.taskId);
+                if (displayTaskName && displayTaskName.toString().includes('[Deleted:')) {
+                    return false; // Hide actions referencing deleted tasks
+                }
             }
             
             // Check task name and notes for delete keywords
