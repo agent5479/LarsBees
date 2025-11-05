@@ -179,10 +179,17 @@ function updateDashboard() {
     // Make flaggedCount globally accessible
     window.flaggedCount = flaggedCount;
     
+    // Filter out deleted actions (actions with delete/remove/archive keywords)
+    const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
+    const activeActions = (window.actions && Array.isArray(window.actions)) ? window.actions.filter(a => {
+        const taskName = (a.taskName || a.task || a.name || '').toString().toLowerCase();
+        return !deleteKeywords.some(keyword => taskName.includes(keyword));
+    }) : [];
+    
     // Set numbers directly without animation (active sites only)
     document.getElementById('statSites').textContent = activeSites.length;
     document.getElementById('statHives').textContent = totalHives;
-    document.getElementById('statActions').textContent = (window.actions && Array.isArray(window.actions)) ? window.actions.length : 0;
+    document.getElementById('statActions').textContent = activeActions.length;
     document.getElementById('statFlagged').textContent = flaggedCount;
     // Emphasize flagged card severity by count with progressive transition
     const flaggedCard = document.querySelector('.dashboard-stat-card.flagged-card');

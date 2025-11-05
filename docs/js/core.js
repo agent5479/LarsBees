@@ -2226,10 +2226,17 @@ function updateDashboardStats() {
     
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
     
+    // Filter out deleted actions (actions with delete/remove/archive keywords)
+    const deleteKeywords = ['delete', 'deleted', 'remove', 'removed', 'archive', 'archived'];
+    const activeActions = (actions && Array.isArray(actions)) ? actions.filter(a => {
+        const taskName = (a.taskName || a.task || a.name || '').toString().toLowerCase();
+        return !deleteKeywords.some(keyword => taskName.includes(keyword));
+    }) : [];
+    
     // Animate number changes (using active sites only)
     animateNumber(document.getElementById('statSites'), activeSites.length);
     animateNumber(document.getElementById('statHives'), totalHives);
-    animateNumber(document.getElementById('statActions'), actions.length);
+    animateNumber(document.getElementById('statActions'), activeActions.length);
     animateNumber(document.getElementById('statFlagged'), flaggedCount);
     
     // Update quick stats
