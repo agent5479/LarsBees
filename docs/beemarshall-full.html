@@ -3587,7 +3587,34 @@
                 return;
             }
             
-            const csvData = window.sites.map(site => {
+            // Filter out archived and deleted sites (exclude cluster branch - sites are tenant-scoped)
+            const activeSites = window.sites.filter(site => {
+                // Exclude archived sites (handle various data types from Firebase)
+                if (site.archived === true || site.archived === 'true' || site.archived === 1) return false;
+                // Exclude deleted sites
+                if (site.deleted === true || site.deleted === 'true' || site.deleted === 1) return false;
+                return true;
+            });
+            
+            if (activeSites.length === 0) {
+                beeMarshallAlert('No active site data available to export.', 'info');
+                return;
+            }
+            
+            const csvData = activeSites.map(site => {
+                // Format last visit date if it exists
+                let lastVisitDateFormatted = '';
+                if (site.lastVisitDate) {
+                    const visitDate = new Date(site.lastVisitDate);
+                    if (!isNaN(visitDate.getTime())) {
+                        lastVisitDateFormatted = visitDate.toLocaleDateString('en-NZ', { 
+                            day: 'numeric', 
+                            month: 'short', 
+                            year: 'numeric' 
+                        });
+                    }
+                }
+                
                 return {
                     'Site ID': site.id,
                     'Name': site.name,
@@ -3614,6 +3641,7 @@
                     'Access Type': site.accessType || '',
                     'Contact Before Visit': site.contactBeforeVisit ? 'Yes' : 'No',
                     'Quarantine': site.isQuarantine ? 'Yes' : 'No',
+                    'Last Visit Date': lastVisitDateFormatted,
                     'Harvest Timeline': site.harvestTimeline || '',
                     'Sugar Requirements': site.sugarRequirements || '',
                     'Notes': site.notes || '',
@@ -3632,7 +3660,40 @@
                 return;
             }
             
-            const csvData = window.actions.map(action => {
+            // Filter out deleted actions (exclude cluster branch - actions are tenant-scoped)
+            const deleteKeywords = ['delete', 'deleted', 'deleting', 'remove', 'removed', 'removing', 'archive', 'archived', 'archiving'];
+            const activeActions = window.actions.filter(action => {
+                // Check if task name indicates a deleted task reference
+                const taskName = action.taskName || action.task || action.name || '';
+                const taskNameStr = taskName.toString();
+                
+                // Check raw task name for "[Deleted:" pattern
+                if (taskNameStr.includes('[Deleted:') || taskNameStr.startsWith('[Deleted:')) {
+                    return false;
+                }
+                
+                // Also check the display task name if getTaskDisplayName is available
+                if (window.getTaskDisplayName) {
+                    const displayTaskName = window.getTaskDisplayName(taskName, action.taskId);
+                    if (displayTaskName && displayTaskName.toString().includes('[Deleted:')) {
+                        return false;
+                    }
+                }
+                
+                // Check task name and notes for delete keywords
+                const taskNameLower = taskNameStr.toLowerCase();
+                const notes = (action.notes || '').toString().toLowerCase();
+                const combinedText = taskNameLower + ' ' + notes;
+                
+                return !deleteKeywords.some(keyword => combinedText.includes(keyword));
+            });
+            
+            if (activeActions.length === 0) {
+                beeMarshallAlert('No active action data available to export.', 'info');
+                return;
+            }
+            
+            const csvData = activeActions.map(action => {
                 // Find site name from ID
                 const site = window.sites.find(s => s.id === action.siteId);
                 const siteName = site ? site.name : '';
@@ -3735,9 +3796,30 @@
         function exportAllDataCSV() {
             const allData = [];
             
-            // Add sites data
+            // Add sites data (exclude archived/deleted sites and cluster branch - sites are tenant-scoped)
             if (window.sites && window.sites.length > 0) {
-                window.sites.forEach(site => {
+                const activeSites = window.sites.filter(site => {
+                    // Exclude archived sites
+                    if (site.archived === true || site.archived === 'true' || site.archived === 1) return false;
+                    // Exclude deleted sites
+                    if (site.deleted === true || site.deleted === 'true' || site.deleted === 1) return false;
+                    return true;
+                });
+                
+                activeSites.forEach(site => {
+                    // Format last visit date if it exists
+                    let lastVisitDateFormatted = '';
+                    if (site.lastVisitDate) {
+                        const visitDate = new Date(site.lastVisitDate);
+                        if (!isNaN(visitDate.getTime())) {
+                            lastVisitDateFormatted = visitDate.toLocaleDateString('en-NZ', { 
+                                day: 'numeric', 
+                                month: 'short', 
+                                year: 'numeric' 
+                            });
+                        }
+                    }
+                    
                     allData.push({
                         'Data Type': 'Site',
                         'ID': site.id,
@@ -3765,6 +3847,7 @@
                         'Access Type': site.accessType || '',
                         'Contact Before Visit': site.contactBeforeVisit ? 'Yes' : 'No',
                         'Quarantine': site.isQuarantine ? 'Yes' : 'No',
+                        'Last Visit Date': lastVisitDateFormatted,
                         'Harvest Timeline': site.harvestTimeline || '',
                         'Sugar Requirements': site.sugarRequirements || '',
                         'Notes': site.notes || '',
@@ -3805,9 +3888,36 @@
                 });
             }
             
-            // Add actions data
+            // Add actions data (exclude deleted actions and cluster branch - actions are tenant-scoped)
             if (window.actions && window.actions.length > 0) {
-                window.actions.forEach(action => {
+                const deleteKeywords = ['delete', 'deleted', 'deleting', 'remove', 'removed', 'removing', 'archive', 'archived', 'archiving'];
+                const activeActions = window.actions.filter(action => {
+                    // Check if task name indicates a deleted task reference
+                    const taskName = action.taskName || action.task || action.name || '';
+                    const taskNameStr = taskName.toString();
+                    
+                    // Check raw task name for "[Deleted:" pattern
+                    if (taskNameStr.includes('[Deleted:') || taskNameStr.startsWith('[Deleted:')) {
+                        return false;
+                    }
+                    
+                    // Also check the display task name if getTaskDisplayName is available
+                    if (window.getTaskDisplayName) {
+                        const displayTaskName = window.getTaskDisplayName(taskName, action.taskId);
+                        if (displayTaskName && displayTaskName.toString().includes('[Deleted:')) {
+                            return false;
+                        }
+                    }
+                    
+                    // Check task name and notes for delete keywords
+                    const taskNameLower = taskNameStr.toLowerCase();
+                    const notes = (action.notes || '').toString().toLowerCase();
+                    const combinedText = taskNameLower + ' ' + notes;
+                    
+                    return !deleteKeywords.some(keyword => combinedText.includes(keyword));
+                });
+                
+                activeActions.forEach(action => {
                     // Find site name from ID
                     const site = window.sites.find(s => s.id === action.siteId);
                     const siteName = site ? site.name : '';
@@ -3920,6 +4030,9 @@
                 beeMarshallAlert('No data to export.', 'info');
                 return;
             }
+            
+            // Note: All data is tenant-scoped from Firebase paths (tenants/{currentTenantId}/...)
+            // Cluster branch is excluded - data is loaded only from tenant-specific paths
             
             // Convert data to CSV format
             const headers = Object.keys(data[0]);
