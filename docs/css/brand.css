@@ -502,6 +502,93 @@ a:hover {
 /* Button is now positioned in bottom right next to sync overlay */
 /* Styles are defined in beemarshall-full.html */
 
+/* ===== INTERACTIVE HIVE ANALYSIS CARD ===== */
+/* Draggable and Resizable Card Styles */
+.draggable-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.draggable-handle {
+    cursor: move;
+    user-select: none;
+}
+
+.draggable-handle:active {
+    cursor: grabbing;
+}
+
+/* Resizable Card */
+.resizable-card {
+    resize: both;
+    overflow: auto;
+}
+
+/* Hive Category Cards */
+.hive-category-card {
+    background: var(--glass-bg);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.hive-category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    border-color: var(--dark-yellow);
+}
+
+.hive-category-card.clickable {
+    cursor: pointer;
+}
+
+.hive-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.hive-icon.strong { color: #28a745; }
+.hive-icon.medium { color: #ffc107; }
+.hive-icon.weak { color: #fd7e14; }
+.hive-icon.nuc { color: #6f42c1; }
+.hive-icon.dead { color: #dc3545; }
+.hive-icon.empty { color: #6c757d; }
+
+.hive-count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--black);
+    margin-bottom: 0.25rem;
+}
+
+.hive-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--black);
+    margin-bottom: 0.25rem;
+}
+
+.hive-description {
+    font-size: 0.9rem;
+    color: var(--gray-600);
+}
+
+.hive-category-card:hover .hive-icon {
+    transform: scale(1.1);
+}
+
+.hive-category-card:hover .hive-count {
+    color: var(--dark-yellow);
+}
+
 /* ===== PREFERS REDUCED MOTION ===== */
 @media (prefers-reduced-motion: reduce) {
     *,

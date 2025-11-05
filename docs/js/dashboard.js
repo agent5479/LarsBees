@@ -137,6 +137,11 @@ function updateDashboard() {
         return;
     }
     
+    // Update hive analysis card if it exists
+    if (typeof updateHiveStrengthBreakdown === 'function') {
+        updateHiveStrengthBreakdown();
+    }
+    
     // Check if data arrays are properly initialized
     if (!window.sites) {
         console.error('❌ Sites array is undefined!');
