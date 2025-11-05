@@ -2213,7 +2213,9 @@ function showDashboardWithoutMap() {
 
 // Update only dashboard stats without map
 function updateDashboardStats() {
-    const totalHives = sites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
+    // Filter out archived sites for statistics
+    const activeSites = (sites && Array.isArray(sites)) ? sites.filter(s => !s.archived) : [];
+    const totalHives = activeSites.reduce((sum, s) => sum + (s.hiveCount || 0), 0);
     
     // Check for overdue tasks and update flagged count
     checkAndFlagOverdueTasks();
@@ -2224,8 +2226,8 @@ function updateDashboardStats() {
     
     const flaggedCount = actions.filter(a => a.flag && a.flag !== '').length + overdueTasks;
     
-    // Animate number changes
-    animateNumber(document.getElementById('statSites'), sites.length);
+    // Animate number changes (using active sites only)
+    animateNumber(document.getElementById('statSites'), activeSites.length);
     animateNumber(document.getElementById('statHives'), totalHives);
     animateNumber(document.getElementById('statActions'), actions.length);
     animateNumber(document.getElementById('statFlagged'), flaggedCount);
