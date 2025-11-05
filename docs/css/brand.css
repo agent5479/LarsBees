@@ -628,18 +628,24 @@ a:hover {
 }
 
 @media (min-width: 992px) {
-    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 {
-        width: 50%;
-        max-width: 50%;
-        flex: 0 0 50%;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
+    /* Force breakdown cards row to display side by side on desktop */
+    .row.mb-3.g-2.g-lg-2[style*="flex-wrap: nowrap"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 0.5rem;
     }
     
-    /* On desktop, keep all 5 items on one line */
+    .row.mb-3.g-2.g-lg-2 > .col-12.col-lg-6 {
+        width: 50% !important;
+        max-width: 50% !important;
+        flex: 0 0 50% !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* On desktop, keep all 5 items on one line within each card */
     .row.g-1.g-sm-2 {
-        display: flex;
-        flex-wrap: nowrap;
+        display: flex !important;
+        flex-wrap: nowrap !important;
     }
     
     .row.g-1.g-sm-2 > .col[style*="20%"] {
@@ -648,13 +654,18 @@ a:hover {
     }
     
     /* Make breakdown cards more compact on desktop */
-    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 .card-body {
+    .row.mb-3.g-2.g-lg-2 > .col-12.col-lg-6 .card-body {
         padding: 0.5rem 0.75rem !important;
     }
     
-    .row.mb-3.g-2.g-lg-3 > .col-12.col-lg-6 .hive-category-card-compact {
+    .row.mb-3.g-2.g-lg-2 > .col-12.col-lg-6 .hive-category-card-compact {
         padding: 0.4rem !important;
         min-height: 60px !important;
+    }
+    
+    /* Ensure cards themselves are compact */
+    .row.mb-3.g-2.g-lg-2 > .col-12.col-lg-6 .card {
+        margin-bottom: 0;
     }
 }
 
