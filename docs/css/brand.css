@@ -633,14 +633,15 @@ a:hover {
         max-width: 50%;
     }
     
-    /* On desktop, allow natural flex behavior */
+    /* On desktop, keep all 5 items on one line */
     .row.g-1.g-sm-2 {
-        flex-wrap: wrap;
+        display: flex;
+        flex-wrap: nowrap;
     }
     
     .row.g-1.g-sm-2 > .col[style*="20%"] {
-        flex: 0 0 auto !important;
-        max-width: none !important;
+        flex: 0 0 20% !important;
+        max-width: 20% !important;
     }
 }
 
