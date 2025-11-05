@@ -246,6 +246,11 @@ function _renderSitesInternal() {
                                     </div>
                                 </div>
                                 
+                                <!-- Last Visit Date -->
+                                <div class="mb-2">
+                                    ${lastVisitDisplay}
+                                </div>
+                                
                                 <!-- Landowner contact (single truncated line: name/phone, address) -->
                                 <div class="mb-2" title="${landownerTitle}">
                                     <i class="bi bi-person-fill text-muted me-1"></i>

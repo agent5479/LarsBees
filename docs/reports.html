@@ -1647,20 +1647,41 @@
                 Logger.log('📊 Using actions data:', actions.length, 'actions');
                 Logger.log('📊 Using scheduled tasks data:', scheduledTasks.length, 'tasks');
                 
-                // Analyze operational data
-                const completedTasks = scheduledTasks.filter(task => task.completed).length;
-                const pendingTasks = scheduledTasks.filter(task => !task.completed).length;
-                const totalActions = actions.length;
+                // Filter to last 7 days
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                sevenDaysAgo.setHours(0, 0, 0, 0);
                 
-                // Calculate action types
+                // Filter actions from last 7 days
+                const recentActions = actions.filter(action => {
+                    if (!action.date) return false;
+                    const actionDate = new Date(action.date);
+                    actionDate.setHours(0, 0, 0, 0);
+                    return actionDate >= sevenDaysAgo;
+                });
+                
+                // Filter scheduled tasks from last 7 days (based on dueDate or createdAt)
+                const recentTasks = scheduledTasks.filter(task => {
+                    if (!task.dueDate && !task.createdAt) return false;
+                    const taskDate = new Date(task.dueDate || task.createdAt);
+                    taskDate.setHours(0, 0, 0, 0);
+                    return taskDate >= sevenDaysAgo;
+                });
+                
+                // Analyze operational data (last 7 days only)
+                const completedTasks = recentTasks.filter(task => task.completed).length;
+                const pendingTasks = recentTasks.filter(task => !task.completed).length;
+                const totalActions = recentActions.length;
+                
+                // Calculate action types (last 7 days only)
                 const actionTypes = {};
-                actions.forEach(action => {
-                    const type = action.actionType || 'General';
+                recentActions.forEach(action => {
+                    const type = action.actionType || action.taskName || 'General';
                     actionTypes[type] = (actionTypes[type] || 0) + 1;
                 });
                 
-                // Calculate efficiency metrics
-                const taskCompletionRate = scheduledTasks.length > 0 ? (completedTasks / scheduledTasks.length * 100).toFixed(1) : 0;
+                // Calculate efficiency metrics (last 7 days only)
+                const taskCompletionRate = recentTasks.length > 0 ? (completedTasks / recentTasks.length * 100).toFixed(1) : 0;
                 const actionsPerSite = window.sites.length > 0 ? (totalActions / window.sites.length).toFixed(1) : 0;
                 
                 // Destroy existing chart if it exists
@@ -1708,7 +1729,7 @@
                             },
                             title: {
                                 display: true,
-                                text: 'Operations Overview',
+                                text: 'Operations Overview (Last 7 Days)',
                                 font: {
                                     size: 16,
                                     weight: 'bold'
@@ -1727,10 +1748,10 @@
                     operationsSkeleton.remove(); // Remove the element entirely
                 }
                 
-                // Show operations summary
+                // Show operations summary (last 7 days)
                 const summary = `
                     <div class="alert alert-success mt-3">
-                        <h6><i class="bi bi-gear"></i> Operations Summary</h6>
+                        <h6><i class="bi bi-gear"></i> Operations Summary (Last 7 Days)</h6>
                         <p><strong>Task Completion Rate:</strong> ${taskCompletionRate}%</p>
                         <p><strong>Actions per Site:</strong> ${actionsPerSite}</p>
                         <p><strong>Total Actions Logged:</strong> ${totalActions}</p>
