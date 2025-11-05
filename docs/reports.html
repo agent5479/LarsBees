@@ -1968,30 +1968,30 @@
             
             console.log('🍯 Processing', window.sites.length, 'sites for honey potentials');
             
-            // Collect all honey types and calculate site strength counts
+            // Collect all honey types and calculate frames from doubles and singles
             const honeyTypesMap = {};
             
             window.sites.forEach((site, index) => {
                 console.log(`🍯 Processing site ${index + 1}:`, site.name);
                 console.log('🍯 Honey potentials:', site.honeyPotentials);
-                console.log('🍯 Hive strength:', site.hiveStrength);
+                console.log('🍯 Hive stacks:', site.hiveStacks);
                 
                 if (site.honeyPotentials && Array.isArray(site.honeyPotentials) && site.honeyPotentials.length > 0) {
-                    // Calculate total active hive strength for this site (excluding dead hives)
-                    const siteHiveStrength = (site.hiveStrength?.strong || 0) + 
-                                           (site.hiveStrength?.medium || 0) + 
-                                           (site.hiveStrength?.weak || 0) + 
-                                           (site.hiveStrength?.nuc || 0);
+                    // Calculate total producing frames from doubles and singles only
+                    // Doubles have 20 frames each, singles have 10 frames each
+                    const doubles = parseInt(site.hiveStacks?.doubles || 0);
+                    const singles = parseInt(site.hiveStacks?.singles || 0);
+                    const totalFrames = (doubles * 20) + (singles * 10);
                     
-                    console.log(`🍯 Site ${site.name} has ${siteHiveStrength} active hives`);
+                    console.log(`🍯 Site ${site.name} has ${doubles} doubles (${doubles * 20} frames) and ${singles} singles (${singles * 10} frames) = ${totalFrames} total frames`);
                     
                     site.honeyPotentials.forEach(honeyType => {
                         if (!honeyTypesMap[honeyType]) {
                             honeyTypesMap[honeyType] = 0;
                         }
-                        // Add site strength to this honey type
-                        honeyTypesMap[honeyType] += siteHiveStrength;
-                        console.log(`🍯 Added ${siteHiveStrength} to ${honeyType} (total: ${honeyTypesMap[honeyType]})`);
+                        // Add total frames to this honey type
+                        honeyTypesMap[honeyType] += totalFrames;
+                        console.log(`🍯 Added ${totalFrames} frames to ${honeyType} (total: ${honeyTypesMap[honeyType]} frames)`);
                     });
                 } else {
                     console.log(`🍯 Site ${site.name} has no honey potentials selected`);
@@ -2011,24 +2011,22 @@
                 return;
             }
             
-            // Sort honey types by strength count (highest first) - only show active honey types
+            // Sort honey types by frame count (highest first) - only show honey types with frames
             const sortedHoneyTypes = Object.entries(honeyTypesMap)
-                .filter(([honeyType, strength]) => {
-                    // Only show honey types that are:
-                    // 1. Active (have strength > 0)
-                    // 2. From sites that are marked as likely for this honey type
-                    return strength > 0;
+                .filter(([honeyType, frames]) => {
+                    // Only show honey types that have frames > 0 (from doubles or singles)
+                    return frames > 0;
                 })
                 .sort((a, b) => b[1] - a[1]);
             
             console.log('🍯 Sorted honey types:', sortedHoneyTypes);
             
             if (sortedHoneyTypes.length === 0) {
-                console.log('🍯 No honey types with strength > 0');
+                console.log('🍯 No honey types with frames > 0');
                 document.getElementById('honeyPotentialsSection').innerHTML = `
                     <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i> No honey types with active hives found.
-                        <br>Ensure your sites have both honey types selected and active hives.
+                        <i class="bi bi-info-circle"></i> No honey types with producing frames found.
+                        <br>Ensure your sites have both honey types selected and doubles or singles boxes.
                     </div>
                 `;
                 return;
@@ -2038,8 +2036,8 @@
             let html = `
                 <div class="row">
                     <div class="col-12">
-                        <h6><i class="bi bi-bar-chart"></i> Honey Varieties by Site Strength</h6>
-                        <p class="text-muted small">Approximate proportional estimates based on active hive strength</p>
+                        <h6><i class="bi bi-bar-chart"></i> Honey Varieties by Producing Frames</h6>
+                        <p class="text-muted small">Based on frames from doubles (20 frames each) and singles (10 frames each)</p>
                         <div class="chart-container" style="position: relative; height: 200px; width: 100%;">
                             <canvas id="honeyPotentialsChart"></canvas>
                         </div>
@@ -2052,7 +2050,7 @@
             // Create bar chart
             const ctx = document.getElementById('honeyPotentialsChart').getContext('2d');
             const honeyLabels = sortedHoneyTypes.map(([honeyType]) => honeyType);
-            const honeyValues = sortedHoneyTypes.map(([_, strength]) => strength);
+            const honeyValues = sortedHoneyTypes.map(([_, frames]) => frames);
             
             console.log('🍯 Chart labels:', honeyLabels);
             console.log('🍯 Chart values:', honeyValues);
@@ -2068,7 +2066,7 @@
                 data: {
                     labels: honeyLabels,
                     datasets: [{
-                        label: 'Proportional Strength',
+                        label: 'Producing Frames',
                         data: honeyValues,
                         backgroundColor: honeyLabels.map((_, index) => {
                             const colors = [
@@ -2115,8 +2113,8 @@
                             callbacks: {
                                 label: function(context) {
                                     const honeyType = context.label;
-                                    const strength = context.parsed.y;
-                                    return `${honeyType}: Proportional estimate`;
+                                    const frames = context.parsed.y;
+                                    return `${honeyType}: ${frames} frames`;
                                 }
                             }
                         }
