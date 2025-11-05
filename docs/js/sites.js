@@ -137,22 +137,15 @@ function _renderSitesInternal() {
             
             // Add sites for this letter (build cards in array, then join)
             const siteCards = sitesByLetter[letter].map(c => {
-                // Find last visit date for this site
+                // Get last visit date from site object (not from actions)
                 let lastVisitDate = null;
-                if (window.actions && Array.isArray(window.actions)) {
-                    const siteActions = window.actions
-                        .filter(a => a.siteId === c.id && a.date)
-                        .map(a => new Date(a.date))
-                        .sort((a, b) => b - a); // Sort descending (most recent first)
-                    
-                    if (siteActions.length > 0) {
-                        lastVisitDate = siteActions[0];
-                    }
+                if (c.lastVisitDate) {
+                    lastVisitDate = new Date(c.lastVisitDate);
                 }
                 
                 // Format last visit date
                 let lastVisitDisplay = '';
-                if (lastVisitDate) {
+                if (lastVisitDate && !isNaN(lastVisitDate.getTime())) {
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     const visitDate = new Date(lastVisitDate);
@@ -166,16 +159,16 @@ function _renderSitesInternal() {
                     });
                     
                     if (daysDiff === 0) {
-                        lastVisitDisplay = `<span class="badge bg-success text-white ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> Today</span>`;
+                        lastVisitDisplay = `<span class="badge bg-success text-white ms-2 clickable-visit-badge" onclick="event.stopPropagation(); updateSiteVisitDate(${c.id})" style="cursor: pointer;" title="Click to update visit date (Last visit: ${formattedDate})"><i class="bi bi-calendar-check"></i> Today</span>`;
                     } else if (daysDiff === 1) {
-                        lastVisitDisplay = `<span class="badge bg-info text-white ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> Yesterday</span>`;
+                        lastVisitDisplay = `<span class="badge bg-info text-white ms-2 clickable-visit-badge" onclick="event.stopPropagation(); updateSiteVisitDate(${c.id})" style="cursor: pointer;" title="Click to update visit date (Last visit: ${formattedDate})"><i class="bi bi-calendar-check"></i> Yesterday</span>`;
                     } else if (daysDiff <= 7) {
-                        lastVisitDisplay = `<span class="badge bg-warning text-dark ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> ${daysDiff} days ago</span>`;
+                        lastVisitDisplay = `<span class="badge bg-warning text-dark ms-2 clickable-visit-badge" onclick="event.stopPropagation(); updateSiteVisitDate(${c.id})" style="cursor: pointer;" title="Click to update visit date (Last visit: ${formattedDate})"><i class="bi bi-calendar-check"></i> ${daysDiff} days ago</span>`;
                     } else {
-                        lastVisitDisplay = `<span class="badge bg-secondary text-white ms-2" title="Last visit: ${formattedDate}"><i class="bi bi-calendar-check"></i> ${formattedDate}</span>`;
+                        lastVisitDisplay = `<span class="badge bg-secondary text-white ms-2 clickable-visit-badge" onclick="event.stopPropagation(); updateSiteVisitDate(${c.id})" style="cursor: pointer;" title="Click to update visit date (Last visit: ${formattedDate})"><i class="bi bi-calendar-check"></i> ${formattedDate}</span>`;
                     }
                 } else {
-                    lastVisitDisplay = `<span class="badge bg-light text-dark ms-2" title="No visits recorded"><i class="bi bi-calendar-x"></i> No visits</span>`;
+                    lastVisitDisplay = `<span class="badge bg-light text-dark ms-2 clickable-visit-badge" onclick="event.stopPropagation(); updateSiteVisitDate(${c.id})" style="cursor: pointer;" title="Click to record visit date"><i class="bi bi-calendar-x"></i> No visits</span>`;
                 }
                 
                 // Archive button for admins only (shown on active sites)
@@ -2590,6 +2583,165 @@ function quickEditHiveStrength(siteId, state, currentValue) {
  * Quick edit hive box count from summary card
  * Opens a prompt for entering new count and updates Firebase
  */
+// Update site visit date (called from clickable badge)
+function updateSiteVisitDate(siteId) {
+    const site = window.sites.find(s => s.id === siteId);
+    if (!site) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    // Set current visit date in input if it exists
+    const visitDateInput = document.getElementById('visitDateInput');
+    const clearCheckbox = document.getElementById('clearVisitDate');
+    
+    if (site.lastVisitDate) {
+        const date = new Date(site.lastVisitDate);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        visitDateInput.value = `${year}-${month}-${day}`;
+        clearCheckbox.checked = false;
+    } else {
+        // Default to today
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        visitDateInput.value = `${year}-${month}-${day}`;
+        clearCheckbox.checked = false;
+    }
+    
+    // Store site ID for save function
+    visitDateInput.dataset.siteId = siteId;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('updateVisitDateModal'));
+    modal.show();
+}
+
+// Save site visit date
+function saveSiteVisitDate() {
+    const visitDateInput = document.getElementById('visitDateInput');
+    const clearCheckbox = document.getElementById('clearVisitDate');
+    const siteId = parseInt(visitDateInput.dataset.siteId);
+    
+    if (!siteId) {
+        beeMarshallAlert('Site ID not found', 'error');
+        return;
+    }
+    
+    const site = window.sites.find(s => s.id === siteId);
+    if (!site) {
+        beeMarshallAlert('Site not found', 'error');
+        return;
+    }
+    
+    let updateData = {
+        lastModifiedBy: currentUser.username,
+        lastModifiedAt: new Date().toISOString()
+    };
+    
+    if (clearCheckbox.checked) {
+        // Clear visit date
+        updateData.lastVisitDate = null;
+    } else {
+        // Set visit date
+        const dateValue = visitDateInput.value;
+        if (!dateValue) {
+            beeMarshallAlert('Please select a date', 'warning');
+            return;
+        }
+        
+        // Store as ISO string (date only, no time)
+        const date = new Date(dateValue);
+        date.setHours(0, 0, 0, 0);
+        updateData.lastVisitDate = date.toISOString();
+    }
+    
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', 'Updating visit date...');
+    }
+    
+    // Update in Firebase
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
+    
+    if (navigator.onLine && window.database) {
+        database.ref(`${tenantPath}/${siteId}`).update(updateData)
+            .then(() => {
+                // Update local site object
+                if (updateData.lastVisitDate) {
+                    site.lastVisitDate = updateData.lastVisitDate;
+                } else {
+                    delete site.lastVisitDate;
+                }
+                site.lastModifiedBy = updateData.lastModifiedBy;
+                site.lastModifiedAt = updateData.lastModifiedAt;
+                
+                // Re-render sites to show updated badge
+                if (typeof renderSites === 'function') {
+                    renderSites();
+                }
+                
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.updateSyncStatus('synced');
+                }
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('updateVisitDateModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                beeMarshallAlert(`✅ Visit date ${clearCheckbox.checked ? 'cleared' : 'updated'} successfully`, 'success');
+            })
+            .catch(error => {
+                console.error('Error updating visit date:', error);
+                if (window.syncStatusManager) {
+                    window.syncStatusManager.updateSyncStatus('error', 'Failed to update visit date');
+                }
+                beeMarshallAlert(`❌ Error updating visit date: ${error.message}`, 'error');
+            });
+    } else {
+        // Offline - add to pending changes
+        if (window.syncStatusManager) {
+            window.syncStatusManager.addPendingChange({
+                type: 'site_update',
+                path: `${tenantPath}/${siteId}`,
+                data: updateData,
+                method: 'update'
+            });
+        }
+        
+        // Update local site object
+        if (updateData.lastVisitDate) {
+            site.lastVisitDate = updateData.lastVisitDate;
+        } else {
+            delete site.lastVisitDate;
+        }
+        site.lastModifiedBy = updateData.lastModifiedBy;
+        site.lastModifiedAt = updateData.lastModifiedAt;
+        
+        // Re-render sites
+        if (typeof renderSites === 'function') {
+            renderSites();
+        }
+        
+        // Close modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('updateVisitDateModal'));
+        if (modal) {
+            modal.hide();
+        }
+        
+        beeMarshallAlert('⚠️ Visit date saved locally. Will sync when connection is restored.', 'warning');
+    }
+}
+
+// Make functions globally accessible
+window.updateSiteVisitDate = updateSiteVisitDate;
+window.saveSiteVisitDate = saveSiteVisitDate;
+
 function quickEditHiveBox(siteId, boxType, currentValue) {
     const site = window.sites.find(c => c.id === siteId);
     if (!site) {
