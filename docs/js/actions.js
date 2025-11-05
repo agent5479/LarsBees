@@ -195,8 +195,8 @@ function renderActions() {
     const dateFrom = document.getElementById('filterDateFrom')?.value || '';
     const dateTo = document.getElementById('filterDateTo')?.value || '';
     
-    // Get action type filter checkboxes
-    const hideDeletes = document.getElementById('hideDeletes')?.checked || false;
+    // Get action type filter checkboxes (default to true to hide deleted by default)
+    const hideDeletes = document.getElementById('hideDeletes')?.checked !== false; // Default to true if checkbox doesn't exist
     const hideMoves = document.getElementById('hideMoves')?.checked || false;
     const hideStackUpdates = document.getElementById('hideStackUpdates')?.checked || false;
     const hideStrengthUpdates = document.getElementById('hideStrengthUpdates')?.checked || false;
@@ -234,8 +234,10 @@ function renderActions() {
 
     if (hideDeletes) {
         filtered = filtered.filter(a => {
-            const name = getName(a);
-            return !deleteKeywords.some(k => name.includes(k));
+            const taskName = getName(a);
+            const notes = (a.notes || '').toString().toLowerCase();
+            const combinedText = taskName + ' ' + notes;
+            return !deleteKeywords.some(k => combinedText.includes(k));
         });
     }
     if (hideMoves) {
