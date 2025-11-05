@@ -78,28 +78,41 @@ function updateEquipmentBreakdown() {
     let totalEmpty = 0;
     
     let sitesProcessed = 0;
+    let sitesWithStacks = 0;
     window.sites.forEach(site => {
         // Exclude archived sites from calculations
         if (site.archived) return;
         
         sitesProcessed++;
-        if (site.hiveStacks) {
-            const doubles = parseInt(site.hiveStacks.doubles) || 0;
-            const topSplits = parseInt(site.hiveStacks.topSplits) || 0;
-            const singles = parseInt(site.hiveStacks.singles) || 0;
-            const nucs = parseInt(site.hiveStacks.nucs) || 0;
-            const empty = parseInt(site.hiveStacks.empty) || 0;
+        if (site.hiveStacks && typeof site.hiveStacks === 'object') {
+            sitesWithStacks++;
+            // Helper function to safely parse numeric values
+            const safeParse = (val) => {
+                if (val === null || val === undefined) return 0;
+                const parsed = parseInt(val, 10);
+                return isNaN(parsed) ? 0 : parsed;
+            };
+            
+            const doubles = safeParse(site.hiveStacks.doubles);
+            const topSplits = safeParse(site.hiveStacks.topSplits);
+            const singles = safeParse(site.hiveStacks.singles);
+            const nucs = safeParse(site.hiveStacks.nucs);
+            const empty = safeParse(site.hiveStacks.empty);
             
             totalDoubles += doubles;
             totalTopSplits += topSplits;
             totalSingles += singles;
             totalNUCs += nucs;
             totalEmpty += empty;
+            
+            if (typeof Logger !== 'undefined' && (doubles > 0 || topSplits > 0 || singles > 0 || nucs > 0 || empty > 0)) {
+                Logger.log(`📊 Site "${site.name}": doubles=${doubles}, topSplits=${topSplits}, singles=${singles}, nucs=${nucs}, empty=${empty}`);
+            }
         }
     });
     
     if (typeof Logger !== 'undefined') {
-        Logger.log('📊 Equipment breakdown - sites processed:', sitesProcessed, 'of', window.sites.length);
+        Logger.log('📊 Equipment breakdown - sites processed:', sitesProcessed, 'of', window.sites.length, '| sites with hiveStacks:', sitesWithStacks);
     }
     
     // Calculate total equipment (excluding empty)
