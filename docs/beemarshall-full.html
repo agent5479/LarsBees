@@ -4161,6 +4161,7 @@
                 missingContactDetails: [],
                 invalidPhoneNumbers: [],
                 missingHoneyTypes: [],
+                missingFunctionalClassification: [],
                 overdueCompliance: []
             };
             
@@ -4248,9 +4249,18 @@
                         siteId: site.id
                     });
                 }
+                
+                // Check 8: Missing functional classification
+                if (!site.functionalClassification || !site.functionalClassification.trim()) {
+                    issues.missingFunctionalClassification.push({
+                        siteName: site.name,
+                        siteId: site.id,
+                        missingField: 'Functional Classification'
+                    });
+                }
             });
             
-            // Check 8: Overdue compliance requirements
+            // Check 9: Overdue compliance requirements
             const currentDate = new Date();
             const currentYear = currentDate.getFullYear();
             
@@ -4314,6 +4324,7 @@
                               issues.missingContactDetails.length +
                               issues.invalidPhoneNumbers.length +
                               issues.missingHoneyTypes.length +
+                              issues.missingFunctionalClassification.length +
                               issues.overdueCompliance.length;
             
             // Generate HTML report
@@ -4342,6 +4353,7 @@
                 if (issues.missingContactDetails.length > 0) tocItems.push(`<li><a href="#integrity-missing-contact" class="link-warning text-decoration-none">Missing Contact Details (${issues.missingContactDetails.length})</a></li>`);
                 if (issues.invalidPhoneNumbers && issues.invalidPhoneNumbers.length > 0) tocItems.push(`<li><a href="#integrity-invalid-phone" class="link-warning text-decoration-none">Invalid Phone Numbers (${issues.invalidPhoneNumbers.length})</a></li>`);
                 if (issues.missingHoneyTypes.length > 0) tocItems.push(`<li><a href="#integrity-missing-honey" class="link-warning text-decoration-none">Missing Honey Types (${issues.missingHoneyTypes.length})</a></li>`);
+                if (issues.missingFunctionalClassification.length > 0) tocItems.push(`<li><a href="#integrity-missing-classification" class="link-danger text-decoration-none">Missing Functional Classification (${issues.missingFunctionalClassification.length})</a></li>`);
                 if (issues.overdueCompliance.length > 0) tocItems.push(`<li><a href="#integrity-overdue-compliance" class="link-warning text-decoration-none">Overdue Compliance (${issues.overdueCompliance.length})</a></li>`);
                 // Prefer injecting inside the Analysis card; fallback to legacy placeholder if present
                 const tocEl = document.getElementById('integrityTOCInCard') || document.getElementById('integrityTOC');
