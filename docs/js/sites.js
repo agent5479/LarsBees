@@ -909,11 +909,36 @@ function handleSaveSite(e) {
     // Use tenant-specific path for data isolation
     const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
     
+    // Build detailed success message with key changes
+    let successMessage = `✅ Site "${site.name}" has been saved successfully!`;
+    const changeDetails = [];
+    
+    // Check for quarantine status
+    if (site.isQuarantine) {
+        changeDetails.push('🔴 Quarantine Status: ENABLED');
+    }
+    
+    // Check for contact before visit requirement
+    if (site.contactBeforeVisit) {
+        changeDetails.push('📞 Contact Before Visit: Required');
+    }
+    
+    // Check functional classification
+    if (site.functionalClassification && site.functionalClassification !== 'production') {
+        const classificationName = site.functionalClassification.charAt(0).toUpperCase() + site.functionalClassification.slice(1);
+        changeDetails.push(`📋 Classification: ${classificationName}`);
+    }
+    
+    // Add change details to message if any
+    if (changeDetails.length > 0) {
+        successMessage += '\n\n' + changeDetails.join('\n');
+    }
+    
     // Check if we're online and can save directly
     if (navigator.onLine && window.database) {
         database.ref(`${tenantPath}/${site.id}`).set(site)
             .then(() => {
-                beeMarshallAlert(`✅ Site "${site.name}" has been saved successfully!`, 'success');
+                beeMarshallAlert(successMessage, 'success');
                 if (window.syncStatusManager) {
                     window.syncStatusManager.updateSyncStatus('synced');
                 }
