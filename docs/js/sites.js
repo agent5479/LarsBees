@@ -586,11 +586,25 @@ function renderSiteTypeFilter() {
             <div class="d-flex justify-content-between align-items-center">
                 <label class="form-label mb-0"><strong>Filter:</strong></label>
                 <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleSiteFilter()" id="filterToggleBtn">
-                    <i class="bi bi-chevron-down" id="filterToggleIcon"></i> Functional Classifications
+                    <i class="bi bi-chevron-down" id="filterToggleIcon"></i> Filters
                 </button>
             </div>
             <div class="collapse" id="siteFilterOptions">
                 <div class="mt-2">
+                    <!-- Quarantine Checkbox Filter -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="filterQuarantineCheckbox" onchange="applyFilters()">
+                            <label class="form-check-label" for="filterQuarantineCheckbox" style="color: #dc3545; font-weight: bold;">
+                                <i class="bi bi-shield-exclamation"></i> Show Only Quarantine Sites
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Functional Classification Filter -->
+                    <div class="mb-2">
+                        <small class="text-muted">Functional Classification:</small>
+                    </div>
                     <div class="btn-group-vertical w-100" role="group">
                         <input type="radio" class="btn-check" name="siteTypeFilter" id="filterAll" value="all" checked>
                         <label class="btn btn-outline-secondary btn-sm" for="filterAll">All Types</label>
@@ -620,11 +634,6 @@ function renderSiteTypeFilter() {
                             <i class="bi bi-book"></i> Education
                         </label>
                         
-                        <input type="radio" class="btn-check" name="siteTypeFilter" id="filterQuarantine" value="quarantine">
-                        <label class="btn btn-outline-secondary btn-sm" for="filterQuarantine" style="border-color: #dc3545; color: #dc3545;">
-                            <i class="bi bi-shield-exclamation"></i> Quarantine
-                        </label>
-                        
                         <input type="radio" class="btn-check" name="siteTypeFilter" id="filterBackup" value="backup">
                         <label class="btn btn-outline-secondary btn-sm" for="filterBackup" style="border-color: #6c757d; color: #6c757d;">
                             <i class="bi bi-archive"></i> Backup
@@ -644,9 +653,7 @@ function renderSiteTypeFilter() {
     
     // Add event listeners for filtering
     document.querySelectorAll('input[name="siteTypeFilter"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            filterSitesByType(this.value);
-        });
+        radio.addEventListener('change', () => applyFilters());
     });
 }
 
