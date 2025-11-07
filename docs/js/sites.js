@@ -651,21 +651,43 @@ function renderSiteTypeFilter() {
 }
 
 function filterSitesByType(type) {
+    applyFilters();
+}
+
+function applyFilters() {
     const siteCards = document.querySelectorAll('.site-card');
+    const quarantineCheckbox = document.getElementById('filterQuarantineCheckbox');
+    const showOnlyQuarantine = quarantineCheckbox ? quarantineCheckbox.checked : false;
+    const selectedType = document.querySelector('input[name="siteTypeFilter"]:checked')?.value || 'all';
     
     siteCards.forEach(card => {
-        if (type === 'all' || card.dataset.siteType === type) {
-            card.style.display = 'block';
-        } else {
-            card.style.display = 'none';
+        const siteType = card.dataset.siteType;
+        const siteId = parseInt(card.dataset.siteId);
+        const site = window.sites.find(s => s.id === siteId);
+        
+        let showCard = true;
+        
+        // Apply functional classification filter
+        if (selectedType !== 'all' && siteType !== selectedType) {
+            showCard = false;
+        }
+        
+        // Apply quarantine filter (overrides classification filter if checked)
+        if (showOnlyQuarantine) {
+            if (!site || !site.isQuarantine) {
+                showCard = false;
+            }
+        }
+        
+        // Show or hide the card
+        card.style.display = showCard ? 'block' : 'none';
+        
+        // Also show/hide the parent column
+        const parentCol = card.closest('.col-md-6');
+        if (parentCol) {
+            parentCol.style.display = showCard ? 'block' : 'none';
         }
     });
-    
-    // Update the radio button selection
-    const radioButton = document.querySelector(`input[name="siteTypeFilter"][value="${type}"]`);
-    if (radioButton) {
-        radioButton.checked = true;
-    }
 }
 
 function toggleSiteFilter() {
