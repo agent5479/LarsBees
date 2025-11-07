@@ -272,6 +272,7 @@ function _renderSitesInternal() {
                                             ${typeInfo.name}
                                         </span>
                                         ${seasonalBadge}
+                                        ${c.isQuarantine ? `<span class="badge bg-danger text-white ms-2" style="font-weight: bold; font-size: 0.9rem; border: 2px solid #000;" title="Quarantine site - special handling required"><i class="bi bi-shield-exclamation"></i> QUARANTINE</span>` : ''}
                                         ${needsContact ? `<span class="badge bg-warning text-dark ms-2 contact-required-badge" style="font-weight: bold;" title="Contact required before visit"><i class="bi bi-telephone-fill"></i> Contact Required</span>` : ''}
                                         <span class="badge ms-2" style="background-color: #ffffff; color: #000; border: 1px solid #ddd; border-radius: 4px; font-size: 1.25rem; font-weight: bold;">
                                             ${totalHiveCount}
