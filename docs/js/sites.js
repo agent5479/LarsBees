@@ -706,6 +706,9 @@ function showAddSiteForm() {
     // Populate functional classification dropdown
     populateFunctionalClassificationDropdown();
     
+    // Set up bidirectional linking between quarantine checkbox and functional classification dropdown
+    setupQuarantineSync();
+    
     // Render honey potentials checkboxes (empty for new site)
     renderHoneyPotentials([]);
     
