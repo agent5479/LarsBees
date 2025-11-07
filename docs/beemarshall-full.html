@@ -4390,6 +4390,7 @@
                                             { id: 'integrity-missing-contact', label: 'Missing Contact', count: issues.missingContactDetails.length },
                                             { id: 'integrity-invalid-phone', label: 'Invalid Phone', count: issues.invalidPhoneNumbers ? issues.invalidPhoneNumbers.length : 0 },
                                             { id: 'integrity-missing-honey', label: 'Missing Honey Types', count: issues.missingHoneyTypes.length },
+                                            { id: 'integrity-missing-classification', label: 'Missing Classification', count: issues.missingFunctionalClassification.length },
                                             { id: 'integrity-overdue-compliance', label: 'Overdue Compliance', count: issues.overdueCompliance.length }
                                         ].map(item => {
                                             const disabled = item.count === 0;
@@ -4606,6 +4607,34 @@
                                 <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
                                 <button class="btn btn-sm btn-primary float-end" onclick="editSite(${issue.siteId})">
                                     <i class="bi bi-arrow-right"></i> Fix
+                                </button>
+                            </li>
+                        `;
+                    });
+                    html += `
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Missing functional classification
+                if (issues.missingFunctionalClassification.length > 0) {
+                    html += `
+                        <div id="integrity-missing-classification" class="card mb-3 border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <i class="bi bi-exclamation-triangle-fill"></i> Missing Functional Classification (${issues.missingFunctionalClassification.length})
+                            </div>
+                            <div class="card-body">
+                                <p class="text-danger"><strong>Critical:</strong> These sites do not have a functional classification set. This is required for proper site management.</p>
+                                <ul class="list-group">
+                    `;
+                    issues.missingFunctionalClassification.forEach(issue => {
+                        html += `
+                            <li class="list-group-item">
+                                <strong>${issue.siteName}</strong> (ID: ${issue.siteId})
+                                <button class="btn btn-sm btn-danger float-end" onclick="editSite(${issue.siteId})">
+                                    <i class="bi bi-pencil"></i> Edit Site
                                 </button>
                             </li>
                         `;
