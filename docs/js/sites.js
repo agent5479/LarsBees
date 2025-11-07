@@ -1060,6 +1060,9 @@ window.editSite = function(id) {
     document.getElementById('contactBeforeVisit').checked = site.contactBeforeVisit || false;
     document.getElementById('isQuarantine').checked = site.isQuarantine || false;
     
+    // Set up bidirectional linking between quarantine checkbox and functional classification dropdown
+    setupQuarantineSync();
+    
     // Populate hive strength breakdown
     if (site.hiveStrength) {
         // Update the Hive State display elements (not input fields)
