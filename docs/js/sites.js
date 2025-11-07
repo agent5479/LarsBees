@@ -787,6 +787,61 @@ function populateFunctionalClassificationDropdown() {
     }
 }
 
+/**
+ * Set up bidirectional synchronization between quarantine checkbox and functional classification dropdown
+ * This ensures consistency: checking quarantine sets classification to "quarantine" and vice versa
+ */
+function setupQuarantineSync() {
+    const quarantineCheckbox = document.getElementById('isQuarantine');
+    const classificationDropdown = document.getElementById('functionalClassification');
+    
+    if (!quarantineCheckbox || !classificationDropdown) {
+        console.warn('⚠️ Quarantine sync elements not found');
+        return;
+    }
+    
+    // Remove any existing listeners to avoid duplicates
+    const newCheckbox = quarantineCheckbox.cloneNode(true);
+    quarantineCheckbox.parentNode.replaceChild(newCheckbox, quarantineCheckbox);
+    
+    const newDropdown = classificationDropdown.cloneNode(true);
+    classificationDropdown.parentNode.replaceChild(newDropdown, classificationDropdown);
+    
+    // Get references to the new elements
+    const checkbox = document.getElementById('isQuarantine');
+    const dropdown = document.getElementById('functionalClassification');
+    
+    // When checkbox is changed
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            // Check quarantine → set classification to "quarantine"
+            dropdown.value = 'quarantine';
+            console.log('✅ Quarantine checkbox checked → Classification set to "quarantine"');
+        } else {
+            // Uncheck quarantine → revert to "production" if currently "quarantine"
+            if (dropdown.value === 'quarantine') {
+                dropdown.value = 'production';
+                console.log('✅ Quarantine checkbox unchecked → Classification set to "production"');
+            }
+        }
+    });
+    
+    // When dropdown is changed
+    dropdown.addEventListener('change', function() {
+        if (this.value === 'quarantine') {
+            // Select "quarantine" → check the checkbox
+            checkbox.checked = true;
+            console.log('✅ Classification set to "quarantine" → Quarantine checkbox checked');
+        } else {
+            // Select anything else → uncheck the checkbox
+            checkbox.checked = false;
+            console.log('✅ Classification changed from "quarantine" → Quarantine checkbox unchecked');
+        }
+    });
+    
+    console.log('🔗 Quarantine sync established');
+}
+
 function handleSaveSite(e) {
     e.preventDefault();
     
