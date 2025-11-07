@@ -1026,6 +1026,89 @@ function handleSaveSite(e) {
     }
 }
 
+/**
+ * Migrate quarantine classification to checkbox
+ * Converts sites with functionalClassification='quarantine' to:
+ * - functionalClassification='production'
+ * - isQuarantine=true
+ */
+async function migrateQuarantineClassificationToCheckbox() {
+    if (!window.sites || window.sites.length === 0) {
+        beeMarshallAlert('No sites to migrate', 'info');
+        return;
+    }
+    
+    // Find sites with quarantine classification
+    const sitesToMigrate = window.sites.filter(site => 
+        site.functionalClassification === 'quarantine'
+    );
+    
+    if (sitesToMigrate.length === 0) {
+        beeMarshallAlert('✅ No sites need migration. All sites are already using the new quarantine checkbox system.', 'success');
+        return;
+    }
+    
+    const siteNames = sitesToMigrate.map(s => s.name).join(', ');
+    const confirmMessage = `Found ${sitesToMigrate.length} site(s) with quarantine classification:\n\n${siteNames}\n\nConvert to:\n- Classification: Production\n- Quarantine checkbox: Ticked\n\nProceed?`;
+    
+    if (!confirm(confirmMessage)) {
+        beeMarshallAlert('Migration cancelled', 'info');
+        return;
+    }
+    
+    // Show sync status
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('syncing', `Migrating ${sitesToMigrate.length} site(s)...`);
+    }
+    
+    const tenantPath = currentTenantId ? `tenants/${currentTenantId}/sites` : 'sites';
+    let successCount = 0;
+    let errorCount = 0;
+    
+    // Migrate each site
+    for (const site of sitesToMigrate) {
+        try {
+            const updateData = {
+                functionalClassification: 'production',
+                isQuarantine: true,
+                lastModifiedBy: currentUser.username,
+                lastModifiedAt: new Date().toISOString()
+            };
+            
+            await database.ref(`${tenantPath}/${site.id}`).update(updateData);
+            
+            // Update local site object
+            site.functionalClassification = 'production';
+            site.isQuarantine = true;
+            site.lastModifiedBy = updateData.lastModifiedBy;
+            site.lastModifiedAt = updateData.lastModifiedAt;
+            
+            successCount++;
+            console.log(`✅ Migrated: ${site.name}`);
+        } catch (error) {
+            console.error(`❌ Error migrating ${site.name}:`, error);
+            errorCount++;
+        }
+    }
+    
+    // Show results
+    if (window.syncStatusManager) {
+        window.syncStatusManager.updateSyncStatus('synced');
+    }
+    
+    const resultMessage = `Migration Complete!\n\n✅ Successfully migrated: ${successCount}\n${errorCount > 0 ? `❌ Errors: ${errorCount}` : ''}\n\nAll quarantine sites now use:\n- Classification: Production\n- Quarantine checkbox: Ticked`;
+    
+    beeMarshallAlert(resultMessage, successCount > 0 ? 'success' : 'warning');
+    
+    // Re-render sites to show updated data
+    if (typeof renderSites === 'function') {
+        renderSites();
+    }
+}
+
+// Make migration function globally accessible
+window.migrateQuarantineClassificationToCheckbox = migrateQuarantineClassificationToCheckbox;
+
 // Make editSite globally accessible
 window.editSite = function(id) {
     // Check if user has permission to edit sites
